@@ -1,0 +1,181 @@
+'use client'
+
+import { useState } from 'react'
+import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useToast } from '@/hooks/use-toast'
+import { authHeaders, formatRupiah, type ServiceTicket } from '@/lib/api'
+
+/**
+ * Dialog cetak Surat Jalan kolektif — part rusak unit yang dikirim ke produsen.
+ * Format: PDF (A4 landscape + QR verifikasi) & Excel (.xlsx, 2 sheet).
+ * Unduhan dilakukan via fetch+blob agar bekerja juga di konteks iframe
+ * yang memblokir cookie (fallback Bearer header ikut terkirim).
+ */
+export default function SuratJalanDialog({
+  open,
+  onOpenChange,
+  tickets,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  tickets: ServiceTicket[]
+}) {
+  const { toast } = useToast()
+  const [busy, setBusy] = useState<'pdf' | 'xlsx' | null>(null)
+
+  const items = tickets.flatMap((t) =>
+    t.parts.map((p) => ({
+      noTiket: t.noTiket,
+      kodePart: p.sparepart?.kodePart ?? '?',
+      namaPart: p.sparepart?.namaPart ?? '?',
+      qty: p.qty,
+      toko: t.unitAsset.toko?.namaToko ?? '-',
+      sn: t.unitAsset.serialNumber,
+    }))
+  )
+  const totalQty = items.reduce((a, i) => a + i.qty, 0)
+  const totalNilai =
+    tickets.reduce((a, t) => a + (t.nilaiKlaim ?? 0), 0)
+
+  async function download(format: 'pdf' | 'xlsx') {
+    if (tickets.length === 0 || busy) return
+    setBusy(format)
+    try {
+      const res = await fetch('/api/surat-jalan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ noTiket: tickets.map((t) => t.noTiket), format }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal membuat surat jalan (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `Surat-Jalan-${new Date().toISOString().slice(0, 10)}.${format}`
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast({
+        title: `Surat Jalan ${format.toUpperCase()} terunduh`,
+        description: `${filename} · ${tickets.length} tiket · ${totalQty} pcs`,
+      })
+    } catch (e) {
+      toast({
+        title: 'Gagal mencetak surat jalan',
+        description: e instanceof Error ? e.message : 'Coba lagi',
+        variant: 'destructive',
+      })
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl bg-white">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-slate-900">
+            <Truck className="h-5 w-5 text-teal-700" /> Cetak Surat Jalan Kolektif
+          </DialogTitle>
+          <DialogDescription>
+            Rincian kolektif unit dengan part rusak yang dikirim ke produsen — siap dicetak sebagai PDF maupun Excel.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Ringkasan */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { label: 'Tiket', value: tickets.length },
+            { label: 'Item Part', value: items.length },
+            { label: 'Total Qty', value: `${totalQty} pcs` },
+            { label: 'Nilai Klaim', value: formatRupiah(totalNilai) },
+          ].map((s) => (
+            <div key={s.label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">{s.label}</p>
+              <p className="text-sm font-bold text-slate-800">{s.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pratinjau item */}
+        <ScrollArea className="h-56 rounded-lg border border-slate-200">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <PackageOpen className="h-8 w-8 text-slate-300" />
+              <p className="px-6 text-sm text-slate-500">
+                Tiket terpilih belum memiliki rincian sparepart. Pilih tiket yang memiliki part untuk disertakan dalam surat jalan.
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-8">No</TableHead>
+                  <TableHead>No. Tiket</TableHead>
+                  <TableHead>Sparepart</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="hidden sm:table-cell">Toko Asal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((it, i) => (
+                  <TableRow key={`${it.noTiket}-${it.kodePart}-${i}`}>
+                    <TableCell className="text-xs text-slate-400">{i + 1}</TableCell>
+                    <TableCell className="font-mono text-xs">{it.noTiket}</TableCell>
+                    <TableCell className="text-xs">
+                      <span className="font-semibold text-slate-700">{it.kodePart}</span> · {it.namaPart}
+                      <p className="font-mono text-[10px] text-slate-400">{it.sn}</p>
+                    </TableCell>
+                    <TableCell className="text-right text-xs font-bold">{it.qty}</TableCell>
+                    <TableCell className="hidden text-xs text-slate-500 sm:table-cell">{it.toko}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </ScrollArea>
+
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <Badge variant="outline" className="border-teal-300 text-[10px] text-teal-700">
+            {tickets.length} tiket terpilih
+          </Badge>
+          <span>No. surat jalan otomatis berurutan harian (SJ-YYYYMMDD-0001) + QR verifikasi.</span>
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy !== null}>
+            Tutup
+          </Button>
+          <Button
+            className="bg-emerald-700 hover:bg-emerald-800"
+            onClick={() => download('xlsx')}
+            disabled={busy !== null || tickets.length === 0}
+          >
+            {busy === 'xlsx' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}
+            Unduh Excel
+          </Button>
+          <Button
+            className="bg-rose-700 hover:bg-rose-800"
+            onClick={() => download('pdf')}
+            disabled={busy !== null || tickets.length === 0}
+          >
+            {busy === 'pdf' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
+            Unduh PDF
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

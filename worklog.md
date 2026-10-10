@@ -147,3 +147,25 @@ Stage Summary:
 - Login kini berfungsi di SEMUA konteks akses: tab browser normal (cookie Lax), preview web ter-embed iframe https (cookie Partitioned CHIPS), dan browser ketat yang memblokir third-party cookie (fallback Bearer localStorage).
 - File berubah: src/lib/auth.ts, src/middleware.ts, src/lib/api.ts, src/app/login/page.tsx, src/app/page.tsx, src/app/api/auth/login/route.ts, src/app/api/auth/logout/route.ts
 - Kredensial tidak berubah: budi@teknikjaya.co.id / admin123 (atau username "budi"), teknisi lain / aftersales123
+
+---
+Task ID: 7
+Agent: Main Agent (Super Z)
+Task: Fitur cetak Surat Jalan KOLEKTIF untuk pengiriman part rusak ke produsen — PDF & Excel
+
+Work Log:
+- API baru POST /api/surat-jalan (src/app/api/surat-jalan/route.ts): body {noTiket: string[], format: 'pdf'|'xlsx'}; validasi kosong 400 / tidak ditemukan 404 / maks 200 tiket; nomor surat jalan berurutan harian SJ-YYYYMMDD-0001 (dari count audit harian); penerima dari Pengaturan partner_produsen, pengirim dari nama_perusahaan + alamat_perusahaan; audit CETAK_SURAT_JALAN dengan aktor dari sesi (getSession)
+- PDF: jsPDF A4 LANDSCAPE, header emerald "SURAT JALAN — Pengiriman Sparepart Rusak / Klaim Garansi ke Produsen", blok info No. SJ/Tgl/Pengirim/Kepada + QR Code verifikasi (payload SJ|TIKET|ITEM|QTY|TGL), tabel 10 kolom (No, Tiket, SN, Model, Toko Asal, Kode Part, Nama Sparepart, Qty, Garansi, Kondisi Part) dengan zebra + truncation fit() anti-wrap-tumpang tindih, baris TOTAL emerald (tiket/item/pcs/nilai), paragraf pernyataan, 2 blok tanda tangan Pengirim/Penerima, footer nomor halaman "Halaman i dari n"; multi-page otomatis (header+header tabel digambar ulang di tiap halaman)
+- Excel (.xlsx) 2 sheet: "Surat Jalan" (info dokumen + 12 kolom rincian part + TOTAL + pernyataan + baris tanda tangan) dan "Ringkasan per Tiket" (rekap per tiket: jumlah item, total qty, biaya jasa, nilai part, total klaim, status klaim)
+- UI: komponen baru src/components/surat-jalan-dialog.tsx — ringkasan (tiket/item/qty/nilai klaim), pratinjau item scrollable, tombol Unduh PDF & Unduh Excel; unduhan via fetch+blob+authHeaders() (Bearer fallback aman di iframe); filename dari Content-Disposition
+- Integrasi ClaimView (src/components/views/claim-view.tsx): kolom checkbox per baris + checkbox "Pilih semua" per tab DRAFT/SUBMITTED/PAID, baris terpilih di-highlight teal, tombol toolbar "Surat Jalan Kolektif (n)" (disabled saat 0 pilihan) + "Reset pilihan", deskripsi card diupdate
+- Perbaikan layout PDF iteratif: lebar kolom disesuaikan (Garansi 22mm, Kondisi 37mm agar "PART RUSAK / DIGANTI" & "NON-GARANSI" tak terpotong), caption QR dipindah tepat di bawah QR dalam margin
+- Verifikasi curl: PDF valid %PDF-1.3 (3 tiket), XLSX valid PK (2 tiket), 401 tanpa sesi, 400 pilihan kosong, 404 tiket tidak ditemukan, audit berurutan SJ-20261010-0001..0006 dengan aktor "Budi Santoso"
+- Verifikasi visual PDF (Read tool render): header, QR, tabel rapi 1 baris/item, total, tanda tangan ✓
+- Verifikasi Agent Browser: login → Klaim view → checkbox tiket → tombol "Surat Jalan Kolektif (1)" aktif → dialog berisi pratinjau item → Unduh PDF → POST 200 + audit SJ-0005 → Unduh Excel → POST 200 + audit SJ-0006 ✓ (klik nav pakai eval-dispatch karena pipeline mouse agent-browser flaky — bukan bug app); lint bersih; artefak uji dibersihkan
+
+Stage Summary:
+- Fitur Surat Jalan kolektif lengkap: pilih banyak tiket di Klaim & Rekap → cetak rincian gabungan part rusak yang dikirim ke produsen sebagai PDF (A4 landscape + QR verifikasi + TTD) dan Excel (2 sheet), nomor SJ otomatis berurutan harian, audit trail lengkap
+- File baru: src/app/api/surat-jalan/route.ts, src/components/surat-jalan-dialog.tsx
+- File diubah: src/components/views/claim-view.tsx
+- Tanpa perubahan schema/prisma; kompatibel desktop & MCP (route terlindungi middleware, sesi cookie/Bearer)
