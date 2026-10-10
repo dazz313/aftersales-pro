@@ -1,0 +1,67 @@
+import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { logAudit } from '@/lib/audit'
+
+// GET /api/toko - list semua toko + status kepatuhan visit
+export async function GET() {
+  try {
+    const toko = await db.masterToko.findMany({
+      include: {
+        unitAssets: { select: { id: true } },
+        kunjungan: { orderBy: { tglKunjungan: 'desc' }, take: 1 },
+      },
+      orderBy: { kodeToko: 'asc' },
+    })
+    const now = Date.now()
+    const result = toko.map((t) => {
+      const hariSejak = t.tglVisitTerakhir
+        ? Math.floor((now - new Date(t.tglVisitTerakhir).getTime()) / (24 * 3600 * 1000))
+        : null
+      return {
+        ...t,
+        jumlahUnit: t.unitAssets.length,
+        visitTerlambat: hariSejak === null || hariSejak > t.frekuensiVisit,
+        hariSejakVisit: hariSejak,
+      }
+    })
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('Toko GET error:', error)
+    return NextResponse.json({ error: 'Gagal memuat data toko' }, { status: 500 })
+  }
+}
+
+// POST /api/toko - tambah toko baru
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    if (!body.kodeToko || !body.namaToko) {
+      return NextResponse.json({ error: 'Kode toko dan nama toko wajib diisi' }, { status: 400 })
+    }
+    const exists = await db.masterToko.findUnique({ where: { kodeToko: body.kodeToko } })
+    if (exists) {
+      return NextResponse.json({ error: `Kode toko ${body.kodeToko} sudah terdaftar` }, { status: 409 })
+    }
+    const toko = await db.masterToko.create({
+      data: {
+        kodeToko: body.kodeToko,
+        namaToko: body.namaToko,
+        alamat: body.alamat ?? null,
+        kontak: body.kontak ?? null,
+        frekuensiVisit: Number(body.frekuensiVisit) || 14,
+        tglVisitTerakhir: body.tglVisitTerakhir ? new Date(body.tglVisitTerakhir) : null,
+      },
+    })
+    await logAudit({
+      aksi: 'CREATE_MASTER_TOKO',
+      entitas: 'master_toko',
+      entitasId: toko.kodeToko,
+      deskripsi: `Toko baru ditambahkan: ${toko.namaToko}`,
+      aktor: body.aktor,
+    })
+    return NextResponse.json(toko, { status: 201 })
+  } catch (error) {
+    console.error('Toko POST error:', error)
+    return NextResponse.json({ error: 'Gagal menambah toko' }, { status: 500 })
+  }
+}

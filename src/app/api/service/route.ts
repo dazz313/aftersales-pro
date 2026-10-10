@@ -1,0 +1,109 @@
+import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { logAudit, generateNoTiket } from '@/lib/audit'
+
+// GET /api/service - list semua tiket dengan relasi lengkap
+export async function GET() {
+  try {
+    const tickets = await db.serviceRequest.findMany({
+      include: {
+        unitAsset: {
+          include: {
+            toko: { select: { id: true, kodeToko: true, namaToko: true } },
+            customer: { select: { id: true, nama: true, noWa: true } },
+          },
+        },
+        parts: { include: { sparepart: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+    const now = Date.now()
+    const result = tickets.map((t) => ({
+      ...t,
+      umurTiketJam: Math.floor((now - new Date(t.createdAt).getTime()) / 3600000),
+      hariSejakFinish: t.tglFinish
+        ? Math.floor((now - new Date(t.tglFinish).getTime()) / (24 * 3600 * 1000))
+        : null,
+      nilaiKlaim:
+        t.biayaJasa + t.parts.reduce((a, p) => a + (p.sparepart?.hargaKlaim ?? 0) * p.qty, 0),
+    }))
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('Service GET error:', error)
+    return NextResponse.json({ error: 'Gagal memuat data tiket service' }, { status: 500 })
+  }
+}
+
+// POST /api/service - buat tiket manual (oleh Admin Workshop)
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    if (!body.unitAssetId || !body.deskripsiKerusakan) {
+      return NextResponse.json({ error: 'Unit dan deskripsi kerusakan wajib diisi' }, { status: 400 })
+    }
+    const unit = await db.unitAsset.findUnique({
+      where: { id: Number(body.unitAssetId) },
+      include: { toko: true },
+    })
+    if (!unit) {
+      return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
+    }
+
+    const noTiket = await generateNoTiket()
+    const partsInput: { sparepartId: number; qty: number }[] = Array.isArray(body.parts)
+      ? body.parts
+      : []
+
+    // Validasi & reserve stok part
+    const partResults: { part: string; status: string }[] = []
+    for (const p of partsInput) {
+      const sp = await db.masterSparepart.findUnique({ where: { id: Number(p.sparepartId) } })
+      if (!sp) continue
+      const qty = Number(p.qty) || 1
+      if (sp.stokKonsinyasi >= qty) {
+        await db.masterSparepart.update({
+          where: { id: sp.id },
+          data: { stokKonsinyasi: { decrement: qty } },
+        })
+        partResults.push({ part: sp.namaPart, status: 'READY' })
+      } else {
+        partResults.push({ part: sp.namaPart, status: 'ORDER_PRODUSEN' })
+      }
+    }
+
+    const hasOrderPart = partResults.some((r) => r.status === 'ORDER_PRODUSEN')
+    const ticket = await db.serviceRequest.create({
+      data: {
+        noTiket,
+        unitAssetId: Number(body.unitAssetId),
+        status: 'REQUEST',
+        deskripsiKerusakan: body.deskripsiKerusakan,
+        biayaJasa: Number(body.biayaJasa) || 0,
+        parts: {
+          create: partsInput.map((p, i) => ({
+            sparepartId: Number(p.sparepartId),
+            qty: Number(p.qty) || 1,
+            statusPart: partResults[i]?.status ?? 'ORDER_PRODUSEN',
+          })),
+        },
+      },
+      include: { unitAsset: { include: { toko: true } }, parts: { include: { sparepart: true } } },
+    })
+
+    await logAudit({
+      aksi: 'CREATE_SERVICE_REQUEST',
+      entitas: 'service_request',
+      entitasId: noTiket,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}`,
+      aktor: body.aktor,
+    })
+
+    return NextResponse.json(
+      { ...ticket, partResults },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error('Service POST error:', error)
+    return NextResponse.json({ error: 'Gagal membuat tiket service' }, { status: 500 })
+  }
+}

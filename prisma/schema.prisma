@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// MODUL 1.3 - Master Employee & User Management
+// ==========================================
+model Pengguna {
+  id           Int         @id @default(autoincrement())
+  nama         String
+  email        String      @unique
+  role         String      @default("TEKNISI") // ADMIN_WORKSHOP | TEKNISI | MANAGER | PRODUSEN
+  noWa         String?
+  wilayahKerja String? // pemetaan wilayah kerja teknisi
+  aktif        Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  kunjungan    Kunjungan[]
+}
+
+// ==========================================
+// 1. Master Store Table (master_toko)
+// ==========================================
+model MasterToko {
+  id               Int         @id @default(autoincrement())
+  kodeToko         String      @unique
+  namaToko         String
+  alamat           String?
+  kontak           String?
+  frekuensiVisit   Int         @default(14) // siklus kunjungan dalam hari
+  tglVisitTerakhir DateTime?
+  createdAt        DateTime    @default(now())
+  unitAssets       UnitAsset[]
+  kunjungan        Kunjungan[]
+}
+
+// ==========================================
+// 2. Master Customer Table (master_customer)
+// ==========================================
+model MasterCustomer {
+  id         Int         @id @default(autoincrement())
+  nama       String
+  noWa       String?
+  alamat     String?
+  createdAt  DateTime    @default(now())
+  unitAssets UnitAsset[]
+}
+
+// ==========================================
+// 3. Master Sparepart Table (master_sparepart)
+// ==========================================
+model MasterSparepart {
+  id             Int                  @id @default(autoincrement())
+  kodePart       String               @unique
+  namaPart       String
+  stokKonsinyasi Int                  @default(0)
+  reorderLimit   Int                  @default(5)
+  hargaKlaim     Float                @default(0) // nilai klaim per unit ke produsen
+  createdAt      DateTime             @default(now())
+  serviceParts   ServiceRequestPart[]
+}
+
+// ==========================================
+// 4. Unit Asset / Barcode Table (unit_asset)
+// Format barcode: SN:[serial_number]|MOD:[model_unit]|TOK:[kode_toko]
+// ==========================================
+model UnitAsset {
+  id              Int              @id @default(autoincrement())
+  serialNumber    String           @unique
+  modelUnit       String
+  tokoId          Int?
+  customerId      Int?
+  statusGaransi   String           @default("GARANSI") // GARANSI | NON_GARANSI
+  tglPembelian    DateTime?
+  createdAt       DateTime         @default(now())
+  toko            MasterToko?      @relation(fields: [tokoId], references: [id])
+  customer        MasterCustomer?  @relation(fields: [customerId], references: [id])
+  serviceRequests ServiceRequest[]
+}
+
+// ==========================================
+// 5. Onsite Store Visit Table (kunjungan)
+// ==========================================
+model Kunjungan {
+  id               Int        @id @default(autoincrement())
+  tokoId           Int
+  teknisiId        Int
+  tglKunjungan     DateTime   @default(now())
+  fotoOnsite       String?
+  catatanStokRusak String?
+  toko             MasterToko @relation(fields: [tokoId], references: [id])
+  teknisi          Pengguna   @relation(fields: [teknisiId], references: [id])
+}
+
+// ==========================================
+// 6. Service Request Main Table (service_request)
+// status: REQUEST | PROSES | FINISH
+// status_klaim_produsen: DRAFT | SUBMITTED | PAID
+// ==========================================
+model ServiceRequest {
+  id                  Int                  @id @default(autoincrement())
+  noTiket             String               @unique
+  unitAssetId         Int
+  status              String               @default("REQUEST")
+  noSttb              String?
+  deskripsiKerusakan  String?
+  fotoKerusakanWa     String?
+  fotoNotaStempel     String?
+  tandaTanganDigital  String?
+  slaFlag             Boolean              @default(false) // ALT-02 flag merah
+  statusKlaimProdusen String               @default("DRAFT")
+  tglKlaim            DateTime?
+  biayaJasa           Float                @default(0)
+  tglFinish           DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])
+  parts               ServiceRequestPart[]
+}
+
+// ==========================================
+// 7. Service Request Sparepart Junction (service_request_part)
+// status_part: READY | ORDER_PRODUSEN
+// ==========================================
+model ServiceRequestPart {
+  id               Int             @id @default(autoincrement())
+  serviceRequestId Int
+  sparepartId      Int
+  qty              Int             @default(1)
+  statusPart       String          @default("READY")
+  serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
+  sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
+}
+
+// ==========================================
+// MODUL 6 - Audit Activity Logs
+// ==========================================
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  aksi      String
+  entitas   String
+  entitasId String?
+  deskripsi String
+  aktor     String   @default("SYSTEM")
+  createdAt DateTime @default(now())
+}
+
+// ==========================================
+// WhatsApp Gateway Message Log (simulasi WA Bot)
+// tipe: IN (masuk ke sistem) | OUT (balasan bot)
+// ==========================================
+model WaMessage {
+  id        Int      @id @default(autoincrement())
+  pengirim  String
+  grup      String   @default("WA Group Produsen")
+  tipe      String // IN | OUT
+  pesan     String
+  meta      String? // JSON: noTiket, aksi bot, dll
+  createdAt DateTime @default(now())
+}
+
+// ==========================================
+// MODUL 6 - System Settings (Profile Perusahaan)
+// ==========================================
+model Pengaturan {
+  id    Int    @id @default(autoincrement())
+  kunci String @unique
+  nilai String
+}
