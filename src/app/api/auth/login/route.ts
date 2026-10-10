@@ -2,12 +2,19 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { verifyPassword } from '@/lib/auth-node'
-import { SESSION_COOKIE, SESSION_MAX_AGE, signSession, type SessionRole } from '@/lib/auth'
+import {
+  SESSION_COOKIE,
+  SESSION_MAX_AGE,
+  sessionCookieOptions,
+  signSession,
+  type SessionRole,
+} from '@/lib/auth'
 
 /**
  * POST /api/auth/login
  * Body: { email: string (email atau username), password: string }
- * Sukses: set cookie httpOnly aspro_session (JWT HS256, 7 hari)
+ * Sukses: set cookie httpOnly aspro_session (JWT HS256, 7 hari) + token di body
+ * (token dipakai client sebagai fallback Bearer saat cookie diblokir iframe).
  */
 export async function POST(request: Request) {
   try {
@@ -47,15 +54,10 @@ export async function POST(request: Request) {
 
     const res = NextResponse.json({
       ok: true,
+      token,
       user: { id: user.id, nama: user.nama, email: user.email, username: user.username, role: user.role },
     })
-    res.cookies.set(SESSION_COOKIE, token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: false, // http (dev & desktop); set true bila di-deploy di https
-      maxAge: SESSION_MAX_AGE,
-      path: '/',
-    })
+    res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(request, SESSION_MAX_AGE))
 
     await logAudit({
       aksi: 'LOGIN',

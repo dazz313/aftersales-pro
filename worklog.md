@@ -127,3 +127,23 @@ Stage Summary:
 - Dukungan MCP untuk AI lengkap: server stdio 19 tool (baca/tulis data, check-in barcode toko, gateway, backup) terverifikasi E2E; integrasi Claude Desktop tanpa Node.js via ELECTRON_RUN_AS_NODE; config siap-pakai otomatis ditulis aplikasi desktop
 - File baru: mcp/{tools.mjs,server.mjs,claude-desktop-config.example.json}, electron/{main.js,preload.js}, scripts/{test-mcp.mjs,cleanup-mcp-test.mjs,next-build.mjs,make-template-db.mjs,make-icon.mjs,build-desktop.mjs}, build/{icon.png,icon.ico}, electron-builder.yml, .github/workflows/build-desktop.yml, README-DESKTOP.md
 - File diubah: package.json, next.config.ts, eslint.config.mjs, src/components/views/settings-view.tsx
+
+---
+Task ID: 6
+Agent: Main Agent (Super Z)
+Task: Fix "TIDAK BISA LOGIN" — sesi login gagal saat app diakses via preview ter-embed (cookie SameSite=Lax diblokir konteks lintas situs/iframe)
+
+Work Log:
+- Diagnosis: dev.log menunjukkan POST /api/auth/login 200 (sukses server-side) diikuti GET /login berulang → cookie sesi tidak pernah tersimpan di browser user. Root cause: app diakses via preview HTTPS yang di-embed dalam iframe lintas situs; cookie SameSite=Lax diblokir browser di konteks third-party. Curl localhost normal (first-party) selalu berhasil → bug hanya muncul di konteks iframe.
+- Fix 1 — cookie adaptif (src/lib/auth.ts + login/logout route): helper sessionCookieOptions(request, maxAge) deteksi protokol asli via x-forwarded-proto (Caddy meneruskan) / request.url. HTTPS → SameSite=None + Secure + Partitioned (CHIPS, diterima dalam iframe lintas situs di Chrome); HTTP (localhost dev & desktop Electron) → SameSite=Lax seperti semula. Logout menghapus cookie dengan opsi adaptif yang sama.
+- Fix 2 — fallback Bearer token: login response body kini memuat token JWT; client menyimpan ke localStorage (aspro_token). src/lib/api.ts: authHeaders()/saveSessionToken()/clearSessionToken(), fetcher & postJson otomatis melampirkan Authorization: Bearer. getSession() (auth.ts) & middleware menerima header Authorization sebagai alternatif cookie → menutup browser yang memblokir SEMUA third-party cookie (Safari ITP).
+- Fix 3 — middleware (src/middleware.ts): proteksi API tetap ketat (cookie ATAU Bearer, else 401; whitelist publik tidak berubah); proteksi halaman dipindah ke client gate (page.tsx fetch /api/auth/me → redirect /login bila 401, + clear token) karena request navigasi halaman tidak bisa membawa header Authorization — mencegah redirect loop pada mode Bearer-only. /login dengan cookie valid tetap redirect / server-side.
+- Client: login page simpan token + cek sesi on-mount (sudah login → replace('/')); page.tsx gate pakai authHeaders(), handleLogout clearSessionToken().
+- Verifikasi curl (8/8): https → Set-Cookie "SameSite=none; Secure; Partitioned" + token di body; http → SameSite=lax; /api/auth/me Bearer-only 200; API terlindungi Bearer-only 200; tanpa sesi 401; GET / tanpa cookie 200 (client gate); /login + cookie valid 307 ke /; logout Bearer 200.
+- Verifikasi Agent Browser (session logintest): Test A first-party — login budi/admin123 → Dashboard KPI + Akses Cepat ✓. Test B reproduksi bug — server uji 127.0.0.1:3001 (situs berbeda dari localhost) meng-embed app dalam iframe: login DI DALAM iframe → Dashboard penuh + menu akun "Budi Santoso / budi@teknikjaya.co.id / Admin Workshop" ✓, Keluar → kembali /login ✓; zero console error. (scripts/iframe-host.js, dihentikan setelah uji)
+- Lint bersih (7 file berubah); tanpa perubahan schema/db; desktop & MCP tidak terpengaruh (Electron first-party tetap Lax; MCP stdio bypass HTTP).
+
+Stage Summary:
+- Login kini berfungsi di SEMUA konteks akses: tab browser normal (cookie Lax), preview web ter-embed iframe https (cookie Partitioned CHIPS), dan browser ketat yang memblokir third-party cookie (fallback Bearer localStorage).
+- File berubah: src/lib/auth.ts, src/middleware.ts, src/lib/api.ts, src/app/login/page.tsx, src/app/page.tsx, src/app/api/auth/login/route.ts, src/app/api/auth/logout/route.ts
+- Kredensial tidak berubah: budi@teknikjaya.co.id / admin123 (atau username "budi"), teknisi lain / aftersales123

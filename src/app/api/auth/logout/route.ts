@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { logAudit } from '@/lib/audit'
-import { SESSION_COOKIE, getSession } from '@/lib/auth'
+import { SESSION_COOKIE, getSession, sessionCookieOptions } from '@/lib/auth'
 
 /**
  * POST /api/auth/logout — hapus cookie sesi + catat audit
@@ -22,6 +22,6 @@ export async function POST(request: Request) {
   }
 
   const res = NextResponse.json({ ok: true })
-  res.cookies.set(SESSION_COOKIE, '', { httpOnly: true, sameSite: 'lax', secure: false, maxAge: 0, path: '/' })
+  res.cookies.set(SESSION_COOKIE, '', sessionCookieOptions(request, 0))
   return res
 }

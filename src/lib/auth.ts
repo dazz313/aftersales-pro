@@ -55,8 +55,13 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   }
 }
 
-/** Ambil sesi dari header Cookie pada Request apa pun */
+/** Ambil sesi dari header Cookie ATAU header Authorization: Bearer (fallback iframe) */
 export async function getSession(request: Request): Promise<SessionPayload | null> {
+  const authz = request.headers.get('authorization')
+  if (authz?.toLowerCase().startsWith('bearer ')) {
+    const fromBearer = await verifySessionToken(authz.slice(7).trim())
+    if (fromBearer) return fromBearer
+  }
   const cookie = request.headers.get('cookie') ?? ''
   const m = cookie.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`))
   if (!m) return null
@@ -64,5 +69,37 @@ export async function getSession(request: Request): Promise<SessionPayload | nul
     return await verifySessionToken(decodeURIComponent(m[1]))
   } catch {
     return null
+  }
+}
+
+/**
+ * Deteksi protokol asli yang dilihat browser (di belakang reverse proxy Caddy,
+ * protokol asli ada di header x-forwarded-proto).
+ */
+function isHttps(request: Request): boolean {
+  const proto = request.headers.get('x-forwarded-proto')
+  if (proto) return proto.split(',')[0].trim() === 'https'
+  try {
+    return new URL(request.url).protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Opsi cookie sesi adaptif:
+ * - HTTPS (preview web / hosting): SameSite=None + Secure + Partitioned (CHIPS)
+ *   agar cookie TIDAK diblokir saat app di-embed dalam iframe lintas situs.
+ * - HTTP (localhost dev / desktop Electron): SameSite=Lax (first-party).
+ */
+export function sessionCookieOptions(request: Request, maxAge: number) {
+  const https = isHttps(request)
+  return {
+    httpOnly: true,
+    sameSite: (https ? 'none' : 'lax') as 'none' | 'lax',
+    secure: https,
+    ...(https ? { partitioned: true } : {}),
+    maxAge,
+    path: '/',
   }
 }

@@ -20,6 +20,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { authHeaders, clearSessionToken } from '@/lib/api'
 import DashboardView from '@/components/views/dashboard-view'
 import ServiceView from '@/components/views/service-view'
 import GatewayView from '@/components/views/gateway-view'
@@ -123,11 +124,11 @@ export default function Home() {
   const { view, role, user, authReady, setUser, setAuthReady } = useAppStore()
   const current = NAV_ITEMS.find((n) => n.key === view)
 
-  // Verifikasi sesi saat aplikasi dibuka — tanpa sesi valid, middleware sudah
-  // me-redirect ke /login; fetch ini memuat profil user yang login.
+  // Verifikasi sesi saat aplikasi dibuka — pakai cookie ATAU fallback Bearer
+  // (localStorage); tanpa sesi valid, client gate me-redirect ke /login.
   useEffect(() => {
     let cancelled = false
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { headers: authHeaders() })
       .then((r) => {
         if (!r.ok) throw new Error('unauthenticated')
         return r.json()
@@ -138,7 +139,10 @@ export default function Home() {
         setAuthReady(true)
       })
       .catch(() => {
-        if (!cancelled) window.location.replace('/login')
+        if (!cancelled) {
+          clearSessionToken()
+          window.location.replace('/login')
+        }
       })
     return () => {
       cancelled = true
@@ -149,10 +153,11 @@ export default function Home() {
     if (loggingOut) return
     setLoggingOut(true)
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() })
     } catch {
       // tetap redirect walau request gagal
     }
+    clearSessionToken()
     window.location.replace('/login')
   }
 

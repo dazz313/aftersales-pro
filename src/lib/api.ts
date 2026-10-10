@@ -3,8 +3,42 @@ import type {
   GatewayStatus, GatewayTestResult, BackupStatus, BackupOutcome,
 } from '@/lib/types'
 
+/**
+ * Fallback sesi via header Authorization (localStorage).
+ * Dipakai saat cookie diblokir browser karena app berjalan di iframe
+ * lintas situs (mis. preview ter-embed) — Safari ITP & mode ketat Chrome.
+ */
+const TOKEN_KEY = 'aspro_token'
+
+export function saveSessionToken(token: string | undefined | null) {
+  if (!token) return
+  try {
+    localStorage.setItem(TOKEN_KEY, token)
+  } catch {
+    // localStorage tidak tersedia — cookie tetap jadi mekanisme utama
+  }
+}
+
+export function clearSessionToken() {
+  try {
+    localStorage.removeItem(TOKEN_KEY)
+  } catch {
+    // abaikan
+  }
+}
+
+export function authHeaders(): Record<string, string> {
+  try {
+    const t = localStorage.getItem(TOKEN_KEY)
+    if (t) return { Authorization: `Bearer ${t}` }
+  } catch {
+    // abaikan
+  }
+  return {}
+}
+
 export async function fetcher<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: authHeaders() })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error((err as { error?: string }).error || `Request gagal (${res.status})`)
@@ -15,7 +49,7 @@ export async function fetcher<T>(url: string): Promise<T> {
 export async function postJson<T>(url: string, body: unknown, method = 'POST'): Promise<T> {
   const res = await fetch(url, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body),
   })
   if (!res.ok) {

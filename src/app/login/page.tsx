@@ -1,11 +1,12 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { WrenchIcon, Eye, EyeOff, Loader2, LogIn, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+import { authHeaders, saveSessionToken } from '@/lib/api'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -13,6 +14,24 @@ function LoginForm() {
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Sudah login (cookie / token Bearer tersimpan)? Langsung masuk ke app.
+  // Penting untuk mode Bearer-only (cookie diblokir iframe): tanpa cek ini
+  // user yang sudah login tetap melihat halaman login.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/me', { headers: authHeaders() })
+      .then((r) => {
+        if (!r.ok) throw new Error('unauthenticated')
+        if (!cancelled) window.location.replace('/')
+      })
+      .catch(() => {
+        // belum login — tetap di halaman login
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -31,6 +50,8 @@ function LoginForm() {
         setLoading(false)
         return
       }
+      // Simpan token sebagai fallback Bearer (untuk konteks yang memblokir cookie)
+      saveSessionToken(data?.token)
       // Aplikasi single-route: semua view berada di "/" (navigasi internal)
       window.location.replace('/')
     } catch {
