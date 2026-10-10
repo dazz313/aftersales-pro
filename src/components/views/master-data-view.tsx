@@ -15,7 +15,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode } from 'lucide-react'
+import CsvImportDialog from '@/components/csv-import-dialog'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function MasterDataView() {
@@ -30,6 +31,7 @@ export default function MasterDataView() {
 
   // ===== Form states =====
   const [tokoOpen, setTokoOpen] = useState(false)
+  const [importTokoOpen, setImportTokoOpen] = useState(false)
   const [newToko, setNewToko] = useState({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
   const [custOpen, setCustOpen] = useState(false)
   const [newCust, setNewCust] = useState({ nama: '', noWa: '', alamat: '' })
@@ -84,7 +86,12 @@ export default function MasterDataView() {
               <CardTitle className="text-base">Master Toko Mitra</CardTitle>
               <CardDescription>Profil toko, siklus kunjungan rutin, dan status kepatuhan (ALT-01)</CardDescription>
             </div>
-            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setTokoOpen(true)}><Plus className="mr-1 h-4 w-4" /> Toko Baru</Button>
+            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={() => setImportTokoOpen(true)}>
+                <Upload className="mr-1 h-4 w-4" /> Import CSV
+              </Button>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setTokoOpen(true)}><Plus className="mr-1 h-4 w-4" /> Toko Baru</Button>
+            </div>
           </CardHeader>
           <CardContent>
             {tokoLoading ? (
@@ -353,6 +360,21 @@ export default function MasterDataView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog import massal toko via CSV */}
+      <CsvImportDialog
+        kind="toko"
+        open={importTokoOpen}
+        onOpenChange={setImportTokoOpen}
+        existingCodes={(tokoList ?? []).map((t) => t.kodeToko)}
+        onSuccess={(r) => {
+          invalidate(['toko', 'dashboard', 'alerts', 'kunjungan', 'units'])
+          toast({
+            title: 'Import toko selesai',
+            description: `${r.inserted} toko ditambahkan, ${r.updated} diperbarui, ${r.skipped} dilewati, ${r.failed} gagal.`,
+          })
+        }}
+      />
 
       {/* Dialog stiker barcode */}
       <Dialog open={!!qrUnit} onOpenChange={(o) => !o && setQrUnit(null)}>

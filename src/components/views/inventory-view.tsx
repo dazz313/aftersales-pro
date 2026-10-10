@@ -14,7 +14,8 @@ import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send } from 'lucide-react'
+import CsvImportDialog from '@/components/csv-import-dialog'
+import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function InventoryView() {
@@ -25,6 +26,7 @@ export default function InventoryView() {
   const [restockQty, setRestockQty] = useState('10')
   const [roFormOpen, setRoFormOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
 
   const { data: parts, isLoading } = useQuery<Sparepart[]>({
     queryKey: ['spareparts'],
@@ -127,9 +129,14 @@ export default function InventoryView() {
               <CardTitle className="text-base">Stok Sparepart Konsinyasi</CardTitle>
               <CardDescription>Barang titipan produsen — reserve otomatis saat tiket service dibuat</CardDescription>
             </div>
-            <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
-              <Plus className="mr-1 h-4 w-4" /> Item Baru
-            </Button>
+            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+                <Upload className="mr-1 h-4 w-4" /> Import CSV
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
+                <Plus className="mr-1 h-4 w-4" /> Item Baru
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -286,6 +293,24 @@ export default function InventoryView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog import massal sparepart via CSV */}
+      <CsvImportDialog
+        kind="sparepart"
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        existingCodes={(parts ?? []).map((p) => p.kodePart)}
+        onSuccess={(r) => {
+          queryClient.invalidateQueries({ queryKey: ['spareparts'] })
+          queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+          queryClient.invalidateQueries({ queryKey: ['alerts'] })
+          queryClient.invalidateQueries({ queryKey: ['audit'] })
+          toast({
+            title: 'Import sparepart selesai',
+            description: `${r.inserted} item ditambahkan, ${r.updated} diperbarui, ${r.skipped} dilewati, ${r.failed} gagal.`,
+          })
+        }}
+      />
 
       {/* Dialog kirim reorder */}
       <Dialog open={roFormOpen} onOpenChange={setRoFormOpen}>

@@ -1,6 +1,25 @@
 # Worklog
 
 ---
+Task ID: 2
+Agent: Main Agent (Super Z)
+Task: Menambahkan fitur input massal (bulk import) nama toko & sparepart via CSV
+
+Work Log:
+- Membuat src/lib/csv.ts: parser CSV state-machine (BOM UTF-8, delimiter otomatis koma/titik-koma/tab/pipe, field berkutip dengan escape ""), mapping header fleksibel via alias case-insensitive, validator shared untuk toko & sparepart (dipakai server + pratinjau client), parseNum heuristik angka Indonesia ("Rp 275.500"→275500, "1.250"→1250, "12,5"→12.5), parseDateFlexible (YYYY-MM-DD & DD/MM/YYYY), buildCsvTemplate, batas 5.000 baris
+- Membuat API /api/toko/import & /api/sparepart/import: GET = unduh template CSV (Content-Disposition attachment), POST = import massal dengan mode 'skip' (lewati kode existing) atau 'update' (partial update, kolom kosong tidak di-overwrite), validasi per-baris dengan pesan jelas, duplikat dalam file terdeteksi, createMany batch untuk insert + update per-baris, respons {total, inserted, updated, skipped, failed, errors[], skippedDetails[]}, audit log IMPORT_MASTER_TOKO / IMPORT_MASTER_SPAREPART
+- Membuat komponen reusable src/components/csv-import-dialog.tsx (3 tahap: Unggah drag&drop/paste → Pratinjau dengan badge BARU/PERBARUI/LEWATI/ERROR per baris → Hasil statistik + detail baris gagal/dilewati), mode radio skip/update, validasi file (.csv, maks 5MB), aksesibilitas (role button, aria-label, keyboard)
+- Integrasi: tombol "Import CSV" di MasterDataView tab Toko & InventoryView (Stok Konsinyasi), invalidate query toko/spareparts/dashboard/alerts/audit + toast ringkasan
+- Verifikasi curl: template ✓, mode skip ✓ (1 inserted, 1 skipped terpisah dari failed), mode update ✓ (partial: nama+stok berubah, ROP & harga kosong tidak di-overwrite), delimiter koma & titik-koma ✓, header salah ✓ ditolak dengan pesan, CSV kosong ✓ ditolak, stok negatif ✓ error, duplikat DB ✓ dilewati, angka format Indonesia ✓
+- Verifikasi Agent Browser: dialog toko (unggah→pratinjau BARU/LEWATI→import 2 data→hasil + tabel ter-refresh) ✓, dialog sparepart dengan baris error (stok -9 ditandai ERROR) ✓, audit log 5 entry tercatat ✓, nilai stok titipan ter-update otomatis ✓, mobile responsive iPhone 14 ✓, lint bersih, zero console error (hanya warning minor aria radix)
+
+Stage Summary:
+- Fitur input massal CSV untuk MasterToko & MasterSparepart lengkap dan terverifikasi end-to-end
+- File baru: src/lib/csv.ts, src/app/api/toko/import/route.ts, src/app/api/sparepart/import/route.ts, src/components/csv-import-dialog.tsx
+- File diubah: src/components/views/master-data-view.tsx, src/components/views/inventory-view.tsx
+- Data uji telah dibersihkan dari database
+
+---
 Task ID: 1
 Agent: Main Agent (Super Z)
 Task: Membangun aplikasi fullstack "Systems Automation for After-Sales Operations & Inventory Management" sesuai PRD yang diunggah user
