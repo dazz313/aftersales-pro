@@ -1,0 +1,59 @@
+# ============================================================
+# AfterSales Pro — Konfigurasi electron-builder (Windows)
+# Build : npx electron-builder --win msi nsis --config electron-builder.yml
+# Hasil : dist/desktop/*.msi & *.exe
+# ============================================================
+
+appId: com.aftersalespro.desktop
+productName: AfterSales Pro
+copyright: Copyright © 2026 AfterSales Pro
+
+directories:
+  output: dist/desktop
+  buildResources: build
+
+# Kode proses Electron utama hanya butuh folder electron/ + package.json
+# (aplikasi Next.js, database template, dan MCP dikirim via extraResources)
+files:
+  - electron/**/*
+  - package.json
+
+asar: true
+
+compression: maximum
+
+win:
+  icon: build/icon.ico
+  artifactName: AfterSalesPro-${version}-x64.${ext}
+  requestedExecutionLevel: asInvoker
+
+# ---------- Target 1: MSI (permintaan utama) ----------
+msi:
+  # upgradeCode tetap agar versi baru mengganti versi lama saat instalasi
+  upgradeCode: 0AC670DA-41E0-4A7D-9A37-B9840F7D15B4
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: AfterSales Pro
+
+# ---------- Target 2: NSIS (fallback, ukuran lebih kecil) ----------
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: AfterSales Pro
+  artifactName: AfterSalesPro-Setup-${version}-x64.exe
+  uninstallDisplayName: AfterSales Pro ${version}
+
+# ---------- Sumber daya tambahan di luar asar ----------
+extraResources:
+  # Aplikasi Next.js standalone + prisma runtime/CLI + MCP server
+  - from: dist/desktop/staging/app
+    to: app
+  # Schema Prisma + template database (first run)
+  - from: dist/desktop/staging/prisma
+    to: prisma

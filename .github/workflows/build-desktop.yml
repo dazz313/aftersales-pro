@@ -1,0 +1,58 @@
+# ============================================================
+# AfterSales Pro — Build Installer Windows (MSI + NSIS)
+# ============================================================
+# Cara pakai:
+#   1. Push repo ini ke GitHub
+#   2. Tab Actions → "Build Windows Installer (MSI)" → Run workflow
+#      (atau push tag v* , mis. v1.0.0)
+#   3. Unduh artifact "AfterSalesPro-Windows-Installer" → berisi .msi & .exe
+#
+# Build juga bisa dijalankan lokal di Windows: node scripts/build-desktop.mjs
+
+name: Build Windows Installer (MSI)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: 'file:./db/build.db'
+
+      - name: Generate ikon aplikasi
+        run: node scripts/make-icon.mjs
+
+      - name: Build desktop (Next.js standalone + staging + electron-builder)
+        run: node scripts/build-desktop.mjs
+        env:
+          DATABASE_URL: 'file:./db/build.db'
+
+      - name: Upload artifact installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: AfterSalesPro-Windows-Installer
+          path: |
+            dist/desktop/*.msi
+            dist/desktop/*.exe
+          if-no-files-found: error
+          retention-days: 30

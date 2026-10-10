@@ -1,0 +1,16 @@
+{
+  "_catatan": "CONTOH konfigurasi MCP untuk Claude Desktop. Ganti <USER> dengan nama user Windows Anda. Path default installasi AfterSales Pro: C:\\Users\\<USER>\\AppData\\Local\\Programs\\after sales pro\\. Buka file claude-desktop-mcp-config.json di folder data aplikasi (%APPDATA%\\AfterSalesPro) untuk versi dengan path PASTI yang sudah diisi otomatis oleh aplikasi. Setelah mengubah config, restart Claude Desktop.",
+  "_alternatifNode": "Jika Node.js terinstal, command bisa diganti 'node' dan hapus ELECTRON_RUN_AS_NODE dari env.",
+  "mcpServers": {
+    "aftersales-pro": {
+      "command": "C:\\Users\\<USER>\\AppData\\Local\\Programs\\after sales pro\\After Sales Pro.exe",
+      "args": [
+        "C:\\Users\\<USER>\\AppData\\Local\\Programs\\after sales pro\\resources\\app\\mcp\\server.cjs"
+      ],
+      "env": {
+        "ELECTRON_RUN_AS_NODE": "1",
+        "ASPRO_DB_PATH": "C:\\Users\\<USER>\\AppData\\Roaming\\AfterSalesPro\\data\\aftersales.db"
+      }
+    }
+  }
+}

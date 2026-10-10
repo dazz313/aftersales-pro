@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   fetcher, postJson, formatWaktu, testGateway,
@@ -21,6 +21,7 @@ import { useAppStore } from '@/lib/store'
 import {
   Building2, Save, ScrollText, ShieldCheck, DatabaseBackup, History,
   Radio, Smartphone, Send, CloudUpload, RefreshCw, CheckCircle2, XCircle, CircleAlert,
+  Monitor, Bot, Copy,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -50,6 +51,24 @@ const STATUS_TONE: Record<string, string> = {
   FAILED: 'border-rose-300 bg-rose-50 text-rose-700',
 }
 
+// Info dari Electron preload (versi desktop) — tidak ada di mode web
+interface AsproDesktopInfo {
+  isDesktop: boolean
+  version: string
+  platform: string
+  dbPath: string
+  mcpServerPath: string
+  mcpConfigFile: string
+  userDataPath: string
+  exePath: string
+}
+
+declare global {
+  interface Window {
+    asproDesktop?: { isDesktop: boolean; getInfo: () => Promise<AsproDesktopInfo> }
+  }
+}
+
 export default function SettingsView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -57,6 +76,24 @@ export default function SettingsView() {
   const [form, setForm] = useState<Record<string, string>>({})
   const [gwForm, setGwForm] = useState<Record<string, string>>({})
   const [gsForm, setGsForm] = useState<Record<string, string>>({})
+  const [desktopInfo, setDesktopInfo] = useState<AsproDesktopInfo | null>(null)
+
+  // Deteksi mode desktop (Electron preload) untuk path MCP yang pasti
+  useEffect(() => {
+    const bridge = (window as Window & { asproDesktop?: { isDesktop: boolean; getInfo: () => Promise<AsproDesktopInfo> } }).asproDesktop
+    if (bridge?.isDesktop) {
+      let alive = true
+      bridge
+        .getInfo()
+        .then((info) => {
+          if (alive) setDesktopInfo(info)
+        })
+        .catch(() => {})
+      return () => {
+        alive = false
+      }
+    }
+  }, [])
 
   const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ['pengaturan'],
@@ -138,6 +175,54 @@ export default function SettingsView() {
     },
     onError: (e: Error) => toast({ title: 'Backup gagal', description: e.message, variant: 'destructive' }),
   })
+
+  // ===== Desktop & MCP =====
+  const isDesktop = !!desktopInfo?.isDesktop
+
+  const mcpConfigSnippet = useMemo(() => {
+    if (isDesktop && desktopInfo) {
+      // Config pasti — menggunakan runtime bawaan aplikasi (tanpa Node.js)
+      return JSON.stringify(
+        {
+          mcpServers: {
+            'aftersales-pro': {
+              command: desktopInfo.exePath,
+              args: [desktopInfo.mcpServerPath],
+              env: {
+                ELECTRON_RUN_AS_NODE: '1',
+                ASPRO_DB_PATH: desktopInfo.dbPath,
+              },
+            },
+          },
+        },
+        null,
+        2
+      )
+    }
+    // Mode web — template dengan placeholder
+    return JSON.stringify(
+      {
+        mcpServers: {
+          'aftersales-pro': {
+            command: 'node',
+            args: ['C:\\path\\ke\\project\\mcp\\server.mjs'],
+            env: { DATABASE_URL: 'file:C:\\path\\ke\\project\\db\\custom.db' },
+          },
+        },
+      },
+      null,
+      2
+    )
+  }, [isDesktop, desktopInfo])
+
+  const copyMcpConfig = async () => {
+    try {
+      await navigator.clipboard.writeText(mcpConfigSnippet)
+      toast({ title: 'Config MCP tersalin', description: 'Tempel ke claude_desktop_config.json lalu restart Claude Desktop.' })
+    } catch {
+      toast({ title: 'Gagal menyalin', description: 'Salin manual dari teks yang ditampilkan.', variant: 'destructive' })
+    }
+  }
 
   const LABELS: Record<string, string> = {
     nama_perusahaan: 'Nama Perusahaan (Workshop)',
@@ -342,6 +427,54 @@ export default function SettingsView() {
               <Button className="flex-1 bg-teal-600 hover:bg-teal-700" disabled={backupMutation.isPending} onClick={() => backupMutation.mutate()}>
                 <CloudUpload className={cn('mr-1.5 h-4 w-4', backupMutation.isPending && 'animate-bounce')} /> Backup Sekarang
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ===== DESKTOP WINDOWS & AI (MCP) ===== */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Monitor className="h-4 w-4 text-emerald-600" /> Desktop Windows &amp; AI (MCP)
+            </CardTitle>
+            <CardDescription>Instalasi desktop (file MSI) & integrasi AI assistant via Model Context Protocol</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="space-y-1.5 rounded-lg border p-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                <Monitor className="h-3.5 w-3.5 text-emerald-600" /> Versi Desktop Windows (MSI)
+              </p>
+              {isDesktop ? (
+                <p className="text-[11px] text-slate-500">
+                  Terpasang sebagai aplikasi desktop v{desktopInfo?.version} ({desktopInfo?.platform}). Data tersimpan di <span className="font-mono text-[10px]">{desktopInfo?.dbPath}</span>
+                </p>
+              ) : (
+                <p className="text-[11px] text-slate-500">
+                  Installer MSI dibangun otomatis via GitHub Actions (tab <span className="font-medium">Actions → Build Windows Installer</span>) atau di Windows lokal: <span className="font-mono text-[10px]">npm install</span> lalu <span className="font-mono text-[10px]">node scripts/build-desktop.mjs</span>. Panduan lengkap ada di <span className="font-medium">README-DESKTOP.md</span>.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2 rounded-lg border p-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                <Bot className="h-3.5 w-3.5 text-teal-600" /> AI Assistant via MCP — 19 tool siap pakai
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Hubungkan Claude Desktop / AI assistant lain ke data aplikasi: ringkasan bisnis, toko, customer, sparepart, unit, check-in kunjungan via barcode toko, kirim notifikasi Gateway (WhatsApp/Telegram), dan backup data bersama.
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <Badge variant="outline" className="border-emerald-300 text-[10px] text-emerald-700">aftersales-pro · stdio</Badge>
+                <Button size="sm" variant="outline" onClick={copyMcpConfig} aria-label="Salin konfigurasi MCP Claude Desktop">
+                  <Copy className="mr-1 h-3 w-3" /> Salin Config Claude Desktop
+                </Button>
+              </div>
+              <pre className="max-h-44 overflow-y-auto rounded-md bg-slate-950 p-2.5 font-mono text-[9.5px] leading-relaxed text-slate-100">{mcpConfigSnippet}</pre>
+              {isDesktop && desktopInfo?.mcpConfigFile && (
+                <p className="flex items-start gap-1 text-[10px] text-teal-700">
+                  <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0" />
+                  <span>Config siap-pakai (path pasti) sudah ditulis aplikasi: <span className="font-mono">{desktopInfo.mcpConfigFile}</span></span>
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
