@@ -8,6 +8,7 @@ export interface Toko {
   kontak: string | null
   frekuensiVisit: number
   tglVisitTerakhir: string | null
+  barcodeToko: string
   createdAt: string
   jumlahUnit: number
   visitTerlambat: boolean
@@ -102,6 +103,8 @@ export interface Kunjungan {
   tokoId: number
   teknisiId: number
   tglKunjungan: string
+  metodeCheckin: 'SCAN_BARCODE' | 'MANUAL'
+  barcodeTerscan: string | null
   fotoOnsite: string | null
   catatanStokRusak: string | null
   toko: { id: number; kodeToko: string; namaToko: string; alamat: string | null }
@@ -112,10 +115,51 @@ export interface WaMessage {
   id: number
   pengirim: string
   grup: string
+  channel: 'WHATSAPP' | 'TELEGRAM'
   tipe: 'IN' | 'OUT'
   pesan: string
   meta: string | null
   createdAt: string
+}
+
+export interface GatewayStatus {
+  whatsapp: { aktif: boolean; url: string; token: string; terkonfigurasi: boolean }
+  telegram: { aktif: boolean; token: string; chatId: string; terkonfigurasi: boolean }
+  channelDefault: 'WHATSAPP' | 'TELEGRAM'
+}
+
+export interface GatewayTestResult {
+  ok: boolean
+  mode: 'REAL' | 'SIMULASI'
+  detail: string
+  channel: 'WHATSAPP' | 'TELEGRAM'
+}
+
+export interface BackupLogItem {
+  id: number
+  status: 'SUCCESS' | 'LOCAL' | 'FAILED'
+  trigger: 'MANUAL' | 'AUTO'
+  sheetsWritten: number
+  rowsTotal: number
+  tabel: string | null
+  message: string | null
+  createdAt: string
+}
+
+export interface BackupStatus {
+  logs: BackupLogItem[]
+  last: BackupLogItem | null
+  config: { autoAktif: boolean; intervalJam: number; spreadsheetId: string; serviceEmail: string; terkonfigurasi: boolean }
+  dueNow: boolean
+  lastBackupAt: string | null
+}
+
+export interface BackupOutcome {
+  status: 'SUCCESS' | 'LOCAL' | 'FAILED'
+  sheetsWritten: number
+  rowsTotal: number
+  tabel: string
+  message: string
 }
 
 export interface AuditLog {

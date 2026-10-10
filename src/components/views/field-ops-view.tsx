@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, formatWaktu, type Toko, type Pengguna, type UnitAsset, type Kunjungan } from '@/lib/api'
+import { fetcher, postJson, formatWaktu, type Toko, type Pengguna, type Kunjungan } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,18 +15,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode } from 'lucide-react'
+import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+interface LookupResult {
+  toko: Toko
+  jumlahUnit: number
+  totalKunjungan: number
+  hariSejakVisit: number | null
+  visitTerlambat: boolean
+  kunjunganTerakhir: { waktu: string; teknisi: string; metode: string } | null
+}
 
 export default function FieldOpsView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { role } = useAppStore()
+
+  // ===== State scan kunjungan otomatis (barcode per toko) =====
+  const [teknisiScanId, setTeknisiScanId] = useState('')
+  const [manualBarcode, setManualBarcode] = useState('')
+  const [cameraActive, setCameraActive] = useState(false)
+  const [scanResult, setScanResult] = useState<{ ok: boolean; barcode: string; toko?: Toko; lookup?: LookupResult; error?: string } | null>(null)
+  const [catatanOpen, setCatatanOpen] = useState(false)
+  const [catatan, setCatatan] = useState('')
+  const lastScanRef = useRef<HTMLDivElement>(null)
+  const html5qrRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null)
+  const processingRef = useRef(false)
+
+  // ===== State check-in manual =====
   const [checkinOpen, setCheckinOpen] = useState(false)
   const [selectedToko, setSelectedToko] = useState<Toko | null>(null)
   const [teknisiId, setTeknisiId] = useState('')
-  const [scanSerial, setScanSerial] = useState('')
-  const [catatan, setCatatan] = useState('')
+  const [catatanManual, setCatatanManual] = useState('')
   const [fotoFile, setFotoFile] = useState('')
 
   const { data: tokoList, isLoading: tokoLoading } = useQuery<Toko[]>({
@@ -37,42 +58,148 @@ export default function FieldOpsView() {
     queryKey: ['pengguna'],
     queryFn: () => fetcher<Pengguna[]>('/api/pengguna'),
   })
-  const { data: units } = useQuery<UnitAsset[]>({
-    queryKey: ['units'],
-    queryFn: () => fetcher<UnitAsset[]>('/api/unit'),
-  })
   const { data: kunjunganList, isLoading: kunjunganLoading } = useQuery<Kunjungan[]>({
     queryKey: ['kunjungan'],
     queryFn: () => fetcher<Kunjungan[]>('/api/kunjungan'),
   })
 
   const teknisiOnly = useMemo(() => (teknisiList ?? []).filter((t) => t.role === 'TEKNISI'), [teknisiList])
-  const unitDiToko = useMemo(
-    () => (units ?? []).filter((u) => selectedToko && u.tokoId === selectedToko.id),
-    [units, selectedToko]
-  )
 
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['kunjungan'] })
+    queryClient.invalidateQueries({ queryKey: ['toko'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['alerts'] })
+    queryClient.invalidateQueries({ queryKey: ['audit'] })
+  }
+
+  // ===== Scan → lookup → auto check-in =====
   const checkinMutation = useMutation({
+    mutationFn: (body: Record<string, unknown>) => postJson<Kunjungan>('/api/kunjungan', body),
+    onSuccess: () => invalidateAll(),
+  })
+
+  const prosesBarcode = async (raw: string) => {
+    const barcode = raw.trim()
+    if (!barcode || processingRef.current) return
+    processingRef.current = true
+    setScanResult(null)
+
+    try {
+      // 1. Lookup toko dari barcode (per TOKO, bukan per unit)
+      const lookup = await fetcher<LookupResult>(
+        `/api/kunjungan/lookup?barcode=${encodeURIComponent(barcode)}`
+      )
+
+      // 2. Tentukan teknisi (pilihan user atau default teknisi pertama)
+      const tId = teknisiScanId || (teknisiOnly[0] ? String(teknisiOnly[0].id) : '')
+      if (!tId) {
+        setScanResult({ ok: false, barcode, error: 'Teknisi belum tersedia — tambahkan karyawan peran Teknisi terlebih dahulu.' })
+        return
+      }
+
+      // 3. Check-in OTOMATIS — kunjungan langsung tercatat di sistem
+      const saved = await postJson<Kunjungan>('/api/kunjungan', {
+        barcode,
+        teknisiId: Number(tId),
+        metodeCheckin: 'SCAN_BARCODE',
+      })
+
+      setScanResult({ ok: true, barcode, toko: saved.toko as unknown as Toko, lookup })
+      invalidateAll()
+      toast({
+        title: 'Kunjungan tercatat otomatis',
+        description: `${lookup.toko.namaToko} (${lookup.toko.kodeToko}) — check-in via scan barcode toko.`,
+      })
+    } catch (e) {
+      setScanResult({ ok: false, barcode, error: (e as Error).message })
+    } finally {
+      processingRef.current = false
+      setTimeout(() => lastScanRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100)
+    }
+  }
+
+  const stopCamera = async () => {
+    if (html5qrRef.current) {
+      try {
+        await html5qrRef.current.stop()
+        html5qrRef.current.clear()
+      } catch {
+        // kamera sudah berhenti
+      }
+      html5qrRef.current = null
+    }
+    setCameraActive(false)
+  }
+
+  const startCamera = async () => {
+    if (cameraActive) return
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode')
+      const scanner = new Html5Qrcode('scan-toko-region')
+      html5qrRef.current = scanner as unknown as { stop: () => Promise<void>; clear: () => void }
+      await scanner.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 260, height: 160 } },
+        (decoded: string) => {
+          void stopCamera().then(() => prosesBarcode(decoded))
+        },
+        () => {
+          // error per-frame (tidak ada barcode terlihat) — abaikan
+        }
+      )
+      setCameraActive(true)
+    } catch {
+      void stopCamera()
+      toast({
+        title: 'Kamera tidak dapat diakses',
+        description: 'Izin kamera ditolak atau perangkat tidak tersedia. Gunakan input manual di bawah kamera.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const bukaCatatan = () => {
+    if (!scanResult?.toko) return
+    setCatatan('')
+    setCatatanOpen(true)
+  }
+
+  const simpanCatatan = useMutation({
+    mutationFn: () =>
+      postJson('/api/kunjungan', {
+        tokoId: scanResult?.toko?.id,
+        teknisiId: Number(teknisiScanId || (teknisiOnly[0]?.id ?? 0)),
+        metodeCheckin: 'MANUAL',
+        catatanStokRusak: catatan || null,
+        fotoOnsite: `onsite-${(scanResult?.toko?.kodeToko ?? 'toko').toLowerCase()}-${Date.now()}.jpg`,
+      }),
+    onSuccess: () => {
+      invalidateAll()
+      setCatatanOpen(false)
+      setCatatan('')
+      toast({ title: 'Catatan kunjungan tersimpan', description: 'Check-in tambahan dengan catatan stok rusak dicatat.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menyimpan catatan', description: e.message, variant: 'destructive' }),
+  })
+
+  // ===== Check-in manual =====
+  const manualCheckin = useMutation({
     mutationFn: () =>
       postJson('/api/kunjungan', {
         tokoId: selectedToko?.id,
         teknisiId: Number(teknisiId),
-        catatanStokRusak: catatan || null,
+        metodeCheckin: 'MANUAL',
+        catatanStokRusak: catatanManual || null,
         fotoOnsite: fotoFile || null,
-        serialTerdeteksi: scanSerial || null,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kunjungan'] })
-      queryClient.invalidateQueries({ queryKey: ['toko'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
-      queryClient.invalidateQueries({ queryKey: ['alerts'] })
-      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      invalidateAll()
       setCheckinOpen(false)
       setSelectedToko(null)
-      setScanSerial('')
-      setCatatan('')
+      setCatatanManual('')
       setFotoFile('')
-      toast({ title: 'Check-in onsite berhasil', description: 'Tanggal kunjungan toko diperbarui — siklus visit direset.' })
+      toast({ title: 'Check-in manual berhasil', description: 'Tanggal kunjungan toko diperbarui — siklus visit direset.' })
     },
     onError: (e: Error) => toast({ title: 'Check-in gagal', description: e.message, variant: 'destructive' }),
   })
@@ -86,13 +213,165 @@ export default function FieldOpsView() {
 
   return (
     <div className="space-y-4">
+      {/* ===== Scan Kunjungan Otomatis (barcode per toko) ===== */}
+      <Card className="border-emerald-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ScanLine className="h-4 w-4 text-emerald-600" /> Scan Kunjungan — Barcode Toko
+          </CardTitle>
+          <CardDescription>
+            Satu barcode per <span className="font-semibold">toko</span> (bukan per unit). Scan stiker barcode di toko saat kunjungan —
+            sistem otomatis mengenali toko dan mencatat check-in seketika.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {/* Kiri: scanner */}
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label><Users className="mr-1 inline h-3 w-3" /> Teknisi yang berkunjung</Label>
+                <Select value={teknisiScanId} onValueChange={setTeknisiScanId}>
+                  <SelectTrigger aria-label="Pilih teknisi untuk scan"><SelectValue placeholder="— Pilih teknisi —" /></SelectTrigger>
+                  <SelectContent>
+                    {teknisiOnly.map((t) => (
+                      <SelectItem key={t.id} value={String(t.id)}>{t.nama} ({t.wilayahKerja})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Area kamera */}
+              <div className="overflow-hidden rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/40">
+                <div id="scan-toko-region" className={cn('min-h-[180px]', cameraActive ? '' : 'hidden')} />
+                {!cameraActive && (
+                  <div className="flex flex-col items-center justify-center gap-2 p-6 text-center">
+                    <Camera className="h-8 w-8 text-emerald-400" />
+                    <p className="text-xs text-slate-500">Kamera scanner barcode toko — arahkan ke stiker <span className="font-mono">BC-[KODETOKO]</span></p>
+                  </div>
+                )}
+                <div className="flex gap-2 border-t bg-white p-3">
+                  {!cameraActive ? (
+                    <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={startCamera}>
+                      <Video className="mr-1.5 h-4 w-4" /> Buka Kamera Scanner
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" className="flex-1 border-rose-300 text-rose-600 hover:bg-rose-50" onClick={stopCamera}>
+                      <VideoOff className="mr-1.5 h-4 w-4" /> Tutup Kamera
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Input manual fallback */}
+              <div className="space-y-1.5">
+                <Label className="text-xs">Ketik barcode manual (jika kamera tidak tersedia)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={manualBarcode}
+                    onChange={(e) => setManualBarcode(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && prosesBarcode(manualBarcode)}
+                    placeholder="BC-TOK-001"
+                    className="bg-white font-mono text-xs"
+                    aria-label="Input barcode toko manual"
+                  />
+                  <Button size="sm" variant="outline" disabled={!manualBarcode.trim()} onClick={() => prosesBarcode(manualBarcode)}>
+                    <Barcode className="mr-1 h-3.5 w-3.5" /> Proses
+                  </Button>
+                </div>
+                <p className="text-[10px] text-slate-400">Nilai barcode dapat berupa BC-TOK-001 (stiker) atau langsung kode toko TOK-001.</p>
+              </div>
+            </div>
+
+            {/* Kanan: hasil scan */}
+            <div ref={lastScanRef}>
+              {!scanResult ? (
+                <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-center">
+                  <QrCode className="h-8 w-8 text-slate-300" />
+                  <p className="text-sm font-medium text-slate-500">Belum ada scan</p>
+                  <p className="max-w-xs text-xs text-slate-400">
+                    Hasil scan akan muncul di sini: identitas toko, status kepatuhan visit, dan bukti check-in otomatis.
+                  </p>
+                </div>
+              ) : scanResult.ok && scanResult.lookup ? (
+                <div className="flex h-full min-h-[220px] flex-col gap-3 rounded-xl border-2 border-emerald-300 bg-emerald-50/50 p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-slate-900">{scanResult.lookup.toko.namaToko}</p>
+                      <p className="font-mono text-[10px] text-slate-500">{scanResult.lookup.toko.kodeToko} · {scanResult.barcode}</p>
+                    </div>
+                    <Badge className="gap-1 bg-emerald-600 text-white"><CheckCircle2 className="h-3 w-3" /> TERCATAT</Badge>
+                  </div>
+                  <p className="line-clamp-2 text-xs text-slate-600">{scanResult.lookup.toko.alamat}</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-md bg-white p-2">
+                      <p className="text-[10px] text-slate-500">Unit</p>
+                      <p className="text-xs font-bold text-slate-800">{scanResult.lookup.jumlahUnit}</p>
+                    </div>
+                    <div className="rounded-md bg-white p-2">
+                      <p className="text-[10px] text-slate-500">Sejak visit</p>
+                      <p className={cn('text-xs font-bold', scanResult.lookup.visitTerlambat ? 'text-rose-600' : 'text-slate-800')}>{scanResult.lookup.hariSejakVisit ?? '∞'}h</p>
+                    </div>
+                    <div className="rounded-md bg-white p-2">
+                      <p className="text-[10px] text-slate-500">Total visit</p>
+                      <p className="text-xs font-bold text-slate-800">{scanResult.lookup.totalKunjungan}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-white p-3 text-xs">
+                    <p className="flex items-center gap-1.5 font-semibold text-emerald-700">
+                      <Zap className="h-3.5 w-3.5" /> Check-in otomatis tercatat {formatWaktu(new Date().toISOString())}
+                    </p>
+                    {scanResult.lookup.kunjunganTerakhir && (
+                      <p className="mt-1 text-slate-500">Visit sebelumnya: {formatWaktu(scanResult.lookup.kunjunganTerakhir.waktu)} oleh {scanResult.lookup.kunjunganTerakhir.teknisi}</p>
+                    )}
+                  </div>
+                  <Button size="sm" variant="outline" className="border-emerald-400 hover:bg-emerald-100" onClick={bukaCatatan}>
+                    + Tambah Catatan Stok Rusak
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-rose-300 bg-rose-50/50 p-6 text-center">
+                  <XCircle className="h-8 w-8 text-rose-500" />
+                  <p className="text-sm font-semibold text-rose-700">Barcode tidak dikenali</p>
+                  <p className="break-all font-mono text-xs text-slate-500">{scanResult.barcode}</p>
+                  <p className="max-w-xs text-xs text-slate-500">{scanResult.error}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialog catatan pasca-scan */}
+      <Dialog open={catatanOpen} onOpenChange={setCatatanOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Camera className="h-4 w-4 text-emerald-600" /> Catatan Stok Rusak</DialogTitle>
+            <DialogDescription>
+              {scanResult?.toko ? `${scanResult.toko.namaToko} (${scanResult.toko.kodeToko})` : ''} — kunjungan sudah tercatat otomatis via scan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Catatan kondisi di toko</Label>
+              <Textarea value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." rows={3} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCatatanOpen(false)}>Batal</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={simpanCatatan.isPending} onClick={() => simpanCatatan.mutate()}>
+              <CheckCircle2 className="mr-1 h-4 w-4" /> Simpan Catatan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Peta kepatuhan kunjungan */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Navigation className="h-4 w-4 text-emerald-600" /> Kepatuhan Jadwal Kunjungan Toko
           </CardTitle>
-          <CardDescription>ALT-01: toko harus dikunjungi sesuai siklus (frekuensi visit). Scan barcode onsite saat check-in (Modul 1.2 PRD).</CardDescription>
+          <CardDescription>ALT-01: toko harus dikunjungi sesuai siklus (frekuensi visit). Gunakan Scan Kunjungan di atas untuk check-in otomatis via barcode toko.</CardDescription>
         </CardHeader>
         <CardContent>
           {tokoLoading ? (
@@ -108,7 +387,7 @@ export default function FieldOpsView() {
                     <div className="mb-2 flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-slate-800">{t.namaToko}</p>
-                        <p className="font-mono text-[10px] text-slate-400">{t.kodeToko}</p>
+                        <p className="font-mono text-[10px] text-slate-400">{t.kodeToko} · {t.barcodeToko}</p>
                       </div>
                       <Badge variant="outline" className={cn('shrink-0 text-[10px]', late ? 'border-rose-300 bg-rose-100 text-rose-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700')}>
                         {late ? 'TERLAMBAT' : 'ON TRACK'}
@@ -130,7 +409,7 @@ export default function FieldOpsView() {
                       </div>
                     </div>
                     <Button size="sm" className={cn('w-full', late ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700')} onClick={() => bukaCheckin(t)}>
-                      <MapPin className="mr-1.5 h-3.5 w-3.5" /> Check-in Onsite
+                      <MapPin className="mr-1.5 h-3.5 w-3.5" /> Check-in Manual
                     </Button>
                   </div>
                 )
@@ -146,7 +425,7 @@ export default function FieldOpsView() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-4 w-4 text-slate-500" /> Riwayat Kunjungan Onsite
           </CardTitle>
-          <CardDescription>Bukti kunjungan lapangan dengan catatan kondisi stok rusak di toko</CardDescription>
+          <CardDescription>Bukti kunjungan lapangan — metode check-in: scan barcode toko atau manual</CardDescription>
         </CardHeader>
         <CardContent>
           {kunjunganLoading ? (
@@ -160,6 +439,7 @@ export default function FieldOpsView() {
                   <TableRow>
                     <TableHead>Waktu</TableHead>
                     <TableHead>Toko</TableHead>
+                    <TableHead>Metode</TableHead>
                     <TableHead className="hidden sm:table-cell">Teknisi</TableHead>
                     <TableHead className="hidden md:table-cell">Catatan Stok Rusak</TableHead>
                     <TableHead className="hidden lg:table-cell">Foto</TableHead>
@@ -172,6 +452,16 @@ export default function FieldOpsView() {
                       <TableCell>
                         <p className="text-xs font-medium text-slate-800">{k.toko.namaToko}</p>
                         <p className="font-mono text-[10px] text-slate-400">{k.toko.kodeToko}</p>
+                      </TableCell>
+                      <TableCell>
+                        {k.metodeCheckin === 'SCAN_BARCODE' ? (
+                          <Badge variant="outline" className="gap-1 border-emerald-300 text-[10px] text-emerald-700">
+                            <ScanLine className="h-2.5 w-2.5" /> SCAN
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] text-slate-500">MANUAL</Badge>
+                        )}
+                        {k.barcodeTerscan && <p className="mt-0.5 font-mono text-[9px] text-slate-400">{k.barcodeTerscan}</p>}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
                         <p className="text-xs text-slate-700">{k.teknisi.nama}</p>
@@ -196,15 +486,16 @@ export default function FieldOpsView() {
         </CardContent>
       </Card>
 
-      {/* Dialog Check-in + Scan */}
+      {/* Dialog Check-in Manual */}
       <Dialog open={checkinOpen} onOpenChange={setCheckinOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-emerald-600" /> Check-in Kunjungan Onsite
+              <QrCode className="h-5 w-5 text-emerald-600" /> Check-in Manual
             </DialogTitle>
             <DialogDescription>
-              {selectedToko ? `${selectedToko.namaToko} (${selectedToko.kodeToko})` : ''} — teknisi melakukan scan barcode unit display sebagai bukti kehadiran.
+              {selectedToko ? `${selectedToko.namaToko} (${selectedToko.kodeToko}) — barcode toko: ${selectedToko.barcodeToko}` : ''} ·
+              Untuk otomatis, gunakan Scan Kunjungan dengan barcode toko.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -225,57 +516,17 @@ export default function FieldOpsView() {
                 <Input value={fotoFile} onChange={(e) => setFotoFile(e.target.value)} className="font-mono text-xs" aria-label="Nama file foto onsite" />
               </div>
             </div>
-
-            {/* Simulasi scanner */}
-            <div className="rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/50 p-4">
-              <div className="mb-2 flex items-center gap-2">
-                <ScanLine className="h-4 w-4 animate-pulse text-emerald-600" />
-                <p className="text-xs font-semibold text-emerald-800">Scanner Barcode/QR (simulasi kamera HP teknisi)</p>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-xs">Pilih unit di toko (scan)</Label>
-                  <Select value={scanSerial} onValueChange={setScanSerial}>
-                    <SelectTrigger className="bg-white" aria-label="Scan unit"><SelectValue placeholder="— Hasil scan —" /></SelectTrigger>
-                    <SelectContent>
-                      {unitDiToko.map((u) => (
-                        <SelectItem key={u.id} value={u.serialNumber}>{u.serialNumber}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Atur ketik manual serial</Label>
-                  <Input value={scanSerial} onChange={(e) => setScanSerial(e.target.value.toUpperCase())} placeholder="SN-ACSP-..." className="bg-white font-mono text-xs" aria-label="Serial number manual" />
-                </div>
-              </div>
-              {scanSerial && (() => {
-                const u = unitDiToko.find((x) => x.serialNumber === scanSerial)
-                return u ? (
-                  <div className="mt-2 rounded-lg bg-white p-2.5 text-xs">
-                    <p className="font-semibold text-slate-800">✓ {u.modelUnit}</p>
-                    <p className="text-slate-500">Barcode: <span className="font-mono">SN:{u.serialNumber}|MOD:{u.modelUnit}|TOK:{u.toko?.kodeToko}</span></p>
-                    <Badge variant="outline" className={cn('mt-1 text-[10px]', u.statusGaransi === 'GARANSI' ? 'border-emerald-300 text-emerald-700' : 'border-amber-300 text-amber-700')}>
-                      {u.statusGaransi.replace('_', '-')}
-                    </Badge>
-                  </div>
-                ) : (
-                  <p className="mt-2 rounded-lg bg-white p-2.5 text-xs text-rose-600">✗ Serial tidak terdaftar di toko ini</p>
-                )
-              })()}
-            </div>
-
             <div className="space-y-1.5">
               <Label>Catatan Stok Rusak / Temuan</Label>
-              <Textarea value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." rows={2} />
+              <Textarea value={catatanManual} onChange={(e) => setCatatanManual(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." rows={2} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCheckinOpen(false)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!selectedToko || !teknisiId || checkinMutation.isPending}
-              onClick={() => checkinMutation.mutate()}
+              disabled={!selectedToko || !teknisiId || manualCheckin.isPending}
+              onClick={() => manualCheckin.mutate()}
             >
               <CheckCircle2 className="mr-1 h-4 w-4" /> Simpan Check-in
             </Button>

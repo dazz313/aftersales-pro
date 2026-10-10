@@ -51,3 +51,27 @@ Stage Summary:
 - Aplikasi "AfterSales Pro" lengkap dan terverifikasi end-to-end berjalan di port 3000
 - Semua 6 modul PRD terimplementasi + 4 alert rules + integrasi WA webhook + PDF STTB QR + Excel export
 - File utama: prisma/schema.prisma, src/lib/{db,audit,types,api,store}.ts, src/app/api/** (16 route), src/components/views/** (8 view), scripts/seed.ts
+
+---
+Task ID: 3
+Agent: Main Agent (Super Z)
+Task: 3 fitur baru — (1) Gateway multi-channel WA+Telegram di Pengaturan + akses cepat Add Toko/Customer, (2) backup otomatis Google Spreadsheet, (3) barcode per-toko untuk check-in kunjungan otomatis via scan
+
+Work Log:
+- Prisma schema: MasterToko.barcodeToko (unique), Kunjungan.metodeCheckin (SCAN_BARCODE|MANUAL) + barcodeTerscan, WaMessage.channel (WHATSAPP|TELEGRAM), model BackupLog baru; db:push bertahap (nullable → backfill BC-{KODETOKO} via scripts/backfill-barcode.ts → required)
+- Backend Gateway: src/lib/gateway.ts (getGatewayConfig + sendGatewayMessage — WA via custom webhook URL/token, Telegram via Bot API sendMessage, fallback SIMULASI), API /api/gateway/test (GET status + POST tes kirim), /api/wa/webhook kini terima body.channel dan meneruskan balasan bot ke API eksternal bila kredensial terisi
+- Backend Backup: src/lib/gsheets.ts (collect 6 tabel → JWT RS256 service account via node:crypto → Google Sheets API clear+update per tab; fallback snapshot JSON lokal ke db/backups/), API /api/backup/sheets (GET status+dueNow, POST run MANUAL|AUTO)
+- Auto backup: src/components/auto-backup-watcher.tsx mounted di page.tsx — poll status tiap 10 menit, server menghitung dueNow (interval jam dari pengaturan), trigger POST AUTO; terverifikasi log AUTO LOCAL terekam saat app dibuka
+- UI: wa-bot-view diganti gateway-view.tsx (sidebar "Gateway", tab WhatsApp/Telegram, log pesan per channel, badge simulasi, status koneksi); settings-view ditulis ulang (card Gateway: aktif switch WA/Telegram, URL, token, chat ID, channel default, tombol Tes per channel; card Backup: spreadsheet ID, service email, private key, auto switch, interval, status + riwayat, tombol Backup Sekarang)
+- Akses cepat: src/components/quick-entry.tsx (QuickActions card "Akses Cepat" di Dashboard: Add Toko, Add Customer, Scan Kunjungan, Gateway + shared AddTokoDialog/AddCustomerDialog dipakai MasterDataView juga — hapus duplikasi dialog)
+- Barcode per toko: POST /api/toko & CSV import auto-generate BC-{KODETOKO} (kolom barcode_toko opsional di CSV, validasi duplikat in-file & DB); toko-barcode-sticker.tsx (Code-128 asli via jsbarcode dynamic import + Cetak); Master Data kolom "Barcode Toko" per baris
+- Field Ops ditulis ulang: panel "Scan Kunjungan — Barcode Toko" (kamera html5-qrcode + input manual, teknisi selector) → lookup /api/kunjungan/lookup → check-in OTOMATIS POST /api/kunjungan {barcode, metodeCheckin: SCAN_BARCODE}; hasil scan: identitas toko + stat + badge TERCATAT + tambah catatan; check-in manual tetap ada; kolom Metode (SCAN/MANUAL) di riwayat
+- Fix: SQLite tidak dukung mode insensitive (normalisasi JS: BC- prefix strip + fallback scan dataset kecil); jsbarcode CJS interop (dynamic import + default ?? mod)
+- Verifikasi curl: lookup BC-TOK-001/lowercase/unknown ✓, scan check-in BC-TOK-003 ✓ (SCAN_BARCODE + barcodeTerscan), gateway test TELEGRAM → SIMULASI ✓, #LAPOR via TELEGRAM → tiket SV-20261010-0001 + audit "via Telegram Bot" ✓, backup MANUAL → LOCAL snapshot 51 baris ✓, toko POST → BC-TOK-TEST ✓, CSV import barcode kustom/default/duplikat ✓
+- Verifikasi Agent Browser: dashboard Akses Cepat (Add Toko → TOK-900 + BC-TOK-900 ✓, Add Customer ✓), Gateway tab Telegram kirim #LAPOR → TG-BOT reply tiket ✓, Field Ops scan BC-TOK-001 → panel TERCATAT "Check-in otomatis tercatat" ✓, riwayat badge SCAN + BC-TOK-001 ✓, error BC-XXX-999 ✓, stiker barcode Code-128 render ✓, Settings card Gateway+Backup ✓, Backup Sekarang dari UI ✓, mobile iPhone 14 Field Ops & Settings ✓; lint bersih, zero console error; data uji dibersihkan (TOK-900, customer, kunjungan, tiket, pesan; tgl visit TOK-001 direstore)
+
+Stage Summary:
+- Ketiga permintaan user selesai & terverifikasi E2E: Gateway (WA+Telegram) tersimpan di Pengaturan + Add Toko/Customer di fitur utama; backup otomatis Google Spreadsheet (dengan fallback snapshot lokal saat kredensial kosong); barcode per-toko BC-{KODETOKO} untuk identifikasi kunjungan otomatis via scan
+- File baru: src/lib/{gateway,gsheets}.ts, src/app/api/gateway/test/route.ts, src/app/api/backup/sheets/route.ts, src/app/api/kunjungan/lookup/route.ts, src/components/{gateway-view,quick-entry,auto-backup-watcher,toko-barcode-sticker}.tsx (gateway-view di views/), scripts/backfill-barcode.ts
+- File diubah: prisma/schema.prisma, page.tsx, store.ts, types.ts, api.ts, csv.ts, api/wa/webhook, api/kunjungan, api/toko, api/toko/import, views/{field-ops,master-data,settings}-view.tsx; wa-bot-view.tsx dihapus
+- Integrasi Google Sheets & Telegram live: cukup isi kredensial di Pengaturan (service account JSON + share spreadsheet ke service account; bot token @BotFather + chat ID) lalu tombol Tes — tanpa perubahan kode

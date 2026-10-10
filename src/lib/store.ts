@@ -5,7 +5,7 @@ import { create } from 'zustand'
 export type ViewKey =
   | 'dashboard'
   | 'service'
-  | 'wa-bot'
+  | 'gateway'
   | 'field-ops'
   | 'inventory'
   | 'master'

@@ -33,6 +33,7 @@ model MasterToko {
   kontak           String?
   frekuensiVisit   Int         @default(14) // siklus kunjungan dalam hari
   tglVisitTerakhir DateTime?
+  barcodeToko      String      @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
   createdAt        DateTime    @default(now())
   unitAssets       UnitAsset[]
   kunjungan        Kunjungan[]
@@ -90,6 +91,8 @@ model Kunjungan {
   tokoId           Int
   teknisiId        Int
   tglKunjungan     DateTime   @default(now())
+  metodeCheckin    String     @default("MANUAL") // SCAN_BARCODE (scan barcode toko) | MANUAL
+  barcodeTerscan   String?    // nilai barcode toko yang dipindai
   fotoOnsite       String?
   catatanStokRusak String?
   toko             MasterToko @relation(fields: [tokoId], references: [id])
@@ -153,10 +156,13 @@ model AuditLog {
 // WhatsApp Gateway Message Log (simulasi WA Bot)
 // tipe: IN (masuk ke sistem) | OUT (balasan bot)
 // ==========================================
+// Gateway message log — mendukung multi-channel
+// channel: WHATSAPP | TELEGRAM ; tipe: IN (masuk) | OUT (balasan bot)
 model WaMessage {
   id        Int      @id @default(autoincrement())
   pengirim  String
-  grup      String   @default("WA Group Produsen")
+  grup      String   @default("Gateway Group Produsen")
+  channel   String   @default("WHATSAPP")
   tipe      String // IN | OUT
   pesan     String
   meta      String? // JSON: noTiket, aksi bot, dll
@@ -164,7 +170,23 @@ model WaMessage {
 }
 
 // ==========================================
-// MODUL 6 - System Settings (Profile Perusahaan)
+// MODUL 6 - Backup Otomatis Google Spreadsheet
+// status: SUCCESS (tersinkron ke Google Sheets) | LOCAL (fallback snapshot lokal) | FAILED
+// trigger: MANUAL | AUTO
+// ==========================================
+model BackupLog {
+  id            Int      @id @default(autoincrement())
+  status        String
+  trigger       String   @default("MANUAL")
+  sheetsWritten Int      @default(0)
+  rowsTotal     Int      @default(0)
+  tabel         String?  // daftar tabel yang dibackup
+  message       String?
+  createdAt     DateTime @default(now())
+}
+
+// ==========================================
+// MODUL 6 - System Settings (Profil, Gateway WA/Telegram, Backup Google Sheets)
 // ==========================================
 model Pengaturan {
   id    Int    @id @default(autoincrement())

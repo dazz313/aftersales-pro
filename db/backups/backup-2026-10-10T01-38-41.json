@@ -1,0 +1,463 @@
+{
+  "generatedAt": "2026-10-10T01:38:41.578Z",
+  "tabel": {
+    "Toko": [
+      [
+        "Kode Toko",
+        "Nama Toko",
+        "Alamat",
+        "Kontak",
+        "Siklus Visit (hari)",
+        "Visit Terakhir",
+        "Barcode Toko"
+      ],
+      [
+        "TOK-001",
+        "Toko Elektronik Pusat",
+        "Jl. Sudirman No. 1, Jakarta",
+        "021-600-1122",
+        14,
+        "10/10/26, 01.35",
+        "BC-TOK-001"
+      ],
+      [
+        "TOK-002",
+        "Elektronik Berkah Sentosa",
+        "Jl. Raya Bekasi Km. 25, Bekasi Timur",
+        "021-880-2233",
+        14,
+        "20/09/26, 00.36",
+        "BC-TOK-002"
+      ],
+      [
+        "TOK-003",
+        "CV. Cahaya Elektronik",
+        "Jl. Pemuda No. 88, Rawamangun, Jakarta Timur",
+        "021-475-3344",
+        14,
+        "30/09/26, 00.36",
+        "BC-TOK-003"
+      ],
+      [
+        "TOK-004",
+        "Toko Sumber Rejeki Audio",
+        "Jl. Juanda No. 5, Depok, Jawa Barat",
+        "021-750-4455",
+        30,
+        "28/09/26, 00.36",
+        "BC-TOK-004"
+      ],
+      [
+        "TOK-005",
+        "Giant Elektronik Mall",
+        "Jl. Daan Mogot KM 18, Jakarta Barat",
+        "021-550-5566",
+        7,
+        "01/10/26, 00.36",
+        "BC-TOK-005"
+      ],
+      [
+        "TOK-006",
+        "Toserba Elektronik Nusantara",
+        "Jl. Ahmad Yani No. 210, Tangerang",
+        "021-910-6677",
+        14,
+        "08/10/26, 00.36",
+        "BC-TOK-006"
+      ],
+      [
+        "TOK-900",
+        "Toko Browser Test",
+        "Jl. E2E No. 9",
+        "",
+        14,
+        "",
+        "BC-TOK-900"
+      ]
+    ],
+    "Customer": [
+      [
+        "ID",
+        "Nama",
+        "No. WhatsApp",
+        "Alamat",
+        "Jumlah Unit",
+        "Model Unit"
+      ],
+      [
+        19,
+        "Bpk. Hendra Gunawan",
+        "6282111122233",
+        "Perum Green Garden Blok C2 No. 5, Jakarta Barat",
+        2,
+        "AC Split 1 PK Inverter SE-9000, Mesin Cuci Front Load 8kg FL-80"
+      ],
+      [
+        20,
+        "Ibu Siti Maryam",
+        "6282111122244",
+        "Jl. Cempaka Putih Tengah XXI No. 30, Jakarta Pusat",
+        2,
+        "AC Split 1 PK Inverter SE-9000, Mesin Cuci Top Load 7kg TL-70"
+      ],
+      [
+        21,
+        "Kafe Kopi Kina (Kapten Arif)",
+        "6282111122255",
+        "Jl. Kemang Selatan No. 8, Jakarta Selatan",
+        2,
+        "AC Split 1/2 PK SE-5000, AC Split 1 PK Inverter SE-9000"
+      ],
+      [
+        22,
+        "Bpk. Darmawan Yusuf",
+        "6282111122288",
+        "Jl. Cikini Raya No. 44, Jakarta Pusat",
+        1,
+        "Chest Freezer 200L CF-20"
+      ],
+      [
+        23,
+        "Bpk. Rudi Hartanto",
+        "6282111122266",
+        "Jl. Delima Raya No. 17, Bekasi",
+        2,
+        "AC Split 1/2 PK SE-5000, AC Standing Floor 5PK SF-500"
+      ],
+      [
+        24,
+        "Warung Makan Bu Tini",
+        "6282111122277",
+        "Jl. Raya Bogor KM 30, Cibinong",
+        1,
+        "Chest Freezer 300L CF-30"
+      ],
+      [
+        25,
+        "Budi Pelanggan Test",
+        "628123456789",
+        "",
+        0,
+        ""
+      ]
+    ],
+    "Sparepart": [
+      [
+        "Kode Part",
+        "Nama Part",
+        "Stok Konsinyasi",
+        "Reorder Limit",
+        "Harga Klaim (Rp)"
+      ],
+      [
+        "PRT-CMP-01",
+        "Kompresor 1/2 PK R134a",
+        7,
+        3,
+        850000
+      ],
+      [
+        "PRT-CMP-02",
+        "Kompresor 1 PK R32 Inverter",
+        2,
+        4,
+        1450000
+      ],
+      [
+        "PRT-ESP-09",
+        "Evaaporator Coil 9000BTU",
+        1,
+        2,
+        950000
+      ],
+      [
+        "PRT-FAN-11",
+        "Motor Fan Indoor 30W",
+        15,
+        5,
+        320000
+      ],
+      [
+        "PRT-KMP-075",
+        "Part Duplikat DB",
+        5,
+        5,
+        100000
+      ],
+      [
+        "PRT-KPT-3D",
+        "Kapasitor 35uF 450V",
+        18,
+        6,
+        65000
+      ],
+      [
+        "PRT-PCB-A4",
+        "PCB Main AC Split 1 PK",
+        0,
+        2,
+        780000
+      ],
+      [
+        "PRT-REM-U2",
+        "Remote Universal AC",
+        4,
+        5,
+        85000
+      ],
+      [
+        "PRT-THR-07",
+        "Thermistor NTC 10K",
+        24,
+        10,
+        45000
+      ]
+    ],
+    "Unit Asset": [
+      [
+        "Serial Number",
+        "Model Unit",
+        "Toko",
+        "Pemilik",
+        "Status Garansi",
+        "Tgl Pembelian"
+      ],
+      [
+        "SN-ACSP-2023-00101",
+        "AC Split 1 PK Inverter SE-9000",
+        "TOK-001 — Toko Elektronik Pusat",
+        "Bpk. Hendra Gunawan",
+        "GARANSI",
+        "24/03/26, 00.36"
+      ],
+      [
+        "SN-ACSP-2023-00102",
+        "AC Split 1 PK Inverter SE-9000",
+        "TOK-001 — Toko Elektronik Pusat",
+        "Ibu Siti Maryam",
+        "NON_GARANSI",
+        "01/08/24, 00.36"
+      ],
+      [
+        "SN-ACSP-2024-00203",
+        "AC Split 1/2 PK SE-5000",
+        "TOK-002 — Elektronik Berkah Sentosa",
+        "Kafe Kopi Kina (Kapten Arif)",
+        "GARANSI",
+        "12/06/26, 00.36"
+      ],
+      [
+        "SN-ACSP-2024-00204",
+        "AC Split 1/2 PK SE-5000",
+        "TOK-002 — Elektronik Berkah Sentosa",
+        "Bpk. Rudi Hartanto",
+        "GARANSI",
+        "12/07/26, 00.36"
+      ],
+      [
+        "SN-ACSP-2024-00531",
+        "AC Split 1 PK Inverter SE-9000",
+        "TOK-006 — Toserba Elektronik Nusantara",
+        "Kafe Kopi Kina (Kapten Arif)",
+        "GARANSI",
+        "26/08/26, 00.36"
+      ],
+      [
+        "SN-ACSP-2024-00532",
+        "AC Standing Floor 5PK SF-500",
+        "TOK-006 — Toserba Elektronik Nusantara",
+        "Bpk. Rudi Hartanto",
+        "GARANSI",
+        "10/09/26, 00.36"
+      ],
+      [
+        "SN-CWAS-2022-00311",
+        "Chest Freezer 300L CF-30",
+        "TOK-003 — CV. Cahaya Elektronik",
+        "Warung Makan Bu Tini",
+        "NON_GARANSI",
+        "06/10/23, 00.36"
+      ],
+      [
+        "SN-CWAS-2024-00312",
+        "Chest Freezer 200L CF-20",
+        "TOK-003 — CV. Cahaya Elektronik",
+        "Bpk. Darmawan Yusuf",
+        "GARANSI",
+        "11/08/26, 00.36"
+      ],
+      [
+        "SN-MESC-2023-00421",
+        "Mesin Cuci Front Load 8kg FL-80",
+        "TOK-004 — Toko Sumber Rejeki Audio",
+        "Bpk. Hendra Gunawan",
+        "GARANSI",
+        "14/12/25, 00.36"
+      ],
+      [
+        "SN-MESC-2023-00422",
+        "Mesin Cuci Top Load 7kg TL-70",
+        "TOK-005 — Giant Elektronik Mall",
+        "Ibu Siti Maryam",
+        "NON_GARANSI",
+        "09/11/24, 00.36"
+      ]
+    ],
+    "Kunjungan": [
+      [
+        "Waktu",
+        "Toko",
+        "Teknisi",
+        "Metode Check-in",
+        "Catatan Stok Rusak"
+      ],
+      [
+        "10/10/26, 01.35",
+        "TOK-001 — Toko Elektronik Pusat",
+        "Ahmad Fauzi",
+        "Scan Barcode Toko",
+        ""
+      ],
+      [
+        "08/10/26, 00.36",
+        "TOK-006 — Toserba Elektronik Nusantara",
+        "Joko Prasetyo",
+        "Manual",
+        "Kunjungan rutin, tidak ada temuan kerusakan."
+      ],
+      [
+        "07/10/26, 00.36",
+        "TOK-001 — Toko Elektronik Pusat",
+        "Ahmad Fauzi",
+        "Manual",
+        "Ditemukan 2 unit AC display kipas berbunyi, direkomendasikan servis rutin."
+      ],
+      [
+        "01/10/26, 00.36",
+        "TOK-005 — Giant Elektronik Mall",
+        "Joko Prasetyo",
+        "Manual",
+        "1 unit mesin cuci display perlu penggantian kapasitor."
+      ],
+      [
+        "30/09/26, 00.36",
+        "TOK-003 — CV. Cahaya Elektronik",
+        "Slamet Riyadi",
+        "Manual",
+        "Kondisi stok display baik. 1 freezer lama perlu pemeriksaan."
+      ],
+      [
+        "28/09/26, 00.36",
+        "TOK-004 — Toko Sumber Rejeki Audio",
+        "Ahmad Fauzi",
+        "Manual",
+        "Semua unit demo normal. Pelanggan minta jadwal pemasangan baru."
+      ],
+      [
+        "20/09/26, 00.36",
+        "TOK-002 — Elektronik Berkah Sentosa",
+        "Slamet Riyadi",
+        "Manual",
+        "Kunjungan terakhir, beberapa unit perlu pengecekan berkala."
+      ]
+    ],
+    "Tiket Service": [
+      [
+        "No. Tiket",
+        "Status",
+        "Unit (SN)",
+        "Model",
+        "Toko",
+        "Status Klaim",
+        "Biaya Jasa (Rp)",
+        "Dibuat",
+        "Selesai",
+        "Parts"
+      ],
+      [
+        "SV-20261010-0001",
+        "PROSES",
+        "SN-CWAS-2024-00312",
+        "Chest Freezer 200L CF-20",
+        "TOK-003 — CV. Cahaya Elektronik",
+        "DRAFT",
+        0,
+        "10/10/26, 01.32",
+        "",
+        "PRT-THR-07 x1"
+      ],
+      [
+        "SV-20261009-0006",
+        "REQUEST",
+        "SN-ACSP-2024-00531",
+        "AC Split 1 PK Inverter SE-9000",
+        "TOK-006 — Toserba Elektronik Nusantara",
+        "DRAFT",
+        100000,
+        "10/10/26, 00.36",
+        "",
+        "PRT-REM-U2 x1"
+      ],
+      [
+        "SV-20261008-0001",
+        "PROSES",
+        "SN-ACSP-2023-00101",
+        "AC Split 1 PK Inverter SE-9000",
+        "TOK-001 — Toko Elektronik Pusat",
+        "DRAFT",
+        150000,
+        "08/10/26, 00.36",
+        "",
+        "PRT-CMP-01 x1"
+      ],
+      [
+        "SV-20261007-0002",
+        "REQUEST",
+        "SN-CWAS-2022-00311",
+        "Chest Freezer 300L CF-30",
+        "TOK-003 — CV. Cahaya Elektronik",
+        "DRAFT",
+        200000,
+        "07/10/26, 00.36",
+        "",
+        "PRT-ESP-09 x1"
+      ],
+      [
+        "SV-20260925-0003",
+        "FINISH",
+        "SN-MESC-2023-00421",
+        "Mesin Cuci Front Load 8kg FL-80",
+        "TOK-004 — Toko Sumber Rejeki Audio",
+        "DRAFT",
+        180000,
+        "28/09/26, 00.36",
+        "01/10/26, 00.36",
+        "PRT-THR-07 x1"
+      ],
+      [
+        "SV-20260920-0004",
+        "FINISH",
+        "SN-MESC-2023-00422",
+        "Mesin Cuci Top Load 7kg TL-70",
+        "TOK-005 — Giant Elektronik Mall",
+        "SUBMITTED",
+        220000,
+        "22/09/26, 00.36",
+        "26/09/26, 00.36",
+        "PRT-KPT-3D x2"
+      ],
+      [
+        "SV-20260905-0005",
+        "FINISH",
+        "SN-ACSP-2024-00203",
+        "AC Split 1/2 PK SE-5000",
+        "TOK-002 — Elektronik Berkah Sentosa",
+        "PAID",
+        120000,
+        "08/09/26, 00.36",
+        "12/09/26, 00.36",
+        "PRT-FAN-11 x1"
+      ]
+    ]
+  }
+}

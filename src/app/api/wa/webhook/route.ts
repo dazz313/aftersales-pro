@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
+import { sendGatewayMessage, labelChannel, type GatewayChannel } from '@/lib/gateway'
 
 /**
- * WhatsApp Gateway Webhook Engine (Section 6 PRD)
+ * Gateway Webhook Engine (Section 6 PRD) — WhatsApp & Telegram
  *
  * Command standard: #LAPOR [Nomor_Seri] [Kode_Sparepart] [Deskripsi_Kerusakan]
  *
  * Processing rules:
- * 1. Terima payload (teks & gambar) dari WA Gateway
+ * 1. Terima payload (teks & gambar) dari Gateway (channel WhatsApp/Telegram)
  * 2. Serial & Warranty Check: cari serial_number di unit_asset → status garansi + toko asal
  * 3. Cek stok part:
- *    - READY: kurangi stok, buat part READY, tiket + draft STTB, balas grup
+ *    - READY: kurangi stok, buat part READY, tiket + draft STTB, balas channel
  *    - KOSONG: status ORDER_PRODUSEN, notifikasi permintaan ke produsen
  */
 
@@ -34,18 +35,20 @@ function parseCommand(text: string): ParsedCommand | null {
   }
 }
 
-// POST /api/wa/webhook - menerima pesan dari WA Gateway
+// POST /api/wa/webhook - menerima pesan dari Gateway (WhatsApp / Telegram)
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const pengirim: string = body.pengirim || 'UNKNOWN'
     const pesan: string = body.pesan || ''
     const fotoTerkirim: string | null = body.foto ?? null
+    const channel: GatewayChannel = body.channel === 'TELEGRAM' ? 'TELEGRAM' : 'WHATSAPP'
 
     // Log pesan masuk (IN)
     await db.waMessage.create({
       data: {
         pengirim,
+        channel,
         tipe: 'IN',
         pesan,
         meta: JSON.stringify({ foto: fotoTerkirim }),
@@ -57,10 +60,11 @@ export async function POST(request: Request) {
     if (!cmd) {
       const replyText =
         '⚠️ Format laporan tidak dikenali.\n\nGunakan format:\n*#LAPOR [Nomor_Seri] [Kode_Sparepart] [Deskripsi_Kerusakan]*\n\nContoh:\n#LAPOR SN-ACSP-2023-00101 PRT-CMP-01 AC tidak dingin, kompresor mati'
+      const fwd = await sendGatewayMessage(channel, replyText)
       await db.waMessage.create({
-        data: { pengirim: 'WA-BOT', tipe: 'OUT', pesan: replyText, meta: JSON.stringify({ aksi: 'FORMAT_INVALID' }) },
+        data: { pengirim: 'GATEWAY-BOT', channel, tipe: 'OUT', pesan: replyText, meta: JSON.stringify({ aksi: 'FORMAT_INVALID', mode: fwd.mode }) },
       })
-      return NextResponse.json({ ok: true, reply: replyText, aksi: 'FORMAT_INVALID' })
+      return NextResponse.json({ ok: true, reply: replyText, aksi: 'FORMAT_INVALID', channel, mode: fwd.mode })
     }
 
     // ===== Step 2: Serial & Warranty Check =====
@@ -70,20 +74,22 @@ export async function POST(request: Request) {
     })
     if (!unit) {
       const replyText = `❌ Nomor seri *${cmd.serial}* tidak ditemukan di database unit asset.\nPastikan barcode unit terdaftar, atau hubungi Admin Workshop.`
+      const fwd = await sendGatewayMessage(channel, replyText)
       await db.waMessage.create({
-        data: { pengirim: 'WA-BOT', tipe: 'OUT', pesan: replyText, meta: JSON.stringify({ aksi: 'SERIAL_NOT_FOUND' }) },
+        data: { pengirim: 'GATEWAY-BOT', channel, tipe: 'OUT', pesan: replyText, meta: JSON.stringify({ aksi: 'SERIAL_NOT_FOUND', mode: fwd.mode }) },
       })
-      return NextResponse.json({ ok: true, reply: replyText, aksi: 'SERIAL_NOT_FOUND' })
+      return NextResponse.json({ ok: true, reply: replyText, aksi: 'SERIAL_NOT_FOUND', channel, mode: fwd.mode })
     }
 
     // ===== Step 3: Pengecekan Stok Part =====
     const sparepart = await db.masterSparepart.findUnique({ where: { kodePart: cmd.kodePart } })
     if (!sparepart) {
       const replyText = `❌ Kode sparepart *${cmd.kodePart}* tidak dikenali di katalog konsinyasi.\nPeriksa kembali kode part, atau hubungi Admin Workshop.`
+      const fwd = await sendGatewayMessage(channel, replyText)
       await db.waMessage.create({
-        data: { pengirim: 'WA-BOT', tipe: 'OUT', pesan: replyText, meta: JSON.stringify({ aksi: 'PART_NOT_FOUND' }) },
+        data: { pengirim: 'GATEWAY-BOT', channel, tipe: 'OUT', pesan: replyText, meta: JSON.stringify({ aksi: 'PART_NOT_FOUND', mode: fwd.mode }) },
       })
-      return NextResponse.json({ ok: true, reply: replyText, aksi: 'PART_NOT_FOUND' })
+      return NextResponse.json({ ok: true, reply: replyText, aksi: 'PART_NOT_FOUND', channel, mode: fwd.mode })
     }
 
     const noTiket = await generateNoTiket()
@@ -115,20 +121,22 @@ export async function POST(request: Request) {
 
       const replyText = `✅ ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Berhasil Terbuat.*\nPart *READY*: ${sparepart.namaPart} (sisa stok ${sparepart.stokKonsinyasi - 1}).\n📄 Link STTB (PDF): /api/sttb/${noTiket}\n\nSilakan teknisi mengangkut unit ke workshop dengan dokumen STTB tersebut.`
 
+      const fwd = await sendGatewayMessage(channel, replyText)
       await db.waMessage.create({
         data: {
-          pengirim: 'WA-BOT',
+          pengirim: 'GATEWAY-BOT',
+          channel,
           tipe: 'OUT',
           pesan: replyText,
-          meta: JSON.stringify({ noTiket, aksi: 'TIKET_DIBUAT_PART_READY', noSttb }),
+          meta: JSON.stringify({ noTiket, aksi: 'TIKET_DIBUAT_PART_READY', noSttb, mode: fwd.mode }),
         },
       })
       await logAudit({
         aksi: 'CREATE_SERVICE_REQUEST',
         entitas: 'service_request',
         entitasId: noTiket,
-        deskripsi: `Tiket otomatis via WA Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} READY (stok direserve) → status PROSES, STTB ${noSttb} diterbitkan otomatis`,
-        aktor: 'WA-BOT',
+        deskripsi: `Tiket otomatis via ${labelChannel(channel)} Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} READY (stok direserve) → status PROSES, STTB ${noSttb} diterbitkan otomatis`,
+        aktor: `${labelChannel(channel)}-BOT`,
       })
       return NextResponse.json({
         ok: true,
@@ -137,6 +145,8 @@ export async function POST(request: Request) {
         noTiket,
         noSttb,
         tiketId: ticket.id,
+        channel,
+        mode: fwd.mode,
       })
     } else {
       // ===== Part Out of Stock: ORDER_PRODUSEN + notifikasi produsen =====
@@ -154,20 +164,22 @@ export async function POST(request: Request) {
 
       const replyText = `🎫 ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Terbuat.*\n⚠️ Part *KOSONG*: ${sparepart.namaPart} (${sparepart.kodePart}).\n🔴 Notifikasi permintaan sparepart otomatis dikirim ke pihak Produsen.\n\nMenunggu pengiriman sparepart dari produsen.`
 
+      const fwd = await sendGatewayMessage(channel, replyText)
       await db.waMessage.create({
         data: {
-          pengirim: 'WA-BOT',
+          pengirim: 'GATEWAY-BOT',
+          channel,
           tipe: 'OUT',
           pesan: replyText,
-          meta: JSON.stringify({ noTiket, aksi: 'PART_ORDER_PRODUSEN', notifikasiProdusen: true }),
+          meta: JSON.stringify({ noTiket, aksi: 'PART_ORDER_PRODUSEN', notifikasiProdusen: true, mode: fwd.mode }),
         },
       })
       await logAudit({
         aksi: 'CREATE_SERVICE_REQUEST',
         entitas: 'service_request',
         entitasId: noTiket,
-        deskripsi: `Tiket otomatis via WA Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} KOSONG → ORDER_PRODUSEN, notifikasi dikirim ke produsen`,
-        aktor: 'WA-BOT',
+        deskripsi: `Tiket otomatis via ${labelChannel(channel)} Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} KOSONG → ORDER_PRODUSEN, notifikasi dikirim ke produsen`,
+        aktor: `${labelChannel(channel)}-BOT`,
       })
       return NextResponse.json({
         ok: true,
@@ -175,6 +187,8 @@ export async function POST(request: Request) {
         aksi: 'PART_ORDER_PRODUSEN',
         noTiket,
         tiketId: ticket.id,
+        channel,
+        mode: fwd.mode,
       })
     }
   } catch (error) {
@@ -183,13 +197,13 @@ export async function POST(request: Request) {
   }
 }
 
-// GET /api/wa/webhook - riwayat pesan WA (untuk simulator chat)
+// GET /api/wa/webhook - riwayat pesan gateway (untuk simulator chat, semua channel)
 export async function GET() {
   try {
     const messages = await db.waMessage.findMany({ orderBy: { createdAt: 'asc' } })
     return NextResponse.json(messages)
   } catch (error) {
-    console.error('WA webhook GET error:', error)
+    console.error('Gateway webhook GET error:', error)
     return NextResponse.json({ error: 'Gagal memuat riwayat pesan' }, { status: 500 })
   }
 }

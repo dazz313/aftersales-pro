@@ -1,4 +1,7 @@
-import type { ServiceTicket, WaMessage, AlertsResponse, DashboardData } from '@/lib/types'
+import type {
+  ServiceTicket, WaMessage, AlertsResponse, DashboardData,
+  GatewayStatus, GatewayTestResult, BackupStatus, BackupOutcome,
+} from '@/lib/types'
 
 export async function fetcher<T>(url: string): Promise<T> {
   const res = await fetch(url)
@@ -49,8 +52,33 @@ export function formatWaktu(iso: string | null | undefined): string {
   })
 }
 
-export function waSimulate(pesan: string, pengirim: string): Promise<{ ok: boolean; reply: string; aksi: string; noTiket?: string }> {
-  return postJson('/api/wa/webhook', { pesan, pengirim })
+/**
+ * Simulasi kirim pesan via Gateway (WhatsApp / Telegram).
+ * Channel dipilih di view Gateway; bot engine tetap sama (#LAPOR).
+ */
+export function gatewaySimulate(
+  pesan: string,
+  pengirim: string,
+  channel: 'WHATSAPP' | 'TELEGRAM'
+): Promise<{ ok: boolean; reply: string; aksi: string; noTiket?: string; channel: string; mode: string }> {
+  return postJson('/api/wa/webhook', { pesan, pengirim, channel })
 }
 
-export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData }
+export function fetchGatewayStatus(): Promise<GatewayStatus> {
+  return fetcher<GatewayStatus>('/api/gateway/test')
+}
+
+export function testGateway(channel: 'WHATSAPP' | 'TELEGRAM'): Promise<GatewayTestResult> {
+  return postJson('/api/gateway/test', { channel })
+}
+
+export function fetchBackupStatus(): Promise<BackupStatus> {
+  return fetcher<BackupStatus>('/api/backup/sheets')
+}
+
+export function runBackupNow(): Promise<BackupOutcome> {
+  return postJson<BackupOutcome>('/api/backup/sheets', { trigger: 'MANUAL' })
+}
+
+export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewayStatus, GatewayTestResult, BackupStatus, BackupLogItem, BackupOutcome }
+

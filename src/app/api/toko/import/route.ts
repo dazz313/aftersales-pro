@@ -6,11 +6,11 @@ import { parseCsv, validateTokoRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/li
 // GET /api/toko/import — unduh template CSV import toko
 export async function GET() {
   const csv = buildCsvTemplate(
-    ['kode_toko', 'nama_toko', 'alamat', 'kontak', 'frekuensi_visit'],
+    ['kode_toko', 'nama_toko', 'alamat', 'kontak', 'frekuensi_visit', 'barcode_toko'],
     [
-      ['TOK-101', 'Toko Elektronik Makmur', 'Jl. Sudirman No. 12, Jakarta Pusat', '021-5551234', '14'],
-      ['TOK-102', 'CV Sumber Rejeki Abadi', 'Jl. Merdeka No. 45, Bandung', '081234567890', '7'],
-      ['TOK-103', 'Toko Sinar Jaya', 'Jl. Ahmad Yani No. 8, Surabaya', 'sinarjaya@tokoku.id', '14'],
+      ['TOK-101', 'Toko Elektronik Makmur', 'Jl. Sudirman No. 12, Jakarta Pusat', '021-5551234', '14', 'BC-TOK-101'],
+      ['TOK-102', 'CV Sumber Rejeki Abadi', 'Jl. Merdeka No. 45, Bandung', '081234567890', '7', 'BC-TOK-102'],
+      ['TOK-103', 'Toko Sinar Jaya', 'Jl. Ahmad Yani No. 8, Surabaya', 'sinarjaya@tokoku.id', '14', ''],
     ]
   )
   return new Response(csv, {
@@ -50,19 +50,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: headerError }, { status: 400 })
     }
 
-    // Cek kode yang sudah ada di database
+    // Cek kode & barcode yang sudah ada di database
     const pendingRows = acc.filter((a) => a.status === 'pending')
     const codes = pendingRows.map((a) => a.kode)
-    const existing = codes.length
-      ? await db.masterToko.findMany({ where: { kodeToko: { in: codes } }, select: { kodeToko: true } })
-      : []
+    const barcodes = [...new Set(pendingRows.map((a) => a.data!.insert.barcodeToko))]
+    const [existing, existingBarcodeRows] = await Promise.all([
+      codes.length
+        ? db.masterToko.findMany({ where: { kodeToko: { in: codes } }, select: { kodeToko: true } })
+        : Promise.resolve([] as { kodeToko: string }[]),
+      barcodes.length
+        ? db.masterToko.findMany({ where: { barcodeToko: { in: barcodes } }, select: { barcodeToko: true, kodeToko: true } })
+        : Promise.resolve([] as { barcodeToko: string; kodeToko: string }[]),
+    ])
     const existingSet = new Set(existing.map((e) => e.kodeToko))
+    const barcodeOwner = new Map(existingBarcodeRows.map((b) => [b.barcodeToko, b.kodeToko]))
 
     const toInsert: typeof pendingRows = []
     const toUpdate: typeof pendingRows = []
 
     for (const a of acc) {
       if (a.status !== 'pending' || !a.data) continue
+      const owner = barcodeOwner.get(a.data.insert.barcodeToko)
+      if (owner && owner !== a.kode) {
+        a.status = 'error'
+        a.message = `Barcode "${a.data.insert.barcodeToko}" sudah dipakai toko ${owner} — gunakan barcode lain`
+        a.data = undefined
+        continue
+      }
       if (existingSet.has(a.kode)) {
         if (mode === 'update') toUpdate.push(a)
         else {

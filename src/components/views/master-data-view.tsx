@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
+import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
+import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -30,11 +32,10 @@ export default function MasterDataView() {
   const { data: userList } = useQuery<Pengguna[]>({ queryKey: ['pengguna'], queryFn: () => fetcher<Pengguna[]>('/api/pengguna') })
 
   // ===== Form states =====
-  const [tokoOpen, setTokoOpen] = useState(false)
   const [importTokoOpen, setImportTokoOpen] = useState(false)
-  const [newToko, setNewToko] = useState({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
+  const [tokoOpen, setTokoOpen] = useState(false)
   const [custOpen, setCustOpen] = useState(false)
-  const [newCust, setNewCust] = useState({ nama: '', noWa: '', alamat: '' })
+  const [stickerToko, setStickerToko] = useState<Toko | null>(null)
   const [unitOpen, setUnitOpen] = useState(false)
   const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   const [qrUnit, setQrUnit] = useState<UnitAsset | null>(null)
@@ -46,16 +47,6 @@ export default function MasterDataView() {
     queryClient.invalidateQueries({ queryKey: ['audit'] })
   }
 
-  const addToko = useMutation({
-    mutationFn: () => postJson('/api/toko', { ...newToko, frekuensiVisit: Number(newToko.frekuensiVisit), aktor: role }),
-    onSuccess: () => { invalidate(['toko', 'dashboard']); setTokoOpen(false); setNewToko({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' }); toast({ title: 'Toko teregistrasi' }) },
-    onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
-  })
-  const addCust = useMutation({
-    mutationFn: () => postJson('/api/customer', { ...newCust, aktor: role }),
-    onSuccess: () => { invalidate(['customers']); setCustOpen(false); setNewCust({ nama: '', noWa: '', alamat: '' }); toast({ title: 'Customer teregistrasi' }) },
-    onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
-  })
   const addUnit = useMutation({
     mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, aktor: role }),
     onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' }); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
@@ -84,7 +75,7 @@ export default function MasterDataView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Master Toko Mitra</CardTitle>
-              <CardDescription>Profil toko, siklus kunjungan rutin, dan status kepatuhan (ALT-01)</CardDescription>
+              <CardDescription>Profil toko, siklus kunjungan, barcode toko untuk scan kunjungan, dan kepatuhan (ALT-01)</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportTokoOpen(true)}>
@@ -107,6 +98,7 @@ export default function MasterDataView() {
                       <TableHead>Siklus</TableHead>
                       <TableHead>Visit Terakhir</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Barcode Toko</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -126,6 +118,11 @@ export default function MasterDataView() {
                           ) : (
                             <Badge variant="outline" className="gap-1 border-emerald-300 text-[10px] text-emerald-700"><MapPinCheck className="h-2.5 w-2.5" /> ON TRACK</Badge>
                           )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
+                            <Barcode className="mr-1 h-3 w-3" /> {t.barcodeToko}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -262,37 +259,9 @@ export default function MasterDataView() {
       </TabsContent>
 
       {/* ===== Dialogs ===== */}
-      <Dialog open={tokoOpen} onOpenChange={setTokoOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Tambah Toko Mitra</DialogTitle><DialogDescription>Registrasi toko baru untuk jaringan after-sales.</DialogDescription></DialogHeader>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Kode Toko</Label><Input value={newToko.kodeToko} onChange={(e) => setNewToko({ ...newToko, kodeToko: e.target.value.toUpperCase() })} placeholder="TOK-007" className="font-mono" /></div>
-            <div className="space-y-1.5"><Label>Nama Toko</Label><Input value={newToko.namaToko} onChange={(e) => setNewToko({ ...newToko, namaToko: e.target.value })} placeholder="cth: Elektronik Sejahtera" /></div>
-            <div className="space-y-1.5 sm:col-span-2"><Label>Alamat</Label><Input value={newToko.alamat} onChange={(e) => setNewToko({ ...newToko, alamat: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Kontak</Label><Input value={newToko.kontak} onChange={(e) => setNewToko({ ...newToko, kontak: e.target.value })} placeholder="021-xxx / 08xx" /></div>
-            <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" value={newToko.frekuensiVisit} onChange={(e) => setNewToko({ ...newToko, frekuensiVisit: e.target.value })} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTokoOpen(false)}>Batal</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newToko.kodeToko || !newToko.namaToko || addToko.isPending} onClick={() => addToko.mutate()}><Plus className="mr-1 h-4 w-4" /> Simpan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={custOpen} onOpenChange={setCustOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Tambah Customer</DialogTitle><DialogDescription>Data pemilik unit (end-user).</DialogDescription></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5"><Label>Nama</Label><Input value={newCust.nama} onChange={(e) => setNewCust({ ...newCust, nama: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>No. WhatsApp</Label><Input value={newCust.noWa} onChange={(e) => setNewCust({ ...newCust, noWa: e.target.value })} placeholder="628xxx" /></div>
-            <div className="space-y-1.5"><Label>Alamat</Label><Input value={newCust.alamat} onChange={(e) => setNewCust({ ...newCust, alamat: e.target.value })} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCustOpen(false)}>Batal</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newCust.nama || addCust.isPending} onClick={() => addCust.mutate()}><Plus className="mr-1 h-4 w-4" /> Simpan</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Add Toko & Add Customer — komponen shared (dipakai juga di Akses Cepat Dashboard) */}
+      <AddTokoDialog open={tokoOpen} onOpenChange={setTokoOpen} />
+      <AddCustomerDialog open={custOpen} onOpenChange={setCustOpen} />
 
       <Dialog open={unitOpen} onOpenChange={setUnitOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -376,7 +345,10 @@ export default function MasterDataView() {
         }}
       />
 
-      {/* Dialog stiker barcode */}
+      {/* Dialog stiker barcode toko (Code-128 asli — dipindai saat kunjungan) */}
+      <TokoBarcodeSticker toko={stickerToko} onOpenChange={(o) => !o && setStickerToko(null)} />
+
+      {/* Dialog stiker barcode unit */}
       <Dialog open={!!qrUnit} onOpenChange={(o) => !o && setQrUnit(null)}>
         <DialogContent className="sm:max-w-sm">
           {qrUnit && (

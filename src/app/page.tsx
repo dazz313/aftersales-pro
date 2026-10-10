@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   LayoutDashboard,
   Wrench,
-  MessageSquareText,
+  Radio,
   MapPin,
   Package,
   Database,
@@ -20,22 +20,24 @@ import {
 import { cn } from '@/lib/utils'
 import DashboardView from '@/components/views/dashboard-view'
 import ServiceView from '@/components/views/service-view'
-import WaBotView from '@/components/views/wa-bot-view'
+import GatewayView from '@/components/views/gateway-view'
 import FieldOpsView from '@/components/views/field-ops-view'
 import InventoryView from '@/components/views/inventory-view'
 import MasterDataView from '@/components/views/master-data-view'
 import ClaimView from '@/components/views/claim-view'
 import SettingsView from '@/components/views/settings-view'
+import AutoBackupWatcher from '@/components/auto-backup-watcher'
+import QuickActions from '@/components/quick-entry'
 
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
-  { key: 'wa-bot', label: 'WA Bot Gateway', icon: MessageSquareText, desc: 'Laporan kerusakan via WhatsApp' },
+  { key: 'gateway', label: 'Gateway', icon: Radio, desc: 'Bot WhatsApp & Telegram' },
   { key: 'service', label: 'Service Tiket', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
   { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
   { key: 'inventory', label: 'Stok Konsinyasi', icon: Package, desc: 'Sparepart titipan produsen' },
   { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
-  { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil perusahaan & audit log' },
+  { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, Backup & audit log' },
 ]
 
 const ROLE_COLORS: Record<RoleKey, string> = {
@@ -98,6 +100,8 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen w-full bg-slate-100">
+      {/* Backup otomatis ke Google Spreadsheet (berjalan di background) */}
+      <AutoBackupWatcher />
       {/* Sidebar desktop */}
       <aside className="sticky top-0 hidden h-screen w-72 shrink-0 bg-slate-900 lg:block">
         <SidebarContent />
@@ -151,9 +155,14 @@ export default function Home() {
 
         {/* Content */}
         <main className="flex-1 p-4 sm:p-6 pb-10">
-          {view === 'dashboard' && <DashboardView />}
+          {view === 'dashboard' && (
+            <div className="space-y-4">
+              <QuickActions />
+              <DashboardView />
+            </div>
+          )}
           {view === 'service' && <ServiceView />}
-          {view === 'wa-bot' && <WaBotView />}
+          {view === 'gateway' && <GatewayView />}
           {view === 'field-ops' && <FieldOpsView />}
           {view === 'inventory' && <InventoryView />}
           {view === 'master' && <MasterDataView />}

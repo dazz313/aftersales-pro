@@ -172,6 +172,7 @@ export const TOKO_ALIASES: Record<string, string> = {
   kontak: 'kontak|contact|telp|telepon|no_telp|notelp|no_hp|nohp|hp|wa|whatsapp|no_wa',
   frekuensiVisit: 'frekuensi_visit|frekuensivisit|frekuensi|siklus|siklus_visit|frekuensi_kunjungan|visit_hari',
   tglVisitTerakhir: 'tgl_visit_terakhir|tglvisitterakhir|tgl_visit|tglvisit|visit_terakhir|last_visit|tanggal_visit_terakhir',
+  barcodeToko: 'barcode_toko|barcodetoko|barcode|kode_barcode|barcode kunjungan',
 }
 
 export const TOKO_REQUIRED_LABELS: Record<string, string> = {
@@ -186,6 +187,7 @@ export interface TokoInsertData {
   kontak: string | null
   frekuensiVisit: number
   tglVisitTerakhir: Date | null
+  barcodeToko: string
 }
 
 export interface TokoUpdateData {
@@ -194,6 +196,7 @@ export interface TokoUpdateData {
   kontak?: string
   frekuensiVisit?: number
   tglVisitTerakhir?: Date
+  barcodeToko?: string
 }
 
 export interface TokoValidated {
@@ -225,12 +228,14 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
 
   const acc: ValidatedRow<TokoValidated>[] = []
   const seen = new Set<string>()
+  const seenBarcode = new Set<string>()
 
   rows.forEach((r, idx) => {
     const rowNum = idx + 2 // +1 header, +1 karena 1-indexed
     const get = (f: string) => (map[f] === undefined ? '' : (r[map[f]] ?? '').trim())
     const kode = get('kodeToko')
     const nama = get('namaToko')
+    const barcode = get('barcodeToko').toUpperCase()
 
     if (!kode) {
       acc.push({ row: rowNum, kode, nama, status: 'error', message: 'Kode toko kosong — kolom kode wajib diisi' })
@@ -245,6 +250,14 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
       return
     }
     seen.add(kode)
+
+    // Barcode per toko: default BC-[KODETOKO] jika kolom kosong
+    const barcodeToko = (barcode || `BC-${kode.toUpperCase()}`).trim()
+    if (seenBarcode.has(barcodeToko)) {
+      acc.push({ row: rowNum, kode, nama, status: 'error', message: `Barcode "${barcodeToko}" muncul lebih dari satu kali di dalam file` })
+      return
+    }
+    seenBarcode.add(barcodeToko)
 
     let frekuensiVisit = 14
     const fv = get('frekuensiVisit')
@@ -276,13 +289,14 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
       nama,
       status: 'pending',
       data: {
-        insert: { kodeToko: kode, namaToko: nama, alamat: alamat || null, kontak: kontak || null, frekuensiVisit, tglVisitTerakhir },
+        insert: { kodeToko: kode, namaToko: nama, alamat: alamat || null, kontak: kontak || null, frekuensiVisit, tglVisitTerakhir, barcodeToko },
         update: {
           namaToko: nama,
           ...(alamat ? { alamat } : {}),
           ...(kontak ? { kontak } : {}),
           ...(fv ? { frekuensiVisit } : {}),
           ...(tglVisitTerakhir ? { tglVisitTerakhir } : {}),
+          ...(barcode ? { barcodeToko } : {}),
         },
       },
     })
