@@ -169,3 +169,25 @@ Stage Summary:
 - File baru: src/app/api/surat-jalan/route.ts, src/components/surat-jalan-dialog.tsx
 - File diubah: src/components/views/claim-view.tsx
 - Tanpa perubahan schema/prisma; kompatibel desktop & MCP (route terlindungi middleware, sesi cookie/Bearer)
+
+---
+Task ID: 8
+Agent: Main Agent (Super Z)
+Task: Dashboard KPI/chart/alert jadi clickable — klik data di Dashboard langsung menuju view data sumber (dengan filter konteks otomatis)
+
+Work Log:
+- Mekanisme drill-down: store.ts ditambah NavIntent (serviceStatus/serviceGaransi/serviceModel/klaimTab/inventoryFilter/fieldOpsFilter + ts) + navigateTo(view, intent) + clearNavIntent(); navigasi & konteks filter di-set atomik dalam satu update store
+- Dashboard (dashboard-view.tsx): KpiCard dapat prop onClick → Card jadi role="button" + tabIndex + aria-label + keyboard Enter/Space + hover lift/border emerald + hint "Lihat sumber ↗" persisten; 8 KPI terhubung: Tiket REQUEST/PROSES/FINISH → Service (tab status), Klaim Tertahan → Klaim tab DRAFT, Stok Kritis → Stok filter KRITIS, Toko Telat Visit → Field Ops filter TERLAMBAT, Kunjungan 7 Hari → Field Ops scroll riwayat, Total Tiket → Service SEMUA
+- Grafik: kartu Tren 14 hari diberi tombol "Lihat Tiket"; Pie garansi — klik irisan ATAU legenda → Service filter garansi; Bar tren per model — klik batang → Service filter model (cursor pointer + hint di deskripsi)
+- Alert Engine: baris alert ALT-01..04 jadi button clickable → ALT-01 Field Ops terlambat, ALT-02 Service REQUEST, ALT-03 Stok kritis, ALT-04 Klaim DRAFT (chevron kanan + aria-label)
+- View tujuan mengonsumsi intent via useEffect (dibungkus setTimeout callback agar lolos aturan react-hooks/set-state-in-effect; navIntent dibersihkan setelah dikonsumsi agar tidak re-apply)
+- ServiceView: filter tambahan garansi (unitAsset.statusGaransi) & model (unitAsset.modelUnit) + chip "Filter dari Dashboard" yang bisa dihapus (X) + pesan empty state khusus filter aktif; ClaimView: Tabs jadi controlled (klaimTab) agar bisa diarahkan dari KPI; InventoryView: stokFilter SEMUA/KRITIS/KOSONG memfilter tabel + chip + empty row; FieldOpsView: onlyLate memfilter grid kepatuhan + chip + scrollIntoView ke #kepatuhan-visit / #riwayat-kunjungan
+- Lint: awalnya 3 error react-hooks/set-state-in-effect → diperbaiki pola setTimeout; akhirnya bersih
+- Verifikasi Agent Browser (sesi dashclick, login budi/admin123): 8/8 KPI button + baris alert button terdeteksi snapshot; klik REQUEST → Service tab "REQ (2)" ✓; Klaim Tertahan → tab "DRAFT (1)" ✓; Stok Kritis → chip "Di Bawah ROP" ✓; Toko Telat Visit → chip "Hanya TOKO TERLAMBAT · 0 toko" + empty state ✓; Kunjungan 7 Hari → riwayat tersedia ✓; Total Tiket → "Semua (6)" ✓; FINISH → "FINISH (3)" ✓; alert ALT-02 → REQ ✓; alert ALT-04 → DRAFT ✓; klik sektor pie → chip "Garansi: Ya" ✓; klik batang → chip "Model: AC Split 1 PK Inverter SE-9000" ✓; tombol Lihat Tiket → Semua ✓; hapus chip via X ✓; keyboard Enter pada card PROSES → tab PROSES ✓; tab manual tetap berfungsi (dispatch pointer lengkap) ✓
+- Catatan: pipeline mouse agent-browser flaky (pernah tercatat di Task 5) → verifikasi utama via eval-dispatch; klik tab Radix butuh pointerdown+mousedown+click sintetis (artefak uji, bukan bug app)
+- Screenshot desktop & iPhone 14: layout utuh, hint "Lihat sumber ↗" tampil, zero console error; dev.log bersih; artefak uji dihapus
+
+Stage Summary:
+- Semua angka/grafik/alert di Dashboard kini bisa diklik → langsung membuka view data sumber dengan filter yang tepat sudah aktif (chip bisa dihapus), lengkap dengan akses keyboard & aria-label
+- File diubah: src/lib/store.ts, src/components/views/{dashboard-view,service-view,claim-view,inventory-view,field-ops-view}.tsx
+- Tanpa perubahan schema/db/API; kompatibel desktop & MCP; kredensial tidak berubah

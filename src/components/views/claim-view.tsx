@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatRupiah, formatTanggal, type ServiceTicket } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -27,10 +27,23 @@ const TAB_STYLES: Record<string, string> = {
 export default function ClaimView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role } = useAppStore()
+  const { role, navIntent, clearNavIntent } = useAppStore()
   const [exporting, setExporting] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [sjOpen, setSjOpen] = useState(false)
+  // Tab klaim dikontrol agar bisa diarahkan dari Dashboard (KPI "Klaim Tertahan")
+  const [klaimTab, setKlaimTab] = useState<'DRAFT' | 'SUBMITTED' | 'PAID'>('DRAFT')
+
+  // Konsumsi navIntent dari Dashboard → buka tab klaim yang diminta
+  // (dijalankan di callback async agar tidak setState sinkron di effect body)
+  useEffect(() => {
+    if (!navIntent) return
+    const t = setTimeout(() => {
+      if (navIntent.klaimTab) setKlaimTab(navIntent.klaimTab)
+      clearNavIntent()
+    }, 0)
+    return () => clearTimeout(t)
+  }, [navIntent, clearNavIntent])
 
   const { data: tickets, isLoading } = useQuery<ServiceTicket[]>({
     queryKey: ['service-tickets'],
@@ -277,7 +290,7 @@ export default function ClaimView() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="DRAFT">
+          <Tabs value={klaimTab} onValueChange={(v) => setKlaimTab(v as 'DRAFT' | 'SUBMITTED' | 'PAID')}>
             <TabsList>
               {KLAIM_TABS.map((t) => (
                 <TabsTrigger key={t} value={t} className={cn('data-[state=active]:bg-white')}>

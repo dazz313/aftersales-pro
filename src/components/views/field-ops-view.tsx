@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatWaktu, type Toko, type Pengguna, type Kunjungan } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap } from 'lucide-react'
+import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LookupResult {
@@ -30,7 +30,7 @@ interface LookupResult {
 export default function FieldOpsView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role } = useAppStore()
+  const { role, navIntent, clearNavIntent } = useAppStore()
 
   // ===== State scan kunjungan otomatis (barcode per toko) =====
   const [teknisiScanId, setTeknisiScanId] = useState('')
@@ -49,6 +49,24 @@ export default function FieldOpsView() {
   const [teknisiId, setTeknisiId] = useState('')
   const [catatanManual, setCatatanManual] = useState('')
   const [fotoFile, setFotoFile] = useState('')
+  // Filter drill-down dari Dashboard (KPI "Toko Telat Visit")
+  const [onlyLate, setOnlyLate] = useState(false)
+
+  // Konsumsi navIntent dari Dashboard → filter toko terlambat / scroll ke riwayat
+  // (dijalankan di callback async agar tidak setState sinkron di effect body)
+  useEffect(() => {
+    if (!navIntent) return
+    const t = setTimeout(() => {
+      if (navIntent.fieldOpsFilter === 'terlambat') {
+        setOnlyLate(true)
+        document.getElementById('kepatuhan-visit')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else if (navIntent.fieldOpsFilter === 'kunjungan') {
+        document.getElementById('riwayat-kunjungan')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      clearNavIntent()
+    }, 250)
+    return () => clearTimeout(t)
+  }, [navIntent, clearNavIntent])
 
   const { data: tokoList, isLoading: tokoLoading } = useQuery<Toko[]>({
     queryKey: ['toko'],
@@ -64,6 +82,10 @@ export default function FieldOpsView() {
   })
 
   const teknisiOnly = useMemo(() => (teknisiList ?? []).filter((t) => t.role === 'TEKNISI'), [teknisiList])
+  const tokoTampil = useMemo(
+    () => (onlyLate ? (tokoList ?? []).filter((t) => t.visitTerlambat) : tokoList ?? []),
+    [tokoList, onlyLate]
+  )
 
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ['kunjungan'] })
@@ -366,21 +388,43 @@ export default function FieldOpsView() {
       </Dialog>
 
       {/* Peta kepatuhan kunjungan */}
-      <Card>
+      <Card id="kepatuhan-visit">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Navigation className="h-4 w-4 text-emerald-600" /> Kepatuhan Jadwal Kunjungan Toko
           </CardTitle>
           <CardDescription>ALT-01: toko harus dikunjungi sesuai siklus (frekuensi visit). Gunakan Scan Kunjungan di atas untuk check-in otomatis via barcode toko.</CardDescription>
+          {onlyLate && (
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-xs text-slate-500">Filter dari Dashboard:</span>
+              <Badge variant="outline" className="gap-1 border-rose-300 bg-rose-50 text-rose-700">
+                Hanya TOKO TERLAMBAT · {tokoTampil.length} toko
+                <button
+                  type="button"
+                  aria-label="Tampilkan semua toko"
+                  onClick={() => setOnlyLate(false)}
+                  className="ml-0.5 rounded-full p-0.5 hover:bg-rose-100"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {tokoLoading ? (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
             </div>
+          ) : tokoTampil.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-10 text-center">
+              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+              <p className="text-sm font-medium text-slate-700">Tidak ada toko yang terlambat visit</p>
+              <p className="text-xs text-slate-500">{onlyLate ? 'Semua toko ON TRACK — hapus filter untuk melihat seluruh toko.' : 'Belum ada data toko terdaftar.'}</p>
+            </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {(tokoList ?? []).map((t) => {
+              {tokoTampil.map((t) => {
                 const late = t.visitTerlambat
                 return (
                   <div key={t.id} className={cn('rounded-xl border p-4 transition hover:shadow-sm', late ? 'border-rose-200 bg-rose-50/50' : 'bg-white')}>
@@ -420,7 +464,7 @@ export default function FieldOpsView() {
       </Card>
 
       {/* Riwayat kunjungan */}
-      <Card>
+      <Card id="riwayat-kunjungan">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-4 w-4 text-slate-500" /> Riwayat Kunjungan Onsite

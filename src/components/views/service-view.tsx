@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatRupiah, formatTanggal, formatWaktu, type ServiceTicket, type UnitAsset, type Sparepart } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -37,12 +37,28 @@ const KLAIM_STYLES: Record<string, { label: string; cls: string }> = {
 export default function ServiceView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role } = useAppStore()
+  const { role, navIntent, clearNavIntent } = useAppStore()
   const [tab, setTab] = useState('SEMUA')
+  // Filter drill-down dari Dashboard (KPI garansi / klik batang tren model)
+  const [garansiFilter, setGaransiFilter] = useState<'SEMUA' | 'GARANSI' | 'NON_GARANSI'>('SEMUA')
+  const [modelFilter, setModelFilter] = useState<string | null>(null)
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
   const [finishTarget, setFinishTarget] = useState<ServiceTicket | null>(null)
   const [notaFile, setNotaFile] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+
+  // Konsumsi navIntent dari Dashboard → terapkan filter lalu bersihkan
+  // (dijalankan di callback async agar tidak setState sinkron di effect body)
+  useEffect(() => {
+    if (!navIntent) return
+    const t = setTimeout(() => {
+      if (navIntent.serviceStatus) setTab(navIntent.serviceStatus)
+      if (navIntent.serviceGaransi) setGaransiFilter(navIntent.serviceGaransi)
+      if (navIntent.serviceModel) setModelFilter(navIntent.serviceModel)
+      clearNavIntent()
+    }, 0)
+    return () => clearTimeout(t)
+  }, [navIntent, clearNavIntent])
 
   const { data: tickets, isLoading } = useQuery<ServiceTicket[]>({
     queryKey: ['service-tickets'],
@@ -81,8 +97,13 @@ export default function ServiceView() {
 
   const filtered = useMemo(() => {
     if (!tickets) return []
-    return tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
-  }, [tickets, tab])
+    let list = tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
+    if (garansiFilter !== 'SEMUA') list = list.filter((t) => t.unitAsset.statusGaransi === garansiFilter)
+    if (modelFilter) list = list.filter((t) => t.unitAsset.modelUnit === modelFilter)
+    return list
+  }, [tickets, tab, garansiFilter, modelFilter])
+
+  const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null
 
   const counts = useMemo(() => {
     const c = { SEMUA: 0, REQUEST: 0, PROSES: 0, FINISH: 0 }
@@ -161,12 +182,45 @@ export default function ServiceView() {
           </Tabs>
         </CardHeader>
         <CardContent>
+          {hasDrilldown && (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-slate-500">Filter dari Dashboard:</span>
+              {garansiFilter !== 'SEMUA' && (
+                <Badge variant="outline" className="gap-1 border-emerald-300 bg-emerald-50 text-emerald-700">
+                  Garansi: {garansiFilter === 'GARANSI' ? 'Ya' : 'Tidak'}
+                  <button
+                    type="button"
+                    aria-label="Hapus filter garansi"
+                    onClick={() => setGaransiFilter('SEMUA')}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-emerald-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {modelFilter && (
+                <Badge variant="outline" className="max-w-64 gap-1 border-teal-300 bg-teal-50 text-teal-700">
+                  <span className="truncate">Model: {modelFilter}</span>
+                  <button
+                    type="button"
+                    aria-label="Hapus filter model"
+                    onClick={() => setModelFilter(null)}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-teal-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+            </div>
+          )}
           {isLoading ? (
             <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
               <Wrench className="h-8 w-8 text-slate-300" />
-              <p className="text-sm text-slate-500">Tidak ada tiket pada status ini.</p>
+              <p className="text-sm text-slate-500">
+                {hasDrilldown ? 'Tidak ada tiket yang cocok dengan filter aktif.' : 'Tidak ada tiket pada status ini.'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">

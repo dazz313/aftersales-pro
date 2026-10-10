@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatRupiah, type Sparepart } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -15,18 +15,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
-import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload } from 'lucide-react'
+import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function InventoryView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role } = useAppStore()
+  const { role, navIntent, clearNavIntent } = useAppStore()
   const [restockTarget, setRestockTarget] = useState<Sparepart | null>(null)
   const [restockQty, setRestockQty] = useState('10')
   const [roFormOpen, setRoFormOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
+  // Filter drill-down dari Dashboard (KPI "Stok Kritis (ROP)")
+  const [stokFilter, setStokFilter] = useState<'SEMUA' | 'KRITIS' | 'KOSONG'>('SEMUA')
+
+  // Konsumsi navIntent dari Dashboard → terapkan filter stok
+  // (dijalankan di callback async agar tidak setState sinkron di effect body)
+  useEffect(() => {
+    if (!navIntent) return
+    const t = setTimeout(() => {
+      if (navIntent.inventoryFilter === 'kritis') setStokFilter('KRITIS')
+      if (navIntent.inventoryFilter === 'kosong') setStokFilter('KOSONG')
+      clearNavIntent()
+    }, 0)
+    return () => clearTimeout(t)
+  }, [navIntent, clearNavIntent])
 
   const { data: parts, isLoading } = useQuery<Sparepart[]>({
     queryKey: ['spareparts'],
@@ -69,6 +83,12 @@ export default function InventoryView() {
 
   const kritis = (parts ?? []).filter((p) => p.ropAlert)
   const kosong = (parts ?? []).filter((p) => p.kosong)
+  const tampilParts = useMemo(() => {
+    const list = parts ?? []
+    if (stokFilter === 'KRITIS') return list.filter((p) => p.ropAlert)
+    if (stokFilter === 'KOSONG') return list.filter((p) => p.kosong)
+    return list
+  }, [parts, stokFilter])
   const nilaiTotal = (parts ?? []).reduce((a, p) => a + p.stokKonsinyasi * p.hargaKlaim, 0)
   const reorderDraft = kritis.map((p) => ({
     kodePart: p.kodePart,
@@ -139,6 +159,22 @@ export default function InventoryView() {
             </div>
           </CardHeader>
           <CardContent>
+            {stokFilter !== 'SEMUA' && (
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-slate-500">Filter dari Dashboard:</span>
+                <Badge variant="outline" className="gap-1 border-amber-300 bg-amber-50 text-amber-800">
+                  {stokFilter === 'KRITIS' ? 'Di Bawah ROP (Kritis)' : 'Stok Kosong'} · {tampilParts.length} item
+                  <button
+                    type="button"
+                    aria-label="Hapus filter stok, tampilkan semua"
+                    onClick={() => setStokFilter('SEMUA')}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-amber-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              </div>
+            )}
             {isLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
@@ -154,7 +190,13 @@ export default function InventoryView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(parts ?? []).map((p) => {
+                    {tampilParts.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="py-8 text-center text-sm text-slate-500">
+                          Tidak ada item yang cocok dengan filter aktif.
+                        </TableCell>
+                      </TableRow>
+                    ) : tampilParts.map((p) => {
                       const pct = Math.min((p.stokKonsinyasi / Math.max(p.reorderLimit * 3, 1)) * 100, 100)
                       return (
                         <TableRow key={p.id} className={cn(p.kosong && 'bg-rose-50/60', p.ropAlert && !p.kosong && 'bg-amber-50/50')}>
