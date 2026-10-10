@@ -18,7 +18,7 @@ import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function MasterDataView() {
@@ -40,7 +40,9 @@ export default function MasterDataView() {
   const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   const [qrUnit, setQrUnit] = useState<UnitAsset | null>(null)
   const [userOpen, setUserOpen] = useState(false)
-  const [newUser, setNewUser] = useState({ nama: '', email: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
+  const [newUser, setNewUser] = useState({ nama: '', email: '', username: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
+  const [resetPwUser, setResetPwUser] = useState<Pengguna | null>(null)
+  const [resetPwValue, setResetPwValue] = useState('')
 
   const invalidate = (keys: string[]) => {
     keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }))
@@ -53,8 +55,18 @@ export default function MasterDataView() {
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const addUser = useMutation({
-    mutationFn: () => postJson('/api/pengguna', { ...newUser, aktor: role }),
-    onSuccess: () => { invalidate(['pengguna']); setUserOpen(false); setNewUser({ nama: '', email: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' }); toast({ title: 'Karyawan ditambahkan' }) },
+    mutationFn: () => postJson('/api/pengguna', { ...newUser, username: newUser.username.trim() || undefined, password: newUser.password.trim() || undefined, aktor: role }),
+    onSuccess: () => { invalidate(['pengguna']); setUserOpen(false); setNewUser({ nama: '', email: '', username: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' }); toast({ title: 'Karyawan ditambahkan', description: 'Akun login siap digunakan.' }) },
+    onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
+  })
+  const updateUser = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson(`/api/pengguna/${id}`, { ...data, aktor: role }, 'PATCH'),
+    onSuccess: () => { invalidate(['pengguna']); toast({ title: 'Akun diperbarui' }) },
+    onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
+  })
+  const resetPw = useMutation({
+    mutationFn: () => postJson(`/api/pengguna/${resetPwUser!.id}`, { password: resetPwValue, aktor: role }, 'PATCH'),
+    onSuccess: () => { invalidate(['pengguna']); setResetPwUser(null); setResetPwValue(''); toast({ title: 'Password direset', description: 'Karyawan dapat login dengan password baru.' }) },
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
 
@@ -239,17 +251,27 @@ export default function MasterDataView() {
               {(userList ?? []).map((u) => (
                 <div key={u.id} className="flex items-start gap-3 rounded-xl border p-4">
                   <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white',
-                    u.role === 'ADMIN_WORKSHOP' ? 'bg-emerald-600' : u.role === 'TEKNISI' ? 'bg-amber-500' : u.role === 'MANAGER' ? 'bg-violet-600' : 'bg-teal-600')}>
+                    !u.aktif ? 'bg-slate-400' : u.role === 'ADMIN_WORKSHOP' ? 'bg-emerald-600' : u.role === 'TEKNISI' ? 'bg-amber-500' : u.role === 'MANAGER' ? 'bg-violet-600' : 'bg-teal-600')}>
                     {u.nama.slice(0, 1).toUpperCase()}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-slate-800">{u.nama}</p>
                     <p className="truncate text-xs text-slate-500">{u.email}</p>
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       <Badge variant="outline" className="text-[9px]">{u.role.replace('_', ' ')}</Badge>
+                      {u.username && <Badge variant="outline" className="font-mono text-[9px]">@{u.username}</Badge>}
                       {u.wilayahKerja && <Badge variant="outline" className="text-[9px]">Wil. {u.wilayahKerja}</Badge>}
                       {u.jumlahKunjungan != null && u.role === 'TEKNISI' && <Badge variant="outline" className="text-[9px]">{u.jumlahKunjungan} kunjungan</Badge>}
+                      {!u.aktif && <Badge variant="outline" className="border-red-300 bg-red-50 text-[9px] text-red-700">Nonaktif</Badge>}
                     </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-emerald-700" onClick={() => { setResetPwUser(u); setResetPwValue('') }} aria-label={`Reset password ${u.nama}`} title="Reset password login">
+                      <KeyRound className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className={cn('h-7 w-7 text-slate-500', u.aktif ? 'hover:text-red-600' : 'hover:text-emerald-600')} onClick={() => updateUser.mutate({ id: u.id, data: { aktif: !u.aktif } })} aria-label={u.aktif ? `Nonaktifkan akun ${u.nama}` : `Aktifkan akun ${u.nama}`} title={u.aktif ? 'Nonaktifkan akun (tidak bisa login)' : 'Aktifkan akun'} disabled={updateUser.isPending}>
+                      <Power className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -308,6 +330,8 @@ export default function MasterDataView() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5"><Label>Nama</Label><Input value={newUser.nama} onChange={(e) => setNewUser({ ...newUser, nama: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Username (opsional)</Label><Input value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} placeholder="otomatis dari email" /></div>
+            <div className="space-y-1.5"><Label>Password (opsional)</Label><Input type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="default: aftersales123" /></div>
             <div className="space-y-1.5">
               <Label>Peran</Label>
               <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v })}>
@@ -326,6 +350,35 @@ export default function MasterDataView() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setUserOpen(false)}>Batal</Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newUser.nama || !newUser.email || addUser.isPending} onClick={() => addUser.mutate()}><Plus className="mr-1 h-4 w-4" /> Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog reset password karyawan */}
+      <Dialog open={!!resetPwUser} onOpenChange={(o) => { if (!o) setResetPwUser(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Reset Password Login</DialogTitle>
+            <DialogDescription>
+              Setel password baru untuk <span className="font-medium text-slate-700">{resetPwUser?.nama}</span> ({resetPwUser?.email}).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label htmlFor="reset-password">Password Baru</Label>
+            <Input
+              id="reset-password"
+              type="text"
+              value={resetPwValue}
+              onChange={(e) => setResetPwValue(e.target.value)}
+              placeholder="minimal 6 karakter"
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetPwUser(null)}>Batal</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={resetPwValue.length < 6 || resetPw.isPending} onClick={() => resetPw.mutate()}>
+              Simpan Password
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

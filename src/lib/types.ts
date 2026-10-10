@@ -55,6 +55,7 @@ export interface Pengguna {
   id: number
   nama: string
   email: string
+  username?: string | null
   role: 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN'
   noWa: string | null
   wilayahKerja: string | null

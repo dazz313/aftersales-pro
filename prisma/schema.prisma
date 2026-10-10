@@ -14,6 +14,8 @@ model Pengguna {
   id           Int         @id @default(autoincrement())
   nama         String
   email        String      @unique
+  username     String?     @unique // login alternatif selain email
+  passwordHash String?     // scrypt: scrypt$<salt>$<hash> (null = belum bisa login)
   role         String      @default("TEKNISI") // ADMIN_WORKSHOP | TEKNISI | MANAGER | PRODUSEN
   noWa         String?
   wilayahKerja String? // pemetaan wilayah kerja teknisi

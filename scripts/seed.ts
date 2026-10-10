@@ -3,8 +3,18 @@
  * Berdasarkan PRD: Systems Automation for After-Sales Operations & Inventory Management
  */
 import { PrismaClient } from '@prisma/client'
+import { randomBytes, scryptSync } from 'node:crypto'
 
 const prisma = new PrismaClient()
+
+/** Hash password scrypt (format sama dengan src/lib/auth-node.ts) */
+function hashPassword(plain: string): string {
+  const salt = randomBytes(16)
+  const hash = scryptSync(plain, salt, 64)
+  return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`
+}
+const PW_ADMIN = hashPassword('admin123')
+const PW_DEFAULT = hashPassword('aftersales123')
 
 function daysAgo(n: number): Date {
   const d = new Date()
@@ -43,24 +53,24 @@ async function main() {
 
   // ============ PENGGUNA / KARYAWAN ============
   const admin = await prisma.pengguna.create({
-    data: { nama: 'Budi Santoso', email: 'budi@teknikjaya.co.id', role: 'ADMIN_WORKSHOP', noWa: '6281234567890' },
+    data: { nama: 'Budi Santoso', email: 'budi@teknikjaya.co.id', username: 'budi', passwordHash: PW_ADMIN, role: 'ADMIN_WORKSHOP', noWa: '6281234567890' },
   })
   const teknisi1 = await prisma.pengguna.create({
-    data: { nama: 'Ahmad Fauzi', email: 'ahmad@teknikjaya.co.id', role: 'TEKNISI', noWa: '6281234567891', wilayahKerja: 'Jakarta Timur' },
+    data: { nama: 'Ahmad Fauzi', email: 'ahmad@teknikjaya.co.id', username: 'ahmad', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567891', wilayahKerja: 'Jakarta Timur' },
   })
   const teknisi2 = await prisma.pengguna.create({
-    data: { nama: 'Slamet Riyadi', email: 'slamet@teknikjaya.co.id', role: 'TEKNISI', noWa: '6281234567892', wilayahKerja: 'Bekasi' },
+    data: { nama: 'Slamet Riyadi', email: 'slamet@teknikjaya.co.id', username: 'slamet', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567892', wilayahKerja: 'Bekasi' },
   })
   const teknisi3 = await prisma.pengguna.create({
-    data: { nama: 'Joko Prasetyo', email: 'joko@teknikjaya.co.id', role: 'TEKNISI', noWa: '6281234567893', wilayahKerja: 'Tangerang' },
+    data: { nama: 'Joko Prasetyo', email: 'joko@teknikjaya.co.id', username: 'joko', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567893', wilayahKerja: 'Tangerang' },
   })
   await prisma.pengguna.create({
-    data: { nama: 'Ir. Hartono Wijaya', email: 'hartono@teknikjaya.co.id', role: 'MANAGER', noWa: '6281234567894' },
+    data: { nama: 'Ir. Hartono Wijaya', email: 'hartono@teknikjaya.co.id', username: 'hartono', passwordHash: PW_DEFAULT, role: 'MANAGER', noWa: '6281234567894' },
   })
   await prisma.pengguna.create({
-    data: { nama: 'PT. Sinar Elektronik Mandiri', email: 'service@sinaelektronik.co.id', role: 'PRODUSEN', noWa: '6281234567895' },
+    data: { nama: 'PT. Sinar Elektronik Mandiri', email: 'service@sinaelektronik.co.id', username: 'produsen', passwordHash: PW_DEFAULT, role: 'PRODUSEN', noWa: '6281234567895' },
   })
-  console.log('✅ Pengguna:', 6)
+  console.log('✅ Pengguna:', 6, '(login: email/username + password)')
 
   // ============ MASTER TOKO ============
   const tokoList = await Promise.all(

@@ -1,10 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { useAppStore, type ViewKey, ROLE_LABELS, type RoleKey } from '@/lib/store'
+import { useEffect, useState } from 'react'
+import { useAppStore, ROLE_LABELS, type RoleKey } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   LayoutDashboard,
   Wrench,
@@ -16,6 +15,9 @@ import {
   Settings2,
   Menu,
   WrenchIcon,
+  LogOut,
+  ChevronDown,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import DashboardView from '@/components/views/dashboard-view'
@@ -28,6 +30,14 @@ import ClaimView from '@/components/views/claim-view'
 import SettingsView from '@/components/views/settings-view'
 import AutoBackupWatcher from '@/components/auto-backup-watcher'
 import QuickActions from '@/components/quick-entry'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
@@ -47,8 +57,17 @@ const ROLE_COLORS: Record<RoleKey, string> = {
   PRODUSEN: 'bg-teal-500',
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('')
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { view, setView } = useAppStore()
+  const { view, setView, user } = useAppStore()
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
@@ -87,6 +106,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
       <div className="border-t border-slate-800 px-5 py-4">
+        {user && (
+          <p className="mb-1.5 truncate text-xs text-slate-400">
+            Login sebagai <span className="font-medium text-slate-200">{user.nama}</span>
+          </p>
+        )}
         <p className="text-xs text-slate-500">Sesuai PRD: Otomasi after-sales, STTB QR, konsinyasi, klaim Excel.</p>
       </div>
     </div>
@@ -95,8 +119,56 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export default function Home() {
   const [open, setOpen] = useState(false)
-  const { view, role, setRole } = useAppStore()
+  const [loggingOut, setLoggingOut] = useState(false)
+  const { view, role, user, authReady, setUser, setAuthReady } = useAppStore()
   const current = NAV_ITEMS.find((n) => n.key === view)
+
+  // Verifikasi sesi saat aplikasi dibuka — tanpa sesi valid, middleware sudah
+  // me-redirect ke /login; fetch ini memuat profil user yang login.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/me')
+      .then((r) => {
+        if (!r.ok) throw new Error('unauthenticated')
+        return r.json()
+      })
+      .then((u) => {
+        if (cancelled) return
+        setUser(u)
+        setAuthReady(true)
+      })
+      .catch(() => {
+        if (!cancelled) window.location.replace('/login')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [setUser, setAuthReady])
+
+  async function handleLogout() {
+    if (loggingOut) return
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // tetap redirect walau request gagal
+    }
+    window.location.replace('/login')
+  }
+
+  // Gate: tampilkan layar loading sampai sesi terverifikasi
+  if (!authReady) {
+    return (
+      <div className="flex min-h-screen w-full flex-col items-center justify-center gap-3 bg-slate-900">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white">
+          <WrenchIcon className="h-6 w-6" />
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin" /> Memeriksa sesi…
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen w-full bg-slate-100">
@@ -134,22 +206,58 @@ export default function Home() {
             <p className="hidden truncate text-xs text-slate-500 sm:block">{current?.desc}</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden text-xs text-slate-500 md:block">Akses sebagai:</span>
-            <Select value={role} onValueChange={(v) => setRole(v as RoleKey)}>
-              <SelectTrigger className="w-[150px] sm:w-[190px] bg-slate-50" aria-label="Pilih peran pengguna">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(ROLE_LABELS) as RoleKey[]).map((r) => (
-                  <SelectItem key={r} value={r}>
-                    <span className="flex items-center gap-2">
-                      <span className={cn('h-2 w-2 rounded-full', ROLE_COLORS[r])} />
-                      {ROLE_LABELS[r]}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Chip user + menu Keluar (Log Out) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    'flex items-center gap-2.5 rounded-full border border-slate-200 bg-slate-50 py-1 pl-1 pr-2.5 transition-colors hover:bg-slate-100',
+                    loggingOut && 'opacity-60'
+                  )}
+                  aria-label="Menu akun pengguna"
+                >
+                  <span
+                    className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white',
+                      ROLE_COLORS[role]
+                    )}
+                  >
+                    {user ? getInitials(user.nama) : '?'}
+                  </span>
+                  <span className="hidden flex-col items-start leading-tight sm:flex">
+                    <span className="max-w-[140px] truncate text-xs font-semibold text-slate-800">{user?.nama}</span>
+                    <span className="text-[10px] text-slate-500">{ROLE_LABELS[role]}</span>
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="font-normal">
+                  <p className="text-sm font-semibold text-slate-900">{user?.nama}</p>
+                  <p className="truncate text-xs text-slate-500">{user?.email}</p>
+                  <span
+                    className={cn(
+                      'mt-1.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium text-white',
+                      ROLE_COLORS[role]
+                    )}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/80" />
+                    {ROLE_LABELS[role]}
+                  </span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="text-red-600 focus:bg-red-50 focus:text-red-700"
+                  aria-label="Keluar dari akun"
+                >
+                  {loggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                  Keluar (Log Out)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 

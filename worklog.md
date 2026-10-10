@@ -1,6 +1,35 @@
 # Worklog
 
 ---
+Task ID: 5
+Agent: Main Agent (Super Z)
+Task: Menambahkan fitur Log In & Log Out (autentikasi) ke aplikasi AfterSales Pro
+
+Work Log:
+- Prisma schema: Pengguna + username (unique, nullable) & passwordHash (scrypt format "scrypt$salt$hash"); db:push + regenerasi client; scripts/backfill-passwords.mjs mengisi kredensial 6 user existing (ADMIN_WORKSHOP → admin123, lainnya → aftersales123, username dari local-part email)
+- src/lib/auth.ts (edge-safe): JWT HS256 via jose, cookie httpOnly "aspro_session" 7 hari, signSession/verifySessionToken/getSession (parse header Cookie manual — jalan di middleware edge & route handler node); secret dari env AUTH_SECRET dengan fallback dev
+- src/lib/auth-node.ts: hashPassword/verifyPassword node:crypto scryptSync + timingSafeEqual (tanpa dependency baru)
+- API auth: POST /api/auth/login (identifikasi email ATAU username case-insensitive, delay 400ms saat gagal, audit LOGIN/LOGIN_GAGAL), POST /api/auth/logout (hapus cookie + audit LOGOUT), GET /api/auth/me (profil fresh dari DB; 401 + clear cookie jika akun dinonaktifkan)
+- src/middleware.ts: proteksi semua halaman (redirect /login) & API (401 JSON); whitelist /api/auth/*, /api/wa/webhook (dipanggil bot eksternal), /api/backup/sheets (MCP/watcher); /login saat sudah login → redirect /
+- src/app/login/page.tsx: form email/username + password (toggle show), error alert, tombol akun demo auto-fill, branding emerald/slate; redirect selalu ke "/" (app single-route — temuan: ?next= ke /service menghasilkan 404, dihapus)
+- store.ts: + user (SessionUser), authReady, setUser (menyalin role dari sesi); page.tsx: gate "Memeriksa sesi…" via /api/auth/me, role switcher diganti chip user (inisial + nama + role) dengan dropdown menu berisi info akun + tombol "Keluar (Log Out)"; sidebar footer "Login sebagai …"
+- API pengguna: POST menerima username (default local-part email, cek unik) & password (default aftersales123, min 6 char); GET tidak pernah mengekspos passwordHash; route [id]/PATCH baru: reset password, toggle aktif (proteksi admin terakhir), update role/nama/noWa/wilayah + audit RESET_PASSWORD_PENGGUNA/UPDATE_PENGGUNA; keduanya dijaga requireManager (ADMIN_WORKSHOP/MANAGER saja → 403)
+- UI Master Data → Karyawan: badge @username & "Nonaktif", aksi per kartu Reset Password (dialog) + Aktif/Nonaktif (ikon power); dialog Tambah Karyawan + field Username/Password opsional
+- Desktop & seed: seed.ts + make-template-db.mjs menanam passwordHash (admin123/aftersales123); template.db diregenerasi (96 KB) sehingga MSI membawa akun login; README-DESKTOP.md + section 1.4 "Login / Log Out" (tabel kredensial desktop & web, reset password, catatan audit)
+- Fix teknis: dev server direstart agar Prisma client hasil regenerasi termuat (login 401 terus karena findMany client lama tidak men-select kolom baru); lint (set-state-in-effect di login → lazy useState initializer); middleware tanpa ?next= (single-route)
+- Verifikasi curl: redirect / → /login 307; API tanpa sesi 401; login salah 401 + audit LOGIN_GAGAL; login benar (email & username) 200 + cookie; /api/auth/me 200; logout → me 401 (cookie dibersihkan); PATCH oleh TEKNISI 403, oleh ADMIN 200; nonaktif → login 401 & me 401; buat user password kustom → login ok
+- Verifikasi Agent Browser (screenshot verify-23a…23n): / → redirect /login ✓; error password salah ✓; tombol demo auto-fill ✓; login → dashboard chip "Budi Santoso / Admin Workshop" ✓; dropdown Keluar → /login ✓; login teknisi → "Ahmad Fauzi / Teknisi Lapangan" ✓; tab Karyawan badge @username ✓; dialog Reset Password → login password baru ok ✓; login mobile iPhone 14 & dashboard mobile ✓; lint bersih; dev.log bersih
+- Catatan tooling: sesi agent-browser kedua pipeline input mouse-nya mati (event tak sampai ke window; bukan bug app — sesi pertama klik nyata sukses, eval-synthetic dispatch membuktikan handler Radix tetap bekerja); verifikasi akhir dilanjutkan via eval-dispatch
+- Data uji dibersihkan (qa-test dihapus; password slamet direstore; user lain utuh)
+
+Stage Summary:
+- Fitur Log In & Log Out lengkap: halaman /login, sesi JWT httpOnly 7 hari, proteksi middleware untuk semua halaman & API, chip user + Keluar di header, akun dapat dinonaktifkan/di-reset password, audit LOGIN/LOGIN_GAGAL/LOGOUT/RESET_PASSWORD_PENGGUNA tercatat
+- Kredensial: web demo budi@teknikjaya.co.id/admin123 (username: budi), teknisi aftersales123; desktop admin@aftersales.local/admin123 — tercatat di README-DESKTOP.md & kartu demo di halaman login
+- File baru: src/lib/auth.ts, src/lib/auth-node.ts, src/middleware.ts, src/app/login/page.tsx, src/app/api/auth/{login,logout,me}/route.ts, src/app/api/pengguna/[id]/route.ts, scripts/backfill-passwords.mjs
+- File diubah: prisma/schema.prisma, src/lib/store.ts, src/lib/types.ts, src/app/page.tsx, src/app/api/pengguna/route.ts, src/components/views/master-data-view.tsx, scripts/seed.ts, scripts/make-template-db.mjs, db/template.db, README-DESKTOP.md
+- MCP & desktop tidak terpengaruh: MCP stdio bypass HTTP (tetap 19 tool), MSI build memakai template.db yang kini berisi akun login
+
+---
 Task ID: 2
 Agent: Main Agent (Super Z)
 Task: Menambahkan fitur input massal (bulk import) nama toko & sparepart via CSV

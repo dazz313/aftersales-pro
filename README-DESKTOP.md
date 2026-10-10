@@ -48,7 +48,27 @@ Hasil build ada di folder `dist/desktop/`.
      `%APPDATA%\AfterSalesPro\claude-desktop-mcp-config.json`.
 4. Upgrade versi: jalankan MSI versi baru — data tetap aman (di folder data user).
 
-### 1.4 Struktur teknis desktop
+### 1.4 Login / Log Out (semua versi: web & desktop)
+
+Aplikasi dilindungi login. Sesi JWT httpOnly berlaku 7 hari (cookie otomatis
+disimpan juga di jendela desktop). Tombol **Keluar (Log Out)** ada di menu akun
+pojok kanan atas.
+
+| Akun (database desktop) | Email | Username | Password |
+|---|---|---|---|
+| Admin Workshop | `admin@aftersales.local` | `admin` | `admin123` |
+| Teknisi Lapangan | `teknisi@aftersales.local` | `teknisi` | `aftersales123` |
+
+- Kredensial database web demo: `budi@teknikjaya.co.id` / `admin123`
+  (atau username `budi`), teknisi `ahmad@teknikjaya.co.id` / `aftersales123`.
+- Ganti password via **Master Data → Karyawan → ikon kunci (Reset Password)**.
+- Akun dapat dinonaktifkan (ikon power) — akun nonaktif tidak bisa login.
+- Karyawan baru yang dibuat tanpa password otomatis memakai
+  `aftersales123` — segera reset setelah akun diserahkan.
+- Semua aktivitas login (berhasil/gagal) & logout tercatat di **Pengaturan →
+  Audit Log** (`LOGIN`, `LOGIN_GAGAL`, `LOGOUT`, `RESET_PASSWORD_PENGGUNA`).
+
+### 1.5 Struktur teknis desktop
 
 | Komponen | Lokasi / Nilai |
 |---|---|

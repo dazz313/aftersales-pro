@@ -11,6 +11,7 @@
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import { randomBytes, scryptSync } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { PrismaClient } from '@prisma/client'
 
@@ -39,16 +40,38 @@ if (res.status !== 0) {
 process.env.DATABASE_URL = `file:${TEMPLATE}`
 const db = new PrismaClient()
 
+// Hash password scrypt (format sama dengan src/lib/auth-node.ts)
+function hashPassword(plain) {
+  const salt = randomBytes(16)
+  const hash = scryptSync(plain, salt, 64)
+  return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`
+}
+
 async function seed() {
   const count = await db.pengguna.count()
   if (count === 0) {
     await db.pengguna.createMany({
       data: [
-        { nama: 'Admin Workshop', email: 'admin@aftersales.local', role: 'ADMIN_WORKSHOP', aktif: true },
-        { nama: 'Teknisi Lapangan', email: 'teknisi@aftersales.local', role: 'TEKNISI', aktif: true, wilayahKerja: 'Wilayah 1' },
+        {
+          nama: 'Admin Workshop',
+          email: 'admin@aftersales.local',
+          username: 'admin',
+          passwordHash: hashPassword('admin123'),
+          role: 'ADMIN_WORKSHOP',
+          aktif: true,
+        },
+        {
+          nama: 'Teknisi Lapangan',
+          email: 'teknisi@aftersales.local',
+          username: 'teknisi',
+          passwordHash: hashPassword('aftersales123'),
+          role: 'TEKNISI',
+          aktif: true,
+          wilayahKerja: 'Wilayah 1',
+        },
       ],
     })
-    console.log('✓ Seed pengguna awal: admin@aftersales.local & teknisi@aftersales.local')
+    console.log('✓ Seed pengguna awal: admin@aftersales.local (admin123) & teknisi@aftersales.local (aftersales123)')
   }
 }
 
