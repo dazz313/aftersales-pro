@@ -1,6 +1,21 @@
 # Worklog
 
 ---
+Task ID: 10
+Agent: Muse Spark (opencode)
+Task: Git diamankan — checkpoint + perekam otomatis tiap perubahan
+
+Work Log:
+- Temuan audit: hanya 9 commit (9–10 Okt, pesan UUID), 65 file modified + 14 path fitur utuh (inbox/telegram/vision/laporan) belum pernah masuk git, tanpa remote → revisi tiket manual kemungkinan hilang karena tidak tercatat
+- Checkpoint 2c30ce0: 66 file, 21092 insertions (task 6–9); buang artefak dari riwayat (project.zip 13MB, *.bak); .gitignore: project.zip, project/, download/, upload/, *.bak, db/backups/, db/custom.db (DB live berubah tiap request — tak lagi digembungkan ke repo; db/template.db tetap terlacak)
+- scripts/git-snapshot.ps1: add -A + commit "auto-snapshot <timestamp>" bila kotor; hormati .gitignore; tanpa push; uji E2E lulus (commit 3bd3152 terbentuk lalu di-reset)
+- Task Scheduler "AfterSalesPro-GitSnapshot": tiap jam (next run terverifikasi); skrip di-commit 4c33454
+- Sisa risiko: tanpa remote GitHub → riwayat hanya di laptop; disarankan buat remote + push
+
+Stage Summary:
+- Working tree bersih; tiap perubahan kode kini terekam otomatis maksimal 1 jam + commit manual tiap akhir sesi
+
+---
 Task ID: 9
 Agent: Muse Spark (opencode)
 Task: Rename total "konsinyasi" → "inventory" (label UI + field database)
