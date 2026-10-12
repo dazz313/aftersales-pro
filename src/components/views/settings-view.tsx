@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   fetcher, postJson, formatWaktu, testGateway,
@@ -15,13 +15,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import {
   Building2, Save, ScrollText, ShieldCheck, DatabaseBackup, History,
   Radio, Smartphone, Send, CloudUpload, RefreshCw, CheckCircle2, XCircle, CircleAlert,
-  Monitor, Bot, Copy, Inbox,
+  Monitor, Bot, Copy, Inbox, ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -51,6 +52,52 @@ const STATUS_TONE: Record<string, string> = {
   FAILED: 'border-rose-300 bg-rose-50 text-rose-700',
 }
 
+type SecKey = 'profil' | 'gateway' | 'backup' | 'desktop' | 'keamanan'
+
+/** Section dropdown — header selalu terlihat, isi bisa dibuka/tutup agar halaman tidak kepanjangan. */
+function SettingSection({
+  sec, title, icon, desc, contentClass, secOpen, onToggle, children,
+}: {
+  sec: SecKey
+  title: string
+  icon: ReactNode
+  desc: string
+  contentClass?: string
+  secOpen: Record<SecKey, boolean>
+  onToggle: (k: SecKey) => void
+  children: ReactNode
+}) {
+  const open = secOpen[sec]
+  return (
+    <Collapsible open={open} onOpenChange={() => onToggle(sec)}>
+      <Card>
+        <CollapsibleTrigger asChild>
+          <div
+            className="cursor-pointer select-none"
+            role="button"
+            tabIndex={0}
+            aria-expanded={open}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(sec) } }}
+          >
+            <CardHeader>
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base">{icon} {title}</CardTitle>
+                  <CardDescription>{desc} · klik untuk buka/tutup</CardDescription>
+                </div>
+                <ChevronDown className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', open && 'rotate-180')} />
+              </div>
+            </CardHeader>
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className={contentClass}>{children}</CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  )
+}
+
 // Info dari Electron preload (versi desktop) — tidak ada di mode web
 interface AsproDesktopInfo {
   isDesktop: boolean
@@ -77,6 +124,9 @@ export default function SettingsView() {
   const [gwForm, setGwForm] = useState<Record<string, string>>({})
   const [gsForm, setGsForm] = useState<Record<string, string>>({})
   const [desktopInfo, setDesktopInfo] = useState<AsproDesktopInfo | null>(null)
+  // Section dropdown — default: profil & gateway terbuka, sisanya tertutup
+  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: true, gateway: true, backup: false, desktop: false, keamanan: false })
+  const toggleSec = (k: SecKey) => setSecOpen((s) => ({ ...s, [k]: !s[k] }))
 
   // Deteksi mode desktop (Electron preload) untuk path MCP yang pasti
   useEffect(() => {
@@ -244,14 +294,15 @@ export default function SettingsView() {
       {/* Kolom kiri: profil + gateway + backup */}
       <div className="space-y-4 lg:col-span-1">
         {/* Profil perusahaan */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Building2 className="h-4 w-4 text-emerald-600" /> Profil Perusahaan
-            </CardTitle>
-            <CardDescription>Data ini muncul pada dokumen STTB PDF dan rekap klaim</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <SettingSection
+          sec="profil"
+          title="Profil Perusahaan"
+          icon={<Building2 className="h-4 w-4 text-emerald-600" />}
+          desc="Data ini muncul pada dokumen STTB PDF dan rekap klaim"
+          contentClass="space-y-3"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
             {settingsLoading ? (
               Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10" />)
             ) : (
@@ -265,18 +316,18 @@ export default function SettingsView() {
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
               <Save className="mr-1.5 h-4 w-4" /> Simpan Profil
             </Button>
-          </CardContent>
-        </Card>
+        </SettingSection>
 
         {/* ===== GATEWAY (WhatsApp & Telegram) ===== */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Radio className="h-4 w-4 text-emerald-600" /> Gateway — WhatsApp &amp; Telegram
-            </CardTitle>
-            <CardDescription>Channel alternatif laporan toko/teknisi. Konfigurasi disimpan di sini (Pengaturan).</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <SettingSection
+          sec="gateway"
+          title="Gateway — WhatsApp & Telegram"
+          icon={<Radio className="h-4 w-4 text-emerald-600" />}
+          desc="Channel alternatif laporan toko/teknisi. Konfigurasi disimpan di sini (Pengaturan)."
+          contentClass="space-y-4"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
             {/* WhatsApp */}
             <div className="space-y-2.5 rounded-lg border p-3">
               <div className="flex items-center justify-between">
@@ -380,18 +431,18 @@ export default function SettingsView() {
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveGateway.isPending} onClick={() => saveGateway.mutate()}>
               <Save className="mr-1.5 h-4 w-4" /> Simpan Gateway
             </Button>
-          </CardContent>
-        </Card>
+        </SettingSection>
 
         {/* ===== BACKUP GOOGLE SPREADSHEET ===== */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <DatabaseBackup className="h-4 w-4 text-teal-600" /> Backup Google Spreadsheet
-            </CardTitle>
-            <CardDescription>Backup otomatis data bersama (toko, customer, sparepart, unit, kunjungan, tiket) ke Google Sheets</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <SettingSection
+          sec="backup"
+          title="Backup Google Spreadsheet"
+          icon={<DatabaseBackup className="h-4 w-4 text-teal-600" />}
+          desc="Backup otomatis data bersama (toko, customer, sparepart, unit, kunjungan, tiket) ke Google Sheets"
+          contentClass="space-y-3"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
             <div className="space-y-1.5">
               <Label htmlFor="gs-id" className="text-xs">Spreadsheet ID (dari URL spreadsheet)</Label>
               <Input id="gs-id" value={gs('gs_spreadsheet_id')} onChange={(e) => setGsForm({ ...gsForm, gs_spreadsheet_id: e.target.value })} placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" className="font-mono text-xs" />
@@ -457,18 +508,18 @@ export default function SettingsView() {
                 <CloudUpload className={cn('mr-1.5 h-4 w-4', backupMutation.isPending && 'animate-bounce')} /> Backup Sekarang
               </Button>
             </div>
-          </CardContent>
-        </Card>
+        </SettingSection>
 
         {/* ===== DESKTOP WINDOWS & AI (MCP) ===== */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Monitor className="h-4 w-4 text-emerald-600" /> Desktop Windows &amp; AI (MCP)
-            </CardTitle>
-            <CardDescription>Instalasi desktop (file MSI) & integrasi AI assistant via Model Context Protocol</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <SettingSection
+          sec="desktop"
+          title="Desktop Windows & AI (MCP)"
+          icon={<Monitor className="h-4 w-4 text-emerald-600" />}
+          desc="Instalasi desktop (file MSI) & integrasi AI assistant via Model Context Protocol"
+          contentClass="space-y-3"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
             <div className="space-y-1.5 rounded-lg border p-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
                 <Monitor className="h-3.5 w-3.5 text-emerald-600" /> Versi Desktop Windows (MSI)
@@ -505,18 +556,18 @@ export default function SettingsView() {
                 </p>
               )}
             </div>
-          </CardContent>
-        </Card>
+        </SettingSection>
 
         {/* Keamanan & backup info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheck className="h-4 w-4 text-teal-600" /> Keamanan &amp; Reliabilitas
-            </CardTitle>
-            <CardDescription>Non-Functional Requirements PRD (Section 8)</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2.5 text-xs">
+        <SettingSection
+          sec="keamanan"
+          title="Keamanan & Reliabilitas"
+          icon={<ShieldCheck className="h-4 w-4 text-teal-600" />}
+          desc="Non-Functional Requirements PRD (Section 8)"
+          contentClass="space-y-2.5 text-xs"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
             <div className="flex items-start gap-2.5 rounded-lg border p-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
               <div>
@@ -538,8 +589,7 @@ export default function SettingsView() {
                 <p className="text-slate-500">Setiap perubahan status data tercatat permanen: aktor, aksi, waktu.</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </SettingSection>
       </div>
 
       {/* Audit log */}

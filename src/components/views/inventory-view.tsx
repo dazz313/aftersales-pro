@@ -243,7 +243,8 @@ export default function InventoryView() {
         <Collapsible open={roOpen} onOpenChange={setRoOpen}>
           <Card>
             <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer select-none">
+              <div className="cursor-pointer select-none" role="button" tabIndex={0} aria-expanded={roOpen} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setRoOpen(!roOpen) } }}>
+              <CardHeader>
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <CardTitle className="flex items-center gap-2 text-base">
@@ -255,6 +256,7 @@ export default function InventoryView() {
                   <ChevronDown className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', roOpen && 'rotate-180')} />
                 </div>
               </CardHeader>
+              </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="space-y-2">

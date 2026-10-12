@@ -1,6 +1,20 @@
 # Worklog
 
 ---
+Task ID: 13
+Agent: Muse Spark (opencode)
+Task: Settings jadi dropdown + perbaiki trigger dropdown Inventory
+
+Work Log:
+- 5 kartu Settings (Profil, Gateway, Backup, Desktop&MCP, Keamanan) dibungkus komponen SettingSection (Collapsible): header selalu terlihat + chevron, isi buka/tutup; default terbuka Profil & Gateway, sisanya tertutup; Audit Log tidak diubah (sudah ScrollArea internal)
+- Fix bug: CardHeader tidak forward ref → CollapsibleTrigger asChild langsung ke CardHeader rusak saat runtime; pola benar asChild > div biasa (meneruskan ref) > CardHeader; diterapkan di SettingSection + Draft Re-Order Inventory
+- Sempat menghapus blok notice MCP desktop karena salah batas edit → dikembalikan + diverifikasi via grep; struktur akhir seimbang (5 section, lint bersih)
+- Verifikasi: build sukses, string "klik untuk buka/tutup" ada di chunk client, /login 200
+
+Stage Summary:
+- Halaman Settings ringkas tanpa scroll jauh; pola dropdown aman dipakai ulang
+
+---
 Task ID: 12
 Agent: Muse Spark (opencode)
 Task: Batasi scroll halaman — tabel scroll internal + section panjang jadi dropdown
