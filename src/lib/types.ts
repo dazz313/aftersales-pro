@@ -28,6 +28,10 @@ export interface Sparepart {
   id: number
   kodePart: string
   namaPart: string
+  brandKompatibel: string
+  supplier: string
+  stokJual: number
+  stokGaransi: number
   stokInventory: number
   reorderLimit: number
   hargaKlaim: number
@@ -70,8 +74,13 @@ export interface ServicePart {
   sparepartId: number
   qty: number
   statusPart: 'READY' | 'ORDER_PRODUSEN'
+  statusKonfirmasi: 'MENUNGGU' | 'READY' | 'TIDAK_READY'
   sparepart?: Sparepart & { reorderLimit?: number }
 }
+
+export type SumberLaporan = 'KUNJUNGAN' | 'LAPORAN_TOKO' | 'LAPORAN_CUSTOMER' | 'WA_BOT' | 'MANUAL'
+export type LokasiUnit = 'TOKO' | 'WORKSHOP'
+export type Penanganan = 'BELUM' | 'TUNGGU_PART_TOKO' | 'DI_TOKO' | 'TARIK_WORKSHOP'
 
 export interface ServiceTicket {
   id: number
@@ -79,6 +88,12 @@ export interface ServiceTicket {
   unitAssetId: number
   status: 'REQUEST' | 'PROSES' | 'FINISH'
   noSttb: string | null
+  sumberLaporan: SumberLaporan
+  lokasiUnit: LokasiUnit
+  penanganan: Penanganan
+  noSuratJalan: string | null
+  sttbDicabut: boolean
+  tglKembaliKeToko: string | null
   deskripsiKerusakan: string | null
   fotoKerusakanWa: string | null
   fotoNotaStempel: string | null

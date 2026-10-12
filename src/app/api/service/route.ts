@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket } from '@/lib/audit'
+import { backupSparepartToGit } from '@/lib/git-backup'
 
 // GET /api/service - list semua tiket dengan relasi lengkap
 export async function GET() {
@@ -61,9 +62,15 @@ export async function POST(request: Request) {
       if (!sp) continue
       const qty = Number(p.qty) || 1
       if (sp.stokInventory >= qty) {
+        // Reserve: ambil dari stok BISA JUAL dulu, kekurangan dari stok GARANSI
+        const ambilJual = Math.min(sp.stokJual, qty)
         await db.masterSparepart.update({
           where: { id: sp.id },
-          data: { stokInventory: { decrement: qty } },
+          data: {
+            stokJual: { decrement: ambilJual },
+            stokGaransi: { decrement: qty - ambilJual },
+            stokInventory: { decrement: qty },
+          },
         })
         partResults.push({ part: sp.namaPart, status: 'READY' })
       } else {
@@ -72,11 +79,18 @@ export async function POST(request: Request) {
     }
 
     const hasOrderPart = partResults.some((r) => r.status === 'ORDER_PRODUSEN')
+    const sumberLaporan =
+      body.sumberLaporan === 'KUNJUNGAN' || body.sumberLaporan === 'LAPORAN_TOKO' || body.sumberLaporan === 'LAPORAN_CUSTOMER'
+        ? body.sumberLaporan
+        : 'MANUAL'
     const ticket = await db.serviceRequest.create({
       data: {
         noTiket,
         unitAssetId: Number(body.unitAssetId),
         status: 'REQUEST',
+        sumberLaporan,
+        lokasiUnit: 'TOKO',
+        penanganan: 'BELUM',
         deskripsiKerusakan: body.deskripsiKerusakan,
         biayaJasa: Number(body.biayaJasa) || 0,
         parts: {
@@ -84,6 +98,8 @@ export async function POST(request: Request) {
             sparepartId: Number(p.sparepartId),
             qty: Number(p.qty) || 1,
             statusPart: partResults[i]?.status ?? 'ORDER_PRODUSEN',
+            // Stok toko mencukupi = produsen dianggap READY; sisanya menunggu konfirmasi via WA
+            statusKonfirmasi: partResults[i]?.status === 'READY' ? 'READY' : 'MENUNGGU',
           })),
         },
       },
@@ -97,6 +113,9 @@ export async function POST(request: Request) {
       deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}`,
       aktor: body.aktor,
     })
+    if (partResults.some((r) => r.status === 'READY')) {
+      await backupSparepartToGit('RESERVE', partsInput.map((p) => String(p.sparepartId)).join(',') || noTiket, body.aktor)
+    }
 
     return NextResponse.json(
       { ...ticket, partResults },

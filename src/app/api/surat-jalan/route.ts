@@ -192,6 +192,8 @@ export async function POST(request: Request) {
         deskripsi: `Cetak Surat Jalan ${noSJ} (Excel): ${tickets.length} tiket, ${items.length} item part, ${totalQty} pcs — untuk ${penerima}`,
         aktor,
       })
+      // Cap nomor SJ ke tiket agar alur terpantau (part rusak terkirim ke produsen)
+      await db.serviceRequest.updateMany({ where: { noTiket: { in: noTiketList } }, data: { noSuratJalan: noSJ } })
 
       return new NextResponse(new Uint8Array(buf), {
         status: 200,
@@ -385,6 +387,8 @@ export async function POST(request: Request) {
       deskripsi: `Cetak Surat Jalan ${noSJ} (PDF): ${tickets.length} tiket, ${items.length} item part, ${totalQty} pcs — untuk ${penerima}`,
       aktor,
     })
+    // Cap nomor SJ ke tiket agar alur terpantau (part rusak terkirim ke produsen)
+    await db.serviceRequest.updateMany({ where: { noTiket: { in: noTiketList } }, data: { noSuratJalan: noSJ } })
 
     return new NextResponse(pdfBytes as ArrayBuffer, {
       status: 200,

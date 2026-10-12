@@ -252,6 +252,10 @@ export const TOOLS = [
       properties: {
         namaPart: { type: 'string', description: 'Nama sparepart (wajib)' },
         kodePart: str,
+        brandKompatibel: { type: 'string', description: 'Brand kompatibel, pisah koma (mis. Samsung, LG)' },
+        supplier: { type: 'string', description: 'Nama supplier' },
+        stokJual: { type: 'number', description: 'Stok bisa jual' },
+        stokGaransi: { type: 'number', description: 'Stok garansi' },
         stokInventory: num,
         reorderLimit: num,
         hargaKlaim: num,
@@ -262,12 +266,16 @@ export const TOOLS = [
   },
   {
     name: 'update_sparepart',
-    description: 'Perbarui sparepart: stok inventory (set nilai), reorder limit, harga klaim, atau nama.',
+    description: 'Perbarui sparepart: stok jual/garansi, brand kompatibel, supplier, reorder limit, harga klaim, atau nama.',
     inputSchema: {
       type: 'object',
       properties: {
         id: num,
         namaPart: str,
+        brandKompatibel: { type: 'string' },
+        supplier: { type: 'string' },
+        stokJual: num,
+        stokGaransi: num,
         stokInventory: num,
         reorderLimit: num,
         hargaKlaim: num,
@@ -414,7 +422,7 @@ async function hGetStats() {
     ])
 
   const semuaSparepart = await db.masterSparepart.findMany({
-    select: { kodePart: true, namaPart: true, stokInventory: true, reorderLimit: true },
+    select: { kodePart: true, namaPart: true, brandKompatibel: true, supplier: true, stokJual: true, stokGaransi: true, stokInventory: true, reorderLimit: true },
     orderBy: { stokInventory: 'asc' },
   })
   const stokKritis = semuaSparepart
@@ -579,7 +587,7 @@ async function hListSparepart(args) {
   const q = (args.q ?? '').trim()
   const take = Math.min(Number(args.limit) || 30, 200)
   const skip = Number(args.offset) || 0
-  const where = q ? { OR: [{ kodePart: { contains: q } }, { namaPart: { contains: q } }] } : {}
+  const where = q ? { OR: [{ kodePart: { contains: q } }, { namaPart: { contains: q } }, { brandKompatibel: { contains: q } }, { supplier: { contains: q } }] } : {}
   let rows = await db.masterSparepart.findMany({ where, orderBy: { kodePart: 'asc' }, take: args.lowStockOnly ? 1000 : take, skip })
   if (args.lowStockOnly) {
     rows = rows.filter((s) => s.stokInventory <= s.reorderLimit).slice(0, take)
@@ -593,11 +601,17 @@ async function hAddSparepart(args) {
   const kodePart = (args.kodePart ? String(args.kodePart).trim().toUpperCase() : await nextSequence(db.masterSparepart, 'kodePart', 'SP'))
   const exists = await db.masterSparepart.findUnique({ where: { kodePart } })
   if (exists) return errOut(`Kode part ${kodePart} sudah terdaftar.`)
+  const stokJual = Math.max(0, Math.trunc(Number(args.stokJual ?? args.stokInventory) || 0))
+  const stokGaransi = Math.max(0, Math.trunc(Number(args.stokGaransi) || 0))
   const sparepart = await db.masterSparepart.create({
     data: {
       kodePart,
       namaPart,
-      stokInventory: Number(args.stokInventory) || 0,
+      brandKompatibel: String(args.brandKompatibel ?? '').trim(),
+      supplier: String(args.supplier ?? '').trim(),
+      stokJual,
+      stokGaransi,
+      stokInventory: stokJual + stokGaransi,
       reorderLimit: Number(args.reorderLimit) || 5,
       hargaKlaim: Number(args.hargaKlaim) || 0,
     },
@@ -609,15 +623,28 @@ async function hAddSparepart(args) {
 async function hUpdateSparepart(args) {
   const id = Number(args.id)
   if (!id) return errOut('id sparepart wajib diisi.')
+  const existing = await db.masterSparepart.findUnique({ where: { id } })
+  if (!existing) return errOut(`Sparepart dengan id ${id} tidak ditemukan.`)
   const data = {}
   if (args.namaPart != null) data.namaPart = String(args.namaPart).trim()
-  if (args.stokInventory != null) data.stokInventory = Math.max(0, Math.trunc(Number(args.stokInventory)))
+  if (args.brandKompatibel != null) data.brandKompatibel = String(args.brandKompatibel).trim()
+  if (args.supplier != null) data.supplier = String(args.supplier).trim()
+  if (args.stokJual != null) data.stokJual = Math.max(0, Math.trunc(Number(args.stokJual)))
+  if (args.stokGaransi != null) data.stokGaransi = Math.max(0, Math.trunc(Number(args.stokGaransi)))
+  if (args.stokInventory != null && args.stokJual == null && args.stokGaransi == null) {
+    // legacy: total saja → selisih masuk stok jual
+    data.stokInventory = Math.max(0, Math.trunc(Number(args.stokInventory)))
+    data.stokJual = Math.max(0, data.stokInventory - existing.stokGaransi)
+  }
+  if (data.stokJual != null || data.stokGaransi != null) {
+    data.stokInventory = (data.stokJual ?? existing.stokJual) + (data.stokGaransi ?? existing.stokGaransi)
+  }
   if (args.reorderLimit != null) data.reorderLimit = Math.max(0, Math.trunc(Number(args.reorderLimit)))
   if (args.hargaKlaim != null) data.hargaKlaim = Math.max(0, Number(args.hargaKlaim))
   if (Object.keys(data).length === 0) return errOut('Tidak ada kolom yang diubah.')
   try {
     const sparepart = await db.masterSparepart.update({ where: { id }, data })
-    await logAudit({ aksi: 'UPDATE', entitas: 'master_sparepart', entitasId: sparepart.kodePart, deskripsi: `Sparepart diperbarui via MCP AI: ${sparepart.kodePart} (stok: ${sparepart.stokInventory})` })
+    await logAudit({ aksi: 'UPDATE', entitas: 'master_sparepart', entitasId: sparepart.kodePart, deskripsi: `Sparepart diperbarui via MCP AI: ${sparepart.kodePart} (jual ${sparepart.stokJual}, garansi ${sparepart.stokGaransi})` })
     return jsonOut({ ok: true, sparepart })
   } catch {
     return errOut(`Sparepart dengan id ${id} tidak ditemukan.`)

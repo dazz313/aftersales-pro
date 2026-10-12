@@ -63,8 +63,8 @@ export async function collectBackupData(): Promise<SheetData[]> {
     {
       nama: 'Sparepart',
       rows: [
-        ['Kode Part', 'Nama Part', 'Stok Inventory', 'Reorder Limit', 'Harga Klaim (Rp)'],
-        ...spareparts.map((s) => [s.kodePart, s.namaPart, s.stokInventory, s.reorderLimit, s.hargaKlaim]),
+        ['Kode Part', 'Nama Part', 'Brand Kompatibel', 'Supplier', 'Stok Jual', 'Stok Garansi', 'Stok Inventory', 'Reorder Limit', 'Harga Klaim (Rp)'],
+        ...spareparts.map((s) => [s.kodePart, s.namaPart, s.brandKompatibel ?? '', s.supplier ?? '', s.stokJual ?? 0, s.stokGaransi ?? 0, s.stokInventory, s.reorderLimit, s.hargaKlaim]),
       ],
     },
     {

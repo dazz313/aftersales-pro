@@ -99,16 +99,17 @@ async function main() {
   console.log('✅ Master Customer:', customerList.length)
 
   // ============ MASTER SPAREPART (INVENTORY) ============
+  // 5 komponen utama: kodePart, namaPart, brandKompatibel, stokJual + stokGaransi, supplier
   const sparepartList = await Promise.all(
     [
-      { kodePart: 'PRT-CMP-01', namaPart: 'Kompresor 1/2 PK R134a', stokInventory: 8, reorderLimit: 3, hargaKlaim: 850000 },
-      { kodePart: 'PRT-CMP-02', namaPart: 'Kompresor 1 PK R32 Inverter', stokInventory: 2, reorderLimit: 4, hargaKlaim: 1450000 }, // ROP ALERT (ALT-03)
-      { kodePart: 'PRT-FAN-11', namaPart: 'Motor Fan Indoor 30W', stokInventory: 15, reorderLimit: 5, hargaKlaim: 320000 },
-      { kodePart: 'PRT-PCB-A4', namaPart: 'PCB Main AC Split 1 PK', stokInventory: 0, reorderLimit: 2, hargaKlaim: 780000 }, // KOSONG
-      { kodePart: 'PRT-THR-07', namaPart: 'Thermistor NTC 10K', stokInventory: 25, reorderLimit: 10, hargaKlaim: 45000 },
-      { kodePart: 'PRT-REM-U2', namaPart: 'Remote Universal AC', stokInventory: 4, reorderLimit: 5, hargaKlaim: 85000 }, // ROP ALERT (ALT-03)
-      { kodePart: 'PRT-KPT-3D', namaPart: 'Kapasitor 35uF 450V', stokInventory: 18, reorderLimit: 6, hargaKlaim: 65000 },
-      { kodePart: 'PRT-ESP-09', namaPart: 'Evaaporator Coil 9000BTU', stokInventory: 1, reorderLimit: 2, hargaKlaim: 950000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-CMP-01', namaPart: 'Kompresor 1/2 PK R134a', brandKompatibel: 'Samsung, LG', supplier: 'PT Sinar Elektronik', stokJual: 6, stokGaransi: 2, stokInventory: 8, reorderLimit: 3, hargaKlaim: 850000 },
+      { kodePart: 'PRT-CMP-02', namaPart: 'Kompresor 1 PK R32 Inverter', brandKompatibel: 'Daikin, Panasonic', supplier: 'PT Sinar Elektronik', stokJual: 2, stokGaransi: 0, stokInventory: 2, reorderLimit: 4, hargaKlaim: 1450000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-FAN-11', namaPart: 'Motor Fan Indoor 30W', brandKompatibel: 'Sharp, Polytron', supplier: 'CV Sparepart Jaya', stokJual: 12, stokGaransi: 3, stokInventory: 15, reorderLimit: 5, hargaKlaim: 320000 },
+      { kodePart: 'PRT-PCB-A4', namaPart: 'PCB Main AC Split 1 PK', brandKompatibel: 'Samsung', supplier: 'PT Sinar Elektronik', stokJual: 0, stokGaransi: 0, stokInventory: 0, reorderLimit: 2, hargaKlaim: 780000 }, // KOSONG
+      { kodePart: 'PRT-THR-07', namaPart: 'Thermistor NTC 10K', brandKompatibel: 'Universal', supplier: 'CV Sparepart Jaya', stokJual: 20, stokGaransi: 5, stokInventory: 25, reorderLimit: 10, hargaKlaim: 45000 },
+      { kodePart: 'PRT-REM-U2', namaPart: 'Remote Universal AC', brandKompatibel: 'Universal', supplier: 'Toko Grosir Elektro', stokJual: 4, stokGaransi: 0, stokInventory: 4, reorderLimit: 5, hargaKlaim: 85000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-KPT-3D', namaPart: 'Kapasitor 35uF 450V', brandKompatibel: 'LG, Aqua', supplier: 'CV Sparepart Jaya', stokJual: 15, stokGaransi: 3, stokInventory: 18, reorderLimit: 6, hargaKlaim: 65000 },
+      { kodePart: 'PRT-ESP-09', namaPart: 'Evaaporator Coil 9000BTU', brandKompatibel: 'Daikin', supplier: 'PT Sinar Elektronik', stokJual: 1, stokGaransi: 0, stokInventory: 1, reorderLimit: 2, hargaKlaim: 950000 }, // ROP ALERT (ALT-03)
     ].map((s) => prisma.masterSparepart.create({ data: s }))
   )
   console.log('✅ Master Sparepart:', sparepartList.length)
@@ -138,30 +139,36 @@ async function main() {
       unitAssetId: unitList[0].id,
       status: 'PROSES',
       noSttb: 'STTB-20261008-0001',
+      sumberLaporan: 'KUNJUNGAN',
+      lokasiUnit: 'WORKSHOP',
+      penanganan: 'TARIK_WORKSHOP',
       deskripsiKerusakan: 'AC tidak dingin, kompresor mati total saat dinyalakan',
       slaFlag: false,
       biayaJasa: 150000,
       createdAt: daysAgo(2),
       parts: {
-        create: [{ sparepartId: sparepartList[0].id, qty: 1, statusPart: 'READY' }],
+        create: [{ sparepartId: sparepartList[0].id, qty: 1, statusPart: 'READY', statusKonfirmasi: 'READY' }],
       },
     },
   })
   // kurangi stok karena sudah direserve
-  await prisma.masterSparepart.update({ where: { id: sparepartList[0].id }, data: { stokInventory: { decrement: 1 } } })
+  await prisma.masterSparepart.update({ where: { id: sparepartList[0].id }, data: { stokJual: { decrement: 1 }, stokInventory: { decrement: 1 } } })
 
-  // Tiket 2: REQUEST melewati SLA 24 jam (ALT-02)
+  // Tiket 2: REQUEST melewati SLA 24 jam (ALT-02) — part tidak ready, teregistrasi & simpan di toko
   const tiket2 = await prisma.serviceRequest.create({
     data: {
       noTiket: 'SV-20261007-0002',
       unitAssetId: unitList[4].id,
       status: 'REQUEST',
+      sumberLaporan: 'LAPORAN_TOKO',
+      lokasiUnit: 'TOKO',
+      penanganan: 'TUNGGU_PART_TOKO',
       deskripsiKerusakan: 'Freezer tidak membekui, evaporator berbunyi aneh',
       slaFlag: false,
       biayaJasa: 200000,
       createdAt: daysAgo(3),
       parts: {
-        create: [{ sparepartId: sparepartList[7].id, qty: 1, statusPart: 'ORDER_PRODUSEN' }],
+        create: [{ sparepartId: sparepartList[7].id, qty: 1, statusPart: 'ORDER_PRODUSEN', statusKonfirmasi: 'TIDAK_READY' }],
       },
     },
   })
@@ -173,6 +180,11 @@ async function main() {
       unitAssetId: unitList[6].id,
       status: 'FINISH',
       noSttb: 'STTB-20260925-0003',
+      sumberLaporan: 'LAPORAN_CUSTOMER',
+      lokasiUnit: 'TOKO',
+      penanganan: 'TARIK_WORKSHOP',
+      sttbDicabut: true,
+      tglKembaliKeToko: daysAgo(10),
       deskripsiKerusakan: 'Mesin cuci tidak bisa drainase, air keluar lambat',
       fotoNotaStempel: 'nota-stempel-sv-0003.jpg',
       biayaJasa: 180000,

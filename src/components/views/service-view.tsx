@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
+import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X,
@@ -119,6 +120,19 @@ export default function ServiceView() {
   const [formDesc, setFormDesc] = useState('')
   const [formJasa, setFormJasa] = useState('100000')
   const [formParts, setFormParts] = useState<string[]>([])
+  const [formSumber, setFormSumber] = useState('MANUAL')
+
+  // Aksi alur di dalam dialog detail — dialog tetap terbuka & menampilkan status baru
+  const flowMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
+      postJson<ServiceTicket>(`/api/service/${id}`, { ...body, aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH'),
+    onSuccess: (t) => {
+      invalidateAll()
+      setDetail(t)
+      toast({ title: 'Alur diperbarui', description: `Tiket ${t.noTiket} — tahap alur tercatat.` })
+    },
+    onError: (e: Error) => toast({ title: 'Aksi ditolak', description: e.message, variant: 'destructive' }),
+  })
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -126,6 +140,7 @@ export default function ServiceView() {
         unitAssetId: Number(formUnit),
         deskripsiKerusakan: formDesc,
         biayaJasa: Number(formJasa) || 0,
+        sumberLaporan: formSumber,
         parts: formParts.map((id) => ({ sparepartId: Number(id), qty: 1 })),
       }),
     onSuccess: () => {
@@ -134,6 +149,7 @@ export default function ServiceView() {
       setFormUnit('')
       setFormDesc('')
       setFormParts([])
+      setFormSumber('MANUAL')
       toast({ title: 'Tiket manual dibuat', description: 'Nomor tiket digenerate otomatis oleh sistem.' })
     },
     onError: (e: Error) => toast({ title: 'Gagal membuat tiket', description: e.message, variant: 'destructive' }),
@@ -271,7 +287,7 @@ export default function ServiceView() {
                           ) : (
                             <div className="flex flex-wrap gap-1">
                               {t.parts.map((p) => (
-                                <Badge key={p.id} variant="outline" className={cn('text-[9px]', p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700')}>
+                                <Badge key={p.id} variant="outline" className={cn('text-[9px]', p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700')} title={`${p.sparepart?.namaPart ?? ''}${p.sparepart?.brandKompatibel ? ` · ${p.sparepart.brandKompatibel}` : ''}${p.sparepart?.supplier ? ` · ${p.sparepart.supplier}` : ''} · qty ${p.qty}`}>
                                   {p.sparepart?.kodePart} · {p.statusPart === 'READY' ? 'READY' : 'ORDER'}
                                 </Badge>
                               ))}
@@ -350,6 +366,12 @@ export default function ServiceView() {
                 <DialogDescription>Dibuat {formatWaktu(detail.createdAt)} · Klaim {detail.statusKlaimProdusen}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 text-sm">
+                <ServiceFlowStepper ticket={detail} />
+                <ServiceFlowActions
+                  ticket={detail}
+                  pending={flowMutation.isPending}
+                  onAction={(body) => flowMutation.mutate({ id: detail.id, body })}
+                />
                 <div className="rounded-lg bg-slate-50 p-3">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Unit</p>
                   <p className="font-medium text-slate-800">{detail.unitAsset.modelUnit}</p>
@@ -376,10 +398,22 @@ export default function ServiceView() {
                           <div>
                             <p className="text-xs font-medium text-slate-800">{p.sparepart?.namaPart}</p>
                             <p className="font-mono text-[10px] text-slate-400">{p.sparepart?.kodePart} · qty {p.qty}</p>
+                            {((p.sparepart?.brandKompatibel?.trim() || p.sparepart?.supplier?.trim())) && (
+                              <p className="text-[10px] text-slate-500">
+                                {[p.sparepart?.brandKompatibel?.trim(), p.sparepart?.supplier?.trim()].filter(Boolean).join(' · ')}
+                              </p>
+                            )}
                           </div>
-                          <Badge variant="outline" className={p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}>
-                            {p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
-                          </Badge>
+                          <div className="flex shrink-0 flex-col items-end gap-1">
+                            <Badge variant="outline" className={p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}>
+                              {p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
+                            </Badge>
+                            {p.statusKonfirmasi !== 'MENUNGGU' && (
+                              <Badge variant="outline" className={cn('text-[9px]', p.statusKonfirmasi === 'READY' ? 'border-teal-300 text-teal-700' : 'border-rose-300 text-rose-700')}>
+                                Produsen: {p.statusKonfirmasi === 'READY' ? 'READY' : 'TIDAK READY'}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -479,26 +513,37 @@ export default function ServiceView() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Biaya Jasa (Rp)</Label>
-                <Input type="number" value={formJasa} onChange={(e) => setFormJasa(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Reserve Sparepart</Label>
-                <Select value={formParts[0] ?? ''} onValueChange={(v) => setFormParts(v ? [v] : [])}>
-                  <SelectTrigger aria-label="Pilih sparepart"><SelectValue placeholder="— Tanpa part —" /></SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {parts?.filter((p) => p.stokInventory > 0).map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>
-                        {p.kodePart} · {p.namaPart} (stok {p.stokInventory})
-                      </SelectItem>
+                <Label>Sumber Laporan</Label>
+                <Select value={formSumber} onValueChange={setFormSumber}>
+                  <SelectTrigger aria-label="Sumber laporan"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SUMBER_LABEL).filter(([v]) => v !== 'WA_BOT').map(([v, l]) => (
+                      <SelectItem key={v} value={v}>{l}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-1.5">
+                <Label>Biaya Jasa (Rp)</Label>
+                <Input type="number" value={formJasa} onChange={(e) => setFormJasa(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Reserve Sparepart</Label>
+              <Select value={formParts[0] ?? ''} onValueChange={(v) => setFormParts(v ? [v] : [])}>
+                <SelectTrigger aria-label="Pilih sparepart"><SelectValue placeholder="— Tanpa part —" /></SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {parts?.filter((p) => p.stokInventory > 0).map((p) => (
+                    <SelectItem key={p.id} value={String(p.id)} textValue={`${p.kodePart} ${p.namaPart}`}>
+                      {p.kodePart} · {p.namaPart} — {[p.brandKompatibel?.trim(), p.supplier?.trim()].filter(Boolean).join(' · ') || 'tanpa brand/supplier'} (jual {p.stokJual}/garansi {p.stokGaransi})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <p className="flex items-start gap-1.5 rounded-md bg-emerald-50 p-2.5 text-xs text-emerald-800">
               <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              Jika stok part tersedia, stok inventory otomatis direserve. Jika kosong, part berstatus ORDER_PRODUSEN &amp; produsen dinotifikasi.
+              Stok tersinkron otomatis: jika part tersedia, stok bisa-jual (lalu garansi) direserve &amp; inventory berkurang. Jika kosong, part berstatus ORDER_PRODUSEN &amp; produsen dinotifikasi.
             </p>
           </div>
           <DialogFooter>

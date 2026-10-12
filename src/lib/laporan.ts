@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
+import { backupSparepartToGit } from '@/lib/git-backup'
 import { sendGatewayMessage, labelChannel, type GatewayChannel } from '@/lib/gateway'
 
 export type { GatewayChannel }
@@ -71,9 +72,16 @@ export async function prosesLaporanTeks(input: LaporanInput) {
   const tokoInfo = unit.toko ? `dari ${unit.toko.namaToko} (${unit.toko.kodeToko})` : ''
 
   if (sparepart.stokInventory > 0) {
+    // Reserve: ambil dari stok BISA JUAL dulu, sisa ke stok GARANSI; total selalu sinkron.
+    const ambilJual = Math.min(sparepart.stokJual, 1)
+    const ambilGaransi = 1 - ambilJual
     await db.masterSparepart.update({
       where: { id: sparepart.id },
-      data: { stokInventory: { decrement: 1 } },
+      data: {
+        stokJual: { decrement: ambilJual },
+        stokGaransi: { decrement: ambilGaransi },
+        stokInventory: { decrement: 1 },
+      },
     })
     const noSttb = generateNoSttb(noTiket)
     const ticket = await db.serviceRequest.create({
@@ -82,10 +90,13 @@ export async function prosesLaporanTeks(input: LaporanInput) {
         unitAssetId: unit.id,
         status: 'PROSES',
         noSttb,
+        sumberLaporan: 'WA_BOT',
+        lokasiUnit: 'WORKSHOP',
+        penanganan: 'TARIK_WORKSHOP',
         deskripsiKerusakan: cmd.deskripsi,
         fotoKerusakanWa: fotoTerkirim,
         biayaJasa: 0,
-        parts: { create: [{ sparepartId: sparepart.id, qty: 1, statusPart: 'READY' }] },
+        parts: { create: [{ sparepartId: sparepart.id, qty: 1, statusPart: 'READY', statusKonfirmasi: 'READY' }] },
       },
     })
     const replyText = `✅ ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Berhasil Terbuat.*\nPart *READY*: ${sparepart.namaPart} (sisa stok ${sparepart.stokInventory - 1}).\n📄 Link STTB (PDF): /api/sttb/${noTiket}\n\nSilakan teknisi mengangkut unit ke workshop dengan dokumen STTB tersebut.`
@@ -97,6 +108,7 @@ export async function prosesLaporanTeks(input: LaporanInput) {
       deskripsi: `Tiket otomatis via ${labelChannel(channel)} Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} READY (stok direserve) → status PROSES, STTB ${noSttb} diterbitkan otomatis`,
       aktor: `${labelChannel(channel)}-BOT`,
     })
+    await backupSparepartToGit('RESERVE', sparepart.kodePart, `${labelChannel(channel)}-BOT`)
     return { ok: true, reply: replyText, aksi: 'TIKET_DIBUAT_PART_READY', noTiket, noSttb, tiketId: ticket.id, channel, mode: fwd.mode }
   } else {
     const ticket = await db.serviceRequest.create({
@@ -104,10 +116,13 @@ export async function prosesLaporanTeks(input: LaporanInput) {
         noTiket,
         unitAssetId: unit.id,
         status: 'REQUEST',
+        sumberLaporan: 'WA_BOT',
+        lokasiUnit: 'TOKO',
+        penanganan: 'BELUM',
         deskripsiKerusakan: cmd.deskripsi,
         fotoKerusakanWa: fotoTerkirim,
         biayaJasa: 0,
-        parts: { create: [{ sparepartId: sparepart.id, qty: 1, statusPart: 'ORDER_PRODUSEN' }] },
+        parts: { create: [{ sparepartId: sparepart.id, qty: 1, statusPart: 'ORDER_PRODUSEN', statusKonfirmasi: 'MENUNGGU' }] },
       },
     })
     const replyText = `🎫 ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Terbuat.*\n⚠️ Part *KOSONG*: ${sparepart.namaPart} (${sparepart.kodePart}).\n🔴 Notifikasi permintaan sparepart otomatis dikirim ke pihak Produsen.\n\nMenunggu pengiriman sparepart dari produsen.`

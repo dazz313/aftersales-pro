@@ -18,7 +18,7 @@ import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function MasterDataView() {
@@ -43,6 +43,11 @@ export default function MasterDataView() {
   const [newUser, setNewUser] = useState({ nama: '', email: '', username: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
   const [resetPwUser, setResetPwUser] = useState<Pengguna | null>(null)
   const [resetPwValue, setResetPwValue] = useState('')
+  // Edit toko & customer
+  const [editToko, setEditToko] = useState<Toko | null>(null)
+  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
+  const [editCust, setEditCust] = useState<Customer | null>(null)
+  const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
 
   const invalidate = (keys: string[]) => {
     keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }))
@@ -63,6 +68,16 @@ export default function MasterDataView() {
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson(`/api/pengguna/${id}`, { ...data, aktor: role }, 'PATCH'),
     onSuccess: () => { invalidate(['pengguna']); toast({ title: 'Akun diperbarui' }) },
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
+  })
+  const updateToko = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson<Toko>(`/api/toko/${id}`, { ...data, aktor: role }, 'PATCH'),
+    onSuccess: (t) => { invalidate(['toko', 'dashboard', 'alerts', 'kunjungan', 'units']); setEditToko(null); toast({ title: 'Toko diperbarui', description: `Data ${t.namaToko} tersimpan.` }) },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui toko', description: e.message, variant: 'destructive' }),
+  })
+  const updateCust = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson<Customer>(`/api/customer/${id}`, { ...data, aktor: role }, 'PATCH'),
+    onSuccess: (c) => { invalidate(['customers', 'units']); setEditCust(null); toast({ title: 'Customer diperbarui', description: `Data ${c.nama} tersimpan.` }) },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui customer', description: e.message, variant: 'destructive' }),
   })
   const resetPw = useMutation({
     mutationFn: () => postJson(`/api/pengguna/${resetPwUser!.id}`, { password: resetPwValue, aktor: role }, 'PATCH'),
@@ -110,7 +125,7 @@ export default function MasterDataView() {
                       <TableHead>Siklus</TableHead>
                       <TableHead>Visit Terakhir</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Barcode Toko</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -132,9 +147,14 @@ export default function MasterDataView() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
-                            <Barcode className="mr-1 h-3 w-3" /> {t.barcodeToko}
-                          </Button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit) }) }} aria-label={`Edit ${t.namaToko}`}>
+                              <Pencil className="mr-1 h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
+                              <Barcode className="mr-1 h-3 w-3" /> {t.barcodeToko}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -163,7 +183,12 @@ export default function MasterDataView() {
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {(customerList ?? []).map((c) => (
                   <div key={c.id} className="rounded-xl border p-4">
-                    <p className="text-sm font-semibold text-slate-800">{c.nama}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-semibold text-slate-800">{c.nama}</p>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-slate-500 hover:text-emerald-700" onClick={() => { setEditCust(c); setEditCustForm({ nama: c.nama, noWa: c.noWa ?? '', alamat: c.alamat ?? '' }) }} aria-label={`Edit ${c.nama}`} title="Edit customer">
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                     <p className="text-xs text-slate-500">{c.noWa ?? '-'}</p>
                     <p className="mt-1 line-clamp-2 text-xs text-slate-500">{c.alamat}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
@@ -378,6 +403,57 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setResetPwUser(null)}>Batal</Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={resetPwValue.length < 6 || resetPw.isPending} onClick={() => resetPw.mutate()}>
               Simpan Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog edit toko */}
+      <Dialog open={!!editToko} onOpenChange={(o) => !o && setEditToko(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Toko {editToko && <span className="font-mono text-sm text-slate-500">{editToko.kodeToko}</span>}</DialogTitle>
+            <DialogDescription>Kode toko &amp; barcode tidak dapat diubah karena dipakai di unit, kunjungan, dan tiket.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2"><Label>Nama Toko</Label><Input value={editTokoForm.namaToko} onChange={(e) => setEditTokoForm({ ...editTokoForm, namaToko: e.target.value })} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Alamat</Label><Input value={editTokoForm.alamat} onChange={(e) => setEditTokoForm({ ...editTokoForm, alamat: e.target.value })} placeholder="—" /></div>
+            <div className="space-y-1.5"><Label>Kontak</Label><Input value={editTokoForm.kontak} onChange={(e) => setEditTokoForm({ ...editTokoForm, kontak: e.target.value })} placeholder="—" /></div>
+            <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" min="1" value={editTokoForm.frekuensiVisit} onChange={(e) => setEditTokoForm({ ...editTokoForm, frekuensiVisit: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditToko(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!editToko || !editTokoForm.namaToko.trim() || Number(editTokoForm.frekuensiVisit) < 1 || updateToko.isPending}
+              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit) } })}
+            >
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog edit customer */}
+      <Dialog open={!!editCust} onOpenChange={(o) => !o && setEditCust(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Customer</DialogTitle>
+            <DialogDescription>Perubahan nama langsung tercermin di unit milik customer ini.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <div className="space-y-1.5"><Label>Nama</Label><Input value={editCustForm.nama} onChange={(e) => setEditCustForm({ ...editCustForm, nama: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>No. WhatsApp</Label><Input value={editCustForm.noWa} onChange={(e) => setEditCustForm({ ...editCustForm, noWa: e.target.value })} placeholder="628xxx" /></div>
+            <div className="space-y-1.5"><Label>Alamat</Label><Input value={editCustForm.alamat} onChange={(e) => setEditCustForm({ ...editCustForm, alamat: e.target.value })} placeholder="—" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditCust(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!editCust || !editCustForm.nama.trim() || updateCust.isPending}
+              onClick={() => editCust && updateCust.mutate({ id: editCust.id, data: { nama: editCustForm.nama.trim(), noWa: editCustForm.noWa.trim() || null, alamat: editCustForm.alamat.trim() || null } })}
+            >
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
             </Button>
           </DialogFooter>
         </DialogContent>

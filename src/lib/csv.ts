@@ -310,9 +310,13 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
 // ============================================================
 
 export const SPAREPART_ALIASES: Record<string, string> = {
-  kodePart: 'kode_part|kodepart|kode part|kode|part_number|partnumber|part_no|sku',
-  namaPart: 'nama_part|namapart|nama part|nama|name|nama_barang',
-  stokInventory: 'stok_inventory|stok_konsinyasi|stokkonsinyasi|stok|qty|quantity|jumlah|stok_awal',
+  kodePart: 'kode_part|kodepart|kode part|kode|kode_sparepart|part_number|partnumber|part_no|sku',
+  namaPart: 'nama_part|namapart|nama part|nama|nama_sparepart|name|nama_barang',
+  brandKompatibel: 'brand_kompatibel|brandkompatibel|brand kompatibel|brand|merk|kompatibel|compatible_brand',
+  supplier: 'supplier|pemasok|vendor|distributor',
+  stokJual: 'stok_jual|stokjual|stok jual|bisa_jual|bisajual|stok_bisa_jual|jual',
+  stokGaransi: 'stok_garansi|stokgaransi|stok garansi|garansi|stok_klaim',
+  stokInventory: 'stok_inventory|stok_konsinyasi|stokkonsinyasi|stok|stok_total|qty|quantity|jumlah|stok_awal',
   reorderLimit: 'reorder_limit|reorderlimit|reorder|rop|limit|min_stok|minstok|stok_minimum',
   hargaKlaim: 'harga_klaim|hargaklaim|harga klaim|harga|harga_satuan|price',
 }
@@ -325,6 +329,10 @@ export const SPAREPART_REQUIRED_LABELS: Record<string, string> = {
 export interface SparepartInsertData {
   kodePart: string
   namaPart: string
+  brandKompatibel: string
+  supplier: string
+  stokJual: number
+  stokGaransi: number
   stokInventory: number
   reorderLimit: number
   hargaKlaim: number
@@ -332,6 +340,10 @@ export interface SparepartInsertData {
 
 export interface SparepartUpdateData {
   namaPart: string
+  brandKompatibel?: string
+  supplier?: string
+  stokJual?: number
+  stokGaransi?: number
   stokInventory?: number
   reorderLimit?: number
   hargaKlaim?: number
@@ -378,8 +390,31 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
     }
     seen.add(kode)
 
-    // stok (int ≥ 0, default 0)
-    let stokInventory = 0
+    const brandKompatibel = get('brandKompatibel')
+    const supplier = get('supplier')
+
+    // stok bisa-jual & garansi (int ≥ 0, default 0).
+    // Kompatibel legacy: bila kolom baru kosong tapi stok_inventory/total ada → seluruhnya stok jual.
+    const parseStok = (label: string, raw: string): { ok: boolean; val: number; msg?: string } => {
+      if (!raw) return { ok: true, val: 0 }
+      const n = parseNum(raw)
+      if (n === null || Number.isNaN(n) || n < 0) {
+        return { ok: false, val: 0, msg: `Stok ${label} "${raw}" tidak valid (isi angka ≥ 0, kosongkan untuk default 0)` }
+      }
+      return { ok: true, val: Math.round(n) }
+    }
+    const sj = parseStok('jual', get('stokJual'))
+    if (!sj.ok) {
+      acc.push({ row: rowNum, kode, nama, status: 'error', message: sj.msg! })
+      return
+    }
+    const sg = parseStok('garansi', get('stokGaransi'))
+    if (!sg.ok) {
+      acc.push({ row: rowNum, kode, nama, status: 'error', message: sg.msg! })
+      return
+    }
+    let stokJual = sj.val
+    let stokGaransi = sg.val
     const st = get('stokInventory')
     if (st) {
       const n = parseNum(st)
@@ -387,8 +422,11 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
         acc.push({ row: rowNum, kode, nama, status: 'error', message: `Stok "${st}" tidak valid (isi angka ≥ 0, kosongkan untuk default 0)` })
         return
       }
-      stokInventory = Math.round(n)
+      if (!get('stokJual') && !get('stokGaransi')) {
+        stokJual = Math.round(n) // file lama: total → stok jual
+      }
     }
+    const stokInventory = stokJual + stokGaransi || (st ? Math.round(parseNum(st) ?? 0) : 0)
 
     // reorder limit (int ≥ 0, default 5)
     let reorderLimit = 5
@@ -420,10 +458,12 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
       nama,
       status: 'pending',
       data: {
-        insert: { kodePart: kode, namaPart: nama, stokInventory, reorderLimit, hargaKlaim },
+        insert: { kodePart: kode, namaPart: nama, brandKompatibel, supplier, stokJual, stokGaransi, stokInventory, reorderLimit, hargaKlaim },
         update: {
           namaPart: nama,
-          ...(st ? { stokInventory } : {}),
+          ...(get('brandKompatibel') ? { brandKompatibel } : {}),
+          ...(get('supplier') ? { supplier } : {}),
+          ...(get('stokJual') || get('stokGaransi') || st ? { stokJual, stokGaransi, stokInventory } : {}),
           ...(rl ? { reorderLimit } : {}),
           ...(hk ? { hargaKlaim } : {}),
         },

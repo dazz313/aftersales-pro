@@ -100,15 +100,36 @@ const CONFIG: Record<
     templateUrl: '/api/sparepart/import',
     apiUrl: '/api/sparepart/import',
     requiredCols: ['kode_part', 'nama_part'],
-    optionalCols: ['stok_inventory', 'reorder_limit', 'harga_klaim'],
+    optionalCols: ['brand_kompatibel', 'supplier', 'stok_jual', 'stok_garansi', 'stok_inventory', 'reorder_limit', 'harga_klaim'],
     columns: [
       { label: 'Kode', get: (r) => r.kode },
       { label: 'Nama Part', get: (r) => r.nama },
       {
-        label: 'Stok',
+        label: 'Brand Kompatibel',
         get: (r) => {
-          const d = r.data as { insert?: { stokInventory?: number } } | undefined
-          return d?.insert?.stokInventory != null ? String(d.insert.stokInventory) : '—'
+          const d = r.data as { insert?: { brandKompatibel?: string } } | undefined
+          return d?.insert?.brandKompatibel?.trim() || '—'
+        },
+      },
+      {
+        label: 'Supplier',
+        get: (r) => {
+          const d = r.data as { insert?: { supplier?: string } } | undefined
+          return d?.insert?.supplier?.trim() || '—'
+        },
+      },
+      {
+        label: 'Jual',
+        get: (r) => {
+          const d = r.data as { insert?: { stokJual?: number } } | undefined
+          return d?.insert?.stokJual != null ? String(d.insert.stokJual) : '—'
+        },
+      },
+      {
+        label: 'Garansi',
+        get: (r) => {
+          const d = r.data as { insert?: { stokGaransi?: number } } | undefined
+          return d?.insert?.stokGaransi != null ? String(d.insert.stokGaransi) : '—'
         },
       },
       {
@@ -407,7 +428,7 @@ export default function CsvImportDialog({ kind, open, onOpenChange, existingCode
                   <span className="ml-auto text-slate-400">{parsed?.rows.length ?? 0} baris terbaca</span>
                 </div>
 
-                <div className="max-h-72 overflow-y-auto rounded-lg border">
+                <div className="max-h-72 overflow-auto rounded-lg border">
                   <Table>
                     <TableHeader className="sticky top-0 z-10 bg-slate-50">
                       <TableRow>

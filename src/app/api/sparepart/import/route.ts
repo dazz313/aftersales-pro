@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { backupSparepartToGit } from '@/lib/git-backup'
 import { parseCsv, validateSparepartRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
 
 // GET /api/sparepart/import — unduh template CSV import sparepart
 export async function GET() {
   const csv = buildCsvTemplate(
-    ['kode_part', 'nama_part', 'stok_inventory', 'reorder_limit', 'harga_klaim'],
+    ['kode_part', 'nama_part', 'brand_kompatibel', 'supplier', 'stok_jual', 'stok_garansi', 'stok_inventory', 'reorder_limit', 'harga_klaim'],
     [
-      ['PRT-KMP-075', 'Kompresor AC 3/4 PK', '20', '5', '450000'],
-      ['PRT-FAN-101', 'Motor Fan Indoor 1 PK', '15', '4', '185000'],
-      ['PRT-PCB-220', 'PCB Mainboard Inverter', '8', '3', '720000'],
+      ['PRT-KMP-075', 'Kompresor AC 3/4 PK', 'Samsung, LG', 'PT Sinar Elektronik', '15', '5', '', '5', '450000'],
+      ['PRT-FAN-101', 'Motor Fan Indoor 1 PK', 'Daikin', 'PT Sinar Elektronik', '12', '3', '', '4', '185000'],
+      ['PRT-PCB-220', 'PCB Mainboard Inverter', 'Sharp, Polytron', 'CV Sparepart Jaya', '6', '2', '', '3', '720000'],
     ]
   )
   return new Response(csv, {
@@ -116,6 +117,7 @@ export async function POST(request: Request) {
         deskripsi: `Import CSV massal sparepart: ${inserted} ditambahkan, ${updated} diperbarui, ${skipped} dilewati, ${failed} gagal (mode: ${mode === 'skip' ? 'lewati' : 'perbarui'})`,
         aktor,
       })
+      await backupSparepartToGit('IMPORT', `${inserted}+${updated}`, aktor)
     }
 
     const toDetail = ({ row, kode, nama, message }: { row: number; kode: string; nama: string; message?: string }) => ({ row, kode, nama, message: message ?? '' })

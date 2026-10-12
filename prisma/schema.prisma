@@ -60,6 +60,15 @@ model MasterSparepart {
   id             Int                  @id @default(autoincrement())
   kodePart       String               @unique
   namaPart       String
+  // 5 komponen utama sparepart:
+  // 1. kodePart (kode sparepart) · 2. namaPart (nama sparepart)
+  // 3. brandKompatibel (brand kompatibel, koma-dipisah mis. "Samsung, LG")
+  // 4. stokJual (bisa dijual) + stokGaransi (stok garansi/klaim) — stokInventory = total
+  // 5. supplier (nama supplier)
+  brandKompatibel String              @default("")
+  supplier        String              @default("")
+  stokJual       Int                  @default(0)
+  stokGaransi    Int                  @default(0)
   stokInventory Int                  @default(0)
   reorderLimit   Int                  @default(5)
   hargaKlaim     Float                @default(0) // nilai klaim per unit ke produsen
@@ -105,6 +114,13 @@ model Kunjungan {
 // 6. Service Request Main Table (service_request)
 // status: REQUEST | PROSES | FINISH
 // status_klaim_produsen: DRAFT | SUBMITTED | PAID
+// --- Alur service lapangan (toko → produsen → workshop → toko):
+// sumberLaporan: KUNJUNGAN | LAPORAN_TOKO | LAPORAN_CUSTOMER | WA_BOT | MANUAL
+// lokasiUnit: TOKO (unit di toko) | WORKSHOP (ditarik via STTB)
+// penanganan: BELUM | TUNGGU_PART_TOKO (teregistrasi, simpan di toko krn part tidak ready)
+//             | DI_TOKO (dikerjakan di toko) | TARIK_WORKSHOP (ditarik + STTB)
+// noSuratJalan: nomor SJ saat part rusak dikirim ke produsen
+// sttbDicabut: true saat unit kembali ke toko (STTB dicabut)
 // ==========================================
 model ServiceRequest {
   id                  Int                  @id @default(autoincrement())
@@ -112,6 +128,12 @@ model ServiceRequest {
   unitAssetId         Int
   status              String               @default("REQUEST")
   noSttb              String?
+  sumberLaporan       String               @default("MANUAL")
+  lokasiUnit          String               @default("TOKO")
+  penanganan          String               @default("BELUM")
+  noSuratJalan        String?
+  sttbDicabut         Boolean              @default(false)
+  tglKembaliKeToko    DateTime?
   deskripsiKerusakan  String?
   fotoKerusakanWa     String?
   fotoNotaStempel     String?
@@ -130,6 +152,7 @@ model ServiceRequest {
 // ==========================================
 // 7. Service Request Sparepart Junction (service_request_part)
 // status_part: READY | ORDER_PRODUSEN
+// status_konfirmasi: jawaban produsen via WA — MENUNGGU | READY | TIDAK_READY
 // ==========================================
 model ServiceRequestPart {
   id               Int             @id @default(autoincrement())
@@ -137,6 +160,7 @@ model ServiceRequestPart {
   sparepartId      Int
   qty              Int             @default(1)
   statusPart       String          @default("READY")
+  statusKonfirmasi String          @default("MENUNGGU")
   serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
   sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
 }
