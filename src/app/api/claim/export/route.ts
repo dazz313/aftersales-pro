@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 import * as XLSX from 'xlsx'
 
 /**
@@ -146,6 +147,7 @@ export async function GET(request: Request) {
       deskripsi: `Export Excel rekap klaim (${tickets.length} tiket, total Rp ${totalKlaim.toLocaleString('id-ID')})`,
       aktor: 'ADMIN_WORKSHOP',
     })
+    await autoGitBackup('EXPORT', 'klaim_excel', `${tickets.length}tiket`)
 
     return new NextResponse(new Uint8Array(buf), {
       status: 200,

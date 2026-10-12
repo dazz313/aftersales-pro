@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 
 // GET /api/pengaturan - profile perusahaan
 export async function GET() {
@@ -34,6 +35,7 @@ export async function PUT(request: Request) {
       deskripsi: `Pengaturan perusahaan diperbarui: ${keys.join(', ')}`,
       aktor: body.aktor,
     })
+    await autoGitBackup('UPDATE', 'pengaturan', keys.join(','), body.aktor)
     const settings = await db.pengaturan.findMany({ orderBy: { kunci: 'asc' } })
     return NextResponse.json({ ok: true, list: settings })
   } catch (error) {

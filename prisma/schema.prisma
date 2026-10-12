@@ -129,6 +129,7 @@ model ServiceRequest {
   status              String               @default("REQUEST")
   noSttb              String?
   sumberLaporan       String               @default("MANUAL")
+  tipeCustomer        String               @default("PERORANGAN") // TOKO (stok toko → otomatis garansi) | PERORANGAN
   lokasiUnit          String               @default("TOKO")
   penanganan          String               @default("BELUM")
   noSuratJalan        String?

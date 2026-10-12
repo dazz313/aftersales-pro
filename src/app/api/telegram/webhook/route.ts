@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getGatewayConfig } from '@/lib/gateway'
+import { autoGitBackup } from '@/lib/git-backup'
 import { saveInboxFile, isImageName, type InboxKind } from '@/lib/telegram-files'
 import { scanImage } from '@/lib/vision'
 import { prosesLaporanTeks } from '@/lib/laporan'
@@ -87,12 +88,14 @@ export async function POST(request: Request) {
       })
       const pending = await db.inboxItem.count({ where: { status: 'PENDING' } })
       if (cfg.tgToken) await balasTG(cfg.tgToken, cfg.tgChatId || chatId, `📥 Pesan diterima & masuk PENAMPUNGAN (antrean #${pending}). Menunggu review admin di menu Inbox.`)
+      await autoGitBackup('GATEWAY', 'inbox_item', 'TEKS_DITAHAN', pengirim)
       return NextResponse.json({ ok: true, aksi: 'TEKS_DITAHAN_DI_INBOX', antrean: pending })
     }
 
     // ---- B. Ada foto: wajib token untuk unduh ----
     if (!cfg.tgToken) {
       await db.waMessage.create({ data: { pengirim, channel: 'TELEGRAM', tipe: 'IN', pesan: caption || '(foto — token bot belum diisi)', meta: JSON.stringify({ aksi: 'FOTO_TANPA_TOKEN' }) } })
+      await autoGitBackup('GATEWAY', 'gateway_message', 'FOTO_TANPA_TOKEN', pengirim)
       return NextResponse.json({ ok: true, aksi: 'FOTO_TANPA_TOKEN' })
     }
     const dl = await downloadTelegramFile(cfg.tgToken, fileId)
@@ -131,6 +134,7 @@ export async function POST(request: Request) {
       await balasTG(cfg.tgToken, cfg.tgChatId || chatId, kind === 'KUNJUNGAN'
         ? `📥 Barcode toko *${tokoCocok!.namaToko} (${tokoCocok!.kodeToko})* terdeteksi → masuk folder KUNJUNGAN (antrean #${pending}).\nMenunggu konfirmasi admin di menu Inbox.`
         : `📥 Foto diterima → masuk folder SERVICE (antrean #${pending}).\n🔖 Barcode: ${barcode ?? '-'}\n📝 Teks: ${(ocrText || '-').slice(0, 300)}\n\nMenunggu review admin di menu Inbox.`)
+      await autoGitBackup('GATEWAY', 'inbox_item', `DITAHAN_${kind}`, pengirim)
       return NextResponse.json({ ok: true, aksi: 'DITAHAN_DI_INBOX', folder: kind, file: filePathRel, barcode, ocrText, antrean: pending })
     }
 
@@ -144,7 +148,8 @@ export async function POST(request: Request) {
     })
     await balasTG(cfg.tgToken, cfg.tgChatId || chatId,
       `📷 Foto tersimpan.\n🔖 Barcode: ${barcode ?? '-'}\n📝 Teks: ${(ocrText || '-').slice(0, 500)}\n\nTidak ada perintah #LAPOR — item masuk Inbox untuk review.`)
-    return NextResponse.json({ ok: true, aksi: 'FOTO_TERSIMPAN_TANPA_LAPOR', folder: kind, file: filePathRel, barcode, ocrText })
+      await autoGitBackup('GATEWAY', 'inbox_item', 'FOTO_TERSIMPAN', pengirim)
+      return NextResponse.json({ ok: true, aksi: 'FOTO_TERSIMPAN_TANPA_LAPOR', folder: kind, file: filePathRel, barcode, ocrText })
   } catch (error) {
     console.error('Telegram webhook error:', error)
     return NextResponse.json({ error: 'Webhook processing gagal' }, { status: 500 })

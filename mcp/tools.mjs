@@ -886,6 +886,19 @@ async function hListAudit(args) {
 
 // ---------- Dispatcher ----------
 
+// Tool yang mengubah data → selalu dibackup otomatis ke git
+const MUTATING_TOOLS = new Set([
+  'add_toko',
+  'update_toko',
+  'add_customer',
+  'add_sparepart',
+  'update_sparepart',
+  'add_unit',
+  'record_kunjungan',
+  'send_gateway_message',
+  'set_gateway_config',
+])
+
 const HANDLERS = {
   get_stats: hGetStats,
   list_toko: hListToko,
@@ -914,7 +927,13 @@ export async function handleToolCall({ name, arguments: args }) {
     return errOut(`Tool "${name}" tidak dikenal. Gunakan tools/list untuk melihat daftar tool yang tersedia.`)
   }
   try {
-    return await handler(args ?? {})
+    const out = await handler(args ?? {})
+    // Semua perubahan via MCP otomatis dibackup ke git (best-effort, tak blokir respons)
+    if (!out?.isError && MUTATING_TOOLS.has(name)) {
+      const { queueGitBackup } = await import('./git-backup.mjs')
+      queueGitBackup(db, `mcp ${name}`)
+    }
+    return out
   } catch (e) {
     console.error(`[MCP] Tool ${name} gagal:`, e)
     return errOut(`${e.message}`)

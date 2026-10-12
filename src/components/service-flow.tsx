@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { ServiceTicket } from '@/lib/api'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import type { ServiceTicket, Sparepart } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import {
   CheckCircle2,
@@ -125,6 +126,9 @@ export function ServiceFlowStepper({ ticket }: { ticket: ServiceTicket }) {
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Alur Service Lapangan</p>
       <div className="mb-2 flex flex-wrap gap-1.5">
         <Badge variant="outline" className="text-[9px]">{SUMBER_LABEL[ticket.sumberLaporan] ?? ticket.sumberLaporan}</Badge>
+        <Badge variant="outline" className={cn('text-[9px]', ticket.tipeCustomer === 'TOKO' ? 'border-emerald-300 text-emerald-700' : 'border-slate-300 text-slate-600')}>
+          {ticket.tipeCustomer === 'TOKO' ? 'Stok toko (garansi)' : 'Perorangan'}
+        </Badge>
         <Badge variant="outline" className={cn('text-[9px]', ticket.lokasiUnit === 'WORKSHOP' ? 'border-violet-300 text-violet-700' : 'border-slate-300 text-slate-600')}>
           {ticket.lokasiUnit === 'WORKSHOP' ? 'Unit di WORKSHOP' : 'Unit di TOKO'}
         </Badge>
@@ -166,11 +170,14 @@ interface ActionsProps {
   ticket: ServiceTicket
   pending: boolean
   onAction: (body: Record<string, unknown>) => void
+  spareparts?: Sparepart[]
 }
 
 /** Tombol aksi kontekstual sesuai tahap alur. */
-export function ServiceFlowActions({ ticket, pending, onAction }: ActionsProps) {
+export function ServiceFlowActions({ ticket, pending, onAction, spareparts }: ActionsProps) {
   const [sj, setSj] = useState('')
+  const [tambahId, setTambahId] = useState('')
+  const [tambahQty, setTambahQty] = useState('1')
   const butuhPart = ticket.parts.length > 0
   const menunggu = ticket.parts.filter((p) => p.statusKonfirmasi === 'MENUNGGU')
   const adaTidakReady = ticket.parts.some((p) => p.statusKonfirmasi === 'TIDAK_READY')
@@ -225,6 +232,34 @@ export function ServiceFlowActions({ ticket, pending, onAction }: ActionsProps) 
         <Button size="sm" variant="outline" className="h-7 w-full border-teal-300 text-[11px] text-teal-700" disabled={pending} onClick={() => onAction({ aksi: 'TERIMA_PART_PRODUSEN' })}>
           <PackageCheck className="mr-1 h-3 w-3" /> Part Baru Diterima ({orderParts.length})
         </Button>
+      )}
+
+      {(ticket.status === 'PROSES' || ticket.status === 'REQUEST') && (spareparts ?? []).length > 0 && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Tambah sparepart saat pengerjaan</Label>
+          <div className="flex gap-1.5">
+            <Select value={tambahId} onValueChange={setTambahId}>
+              <SelectTrigger className="h-7 text-[11px]" aria-label="Pilih sparepart tambahan"><SelectValue placeholder="— Pilih part —" /></SelectTrigger>
+              <SelectContent className="max-h-56">
+                {(spareparts ?? []).map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)} textValue={`${p.kodePart} ${p.namaPart}`}>
+                    {p.kodePart} · {p.namaPart} (jual {p.stokJual}/garansi {p.stokGaransi})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input type="number" min="1" value={tambahQty} onChange={(e) => setTambahQty(e.target.value)} className="h-7 w-16 text-[11px]" aria-label="Jumlah" />
+            <Button
+              size="sm"
+              className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
+              disabled={pending || !tambahId || Number(tambahQty) < 1}
+              onClick={() => { onAction({ aksi: 'TAMBAH_PART', sparepartId: Number(tambahId), qty: Number(tambahQty) }); setTambahId(''); setTambahQty('1') }}
+            >
+              Tambah
+            </Button>
+          </div>
+          <p className="text-[10px] text-slate-400">Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen.</p>
+        </div>
       )}
 
       {ticket.status === 'PROSES' && butuhPart && !ticket.noSuratJalan && (

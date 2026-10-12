@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 import { getSession } from '@/lib/auth'
 import * as XLSX from 'xlsx'
 import QRCode from 'qrcode'
@@ -194,6 +195,7 @@ export async function POST(request: Request) {
       })
       // Cap nomor SJ ke tiket agar alur terpantau (part rusak terkirim ke produsen)
       await db.serviceRequest.updateMany({ where: { noTiket: { in: noTiketList } }, data: { noSuratJalan: noSJ } })
+      await autoGitBackup('SURAT_JALAN', 'service_request', noSJ, aktor)
 
       return new NextResponse(new Uint8Array(buf), {
         status: 200,

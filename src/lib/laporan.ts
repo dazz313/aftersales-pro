@@ -1,6 +1,6 @@
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
-import { backupSparepartToGit } from '@/lib/git-backup'
+import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { sendGatewayMessage, labelChannel, type GatewayChannel } from '@/lib/gateway'
 
 export type { GatewayChannel }
@@ -30,8 +30,15 @@ async function balas(channel: GatewayChannel, text: string, meta: Record<string,
 /**
  * Proses satu laporan teks sampai tuntas (dipakai webhook WA, webhook Telegram,
  * dan persetujuan Inbox). Return serializable — aman di-return sebagai JSON.
+ * Setiap pesan gateway mengubah data (IN + balasan OUT) → selalu backup git.
  */
 export async function prosesLaporanTeks(input: LaporanInput) {
+  const out = await prosesLaporanTeksInner(input)
+  await autoGitBackup('GATEWAY', 'gateway_message', (out as { aksi?: string }).aksi ?? '', input.pengirim)
+  return out
+}
+
+async function prosesLaporanTeksInner(input: LaporanInput) {
   const { pesan, pengirim, channel, foto } = input
   const fotoTerkirim = foto ?? null
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 
 // GET /api/unit - list unit asset + data barcode
 export async function GET() {
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       deskripsi: `Unit baru teregistrasi: ${unit.modelUnit} (${unit.statusGaransi})`,
       aktor: body.aktor,
     })
+    await autoGitBackup('CREATE', 'unit_asset', unit.serialNumber, body.aktor)
     return NextResponse.json(unit, { status: 201 })
   } catch (error) {
     console.error('Unit POST error:', error)

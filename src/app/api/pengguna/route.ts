@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 import { hashPassword } from '@/lib/auth-node'
 import { getSession } from '@/lib/auth'
 
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
       deskripsi: `Karyawan baru: ${user.nama} (${role}) — login ${body.password ? 'password kustom' : 'password default'}`,
       aktor: body.aktor,
     })
+    await autoGitBackup('CREATE', 'pengguna', user.email, body.aktor)
     return NextResponse.json(user, { status: 201 })
   } catch (error) {
     console.error('Pengguna POST error:', error)

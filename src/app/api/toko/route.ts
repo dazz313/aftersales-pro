@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 
 // GET /api/toko - list semua toko + status kepatuhan visit
 export async function GET() {
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
       deskripsi: `Toko baru ditambahkan: ${toko.namaToko} — barcode kunjungan ${toko.barcodeToko}`,
       aktor: body.aktor,
     })
+    await autoGitBackup('CREATE', 'master_toko', toko.kodeToko, body.aktor)
     return NextResponse.json(toko, { status: 201 })
   } catch (error) {
     console.error('Toko POST error:', error)

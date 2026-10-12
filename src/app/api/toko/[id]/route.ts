@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 
 // PATCH /api/toko/[id] - update toko (termasuk check-in visit manual)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +23,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       deskripsi: `Data toko diperbarui: ${Object.keys(data).join(', ')}`,
       aktor: body.aktor,
     })
+    await autoGitBackup('UPDATE', 'master_toko', toko.kodeToko, body.aktor)
     return NextResponse.json(toko)
   } catch (error) {
     console.error('Toko PATCH error:', error)
@@ -48,6 +50,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       entitasId: toko.kodeToko,
       deskripsi: `Toko dihapus: ${toko.namaToko}`,
     })
+    await autoGitBackup('DELETE', 'master_toko', toko.kodeToko)
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('Toko DELETE error:', error)

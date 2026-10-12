@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 
 // PATCH /api/customer/[id] - update data customer (nama, no WA, alamat)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -33,6 +34,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       deskripsi: `Data customer diperbarui: ${Object.keys(data).join(', ')} (${customer.nama})`,
       aktor: body.aktor,
     })
+    await autoGitBackup('UPDATE', 'master_customer', customer.nama, body.aktor)
     return NextResponse.json(customer)
   } catch (error) {
     console.error('Customer PATCH error:', error)
@@ -59,6 +61,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       entitasId: String(customer.id),
       deskripsi: `Customer dihapus: ${customer.nama}`,
     })
+    await autoGitBackup('DELETE', 'master_customer', customer.nama)
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error('Customer DELETE error:', error)

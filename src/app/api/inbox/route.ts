@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { autoGitBackup } from '@/lib/git-backup'
 import { moveInboxFile, type InboxKind } from '@/lib/telegram-files'
 import { prosesLaporanTeks } from '@/lib/laporan'
 
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
     })
     const { logAudit } = await import('@/lib/audit')
     await logAudit({ aksi: 'INBOX_REJECT', entitas: 'inbox_item', entitasId: String(id), deskripsi: `Inbox #${id} [${folder}] ditolak: ${done.alasanTolak}`, aktor })
+    await autoGitBackup('UPDATE', 'inbox_item', `#${id}`, aktor)
     return NextResponse.json({ ok: true, item: done })
   }
 
@@ -50,6 +52,7 @@ export async function POST(request: Request) {
     const done = await db.inboxItem.update({ where: { id }, data: { folder: tujuan, filePath: pathBaru } })
     const { logAudit } = await import('@/lib/audit')
     await logAudit({ aksi: 'INBOX_PINDAH', entitas: 'inbox_item', entitasId: String(id), deskripsi: `Inbox #${id} dipindah ${folder} → ${tujuan} (file ikut pindah)`, aktor })
+    await autoGitBackup('UPDATE', 'inbox_item', `#${id}`, aktor)
     return NextResponse.json({ ok: true, item: done })
   }
 
@@ -58,6 +61,7 @@ export async function POST(request: Request) {
     const done = await db.inboxItem.update({ where: { id }, data: { status: 'ARCHIVED', tujuan: 'ARSIP', direviewOleh: aktor, direviewAt: new Date() } })
     const { logAudit } = await import('@/lib/audit')
     await logAudit({ aksi: 'INBOX_ARCHIVE', entitas: 'inbox_item', entitasId: String(id), deskripsi: `Inbox #${id} diarsipkan tanpa diteruskan`, aktor })
+    await autoGitBackup('UPDATE', 'inbox_item', `#${id}`, aktor)
     return NextResponse.json({ ok: true, item: done })
   }
 
@@ -71,6 +75,7 @@ export async function POST(request: Request) {
     const done = await db.inboxItem.update({
       where: { id }, data: { status: 'APPROVED', tujuan: 'SERVICE', teksTerusan: teks, hasilRef: (hasil as { noTiket?: string }).noTiket ?? null, direviewOleh: aktor, direviewAt: new Date() },
     })
+    await autoGitBackup('APPROVE', 'inbox_item', `#${id}`, aktor)
     return NextResponse.json({ ok: true, item: done, tiket: hasil })
   }
 
@@ -91,6 +96,7 @@ export async function POST(request: Request) {
     })
     const { logAudit } = await import('@/lib/audit')
     await logAudit({ aksi: 'INBOX_APPROVE_KUNJUNGAN', entitas: 'inbox_item', entitasId: String(id), deskripsi: `Inbox #${id} diteruskan → kunjungan #${kunj.id} (konfirmasi dari Telegram)`, aktor })
+    await autoGitBackup('APPROVE', 'kunjungan', `#${kunj.id}`, aktor)
     return NextResponse.json({ ok: true, item: done, kunjunganId: kunj.id })
   }
 

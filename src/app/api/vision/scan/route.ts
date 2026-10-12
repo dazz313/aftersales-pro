@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { autoGitBackup } from '@/lib/git-backup'
 import { saveInboxFile, isImageName, MAX_FILE_BYTES, type InboxKind } from '@/lib/telegram-files'
 import { scanImage } from '@/lib/vision'
 
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     await db.waMessage.create({
       data: { pengirim, channel: 'TELEGRAM', tipe: 'IN', pesan: caption || `(upload: ${fileName})`, meta: JSON.stringify({ foto: filePathRel, folder: kind, barcode, sumber: 'UPLOAD' }) },
     })
+    await autoGitBackup('CREATE', 'vision_scan', fileName, pengirim)
     return NextResponse.json({ ok: true, scan })
   } catch (error) {
     console.error('Vision scan error:', error)

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 import { parseCsv, validateTokoRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
 
 // GET /api/toko/import — unduh template CSV import toko
@@ -130,6 +131,7 @@ export async function POST(request: Request) {
         deskripsi: `Import CSV massal toko: ${inserted} ditambahkan, ${updated} diperbarui, ${skipped} dilewati, ${failed} gagal (mode: ${mode === 'skip' ? 'lewati' : 'perbarui'})`,
         aktor,
       })
+      await autoGitBackup('IMPORT', 'master_toko', `${inserted}+${updated}`, aktor)
     }
 
     const toDetail = ({ row, kode, nama, message }: { row: number; kode: string; nama: string; message?: string }) => ({ row, kode, nama, message: message ?? '' })

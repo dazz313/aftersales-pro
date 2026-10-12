@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { runBackup, getBackupStatus } from '@/lib/gsheets'
+import { autoGitBackup } from '@/lib/git-backup'
 
 /**
  * GET /api/backup/sheets — status backup terakhir + riwayat + konfigurasi + dueNow (auto)
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}))
     const trigger = body.trigger === 'AUTO' ? 'AUTO' : 'MANUAL'
     const outcome = await runBackup(trigger, body.aktor)
+    await autoGitBackup('BACKUP', 'backup_google_sheets', outcome.status, body.aktor)
     return NextResponse.json(outcome, { status: outcome.status === 'FAILED' ? 502 : 200 })
   } catch (error) {
     console.error('Backup POST error:', error)

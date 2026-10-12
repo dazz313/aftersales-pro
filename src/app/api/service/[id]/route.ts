@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoSttb } from '@/lib/audit'
-import { backupSparepartToGit } from '@/lib/git-backup'
+import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -34,6 +34,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
+ *   | TAMBAH_PART
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
  * → TIDAK_READY: terdaftar & simpan di toko | READY: kerjakan di toko / tarik workshop+STTB
@@ -73,6 +74,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Status REQUEST → PROSES. STTB ${noSttb} diterbitkan untuk penarikan unit ${existing.unitAsset.serialNumber} ke workshop`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -103,6 +105,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         where: { id: ticketId },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -123,6 +126,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: 'Part tidak ready — tiket teregistrasi dan unit tetap disimpan di toko menunggu part dari produsen',
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -152,6 +156,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Status REQUEST → PROSES. Unit dikerjakan di toko (tanpa penarikan unit ke workshop)`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -180,6 +185,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Status REQUEST → PROSES. Unit ditarik ke workshop dengan STTB ${noSttb}`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -204,6 +210,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Part rusak dikirim ke produsen via surat jalan ${noSJ}`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -224,6 +231,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Unit kembali ke toko, STTB ${existing.noSttb ?? '-'} dicabut — siap pengajuan nota servis`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -258,6 +266,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (${body.fotoNotaStempel})`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -289,6 +298,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: 'Klaim diverifikasi & diajukan ke produsen (DRAFT → SUBMITTED)',
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -308,6 +318,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: 'Pembayaran klaim diterima dari produsen (SUBMITTED → PAID)',
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -324,6 +335,60 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         deskripsi: `Biaya jasa diubah menjadi Rp ${Number(body.biayaJasa).toLocaleString('id-ID')}`,
         aktor,
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi khusus: tambah sparepart saat pengerjaan (PROSES/REQUEST).
+    // Stok cukup → READY (direserve); stok kurang → ORDER_PRODUSEN + menunggu konfirmasi.
+    if (aksi === 'TAMBAH_PART') {
+      if (existing.status === 'FINISH') {
+        return NextResponse.json({ error: 'Tiket FINISH tidak dapat ditambah part' }, { status: 409 })
+      }
+      const sparepartId = Number(body.sparepartId)
+      const qty = Math.max(1, Math.trunc(Number(body.qty) || 1))
+      if (!sparepartId) {
+        return NextResponse.json({ error: 'Sparepart wajib dipilih' }, { status: 400 })
+      }
+      const sp = await db.masterSparepart.findUnique({ where: { id: sparepartId } })
+      if (!sp) {
+        return NextResponse.json({ error: 'Sparepart tidak ditemukan' }, { status: 404 })
+      }
+      let statusPart = 'ORDER_PRODUSEN'
+      let statusKonfirmasi = 'MENUNGGU'
+      if (sp.stokInventory >= qty) {
+        const ambilJual = Math.min(sp.stokJual, qty)
+        await db.masterSparepart.update({
+          where: { id: sp.id },
+          data: {
+            stokJual: { decrement: ambilJual },
+            stokGaransi: { decrement: qty - ambilJual },
+            stokInventory: { decrement: qty },
+          },
+        })
+        statusPart = 'READY'
+        statusKonfirmasi = 'READY'
+      }
+      await db.serviceRequestPart.create({
+        data: { serviceRequestId: ticketId, sparepartId: sp.id, qty, statusPart, statusKonfirmasi },
+      })
+      await logAudit({
+        aksi: 'TAMBAH_PART_SERVICE',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: statusPart === 'READY'
+          ? `Tambah part saat pengerjaan: ${sp.kodePart} ×${qty} READY (stok direserve)`
+          : `Tambah part saat pengerjaan: ${sp.kodePart} ×${qty} stok tidak cukup → ORDER ke produsen`,
+        aktor,
+      })
+      if (statusPart === 'READY') {
+        await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
+      }
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 
@@ -353,6 +418,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         where: { id: ticketId },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
     }
 

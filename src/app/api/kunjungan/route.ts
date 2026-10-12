@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 
 // GET /api/kunjungan - riwayat kunjungan + info kepatuhan
 export async function GET() {
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
       aktor: teknisi.nama,
     })
 
+    await autoGitBackup('CREATE', 'kunjungan', `${toko.kodeToko}`, teknisi.nama)
     return NextResponse.json({ ...kunjungan, toko, teknisi }, { status: 201 })
   } catch (error) {
     console.error('Kunjungan POST error:', error)

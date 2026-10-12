@@ -79,6 +79,7 @@ export interface ServicePart {
 }
 
 export type SumberLaporan = 'KUNJUNGAN' | 'LAPORAN_TOKO' | 'LAPORAN_CUSTOMER' | 'WA_BOT' | 'MANUAL'
+export type TipeCustomer = 'TOKO' | 'PERORANGAN'
 export type LokasiUnit = 'TOKO' | 'WORKSHOP'
 export type Penanganan = 'BELUM' | 'TUNGGU_PART_TOKO' | 'DI_TOKO' | 'TARIK_WORKSHOP'
 
@@ -89,6 +90,7 @@ export interface ServiceTicket {
   status: 'REQUEST' | 'PROSES' | 'FINISH'
   noSttb: string | null
   sumberLaporan: SumberLaporan
+  tipeCustomer: TipeCustomer
   lokasiUnit: LokasiUnit
   penanganan: Penanganan
   noSuratJalan: string | null

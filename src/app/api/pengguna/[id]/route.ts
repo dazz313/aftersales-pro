@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
 import { hashPassword } from '@/lib/auth-node'
 import { getSession } from '@/lib/auth'
 
@@ -89,6 +90,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         : `Update karyawan ${user.nama}: ${changes.join(', ')}`,
       aktor: body.aktor,
     })
+    await autoGitBackup(data.passwordHash ? 'RESET_PASSWORD' : 'UPDATE', 'pengguna', user.email, body.aktor)
     return NextResponse.json(user)
   } catch (error) {
     console.error('Pengguna PATCH error:', error)

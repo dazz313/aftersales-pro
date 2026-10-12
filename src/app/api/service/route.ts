@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket } from '@/lib/audit'
-import { backupSparepartToGit } from '@/lib/git-backup'
+import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 
 // GET /api/service - list semua tiket dengan relasi lengkap
 export async function GET() {
@@ -83,16 +83,31 @@ export async function POST(request: Request) {
       body.sumberLaporan === 'KUNJUNGAN' || body.sumberLaporan === 'LAPORAN_TOKO' || body.sumberLaporan === 'LAPORAN_CUSTOMER'
         ? body.sumberLaporan
         : 'MANUAL'
+    // Klasifikasi garansi tiket manual:
+    // - tipe TOKO (stok toko) → otomatis GARANSI, biaya jasa dipaksa 0 (disable)
+    // - tipe PERORANGAN → ikut pilihan klasifikasi (GARANSI dari customer / NON_GARANSI)
+    const tipeCustomer = body.customerType === 'TOKO' ? 'TOKO' : 'PERORANGAN'
+    const klasifikasiDiberi = body.klasifikasiGaransi === 'GARANSI' || body.klasifikasiGaransi === 'NON_GARANSI'
+    let biayaJasa = Number(body.biayaJasa) || 0
+    if (tipeCustomer === 'TOKO' || (tipeCustomer === 'PERORANGAN' && body.klasifikasiGaransi === 'GARANSI')) {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'GARANSI' } })
+      unit.statusGaransi = 'GARANSI'
+      biayaJasa = 0
+    } else if (klasifikasiDiberi) {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'NON_GARANSI' } })
+      unit.statusGaransi = 'NON_GARANSI'
+    }
     const ticket = await db.serviceRequest.create({
       data: {
         noTiket,
         unitAssetId: Number(body.unitAssetId),
         status: 'REQUEST',
         sumberLaporan,
+        tipeCustomer,
         lokasiUnit: 'TOKO',
         penanganan: 'BELUM',
         deskripsiKerusakan: body.deskripsiKerusakan,
-        biayaJasa: Number(body.biayaJasa) || 0,
+        biayaJasa,
         parts: {
           create: partsInput.map((p, i) => ({
             sparepartId: Number(p.sparepartId),
@@ -110,12 +125,13 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${tipeCustomer === 'TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}`,
       aktor: body.aktor,
     })
     if (partResults.some((r) => r.status === 'READY')) {
       await backupSparepartToGit('RESERVE', partsInput.map((p) => String(p.sparepartId)).join(',') || noTiket, body.aktor)
     }
+    await autoGitBackup('CREATE', 'service_request', noTiket, body.aktor)
 
     return NextResponse.json(
       { ...ticket, partResults },
