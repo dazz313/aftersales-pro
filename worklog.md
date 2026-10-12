@@ -1,6 +1,20 @@
 # Worklog
 
 ---
+Task ID: 11
+Agent: Muse Spark (opencode)
+Task: Cek rollback Task 5 lalu kembali ke main (hasil: sama saja)
+
+Work Log:
+- Petakan commit: e35a339=Task5 login/logout, 6f53db7=Task6 iframe, d6a7151=Task7 surat jalan, 0d9da03=Task8 drill-down
+- Branch kembali-task5 dari e35a339 + DB periode + rebuild → login 200 normal; user nilai "sama saja" (bukan versi revisi hilang yang dicari)
+- Kembali ke main: DB di-migrasi ulang (RENAME ke stokInventory, push sinkron), rebuild, login 200 + "Stok Inventory" ✓
+- Pelajaran: revisi tiket manual tidak ada di git/zIP/VSCode-history/server-belum-dicek; rekonstruksi menunggu deskripsi user
+
+Stage Summary:
+- Kondisi kembali seperti sebelum rollback: main 9327926 + server baru, branch kembali-task5 dipertahankan sebagai arsip
+
+---
 Task ID: 10
 Agent: Muse Spark (opencode)
 Task: Git diamankan — checkpoint + perekam otomatis tiap perubahan
