@@ -177,10 +177,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
       for (const p of parts) {
         await db.serviceRequestPart.update({ where: { id: p.id }, data: { statusPart: 'READY' } })
-        // Part datang dari produsen → masuk stok konsinyasi lalu langsung terpakai tiket ini
+        // Part datang dari produsen → masuk stok inventory lalu langsung terpakai tiket ini
         await db.masterSparepart.update({
           where: { id: p.sparepartId },
-          data: { stokKonsinyasi: { increment: p.qty } },
+          data: { stokInventory: { increment: p.qty } },
         })
       }
       await logAudit({

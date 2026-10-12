@@ -40,9 +40,9 @@ const server = new Server(SERVER_INFO, {
     tools: {},
   },
   instructions:
-    'Ini adalah MCP server AfterSales Pro — aplikasi manajemen penjualan, inventory konsinyasi, dan kunjungan teknisi untuk toko sparepart. ' +
+    'Ini adalah MCP server AfterSales Pro — aplikasi manajemen penjualan, inventory, dan kunjungan teknisi untuk toko sparepart. ' +
     'Gunakan get_stats untuk ringkasan bisnis, list_toko/get_toko untuk data toko (termasuk barcode kunjungan per-toko), ' +
-    'record_kunjungan untuk check-in onsite via barcode toko, list_sparepart untuk stok konsinyasi, ' +
+    'record_kunjungan untuk check-in onsite via barcode toko, list_sparepart untuk stok inventory, ' +
     'send_gateway_message untuk notifikasi WhatsApp/Telegram, dan run_backup untuk backup data bersama.',
 })
 

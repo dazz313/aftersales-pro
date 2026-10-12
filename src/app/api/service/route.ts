@@ -60,10 +60,10 @@ export async function POST(request: Request) {
       const sp = await db.masterSparepart.findUnique({ where: { id: Number(p.sparepartId) } })
       if (!sp) continue
       const qty = Number(p.qty) || 1
-      if (sp.stokKonsinyasi >= qty) {
+      if (sp.stokInventory >= qty) {
         await db.masterSparepart.update({
           where: { id: sp.id },
-          data: { stokKonsinyasi: { decrement: qty } },
+          data: { stokInventory: { decrement: qty } },
         })
         partResults.push({ part: sp.namaPart, status: 'READY' })
       } else {

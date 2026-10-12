@@ -96,19 +96,19 @@ const CONFIG: Record<
   },
   sparepart: {
     title: 'Import Massal Sparepart (CSV)',
-    description: 'Daftarkan banyak item sparepart konsinyasi sekaligus — katalog stok langsung terisi.',
+    description: 'Daftarkan banyak item sparepart inventory sekaligus — katalog stok langsung terisi.',
     templateUrl: '/api/sparepart/import',
     apiUrl: '/api/sparepart/import',
     requiredCols: ['kode_part', 'nama_part'],
-    optionalCols: ['stok_konsinyasi', 'reorder_limit', 'harga_klaim'],
+    optionalCols: ['stok_inventory', 'reorder_limit', 'harga_klaim'],
     columns: [
       { label: 'Kode', get: (r) => r.kode },
       { label: 'Nama Part', get: (r) => r.nama },
       {
         label: 'Stok',
         get: (r) => {
-          const d = r.data as { insert?: { stokKonsinyasi?: number } } | undefined
-          return d?.insert?.stokKonsinyasi != null ? String(d.insert.stokKonsinyasi) : '—'
+          const d = r.data as { insert?: { stokInventory?: number } } | undefined
+          return d?.insert?.stokInventory != null ? String(d.insert.stokInventory) : '—'
         },
       },
       {

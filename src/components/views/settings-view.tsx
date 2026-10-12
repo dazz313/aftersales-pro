@@ -21,7 +21,7 @@ import { useAppStore } from '@/lib/store'
 import {
   Building2, Save, ScrollText, ShieldCheck, DatabaseBackup, History,
   Radio, Smartphone, Send, CloudUpload, RefreshCw, CheckCircle2, XCircle, CircleAlert,
-  Monitor, Bot, Copy,
+  Monitor, Bot, Copy, Inbox,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -346,6 +346,35 @@ export default function SettingsView() {
                   <SelectItem value="TELEGRAM">Telegram</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Penampungan Telegram — 2 kantong sesuai konsumen fitur */}
+            <div className="space-y-2.5 rounded-lg border border-sky-200 bg-sky-50/50 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                <Inbox className="h-3.5 w-3.5 text-sky-600" /> Penampungan Telegram (2 folder)
+              </p>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                Semua foto/teks dari grup Telegram ditahan di Inbox sebelum menyentuh fitur.
+                Webhook memilah otomatis: barcode toko → folder kunjungan, laporan #LAPOR → folder service.
+              </p>
+              <div className="space-y-1.5">
+                <Label htmlFor="gw-inbox-kunj" className="text-xs">Folder kunjungan (Master Data Toko)</Label>
+                <Input id="gw-inbox-kunj" value={gw('inbox_folder_kunjungan') || 'upload/telegram-kunjungan'} onChange={(e) => setGwForm({ ...gwForm, inbox_folder_kunjungan: e.target.value })} placeholder="upload/telegram-kunjungan" className="font-mono text-xs" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="gw-inbox-svc" className="text-xs">Folder service request otomatis</Label>
+                <Input id="gw-inbox-svc" value={gw('inbox_folder_service') || 'upload/telegram-service'} onChange={(e) => setGwForm({ ...gwForm, inbox_folder_service: e.target.value })} placeholder="upload/telegram-service" className="font-mono text-xs" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Mode penampungan</Label>
+                <Select value={gw('inbox_mode') || 'TAHAN'} onValueChange={(v) => setGwForm({ ...gwForm, inbox_mode: v })}>
+                  <SelectTrigger aria-label="Mode penampungan"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TAHAN">TAHAN — review di Inbox dulu (disarankan)</SelectItem>
+                    <SelectItem value="OTOMATIS">OTOMATIS — langsung ke fitur</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveGateway.isPending} onClick={() => saveGateway.mutate()}>

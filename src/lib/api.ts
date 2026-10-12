@@ -1,6 +1,7 @@
 import type {
   ServiceTicket, WaMessage, AlertsResponse, DashboardData,
   GatewayStatus, GatewayTestResult, BackupStatus, BackupOutcome,
+  VisionScan, InboxItem,
 } from '@/lib/types'
 
 /**
@@ -114,5 +115,53 @@ export function runBackupNow(): Promise<BackupOutcome> {
   return postJson<BackupOutcome>('/api/backup/sheets', { trigger: 'MANUAL' })
 }
 
-export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewayStatus, GatewayTestResult, BackupStatus, BackupLogItem, BackupOutcome }
+export function fetchVisionScans(): Promise<VisionScan[]> {
+  return fetcher<VisionScan[]>('/api/vision/scan')
+}
+
+export async function uploadVisionScan(
+  file: File, pengirim: string, caption: string, folder: 'KUNJUNGAN' | 'SERVICE' = 'SERVICE'
+): Promise<{ ok: boolean; scan: VisionScan }> {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('pengirim', pengirim)
+  form.append('caption', caption)
+  form.append('folder', folder)
+  const res = await fetch('/api/vision/scan', { method: 'POST', headers: authHeaders(), body: form })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as { error?: string }).error || 'Upload gagal')
+  }
+  return res.json()
+}
+
+/** URL thumbnail; folder dibaca dari filePath bila ada. */
+export function visionFileUrl(scan: VisionScan): string {
+  const p = (scan.filePath || '').toLowerCase()
+  const folder = p.includes('kunjungan') ? 'kunjungan' : 'service'
+  return `/api/vision/file/${folder}/${encodeURIComponent(scan.fileName)}`
+}
+
+export function fetchInbox(status?: string, folder?: string): Promise<{ items: InboxItem[]; pending: number }> {
+  const q = new URLSearchParams()
+  if (status) q.set('status', status)
+  if (folder) q.set('folder', folder)
+  const qs = q.toString()
+  return fetcher<{ items: InboxItem[]; pending: number }>(`/api/inbox${qs ? `?${qs}` : ''}`)
+}
+
+export function prosesInbox(body: Record<string, unknown>): Promise<{ ok: boolean; item: InboxItem; [k: string]: unknown }> {
+  return postJson('/api/inbox', body)
+}
+
+export function inboxFileUrl(item: InboxItem): string | null {
+  if (!item.fileName) return null
+  return `/api/vision/file/${item.folder.toLowerCase()}/${encodeURIComponent(item.fileName)}`
+}
+
+export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewayStatus, GatewayTestResult, BackupStatus, BackupLogItem, BackupOutcome, VisionScan, InboxItem } from '@/lib/types'
+export type {
+  Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
+  Kunjungan, AuditLog, AlertItem,
+} from '@/lib/types'
 

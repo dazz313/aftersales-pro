@@ -52,3 +52,8 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Inbox Telegram (foto unduhan bot — jangan commit)
+/upload/telegram-kunjungan/
+/upload/telegram-service/
+/upload/telegram-inbox/

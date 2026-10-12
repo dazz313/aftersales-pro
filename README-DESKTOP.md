@@ -96,7 +96,7 @@ mengekspos data & operasi AfterSales Pro kepada AI assistant seperti
 | Ringkasan | `get_stats` | KPI: toko, customer, sparepart, unit, kunjungan bulan ini, tiket per status, klaim, stok kritis, kunjungan terlambat |
 | Toko | `list_toko`, `get_toko`, `add_toko`, `update_toko` | Cari/detail (via id, kode, atau **barcode toko**)/tambah/perbarui — barcode `BC-{KODETOKO}` otomatis |
 | Customer | `list_customer`, `add_customer` | Daftar & tambah customer |
-| Sparepart | `list_sparepart`, `add_sparepart`, `update_sparepart` | Stok konsinyasi, filter stok kritis, kode `SP-###` otomatis |
+| Sparepart | `list_sparepart`, `add_sparepart`, `update_sparepart` | Stok inventory, filter stok kritis, kode `SP-###` otomatis |
 | Unit | `list_unit`, `add_unit` | Unit asset + status garansi |
 | Kunjungan | `record_kunjungan`, `list_kunjungan` | **Check-in via barcode toko** (sama dengan scan di aplikasi) + notifikasi Gateway |
 | Service | `list_service` | Tiket service request (REQUEST/PROSES/FINISH) |

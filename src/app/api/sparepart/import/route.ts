@@ -6,7 +6,7 @@ import { parseCsv, validateSparepartRows, buildCsvTemplate, CSV_MAX_ROWS } from 
 // GET /api/sparepart/import — unduh template CSV import sparepart
 export async function GET() {
   const csv = buildCsvTemplate(
-    ['kode_part', 'nama_part', 'stok_konsinyasi', 'reorder_limit', 'harga_klaim'],
+    ['kode_part', 'nama_part', 'stok_inventory', 'reorder_limit', 'harga_klaim'],
     [
       ['PRT-KMP-075', 'Kompresor AC 3/4 PK', '20', '5', '450000'],
       ['PRT-FAN-101', 'Motor Fan Indoor 1 PK', '15', '4', '185000'],

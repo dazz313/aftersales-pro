@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { Send, Bot, Smartphone, ScanLine, Lightbulb, Radio, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import VisionScanner from '@/components/vision-scanner'
 
 const CONTOH_COMMANDS = [
   '#LAPOR SN-ACSP-2024-00532 PRT-CMP-02 Kompresor tidak menyala sama sekali',
@@ -106,7 +107,9 @@ export default function GatewayView() {
   const meta = CHANNEL_META[channel]
 
   return (
-    <div className="grid gap-4 lg:grid-cols-5">
+    <div className="space-y-4">
+      <VisionScanner channel={channel} pengirimDefault={pengirim} />
+      <div className="grid gap-4 lg:grid-cols-5">
       {/* Chat simulator */}
       <Card className="flex flex-col overflow-hidden lg:col-span-3">
         <CardHeader className={cn('border-b', meta.header)}>
@@ -286,7 +289,7 @@ export default function GatewayView() {
               <li>Webhook Gateway mengirim payload teks &amp; gambar ke backend (<span className="font-mono">/api/wa/webhook</span>).</li>
               <li>Sistem mencari <span className="font-mono">serial_number</span> di tabel <span className="font-mono">unit_asset</span> → menentukan status garansi &amp; toko asal.</li>
               <li>
-                Cek stok part konsinyasi:
+                Cek stok part inventory:
                 <div className="mt-1.5 space-y-1.5">
                   <div className="rounded-md border border-emerald-200 bg-emerald-50 p-2">
                     <span className="font-semibold text-emerald-800">Part READY</span> → stok direserve, tiket dibuat, STTB PDF dengan QR terbit otomatis.
@@ -310,6 +313,7 @@ export default function GatewayView() {
             </p>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   )

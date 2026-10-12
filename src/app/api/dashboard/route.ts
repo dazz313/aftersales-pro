@@ -66,9 +66,9 @@ export async function GET() {
     }
 
     // Stok kritis (ALT-03)
-    const stokKritis = spareparts.filter((s) => s.stokKonsinyasi <= s.reorderLimit)
-    const stokKosong = spareparts.filter((s) => s.stokKonsinyasi === 0)
-    const nilaiTotalStok = spareparts.reduce((acc, s) => acc + s.stokKonsinyasi * s.hargaKlaim, 0)
+    const stokKritis = spareparts.filter((s) => s.stokInventory <= s.reorderLimit)
+    const stokKosong = spareparts.filter((s) => s.stokInventory === 0)
+    const nilaiTotalStok = spareparts.reduce((acc, s) => acc + s.stokInventory * s.hargaKlaim, 0)
 
     // Kepatuhan kunjungan toko (ALT-01 basis data)
     const now = Date.now()

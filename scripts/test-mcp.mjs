@@ -127,7 +127,7 @@ async function main() {
   // 9. add_customer + add_sparepart + list (uji cepat)
   const cust = await call('add_customer', { nama: `Customer Uji MCP ${stamp}` })
   console.log(`✓ add_customer: id=${cust.customer.id}`)
-  const part = await call('add_sparepart', { namaPart: `Part Uji MCP ${stamp}`, stokKonsinyasi: 2, reorderLimit: 5, hargaKlaim: 150000 })
+  const part = await call('add_sparepart', { namaPart: `Part Uji MCP ${stamp}`, stokInventory: 2, reorderLimit: 5, hargaKlaim: 150000 })
   console.log(`✓ add_sparepart: ${part.sparepart.kodePart}`)
   const low = await call('list_sparepart', { lowStockOnly: true })
   console.log(`✓ list_sparepart lowStockOnly: ${low.total} item kritis`)

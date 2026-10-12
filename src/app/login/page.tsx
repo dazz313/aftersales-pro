@@ -188,7 +188,7 @@ function LoginForm() {
         </Card>
 
         <p className="mt-6 text-center text-xs text-slate-600">
-          Workshop × Produsen (Konsinyasi) · Sesi aktif 7 hari
+          Workshop × Produsen (Inventory) · Sesi aktif 7 hari
         </p>
       </div>
     </div>

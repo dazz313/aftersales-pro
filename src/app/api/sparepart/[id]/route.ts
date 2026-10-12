@@ -19,9 +19,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // Restock: tambah stok (kiriman dari produsen)
     if (body.tambahStok !== undefined) {
-      data.stokKonsinyasi = existing.stokKonsinyasi + Number(body.tambahStok)
-    } else if (body.stokKonsinyasi !== undefined) {
-      data.stokKonsinyasi = Number(body.stokKonsinyasi)
+      data.stokInventory = existing.stokInventory + Number(body.tambahStok)
+    } else if (body.stokInventory !== undefined) {
+      data.stokInventory = Number(body.stokInventory)
     }
 
     const part = await db.masterSparepart.update({ where: { id: Number(id) }, data })
@@ -30,7 +30,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       entitas: 'master_sparepart',
       entitasId: part.kodePart,
       deskripsi: body.tambahStok
-        ? `Restock +${body.tambahStok} ${part.namaPart} (stok kini ${part.stokKonsinyasi})`
+        ? `Restock +${body.tambahStok} ${part.namaPart} (stok kini ${part.stokInventory})`
         : `Data sparepart diperbarui: ${Object.keys(data).join(', ')}`,
       aktor: body.aktor,
     })

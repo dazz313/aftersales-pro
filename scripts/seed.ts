@@ -98,17 +98,17 @@ async function main() {
   )
   console.log('✅ Master Customer:', customerList.length)
 
-  // ============ MASTER SPAREPART (KONSINYASI) ============
+  // ============ MASTER SPAREPART (INVENTORY) ============
   const sparepartList = await Promise.all(
     [
-      { kodePart: 'PRT-CMP-01', namaPart: 'Kompresor 1/2 PK R134a', stokKonsinyasi: 8, reorderLimit: 3, hargaKlaim: 850000 },
-      { kodePart: 'PRT-CMP-02', namaPart: 'Kompresor 1 PK R32 Inverter', stokKonsinyasi: 2, reorderLimit: 4, hargaKlaim: 1450000 }, // ROP ALERT (ALT-03)
-      { kodePart: 'PRT-FAN-11', namaPart: 'Motor Fan Indoor 30W', stokKonsinyasi: 15, reorderLimit: 5, hargaKlaim: 320000 },
-      { kodePart: 'PRT-PCB-A4', namaPart: 'PCB Main AC Split 1 PK', stokKonsinyasi: 0, reorderLimit: 2, hargaKlaim: 780000 }, // KOSONG
-      { kodePart: 'PRT-THR-07', namaPart: 'Thermistor NTC 10K', stokKonsinyasi: 25, reorderLimit: 10, hargaKlaim: 45000 },
-      { kodePart: 'PRT-REM-U2', namaPart: 'Remote Universal AC', stokKonsinyasi: 4, reorderLimit: 5, hargaKlaim: 85000 }, // ROP ALERT (ALT-03)
-      { kodePart: 'PRT-KPT-3D', namaPart: 'Kapasitor 35uF 450V', stokKonsinyasi: 18, reorderLimit: 6, hargaKlaim: 65000 },
-      { kodePart: 'PRT-ESP-09', namaPart: 'Evaaporator Coil 9000BTU', stokKonsinyasi: 1, reorderLimit: 2, hargaKlaim: 950000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-CMP-01', namaPart: 'Kompresor 1/2 PK R134a', stokInventory: 8, reorderLimit: 3, hargaKlaim: 850000 },
+      { kodePart: 'PRT-CMP-02', namaPart: 'Kompresor 1 PK R32 Inverter', stokInventory: 2, reorderLimit: 4, hargaKlaim: 1450000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-FAN-11', namaPart: 'Motor Fan Indoor 30W', stokInventory: 15, reorderLimit: 5, hargaKlaim: 320000 },
+      { kodePart: 'PRT-PCB-A4', namaPart: 'PCB Main AC Split 1 PK', stokInventory: 0, reorderLimit: 2, hargaKlaim: 780000 }, // KOSONG
+      { kodePart: 'PRT-THR-07', namaPart: 'Thermistor NTC 10K', stokInventory: 25, reorderLimit: 10, hargaKlaim: 45000 },
+      { kodePart: 'PRT-REM-U2', namaPart: 'Remote Universal AC', stokInventory: 4, reorderLimit: 5, hargaKlaim: 85000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-KPT-3D', namaPart: 'Kapasitor 35uF 450V', stokInventory: 18, reorderLimit: 6, hargaKlaim: 65000 },
+      { kodePart: 'PRT-ESP-09', namaPart: 'Evaaporator Coil 9000BTU', stokInventory: 1, reorderLimit: 2, hargaKlaim: 950000 }, // ROP ALERT (ALT-03)
     ].map((s) => prisma.masterSparepart.create({ data: s }))
   )
   console.log('✅ Master Sparepart:', sparepartList.length)
@@ -148,7 +148,7 @@ async function main() {
     },
   })
   // kurangi stok karena sudah direserve
-  await prisma.masterSparepart.update({ where: { id: sparepartList[0].id }, data: { stokKonsinyasi: { decrement: 1 } } })
+  await prisma.masterSparepart.update({ where: { id: sparepartList[0].id }, data: { stokInventory: { decrement: 1 } } })
 
   // Tiket 2: REQUEST melewati SLA 24 jam (ALT-02)
   const tiket2 = await prisma.serviceRequest.create({

@@ -56,17 +56,17 @@ export default function InventoryView() {
       queryClient.invalidateQueries({ queryKey: ['alerts'] })
       queryClient.invalidateQueries({ queryKey: ['audit'] })
       setRestockTarget(null)
-      toast({ title: 'Restock dicatat', description: `Stok konsinyasi bertambah ${v.qty} unit (kiriman dari produsen).` })
+      toast({ title: 'Restock dicatat', description: `Stok inventory bertambah ${v.qty} unit (kiriman dari produsen).` })
     },
     onError: (e: Error) => toast({ title: 'Restock gagal', description: e.message, variant: 'destructive' }),
   })
 
-  const [newPart, setNewPart] = useState({ kodePart: '', namaPart: '', stokKonsinyasi: '0', reorderLimit: '5', hargaKlaim: '0' })
+  const [newPart, setNewPart] = useState({ kodePart: '', namaPart: '', stokInventory: '0', reorderLimit: '5', hargaKlaim: '0' })
   const addMutation = useMutation({
     mutationFn: () =>
       postJson('/api/sparepart', {
         ...newPart,
-        stokKonsinyasi: Number(newPart.stokKonsinyasi),
+        stokInventory: Number(newPart.stokInventory),
         reorderLimit: Number(newPart.reorderLimit),
         hargaKlaim: Number(newPart.hargaKlaim),
         aktor: role,
@@ -75,8 +75,8 @@ export default function InventoryView() {
       queryClient.invalidateQueries({ queryKey: ['spareparts'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
       setAddOpen(false)
-      setNewPart({ kodePart: '', namaPart: '', stokKonsinyasi: '0', reorderLimit: '5', hargaKlaim: '0' })
-      toast({ title: 'Sparepart terdaftar', description: 'Item baru masuk katalog konsinyasi.' })
+      setNewPart({ kodePart: '', namaPart: '', stokInventory: '0', reorderLimit: '5', hargaKlaim: '0' })
+      toast({ title: 'Sparepart terdaftar', description: 'Item baru masuk katalog inventory.' })
     },
     onError: (e: Error) => toast({ title: 'Gagal menambah sparepart', description: e.message, variant: 'destructive' }),
   })
@@ -89,14 +89,14 @@ export default function InventoryView() {
     if (stokFilter === 'KOSONG') return list.filter((p) => p.kosong)
     return list
   }, [parts, stokFilter])
-  const nilaiTotal = (parts ?? []).reduce((a, p) => a + p.stokKonsinyasi * p.hargaKlaim, 0)
+  const nilaiTotal = (parts ?? []).reduce((a, p) => a + p.stokInventory * p.hargaKlaim, 0)
   const reorderDraft = kritis.map((p) => ({
     kodePart: p.kodePart,
     namaPart: p.namaPart,
-    stok: p.stokKonsinyasi,
+    stok: p.stokInventory,
     limit: p.reorderLimit,
-    usulanQty: Math.max(p.reorderLimit * 2 - p.stokKonsinyasi, 5),
-    nilai: Math.max(p.reorderLimit * 2 - p.stokKonsinyasi, 5) * p.hargaKlaim,
+    usulanQty: Math.max(p.reorderLimit * 2 - p.stokInventory, 5),
+    nilai: Math.max(p.reorderLimit * 2 - p.stokInventory, 5) * p.hargaKlaim,
   }))
 
   return (
@@ -146,7 +146,7 @@ export default function InventoryView() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-base">Stok Sparepart Konsinyasi</CardTitle>
+              <CardTitle className="text-base">Stok Sparepart Inventory</CardTitle>
               <CardDescription>Barang titipan produsen — reserve otomatis saat tiket service dibuat</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
@@ -197,7 +197,7 @@ export default function InventoryView() {
                         </TableCell>
                       </TableRow>
                     ) : tampilParts.map((p) => {
-                      const pct = Math.min((p.stokKonsinyasi / Math.max(p.reorderLimit * 3, 1)) * 100, 100)
+                      const pct = Math.min((p.stokInventory / Math.max(p.reorderLimit * 3, 1)) * 100, 100)
                       return (
                         <TableRow key={p.id} className={cn(p.kosong && 'bg-rose-50/60', p.ropAlert && !p.kosong && 'bg-amber-50/50')}>
                           <TableCell>
@@ -206,10 +206,10 @@ export default function InventoryView() {
                           </TableCell>
                           <TableCell className="w-40">
                             <div className="flex items-baseline gap-1">
-                              <span className={cn('text-lg font-bold', p.kosong ? 'text-rose-600' : p.ropAlert ? 'text-amber-600' : 'text-slate-800')}>{p.stokKonsinyasi}</span>
+                              <span className={cn('text-lg font-bold', p.kosong ? 'text-rose-600' : p.ropAlert ? 'text-amber-600' : 'text-slate-800')}>{p.stokInventory}</span>
                               <span className="text-[10px] text-slate-400">/ ROP {p.reorderLimit}</span>
                             </div>
-                            <Progress value={pct} className="mt-1 h-1.5" aria-label={`Stok ${p.stokKonsinyasi} dari limit ${p.reorderLimit}`} />
+                            <Progress value={pct} className="mt-1 h-1.5" aria-label={`Stok ${p.stokInventory} dari limit ${p.reorderLimit}`} />
                           </TableCell>
                           <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{formatRupiah(p.hargaKlaim)}</TableCell>
                           <TableCell>
@@ -277,11 +277,11 @@ export default function InventoryView() {
             <>
               <DialogHeader>
                 <DialogTitle>Restock {restockTarget.kodePart}</DialogTitle>
-                <DialogDescription>Catat kiriman sparepart dari produsen masuk gudang konsinyasi.</DialogDescription>
+                <DialogDescription>Catat kiriman sparepart dari produsen masuk gudang inventory.</DialogDescription>
               </DialogHeader>
               <div className="space-y-2">
                 <p className="text-sm text-slate-700">{restockTarget.namaPart}</p>
-                <p className="text-xs text-slate-500">Stok saat ini: <span className="font-bold text-slate-800">{restockTarget.stokKonsinyasi}</span> · Reorder limit: {restockTarget.reorderLimit}</p>
+                <p className="text-xs text-slate-500">Stok saat ini: <span className="font-bold text-slate-800">{restockTarget.stokInventory}</span> · Reorder limit: {restockTarget.reorderLimit}</p>
                 <div className="space-y-1.5">
                   <Label>Jumlah kiriman (pcs)</Label>
                   <Input type="number" min="1" value={restockQty} onChange={(e) => setRestockQty(e.target.value)} />
@@ -302,7 +302,7 @@ export default function InventoryView() {
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tambah Sparepart Konsinyasi</DialogTitle>
+            <DialogTitle>Tambah Sparepart Inventory</DialogTitle>
             <DialogDescription>Daftarkan item baru ke katalog stok titipan produsen.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -316,7 +316,7 @@ export default function InventoryView() {
             </div>
             <div className="space-y-1.5">
               <Label>Stok Awal</Label>
-              <Input type="number" value={newPart.stokKonsinyasi} onChange={(e) => setNewPart({ ...newPart, stokKonsinyasi: e.target.value })} />
+              <Input type="number" value={newPart.stokInventory} onChange={(e) => setNewPart({ ...newPart, stokInventory: e.target.value })} />
             </div>
             <div className="space-y-1.5">
               <Label>Reorder Limit (ROP)</Label>
@@ -363,7 +363,7 @@ export default function InventoryView() {
           </DialogHeader>
           <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-900">
             <p className="mb-1 font-semibold">To: PT. Sinar Elektronik Mandiri (Produsen)</p>
-            <p>Permohonan pengiriman sparepart konsinyasi untuk {reorderDraft.length} item, total estimasi nilai {formatRupiah(reorderDraft.reduce((a, r) => a + r.nilai, 0))}. Rincian: {reorderDraft.map((r) => `${r.kodePart} (+${r.usulanQty})`).join(', ')}.</p>
+            <p>Permohonan pengiriman sparepart inventory untuk {reorderDraft.length} item, total estimasi nilai {formatRupiah(reorderDraft.reduce((a, r) => a + r.nilai, 0))}. Rincian: {reorderDraft.map((r) => `${r.kodePart} (+${r.usulanQty})`).join(', ')}.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRoFormOpen(false)}>Tutup</Button>

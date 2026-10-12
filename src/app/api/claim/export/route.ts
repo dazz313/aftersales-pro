@@ -102,7 +102,7 @@ export async function GET(request: Request) {
       }
     }
     const wsDetail = XLSX.utils.aoa_to_sheet([
-      ['RINCIAN SPAREPART KLAIM KONSINYASI'],
+      ['RINCIAN SPAREPART KLAIM INVENTORY'],
       [],
       ['No', 'No. Tiket', 'Kode Part', 'Nama Sparepart', 'Qty', 'Harga Klaim Unit (Rp)', 'Subtotal (Rp)', 'Status Part'],
       ...detailRows,

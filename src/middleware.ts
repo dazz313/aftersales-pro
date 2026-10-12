@@ -14,7 +14,7 @@ import { SESSION_COOKIE, verifySessionToken, type SessionPayload } from '@/lib/a
  * eksternal), /api/backup/sheets (dipicu MCP AI / watcher backup).
  * Catatan: aplikasi single-route — semua view di "/" dengan navigasi internal.
  */
-const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/wa/webhook', '/api/backup/sheets']
+const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/wa/webhook', '/api/telegram/webhook', '/api/backup/sheets']
 
 async function getSessionFrom(request: NextRequest): Promise<SessionPayload | null> {
   const authz = request.headers.get('authorization')

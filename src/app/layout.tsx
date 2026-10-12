@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AfterSales Pro — Sistem Otomasi After-Sales & Inventory",
   description:
-    "Sistem otomasi operasional after-sales & manajemen stok konsinyasi: WA Bot tiket service, STTB QR, kunjungan toko, klaim Excel, alert engine.",
+    "Sistem otomasi operasional after-sales & manajemen stok inventory: WA Bot tiket service, STTB QR, kunjungan toko, klaim Excel, alert engine.",
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },

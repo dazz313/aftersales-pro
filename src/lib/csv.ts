@@ -312,7 +312,7 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
 export const SPAREPART_ALIASES: Record<string, string> = {
   kodePart: 'kode_part|kodepart|kode part|kode|part_number|partnumber|part_no|sku',
   namaPart: 'nama_part|namapart|nama part|nama|name|nama_barang',
-  stokKonsinyasi: 'stok_konsinyasi|stokkonsinyasi|stok|qty|quantity|jumlah|stok_awal',
+  stokInventory: 'stok_inventory|stok_konsinyasi|stokkonsinyasi|stok|qty|quantity|jumlah|stok_awal',
   reorderLimit: 'reorder_limit|reorderlimit|reorder|rop|limit|min_stok|minstok|stok_minimum',
   hargaKlaim: 'harga_klaim|hargaklaim|harga klaim|harga|harga_satuan|price',
 }
@@ -325,14 +325,14 @@ export const SPAREPART_REQUIRED_LABELS: Record<string, string> = {
 export interface SparepartInsertData {
   kodePart: string
   namaPart: string
-  stokKonsinyasi: number
+  stokInventory: number
   reorderLimit: number
   hargaKlaim: number
 }
 
 export interface SparepartUpdateData {
   namaPart: string
-  stokKonsinyasi?: number
+  stokInventory?: number
   reorderLimit?: number
   hargaKlaim?: number
 }
@@ -379,15 +379,15 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
     seen.add(kode)
 
     // stok (int ≥ 0, default 0)
-    let stokKonsinyasi = 0
-    const st = get('stokKonsinyasi')
+    let stokInventory = 0
+    const st = get('stokInventory')
     if (st) {
       const n = parseNum(st)
       if (n === null || Number.isNaN(n) || n < 0) {
         acc.push({ row: rowNum, kode, nama, status: 'error', message: `Stok "${st}" tidak valid (isi angka ≥ 0, kosongkan untuk default 0)` })
         return
       }
-      stokKonsinyasi = Math.round(n)
+      stokInventory = Math.round(n)
     }
 
     // reorder limit (int ≥ 0, default 5)
@@ -420,10 +420,10 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
       nama,
       status: 'pending',
       data: {
-        insert: { kodePart: kode, namaPart: nama, stokKonsinyasi, reorderLimit, hargaKlaim },
+        insert: { kodePart: kode, namaPart: nama, stokInventory, reorderLimit, hargaKlaim },
         update: {
           namaPart: nama,
-          ...(st ? { stokKonsinyasi } : {}),
+          ...(st ? { stokInventory } : {}),
           ...(rl ? { reorderLimit } : {}),
           ...(hk ? { hargaKlaim } : {}),
         },

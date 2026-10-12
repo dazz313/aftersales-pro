@@ -1,6 +1,27 @@
 # Worklog
 
 ---
+Task ID: 9
+Agent: Muse Spark (opencode)
+Task: Rename total "konsinyasi" → "inventory" (label UI + field database)
+
+Work Log:
+- Diagnosis login gagal di localhost: DATABASE_URL di .env menunjuk path Linux (file:/home/z/my-project/db/custom.db) sehingga server Windows membuka DB kosong → 500. Fix: .env → file:C:/Users/bass_project2/db/custom.db (diabaikan git; systemd server memakai Environment sendiri) + restart dengan env eksplisit → login budi/admin123 200
+- Temuan rename: build sudah current (working tree lebih baru dari HEAD, tanpa remote), tapi 70 kemunculan "konsinyasi" memang belum diganti di kode (hanya key view 'inventory' yang sudah) → bukan build basi
+- Migrasi data SQLite tanpa hilang: backup custom.db ke Temp; ALTER TABLE "MasterSparepart" RENAME COLUMN "stokKonsinyasi" TO "stokInventory" via $executeRawUnsafe (9 baris, nilai stok utuh terverifikasi); template.db diregenerasi via scripts/make-template-db.mjs
+- Rename field stokKonsinyasi → stokInventory di: prisma/schema.prisma, types.ts, csv.ts, laporan.ts, gsheets.ts, API (alerts, dashboard, sparepart, sparepart/[id], sparepart/import header → stok_inventory, service, service/[id]), views (inventory, service, dashboard, gateway), csv-import-dialog, scripts/seed.ts, scripts/test-mcp.mjs, mcp/tools.mjs
+- Kompatibilitas import CSV lama dijaga: alias header tetap menerima stok_konsinyasi/stokkonsinyasi (canonical baru stok_inventory)
+- Rename label UI: 'Stok Konsinyasi' → 'Stok Inventory' (nav, drill-down ALT-03, judul tabel, sheet backup, dialog), footer/layout/login '(Konsinyasi)' → '(Inventory)', teks STTB/surat jalan/claim export (KONSINYASI → INVENTORY), deskripsi package.json + mcp/server.mjs + README-DESKTOP.md
+- Sengaja tidak diubah (riwayat): worklog.md task lama, upload PRD, db/backups/*.json, db/custom.db.bak-20261010
+- Verifikasi: prisma generate OK + db push "already in sync"; npm run build sukses; restart standalone; login 200; homepage HTML memuat "Stok Inventory", nol kemunculan (?i)konsinyasi di HTML; sisa 1 di src hanya alias kompat CSV
+
+Stage Summary:
+- Seluruh aplikasi kini memakai istilah "inventory": 27 file diubah, data stok 9 part utuh, server localhost:3000 berjalan (login budi/admin123)
+- Kredensial tidak berubah
+
+---
+
+---
 Task ID: 5
 Agent: Main Agent (Super Z)
 Task: Menambahkan fitur Log In & Log Out (autentikasi) ke aplikasi AfterSales Pro

@@ -487,9 +487,9 @@ export default function ServiceView() {
                 <Select value={formParts[0] ?? ''} onValueChange={(v) => setFormParts(v ? [v] : [])}>
                   <SelectTrigger aria-label="Pilih sparepart"><SelectValue placeholder="— Tanpa part —" /></SelectTrigger>
                   <SelectContent className="max-h-64">
-                    {parts?.filter((p) => p.stokKonsinyasi > 0).map((p) => (
+                    {parts?.filter((p) => p.stokInventory > 0).map((p) => (
                       <SelectItem key={p.id} value={String(p.id)}>
-                        {p.kodePart} · {p.namaPart} (stok {p.stokKonsinyasi})
+                        {p.kodePart} · {p.namaPart} (stok {p.stokInventory})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -498,7 +498,7 @@ export default function ServiceView() {
             </div>
             <p className="flex items-start gap-1.5 rounded-md bg-emerald-50 p-2.5 text-xs text-emerald-800">
               <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              Jika stok part tersedia, stok konsinyasi otomatis direserve. Jika kosong, part berstatus ORDER_PRODUSEN &amp; produsen dinotifikasi.
+              Jika stok part tersedia, stok inventory otomatis direserve. Jika kosong, part berstatus ORDER_PRODUSEN &amp; produsen dinotifikasi.
             </p>
           </div>
           <DialogFooter>

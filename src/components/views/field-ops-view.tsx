@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import VisionScanner from '@/components/vision-scanner'
 
 interface LookupResult {
   toko: Toko
@@ -362,6 +363,9 @@ export default function FieldOpsView() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Baca barcode dari file foto (pelengkap kamera + ketik manual) */}
+      <VisionScanner channel="TELEGRAM" pengirimDefault="FIELD-OPS" compact />
 
       {/* Dialog catatan pasca-scan */}
       <Dialog open={catatanOpen} onOpenChange={setCatatanOpen}>

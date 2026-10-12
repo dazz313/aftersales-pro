@@ -28,7 +28,7 @@ export interface Sparepart {
   id: number
   kodePart: string
   namaPart: string
-  stokKonsinyasi: number
+  stokInventory: number
   reorderLimit: number
   hargaKlaim: number
   createdAt: string
@@ -120,6 +120,45 @@ export interface WaMessage {
   tipe: 'IN' | 'OUT'
   pesan: string
   meta: string | null
+  createdAt: string
+}
+
+export interface VisionScan {
+  id: number
+  sumber: string
+  pengirim: string
+  fileName: string
+  filePath: string
+  mime: string | null
+  caption: string | null
+  barcode: string | null
+  barcodeFormat: string | null
+  ocrText: string | null
+  ocrConfidence: number | null
+  status: string
+  createdAt: string
+}
+
+export interface InboxItem {
+  id: number
+  pengirim: string
+  chatId: string
+  fileName: string | null
+  filePath: string | null
+  mime: string | null
+  caption: string | null
+  barcode: string | null
+  barcodeFormat: string | null
+  ocrText: string | null
+  ocrConfidence: number | null
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ARCHIVED'
+  folder: 'KUNJUNGAN' | 'SERVICE'
+  tujuan: string | null
+  teksTerusan: string | null
+  hasilRef: string | null
+  alasanTolak: string | null
+  direviewOleh: string | null
+  direviewAt: string | null
   createdAt: string
 }
 

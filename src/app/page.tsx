@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAppStore, ROLE_LABELS, type RoleKey } from '@/lib/store'
+import { useAppStore, ROLE_LABELS, type RoleKey, type ViewKey } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import {
   LayoutDashboard,
+  Inbox,
   Wrench,
   Radio,
   MapPin,
@@ -20,8 +21,10 @@ import {
   Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { authHeaders, clearSessionToken } from '@/lib/api'
+import { authHeaders, clearSessionToken, fetcher } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
 import DashboardView from '@/components/views/dashboard-view'
+import InboxView from '@/components/views/inbox-view'
 import ServiceView from '@/components/views/service-view'
 import GatewayView from '@/components/views/gateway-view'
 import FieldOpsView from '@/components/views/field-ops-view'
@@ -42,10 +45,11 @@ import {
 
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
+  { key: 'inbox', label: 'Inbox', icon: Inbox, desc: 'Penampungan data Telegram' },
   { key: 'gateway', label: 'Gateway', icon: Radio, desc: 'Bot WhatsApp & Telegram' },
   { key: 'service', label: 'Service Tiket', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
   { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
-  { key: 'inventory', label: 'Stok Konsinyasi', icon: Package, desc: 'Sparepart titipan produsen' },
+  { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
   { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
   { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, Backup & audit log' },
@@ -69,6 +73,11 @@ function getInitials(name: string): string {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { view, setView, user } = useAppStore()
+  const { data: inboxCount } = useQuery({
+    queryKey: ['inbox-pending-count'],
+    queryFn: () => fetcher<{ items: unknown[]; pending: number }>('/api/inbox?status=PENDING'),
+    refetchInterval: 30_000,
+  })
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
@@ -102,6 +111,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 <span className="block text-sm font-medium leading-tight">{item.label}</span>
                 <span className="block truncate text-xs text-slate-500 leading-tight">{item.desc}</span>
               </span>
+              {item.key === 'inbox' && (inboxCount?.pending ?? 0) > 0 && (
+                <span className="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                  {inboxCount!.pending}
+                </span>
+              )}
             </button>
           )
         })}
@@ -112,7 +126,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             Login sebagai <span className="font-medium text-slate-200">{user.nama}</span>
           </p>
         )}
-        <p className="text-xs text-slate-500">Sesuai PRD: Otomasi after-sales, STTB QR, konsinyasi, klaim Excel.</p>
+        <p className="text-xs text-slate-500">Sesuai PRD: Otomasi after-sales, STTB QR, inventory, klaim Excel.</p>
       </div>
     </div>
   )
@@ -274,6 +288,7 @@ export default function Home() {
               <DashboardView />
             </div>
           )}
+          {view === 'inbox' && <InboxView />}
           {view === 'service' && <ServiceView />}
           {view === 'gateway' && <GatewayView />}
           {view === 'field-ops' && <FieldOpsView />}
@@ -285,7 +300,7 @@ export default function Home() {
 
         {/* Sticky footer */}
         <footer className="mt-auto border-t bg-white px-6 py-4 text-center text-xs text-slate-500 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          AfterSales Pro — Sistem Otomasi After-Sales Operations & Inventory Management · Workshop × Produsen (Konsinyasi)
+          AfterSales Pro — Sistem Otomasi After-Sales Operations & Inventory Management · Workshop × Produsen (Inventory)
         </footer>
       </div>
     </div>

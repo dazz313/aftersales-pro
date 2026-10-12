@@ -79,14 +79,14 @@ export async function GET() {
     })
 
     // ===== ALT-03: Low Stock Sparepart (ROP) =====
-    const stokKritis = spareparts.filter((s) => s.stokKonsinyasi <= s.reorderLimit)
+    const stokKritis = spareparts.filter((s) => s.stokInventory <= s.reorderLimit)
     const alerts3 = stokKritis.map((s) => ({
       kode: 'ALT-03',
       nama: 'Low Stock Sparepart (ROP)',
-      severity: s.stokKonsinyasi === 0 ? 'critical' : 'warning',
+      severity: s.stokInventory === 0 ? 'critical' : 'warning',
       entitas: s.kodePart,
-      detail: `Stok ${s.namaPart} tersisa ${s.stokKonsinyasi} ${s.stokKonsinyasi === 0 ? '(KOSONG)' : `≤ reorder limit ${s.reorderLimit}`} — draft formulir Re-Order Sparepart digenerate`,
-      meta: { sparepartId: s.id, stok: s.stokKonsinyasi, limit: s.reorderLimit },
+      detail: `Stok ${s.namaPart} tersisa ${s.stokInventory} ${s.stokInventory === 0 ? '(KOSONG)' : `≤ reorder limit ${s.reorderLimit}`} — draft formulir Re-Order Sparepart digenerate`,
+      meta: { sparepartId: s.id, stok: s.stokInventory, limit: s.reorderLimit },
     }))
 
     // ===== ALT-04: Potential Unclaimed Revenue =====

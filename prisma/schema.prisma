@@ -60,7 +60,7 @@ model MasterSparepart {
   id             Int                  @id @default(autoincrement())
   kodePart       String               @unique
   namaPart       String
-  stokKonsinyasi Int                  @default(0)
+  stokInventory Int                  @default(0)
   reorderLimit   Int                  @default(5)
   hargaKlaim     Float                @default(0) // nilai klaim per unit ke produsen
   createdAt      DateTime             @default(now())
@@ -194,4 +194,51 @@ model Pengaturan {
   id    Int    @id @default(autoincrement())
   kunci String @unique
   nilai String
+}
+
+// ==========================================
+// Hasil pindai foto/barcode (Telegram webhook & upload manual)
+// sumber: TELEGRAM_WEBHOOK | UPLOAD ; status: OK | GAGAL_BACA | FILE_NON_GAMBAR
+// ==========================================
+model VisionScan {
+  id            Int      @id @default(autoincrement())
+  sumber        String   @default("TELEGRAM_WEBHOOK")
+  pengirim      String   @default("UNKNOWN")
+  fileName      String
+  filePath      String // relatif, mis. upload/telegram-service/tg-xxx.jpg
+  mime          String?
+  caption       String?
+  barcode       String?
+  barcodeFormat String?
+  ocrText       String?
+  ocrConfidence Float?
+  status        String   @default("OK")
+  createdAt     DateTime @default(now())
+}
+
+// ==========================================
+// Inbox Penampungan — buffer data/foto Telegram sebelum diteruskan ke fitur
+// status: PENDING | APPROVED | REJECTED | ARCHIVED ; folder: KUNJUNGAN | SERVICE
+// ==========================================
+model InboxItem {
+  id            Int       @id @default(autoincrement())
+  pengirim      String    @default("UNKNOWN")
+  chatId        String    @default("")
+  fileName      String?
+  filePath      String?
+  mime          String?
+  folder        String    @default("SERVICE")
+  caption       String?
+  barcode       String?
+  barcodeFormat String?
+  ocrText       String?
+  ocrConfidence Float?
+  status        String    @default("PENDING")
+  tujuan        String? // SERVICE | KUNJUNGAN | ARSIP
+  teksTerusan   String?
+  hasilRef      String? // noTiket / KJ-{id} / TOKO:{kode} (petunjuk)
+  alasanTolak   String?
+  direviewOleh  String?
+  direviewAt    DateTime?
+  createdAt     DateTime  @default(now())
 }

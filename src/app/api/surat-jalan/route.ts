@@ -339,7 +339,7 @@ export async function POST(request: Request) {
     // Pernyataan
     const pernyataan =
       `Barang sebagaimana rincian di atas diserahkan kepada ${penerima} untuk proses klaim garansi / ` +
-      'pemeriksaan part rusak. Part dikirim dari stok konsinyasi workshop. Mohon pemeriksaan fisik ' +
+      'pemeriksaan part rusak. Part dikirim dari stok inventory workshop. Mohon pemeriksaan fisik ' +
       'saat penerimaan; surat jalan ini menjadi bukti pengiriman yang sah apabila telah ditandatangani kedua belah pihak.'
     doc.setFontSize(9)
     doc.setTextColor(51, 65, 85)

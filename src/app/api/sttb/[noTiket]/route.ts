@@ -150,7 +150,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ noT
     doc.setFontSize(10)
     const pernyataan =
       'Unit sebagaimana disebut di atas diserahkan kepada Workshop untuk dilakukan pemeriksaan dan perbaikan. ' +
-      'Sparepart yang digunakan merupakan stok konsinyasi dari Produsen. Unit akan dikembalikan ke toko asal ' +
+      'Sparepart yang digunakan merupakan stok inventory dari Produsen. Unit akan dikembalikan ke toko asal ' +
       'setelah perbaikan selesai dengan disertai nota service berstempel toko sebagai bukti pengembalian.'
     doc.text(doc.splitTextToSize(pernyataan, pageW - 30), 15, y)
     y += 24

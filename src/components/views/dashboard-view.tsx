@@ -24,7 +24,7 @@ const MODEL_SHORT = (m: string) => (m.length > 22 ? m.slice(0, 20) + '…' : m)
 const ALERT_DRILLDOWN: Record<string, { view: ViewKey; label: string; intent: Omit<NavIntent, 'ts'> }> = {
   'ALT-01': { view: 'field-ops', label: 'Field Ops', intent: { fieldOpsFilter: 'terlambat' } },
   'ALT-02': { view: 'service', label: 'Service Tiket', intent: { serviceStatus: 'REQUEST' } },
-  'ALT-03': { view: 'inventory', label: 'Stok Konsinyasi', intent: { inventoryFilter: 'kritis' } },
+  'ALT-03': { view: 'inventory', label: 'Stok Inventory', intent: { inventoryFilter: 'kritis' } },
   'ALT-04': { view: 'claim', label: 'Klaim & Rekap', intent: { klaimTab: 'DRAFT' } },
 }
 

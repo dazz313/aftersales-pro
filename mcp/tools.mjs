@@ -232,7 +232,7 @@ export const TOOLS = [
   },
   {
     name: 'list_sparepart',
-    description: 'Daftar sparepart konsinyasi. Set lowStockOnly=true untuk hanya menampilkan stok <= reorder limit.',
+    description: 'Daftar sparepart inventory. Set lowStockOnly=true untuk hanya menampilkan stok <= reorder limit.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -252,7 +252,7 @@ export const TOOLS = [
       properties: {
         namaPart: { type: 'string', description: 'Nama sparepart (wajib)' },
         kodePart: str,
-        stokKonsinyasi: num,
+        stokInventory: num,
         reorderLimit: num,
         hargaKlaim: num,
       },
@@ -262,13 +262,13 @@ export const TOOLS = [
   },
   {
     name: 'update_sparepart',
-    description: 'Perbarui sparepart: stok konsinyasi (set nilai), reorder limit, harga klaim, atau nama.',
+    description: 'Perbarui sparepart: stok inventory (set nilai), reorder limit, harga klaim, atau nama.',
     inputSchema: {
       type: 'object',
       properties: {
         id: num,
         namaPart: str,
-        stokKonsinyasi: num,
+        stokInventory: num,
         reorderLimit: num,
         hargaKlaim: num,
       },
@@ -414,11 +414,11 @@ async function hGetStats() {
     ])
 
   const semuaSparepart = await db.masterSparepart.findMany({
-    select: { kodePart: true, namaPart: true, stokKonsinyasi: true, reorderLimit: true },
-    orderBy: { stokKonsinyasi: 'asc' },
+    select: { kodePart: true, namaPart: true, stokInventory: true, reorderLimit: true },
+    orderBy: { stokInventory: 'asc' },
   })
   const stokKritis = semuaSparepart
-    .filter((s) => s.stokKonsinyasi <= s.reorderLimit)
+    .filter((s) => s.stokInventory <= s.reorderLimit)
     .slice(0, 10)
 
   const tokos = await db.masterToko.findMany()
@@ -582,7 +582,7 @@ async function hListSparepart(args) {
   const where = q ? { OR: [{ kodePart: { contains: q } }, { namaPart: { contains: q } }] } : {}
   let rows = await db.masterSparepart.findMany({ where, orderBy: { kodePart: 'asc' }, take: args.lowStockOnly ? 1000 : take, skip })
   if (args.lowStockOnly) {
-    rows = rows.filter((s) => s.stokKonsinyasi <= s.reorderLimit).slice(0, take)
+    rows = rows.filter((s) => s.stokInventory <= s.reorderLimit).slice(0, take)
   }
   return jsonOut({ total: rows.length, sparepart: rows })
 }
@@ -597,7 +597,7 @@ async function hAddSparepart(args) {
     data: {
       kodePart,
       namaPart,
-      stokKonsinyasi: Number(args.stokKonsinyasi) || 0,
+      stokInventory: Number(args.stokInventory) || 0,
       reorderLimit: Number(args.reorderLimit) || 5,
       hargaKlaim: Number(args.hargaKlaim) || 0,
     },
@@ -611,13 +611,13 @@ async function hUpdateSparepart(args) {
   if (!id) return errOut('id sparepart wajib diisi.')
   const data = {}
   if (args.namaPart != null) data.namaPart = String(args.namaPart).trim()
-  if (args.stokKonsinyasi != null) data.stokKonsinyasi = Math.max(0, Math.trunc(Number(args.stokKonsinyasi)))
+  if (args.stokInventory != null) data.stokInventory = Math.max(0, Math.trunc(Number(args.stokInventory)))
   if (args.reorderLimit != null) data.reorderLimit = Math.max(0, Math.trunc(Number(args.reorderLimit)))
   if (args.hargaKlaim != null) data.hargaKlaim = Math.max(0, Number(args.hargaKlaim))
   if (Object.keys(data).length === 0) return errOut('Tidak ada kolom yang diubah.')
   try {
     const sparepart = await db.masterSparepart.update({ where: { id }, data })
-    await logAudit({ aksi: 'UPDATE', entitas: 'master_sparepart', entitasId: sparepart.kodePart, deskripsi: `Sparepart diperbarui via MCP AI: ${sparepart.kodePart} (stok: ${sparepart.stokKonsinyasi})` })
+    await logAudit({ aksi: 'UPDATE', entitas: 'master_sparepart', entitasId: sparepart.kodePart, deskripsi: `Sparepart diperbarui via MCP AI: ${sparepart.kodePart} (stok: ${sparepart.stokInventory})` })
     return jsonOut({ ok: true, sparepart })
   } catch {
     return errOut(`Sparepart dengan id ${id} tidak ditemukan.`)

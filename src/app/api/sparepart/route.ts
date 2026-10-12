@@ -16,8 +16,8 @@ export async function GET() {
     })
     const result = parts.map((p) => ({
       ...p,
-      ropAlert: p.stokKonsinyasi <= p.reorderLimit,
-      kosong: p.stokKonsinyasi === 0,
+      ropAlert: p.stokInventory <= p.reorderLimit,
+      kosong: p.stokInventory === 0,
     }))
     return NextResponse.json(result)
   } catch (error) {
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       data: {
         kodePart: body.kodePart,
         namaPart: body.namaPart,
-        stokKonsinyasi: Number(body.stokKonsinyasi) || 0,
+        stokInventory: Number(body.stokInventory) || 0,
         reorderLimit: Number(body.reorderLimit) || 5,
         hargaKlaim: Number(body.hargaKlaim) || 0,
       },
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_MASTER_SPAREPART',
       entitas: 'master_sparepart',
       entitasId: part.kodePart,
-      deskripsi: `Sparepart baru: ${part.namaPart} (stok awal ${part.stokKonsinyasi})`,
+      deskripsi: `Sparepart baru: ${part.namaPart} (stok awal ${part.stokInventory})`,
       aktor: body.aktor,
     })
     return NextResponse.json(part, { status: 201 })
