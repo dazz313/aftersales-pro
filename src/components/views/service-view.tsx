@@ -14,13 +14,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Checkbox } from '@/components/ui/checkbox'
+import SuratJalanDialog from '@/components/surat-jalan-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -45,6 +47,9 @@ export default function ServiceView() {
   const [garansiFilter, setGaransiFilter] = useState<'SEMUA' | 'GARANSI' | 'NON_GARANSI'>('SEMUA')
   const [modelFilter, setModelFilter] = useState<string | null>(null)
   const [cariTiket, setCariTiket] = useState('')
+  // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [sjOpen, setSjOpen] = useState(false)
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
   const [finishTarget, setFinishTarget] = useState<ServiceTicket | null>(null)
   const [notaFile, setNotaFile] = useState('')
@@ -129,6 +134,29 @@ export default function ServiceView() {
   }, [tickets, tab, garansiFilter, modelFilter, cariTiket])
 
   const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleAll = (list: { id: number }[]) => {
+    const allSelected = list.length > 0 && list.every((t) => selectedIds.has(t.id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      for (const t of list) {
+        if (allSelected) next.delete(t.id)
+        else next.add(t.id)
+      }
+      return next
+    })
+  }
+
+  const sjTickets = useMemo(() => (tickets ?? []).filter((t) => selectedIds.has(t.id)), [tickets, selectedIds])
 
   const counts = useMemo(() => {
     const c = { SEMUA: 0, REQUEST: 0, PROSES: 0, FINISH: 0 }
@@ -247,14 +275,35 @@ export default function ServiceView() {
           </Tabs>
         </CardHeader>
         <CardContent>
-          <div className="mb-3">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
             <QuickSearch
               value={cariTiket}
               onChange={setCariTiket}
               placeholder="Cari no. tiket / serial / model / toko / part…"
-              className="max-w-sm"
+              className="max-w-sm flex-1"
               resultCount={filtered.length}
             />
+            {selectedIds.size > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-500 hover:text-slate-700"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                <X className="mr-1 h-3.5 w-3.5" /> Reset ({selectedIds.size})
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-teal-700 text-teal-700 hover:bg-teal-50"
+              onClick={() => setSjOpen(true)}
+              disabled={selectedIds.size === 0}
+              title="Cetak surat jalan kolektif — part rusak dikirim bersama ke produsen"
+            >
+              <Truck className="mr-1 h-3.5 w-3.5" />
+              Surat Jalan{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+            </Button>
           </div>
           {hasDrilldown && (
             <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -301,6 +350,13 @@ export default function ServiceView() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-9 pr-0">
+                      <Checkbox
+                        aria-label="Pilih semua tiket tampil untuk surat jalan"
+                        checked={filtered.length > 0 && filtered.every((t) => selectedIds.has(t.id))}
+                        onCheckedChange={() => toggleAll(filtered)}
+                      />
+                    </TableHead>
                     <TableHead>No. Tiket</TableHead>
                     <TableHead>Unit (Serial · Model)</TableHead>
                     <TableHead className="hidden md:table-cell">Toko</TableHead>
@@ -316,7 +372,14 @@ export default function ServiceView() {
                     const kl = KLAIM_STYLES[t.statusKlaimProdusen]
                     const hasOrderPart = t.parts.some((p) => p.statusPart === 'ORDER_PRODUSEN')
                     return (
-                      <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60')}>
+                      <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60', selectedIds.has(t.id) && 'bg-teal-50/60')}>
+                        <TableCell className="pr-0">
+                          <Checkbox
+                            aria-label={`Pilih tiket ${t.noTiket} untuk surat jalan`}
+                            checked={selectedIds.has(t.id)}
+                            onCheckedChange={() => toggleSelect(t.id)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
                             <button onClick={() => setDetail(t)} className="text-left font-mono text-xs font-semibold text-emerald-700 hover:underline">
@@ -690,6 +753,20 @@ export default function ServiceView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Surat jalan kolektif — part rusak dikirim bersama ke produsen */}
+      <SuratJalanDialog
+        open={sjOpen}
+        onOpenChange={(v) => {
+          setSjOpen(v)
+          if (!v) {
+            // Nomor SJ otomatis tercap ke tiket saat cetak — segarkan daftar
+            invalidateAll()
+            setSelectedIds(new Set())
+          }
+        }}
+        tickets={sjTickets}
+      />
     </div>
   )
 }

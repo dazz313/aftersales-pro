@@ -15,6 +15,7 @@ model Pengguna {
   nama         String
   email        String      @unique
   username     String?     @unique // login alternatif selain email
+  kodeTeknisi  String?     @unique // kode teknisi/karyawan (mis. TKN-001), opsional & unik
   passwordHash String?     // scrypt: scrypt$<salt>$<hash> (null = belum bisa login)
   role         String      @default("TEKNISI") // ADMIN_WORKSHOP | TEKNISI | MANAGER | PRODUSEN
   noWa         String?

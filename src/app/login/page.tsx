@@ -1,7 +1,8 @@
 'use client'
 
 import { Suspense, useEffect, useState } from 'react'
-import { WrenchIcon, Eye, EyeOff, Loader2, LogIn, Info } from 'lucide-react'
+import { Eye, EyeOff, Loader2, LogIn, Info } from 'lucide-react'
+import CompanyLogo from '@/components/company-logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -71,9 +72,7 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/25">
-            <WrenchIcon className="h-7 w-7" />
-          </div>
+          <CompanyLogo className="h-14 w-14 shadow-lg shadow-emerald-500/25" />
           <h1 className="mt-4 text-2xl font-bold text-white">AfterSales Pro</h1>
           <p className="mt-1 text-sm text-slate-400">
             Sistem Otomasi After-Sales Operations &amp; Inventory Management

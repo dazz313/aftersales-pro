@@ -5,7 +5,7 @@ import { autoGitBackup } from '@/lib/git-backup'
 import { hashPassword } from '@/lib/auth-node'
 import { getSession } from '@/lib/auth'
 
-const USER_PUBLIC = { id: true, nama: true, email: true, username: true, role: true, noWa: true, wilayahKerja: true, aktif: true, createdAt: true }
+const USER_PUBLIC = { id: true, nama: true, email: true, username: true, kodeTeknisi: true, role: true, noWa: true, wilayahKerja: true, aktif: true, createdAt: true }
 
 const VALID_ROLES = ['ADMIN_WORKSHOP', 'TEKNISI', 'MANAGER', 'PRODUSEN']
 
@@ -67,6 +67,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
       data.username = uname
       changes.push('username')
+    }
+    if (body.kodeTeknisi !== undefined && (body.kodeTeknisi ?? null) !== existing.kodeTeknisi) {
+      const kode: string | null = body.kodeTeknisi ? String(body.kodeTeknisi).trim().toUpperCase() || null : null
+      if (kode) {
+        const dipakai = await db.pengguna.findUnique({ where: { kodeTeknisi: kode } })
+        if (dipakai && dipakai.id !== userId) {
+          return NextResponse.json({ error: `Kode teknisi "${kode}" sudah dipakai akun lain` }, { status: 409 })
+        }
+      }
+      data.kodeTeknisi = kode
+      changes.push('kode teknisi')
     }
     if (typeof body.noWa === 'string' || body.noWa === null) {
       data.noWa = body.noWa ?? null

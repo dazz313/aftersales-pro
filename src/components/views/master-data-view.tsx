@@ -41,7 +41,7 @@ export default function MasterDataView() {
   const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   const [qrUnit, setQrUnit] = useState<UnitAsset | null>(null)
   const [userOpen, setUserOpen] = useState(false)
-  const [newUser, setNewUser] = useState({ nama: '', email: '', username: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
+  const [newUser, setNewUser] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
   const [resetPwUser, setResetPwUser] = useState<Pengguna | null>(null)
   const [resetPwValue, setResetPwValue] = useState('')
   // Edit toko & customer
@@ -51,7 +51,7 @@ export default function MasterDataView() {
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
   // Edit karyawan
   const [editUser, setEditUser] = useState<Pengguna | null>(null)
-  const [editUserForm, setEditUserForm] = useState({ nama: '', email: '', username: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
+  const [editUserForm, setEditUserForm] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
   // Pencarian cepat per tab
   const [cariToko, setCariToko] = useState('')
   const [cariCust, setCariCust] = useState('')
@@ -69,8 +69,8 @@ export default function MasterDataView() {
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const addUser = useMutation({
-    mutationFn: () => postJson('/api/pengguna', { ...newUser, username: newUser.username.trim() || undefined, password: newUser.password.trim() || undefined, aktor: role }),
-    onSuccess: () => { invalidate(['pengguna']); setUserOpen(false); setNewUser({ nama: '', email: '', username: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' }); toast({ title: 'Karyawan ditambahkan', description: 'Akun login siap digunakan.' }) },
+    mutationFn: () => postJson('/api/pengguna', { ...newUser, username: newUser.username.trim() || undefined, kodeTeknisi: newUser.kodeTeknisi.trim() || undefined, password: newUser.password.trim() || undefined, aktor: role }),
+    onSuccess: () => { invalidate(['pengguna']); setUserOpen(false); setNewUser({ nama: '', email: '', username: '', kodeTeknisi: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' }); toast({ title: 'Karyawan ditambahkan', description: 'Akun login siap digunakan.' }) },
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const updateUser = useMutation({
@@ -109,7 +109,7 @@ export default function MasterDataView() {
     [unitList, cariUnit]
   )
   const userTampil = useMemo(
-    () => (userList ?? []).filter((u) => matchQuery([u.nama, u.email, u.username, u.noWa, u.wilayahKerja, u.role], cariUser)),
+    () => (userList ?? []).filter((u) => matchQuery([u.nama, u.email, u.username, u.kodeTeknisi, u.noWa, u.wilayahKerja, u.role], cariUser)),
     [userList, cariUser]
   )
 
@@ -326,13 +326,14 @@ export default function MasterDataView() {
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       <Badge variant="outline" className="text-[9px]">{u.role.replace('_', ' ')}</Badge>
                       {u.username && <Badge variant="outline" className="font-mono text-[9px]">@{u.username}</Badge>}
+                      {u.kodeTeknisi && <Badge variant="outline" className="border-teal-300 font-mono text-[9px] text-teal-700">{u.kodeTeknisi}</Badge>}
                       {u.wilayahKerja && <Badge variant="outline" className="text-[9px]">Wil. {u.wilayahKerja}</Badge>}
                       {u.jumlahKunjungan != null && u.role === 'TEKNISI' && <Badge variant="outline" className="text-[9px]">{u.jumlahKunjungan} kunjungan</Badge>}
                       {!u.aktif && <Badge variant="outline" className="border-red-300 bg-red-50 text-[9px] text-red-700">Nonaktif</Badge>}
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-emerald-700" onClick={() => { setEditUser(u); setEditUserForm({ nama: u.nama, email: u.email, username: u.username ?? '', role: u.role, noWa: u.noWa ?? '', wilayahKerja: u.wilayahKerja ?? '' }) }} aria-label={`Edit ${u.nama}`} title="Edit data karyawan">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-emerald-700" onClick={() => { setEditUser(u); setEditUserForm({ nama: u.nama, email: u.email, username: u.username ?? '', kodeTeknisi: u.kodeTeknisi ?? '', role: u.role, noWa: u.noWa ?? '', wilayahKerja: u.wilayahKerja ?? '' }) }} aria-label={`Edit ${u.nama}`} title="Edit data karyawan">
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-emerald-700" onClick={() => { setResetPwUser(u); setResetPwValue('') }} aria-label={`Reset password ${u.nama}`} title="Reset password login">
@@ -403,6 +404,7 @@ export default function MasterDataView() {
             <div className="space-y-1.5"><Label>Nama</Label><Input value={newUser.nama} onChange={(e) => setNewUser({ ...newUser, nama: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Username (opsional)</Label><Input value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} placeholder="otomatis dari email" /></div>
+            <div className="space-y-1.5"><Label>Kode Teknisi (opsional)</Label><Input value={newUser.kodeTeknisi} onChange={(e) => setNewUser({ ...newUser, kodeTeknisi: e.target.value.toUpperCase() })} placeholder="cth: TKN-001" className="font-mono" /></div>
             <div className="space-y-1.5"><Label>Password (opsional)</Label><Input type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} placeholder="default: aftersales123" /></div>
             <div className="space-y-1.5">
               <Label>Peran</Label>
@@ -437,6 +439,7 @@ export default function MasterDataView() {
             <div className="space-y-1.5"><Label>Nama</Label><Input value={editUserForm.nama} onChange={(e) => setEditUserForm({ ...editUserForm, nama: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Email (login)</Label><Input type="email" value={editUserForm.email} onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Username (opsional)</Label><Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="kosongkan bila tak dipakai" /></div>
+            <div className="space-y-1.5"><Label>Kode Teknisi (opsional)</Label><Input value={editUserForm.kodeTeknisi} onChange={(e) => setEditUserForm({ ...editUserForm, kodeTeknisi: e.target.value.toUpperCase() })} placeholder="cth: TKN-001" className="font-mono" /></div>
             <div className="space-y-1.5">
               <Label>Peran</Label>
               <Select value={editUserForm.role} onValueChange={(v) => setEditUserForm({ ...editUserForm, role: v })}>
@@ -463,6 +466,7 @@ export default function MasterDataView() {
                   nama: editUserForm.nama.trim(),
                   email: editUserForm.email.trim(),
                   username: editUserForm.username.trim() || null,
+                  kodeTeknisi: editUserForm.kodeTeknisi.trim() || null,
                   role: editUserForm.role,
                   noWa: editUserForm.noWa.trim() || null,
                   wilayahKerja: editUserForm.wilayahKerja.trim() || null,

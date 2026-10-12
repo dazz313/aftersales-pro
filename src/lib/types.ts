@@ -60,6 +60,7 @@ export interface Pengguna {
   nama: string
   email: string
   username?: string | null
+  kodeTeknisi?: string | null
   role: 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN'
   noWa: string | null
   wilayahKerja: string | null
@@ -231,6 +232,7 @@ export interface BackupStatus {
   config: { autoAktif: boolean; intervalJam: number; spreadsheetId: string; serviceEmail: string; terkonfigurasi: boolean }
   dueNow: boolean
   lastBackupAt: string | null
+  jadwal: { aktif: boolean; jam: string; terakhir: string }
 }
 
 export interface BackupOutcome {

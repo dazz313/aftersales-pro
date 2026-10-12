@@ -5,7 +5,7 @@ import { autoGitBackup } from '@/lib/git-backup'
 import { hashPassword } from '@/lib/auth-node'
 import { getSession } from '@/lib/auth'
 
-const USER_PUBLIC = { id: true, nama: true, email: true, username: true, role: true, noWa: true, wilayahKerja: true, aktif: true, createdAt: true }
+const USER_PUBLIC = { id: true, nama: true, email: true, username: true, kodeTeknisi: true, role: true, noWa: true, wilayahKerja: true, aktif: true, createdAt: true }
 
 /** Hanya Admin Workshop & Manager boleh kelola akun karyawan */
 async function requireManager(request: Request): Promise<NextResponse | null> {
@@ -56,6 +56,15 @@ export async function POST(request: Request) {
       }
     }
 
+    // Kode teknisi: opsional, harus unik bila diisi
+    const kodeTeknisi: string | null = body.kodeTeknisi ? String(body.kodeTeknisi).trim().toUpperCase() || null : null
+    if (kodeTeknisi) {
+      const kodeDipakai = await db.pengguna.findUnique({ where: { kodeTeknisi } })
+      if (kodeDipakai) {
+        return NextResponse.json({ error: `Kode teknisi "${kodeTeknisi}" sudah dipakai` }, { status: 409 })
+      }
+    }
+
     // Password: default "aftersales123" bila kosong
     const password = body.password ? String(body.password) : 'aftersales123'
     if (password.length < 6) {
@@ -69,6 +78,7 @@ export async function POST(request: Request) {
         nama: body.nama,
         email,
         username,
+        kodeTeknisi,
         passwordHash: hashPassword(password),
         role,
         noWa: body.noWa ?? null,

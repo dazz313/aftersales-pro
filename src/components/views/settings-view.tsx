@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  fetcher, postJson, formatWaktu, testGateway,
+  fetcher, postJson, formatWaktu, testGateway, authHeaders,
   type AuditLog, type Pengguna, type GatewayStatus, type GatewayTestResult, type BackupStatus, type BackupOutcome,
 } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -22,7 +22,7 @@ import { useAppStore } from '@/lib/store'
 import {
   Building2, Save, ScrollText, ShieldCheck, DatabaseBackup, History,
   Radio, Smartphone, Send, CloudUpload, RefreshCw, CheckCircle2, XCircle, CircleAlert,
-  Monitor, Bot, Copy, Inbox, ChevronDown,
+  Monitor, Bot, Copy, Inbox, ChevronDown, Download, Upload, Clock, ImagePlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
@@ -227,6 +227,75 @@ export default function SettingsView() {
     onError: (e: Error) => toast({ title: 'Backup gagal', description: e.message, variant: 'destructive' }),
   })
 
+  // ===== Logo perusahaan =====
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const [logoTick, setLogoTick] = useState(0)
+  const [logoBusy, setLogoBusy] = useState(false)
+  const uploadLogo = async (file: File) => {
+    setLogoBusy(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/logo', { method: 'POST', headers: authHeaders(), body: fd })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal mengunggah logo (${res.status})`)
+      }
+      setLogoTick(Date.now())
+      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      toast({ title: 'Logo diperbarui', description: 'Logo tampil di sidebar & halaman login.' })
+    } catch (e) {
+      toast({ title: 'Upload logo gagal', description: (e as Error).message, variant: 'destructive' })
+    } finally {
+      setLogoBusy(false)
+    }
+  }
+
+  // ===== Backup database (file JSON) =====
+  const restoreInputRef = useRef<HTMLInputElement>(null)
+  const [restoreBusy, setRestoreBusy] = useState(false)
+  const downloadDbBackup = async () => {
+    try {
+      const res = await fetch('/api/backup/db', { headers: authHeaders() })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal mengunduh backup (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `backup-aspro-${new Date().toISOString().slice(0, 10)}.json`
+      const blob = await res.blob()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000)
+      toast({ title: 'Backup database diunduh', description: `File ${filename} tersimpan. Simpan baik-baik.` })
+    } catch (e) {
+      toast({ title: 'Unduh backup gagal', description: (e as Error).message, variant: 'destructive' })
+    }
+  }
+  const uploadRestore = async (file: File) => {
+    if (!window.confirm('Restore akan MENIMPA seluruh data dengan isi file backup. Lanjutkan?')) return
+    setRestoreBusy(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/backup/restore', { method: 'POST', headers: authHeaders(), body: fd })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error((body as { error?: string }).error || `Restore gagal (${res.status})`)
+      const total = Object.values((body as { counts?: Record<string, number> }).counts ?? {}).reduce((a, b) => a + (Number(b) || 0), 0)
+      toast({ title: 'Restore berhasil', description: `${total} baris dikembalikan. Memuat ulang…` })
+      setTimeout(() => window.location.reload(), 1200)
+    } catch (e) {
+      toast({ title: 'Restore gagal', description: (e as Error).message, variant: 'destructive' })
+    } finally {
+      setRestoreBusy(false)
+    }
+  }
+
   // ===== Desktop & MCP =====
   const isDesktop = !!desktopInfo?.isDesktop
 
@@ -318,6 +387,38 @@ export default function SettingsView() {
                 </div>
               ))
             )}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Logo Perusahaan</Label>
+              <div className="flex items-center gap-3 rounded-lg border p-3">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+                  <img
+                    src={`/api/logo?v=${logoTick}`}
+                    alt="Logo perusahaan"
+                    className="h-full w-full object-contain"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                    onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.display = '' }}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] text-slate-500">PNG/JPG/WebP/GIF ≤ 2 MB — tampil di sidebar &amp; halaman login.</p>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp,.gif"
+                    className="hidden"
+                    aria-label="Pilih file logo"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      e.target.value = ''
+                      if (f) void uploadLogo(f)
+                    }}
+                  />
+                  <Button size="sm" variant="outline" className="mt-1.5" disabled={logoBusy} onClick={() => logoInputRef.current?.click()}>
+                    <ImagePlus className="mr-1 h-3.5 w-3.5" /> {logoBusy ? 'Mengunggah…' : 'Pilih & Unggah Logo'}
+                  </Button>
+                </div>
+              </div>
+            </div>
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
               <Save className="mr-1.5 h-4 w-4" /> Simpan Profil
             </Button>
@@ -512,6 +613,62 @@ export default function SettingsView() {
               <Button className="flex-1 bg-teal-600 hover:bg-teal-700" disabled={backupMutation.isPending} onClick={() => backupMutation.mutate()}>
                 <CloudUpload className={cn('mr-1.5 h-4 w-4', backupMutation.isPending && 'animate-bounce')} /> Backup Sekarang
               </Button>
+            </div>
+
+            {/* Jadwal backup harian otomatis */}
+            <div className="space-y-3 rounded-lg border border-teal-200 bg-teal-50/50 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                <Clock className="h-3.5 w-3.5 text-teal-600" /> Jadwal Backup Harian Otomatis
+              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] text-slate-500">Jalan tiap hari di jam berikut (server harus hidup)</p>
+                <Switch
+                  checked={gs('gs_jadwal_aktif') === 'true'}
+                  onCheckedChange={(v) => setGsForm({ ...gsForm, gs_jadwal_aktif: String(v) })}
+                  aria-label="Aktifkan jadwal backup harian"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="gs-jadwal-jam" className="text-xs">Jam backup (HH:MM)</Label>
+                <Input id="gs-jadwal-jam" type="time" value={gs('gs_jadwal_jam') || '02:00'} onChange={(e) => setGsForm({ ...gsForm, gs_jadwal_jam: e.target.value })} className="font-mono text-xs" />
+              </div>
+              {backupStatus?.jadwal && (
+                <p className="text-[11px] text-slate-500">
+                  {backupStatus.jadwal.aktif
+                    ? `Aktif tiap hari pk. ${backupStatus.jadwal.jam}${backupStatus.jadwal.terakhir ? ` · terakhir jalan ${backupStatus.jadwal.terakhir}` : ' · belum pernah jalan'}`
+                    : 'Nonaktif — aktifkan + Simpan untuk menjadwalkan.'}
+                </p>
+              )}
+            </div>
+
+            {/* Backup & restore database (file) */}
+            <div className="space-y-2.5 rounded-lg border p-3">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                <DatabaseBackup className="h-3.5 w-3.5 text-slate-600" /> Backup &amp; Restore Database (File)
+              </p>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                Unduh seluruh database sebagai file JSON. Restore menimpa SEMUA data — hanya dipakai saat darurat/pindah perangkat.
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => void downloadDbBackup()}>
+                  <Download className="mr-1 h-3.5 w-3.5" /> Unduh Backup
+                </Button>
+                <input
+                  ref={restoreInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  className="hidden"
+                  aria-label="Pilih file backup untuk restore"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    e.target.value = ''
+                    if (f) void uploadRestore(f)
+                  }}
+                />
+                <Button size="sm" variant="outline" className="flex-1 border-rose-300 text-rose-700 hover:bg-rose-50" disabled={restoreBusy} onClick={() => restoreInputRef.current?.click()}>
+                  <Upload className="mr-1 h-3.5 w-3.5" /> {restoreBusy ? 'Me-restore…' : 'Restore…'}
+                </Button>
+              </div>
             </div>
         </SettingSection>
 

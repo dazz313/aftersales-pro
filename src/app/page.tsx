@@ -33,6 +33,7 @@ import MasterDataView from '@/components/views/master-data-view'
 import ClaimView from '@/components/views/claim-view'
 import SettingsView from '@/components/views/settings-view'
 import AutoBackupWatcher from '@/components/auto-backup-watcher'
+import CompanyLogo from '@/components/company-logo'
 import QuickActions from '@/components/quick-entry'
 import {
   DropdownMenu,
@@ -81,9 +82,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white">
-          <WrenchIcon className="h-5 w-5" />
-        </div>
+        <CompanyLogo className="h-10 w-10" />
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-white leading-tight">AfterSales Pro</p>
           <p className="truncate text-xs text-slate-400">Workshop × Produsen</p>

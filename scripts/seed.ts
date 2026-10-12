@@ -53,16 +53,16 @@ async function main() {
 
   // ============ PENGGUNA / KARYAWAN ============
   const admin = await prisma.pengguna.create({
-    data: { nama: 'Budi Santoso', email: 'budi@teknikjaya.co.id', username: 'budi', passwordHash: PW_ADMIN, role: 'ADMIN_WORKSHOP', noWa: '6281234567890' },
+    data: { nama: 'Budi Santoso', email: 'budi@teknikjaya.co.id', username: 'budi', kodeTeknisi: 'TKN-001', passwordHash: PW_ADMIN, role: 'ADMIN_WORKSHOP', noWa: '6281234567890' },
   })
   const teknisi1 = await prisma.pengguna.create({
-    data: { nama: 'Ahmad Fauzi', email: 'ahmad@teknikjaya.co.id', username: 'ahmad', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567891', wilayahKerja: 'Jakarta Timur' },
+    data: { nama: 'Ahmad Fauzi', email: 'ahmad@teknikjaya.co.id', username: 'ahmad', kodeTeknisi: 'TKN-002', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567891', wilayahKerja: 'Jakarta Timur' },
   })
   const teknisi2 = await prisma.pengguna.create({
-    data: { nama: 'Slamet Riyadi', email: 'slamet@teknikjaya.co.id', username: 'slamet', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567892', wilayahKerja: 'Bekasi' },
+    data: { nama: 'Slamet Riyadi', email: 'slamet@teknikjaya.co.id', username: 'slamet', kodeTeknisi: 'TKN-003', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567892', wilayahKerja: 'Bekasi' },
   })
   const teknisi3 = await prisma.pengguna.create({
-    data: { nama: 'Joko Prasetyo', email: 'joko@teknikjaya.co.id', username: 'joko', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567893', wilayahKerja: 'Tangerang' },
+    data: { nama: 'Joko Prasetyo', email: 'joko@teknikjaya.co.id', username: 'joko', kodeTeknisi: 'TKN-004', passwordHash: PW_DEFAULT, role: 'TEKNISI', noWa: '6281234567893', wilayahKerja: 'Tangerang' },
   })
   await prisma.pengguna.create({
     data: { nama: 'Ir. Hartono Wijaya', email: 'hartono@teknikjaya.co.id', username: 'hartono', passwordHash: PW_DEFAULT, role: 'MANAGER', noWa: '6281234567894' },

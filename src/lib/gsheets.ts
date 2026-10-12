@@ -321,5 +321,10 @@ export async function getBackupStatus() {
     },
     dueNow,
     lastBackupAt: last?.createdAt ?? null,
+    jadwal: {
+      aktif: map['gs_jadwal_aktif'] === 'true',
+      jam: /^([01]\d|2[0-3]):[0-5]\d$/.test(map['gs_jadwal_jam'] ?? '') ? map['gs_jadwal_jam'] : '02:00',
+      terakhir: map['gs_jadwal_terakhir'] ?? '',
+    },
   }
 }
