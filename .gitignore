@@ -57,3 +57,13 @@ server.log
 /upload/telegram-kunjungan/
 /upload/telegram-service/
 /upload/telegram-inbox/
+
+# Arsip lokal — jangan commit (besar & turunan, bukan sumber)
+project.zip
+project/
+download/
+upload/
+*.bak
+*.bak-*
+db/backups/
+db/custom.db
