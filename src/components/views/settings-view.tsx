@@ -25,6 +25,7 @@ import {
   Monitor, Bot, Copy, Inbox, ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 
 const AKSI_TONES: Record<string, string> = {
   CREATE: 'bg-emerald-100 text-emerald-700',
@@ -287,7 +288,11 @@ export default function SettingsView() {
   const gw = (k: string) => gwForm[k] ?? settings?.map[k] ?? ''
   const gs = (k: string) => gsForm[k] ?? settings?.map[k] ?? ''
 
-  const filteredLogs = logs ?? []
+  const [cariLog, setCariLog] = useState('')
+  const filteredLogs = useMemo(
+    () => (logs ?? []).filter((l) => matchQuery([l.aksi, l.entitas, l.entitasId, l.deskripsi, l.aktor], cariLog)),
+    [logs, cariLog]
+  )
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
@@ -604,6 +609,9 @@ export default function SettingsView() {
           <Badge variant="outline">{filteredLogs.length} entri</Badge>
         </CardHeader>
         <CardContent>
+          <div className="mb-3">
+            <QuickSearch value={cariLog} onChange={setCariLog} placeholder="Cari aksi / deskripsi / aktor…" resultCount={filteredLogs.length} />
+          </div>
           {logsLoading ? (
             <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : (

@@ -78,6 +78,28 @@ export interface ServicePart {
   sparepart?: Sparepart & { reorderLimit?: number }
 }
 
+export type OrderStatus = 'BARU' | 'DITERUSKAN' | 'DATANG' | 'SELESAI' | 'BATAL'
+
+export interface PermintaanOrder {
+  id: number
+  noOrder: string
+  tipeCustomer: 'TOKO' | 'PERORANGAN'
+  tokoId: number | null
+  customerId: number | null
+  namaPemesan: string
+  sparepartId: number | null
+  kodePart: string
+  namaPart: string
+  brand: string
+  qty: number
+  status: OrderStatus
+  catatan: string | null
+  createdAt: string
+  tglSelesai: string | null
+  toko?: { id: number; kodeToko: string; namaToko: string } | null
+  customer?: { id: number; nama: string } | null
+}
+
 export type SumberLaporan = 'KUNJUNGAN' | 'LAPORAN_TOKO' | 'LAPORAN_CUSTOMER' | 'WA_BOT' | 'MANUAL'
 export type TipeCustomer = 'TOKO' | 'PERORANGAN'
 export type LokasiUnit = 'TOKO' | 'WORKSHOP'

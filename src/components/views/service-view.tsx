@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X,
@@ -43,6 +44,7 @@ export default function ServiceView() {
   // Filter drill-down dari Dashboard (KPI garansi / klik batang tren model)
   const [garansiFilter, setGaransiFilter] = useState<'SEMUA' | 'GARANSI' | 'NON_GARANSI'>('SEMUA')
   const [modelFilter, setModelFilter] = useState<string | null>(null)
+  const [cariTiket, setCariTiket] = useState('')
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
   const [finishTarget, setFinishTarget] = useState<ServiceTicket | null>(null)
   const [notaFile, setNotaFile] = useState('')
@@ -109,8 +111,22 @@ export default function ServiceView() {
     let list = tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
     if (garansiFilter !== 'SEMUA') list = list.filter((t) => t.unitAsset.statusGaransi === garansiFilter)
     if (modelFilter) list = list.filter((t) => t.unitAsset.modelUnit === modelFilter)
+    if (cariTiket.trim()) {
+      list = list.filter((t) => matchQuery([
+        t.noTiket,
+        t.unitAsset.serialNumber,
+        t.unitAsset.modelUnit,
+        t.deskripsiKerusakan,
+        t.unitAsset.toko?.kodeToko,
+        t.unitAsset.toko?.namaToko,
+        t.unitAsset.customer?.nama,
+        t.noSttb,
+        t.noSuratJalan,
+        ...t.parts.map((p) => `${p.sparepart?.kodePart ?? ''} ${p.sparepart?.namaPart ?? ''}`),
+      ], cariTiket))
+    }
     return list
-  }, [tickets, tab, garansiFilter, modelFilter])
+  }, [tickets, tab, garansiFilter, modelFilter, cariTiket])
 
   const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null
 
@@ -231,6 +247,15 @@ export default function ServiceView() {
           </Tabs>
         </CardHeader>
         <CardContent>
+          <div className="mb-3">
+            <QuickSearch
+              value={cariTiket}
+              onChange={setCariTiket}
+              placeholder="Cari no. tiket / serial / model / toko / part…"
+              className="max-w-sm"
+              resultCount={filtered.length}
+            />
+          </div>
           {hasDrilldown && (
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="text-xs text-slate-500">Filter dari Dashboard:</span>

@@ -20,9 +20,10 @@ async function requireManager(request: Request): Promise<NextResponse | null> {
 
 /**
  * PATCH /api/pengguna/[id]
- * Body: { aktif?, role?, nama?, noWa?, wilayahKerja?, password?, aktor? }
+ * Body: { aktif?, role?, nama?, email?, username?, noWa?, wilayahKerja?, password?, aktor? }
  * - password → reset password login
  * - aktif → nonaktifkan/aktifkan akun (nonaktif tidak bisa login)
+ * - email/username → harus unik (di luar akun ini)
  */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -45,6 +46,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (typeof body.nama === 'string' && body.nama.trim() && body.nama !== existing.nama) {
       data.nama = body.nama.trim()
       changes.push('nama')
+    }
+    if (typeof body.email === 'string' && body.email.trim() && body.email.trim() !== existing.email) {
+      const emailBaru = body.email.trim()
+      const emailDipakai = await db.pengguna.findUnique({ where: { email: emailBaru } })
+      if (emailDipakai && emailDipakai.id !== userId) {
+        return NextResponse.json({ error: 'Email sudah dipakai akun lain' }, { status: 409 })
+      }
+      data.email = emailBaru
+      changes.push('email')
+    }
+    if ((typeof body.username === 'string' || body.username === null) && (body.username ?? null) !== existing.username) {
+      const uname = body.username ? String(body.username).trim() || null : null
+      if (uname) {
+        const all = await db.pengguna.findMany({ select: { id: true, username: true } })
+        const clash = all.some((u) => u.id !== userId && (u.username ?? '').toLowerCase() === uname.toLowerCase())
+        if (clash) {
+          return NextResponse.json({ error: `Username "${uname}" sudah dipakai akun lain` }, { status: 409 })
+        }
+      }
+      data.username = uname
+      changes.push('username')
     }
     if (typeof body.noWa === 'string' || body.noWa === null) {
       data.noWa = body.noWa ?? null

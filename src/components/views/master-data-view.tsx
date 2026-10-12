@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatTanggal, type Toko, type Customer, type UnitAsset, type Pengguna } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil } from 'lucide-react'
@@ -48,6 +49,14 @@ export default function MasterDataView() {
   const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
   const [editCust, setEditCust] = useState<Customer | null>(null)
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
+  // Edit karyawan
+  const [editUser, setEditUser] = useState<Pengguna | null>(null)
+  const [editUserForm, setEditUserForm] = useState({ nama: '', email: '', username: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
+  // Pencarian cepat per tab
+  const [cariToko, setCariToko] = useState('')
+  const [cariCust, setCariCust] = useState('')
+  const [cariUnit, setCariUnit] = useState('')
+  const [cariUser, setCariUser] = useState('')
 
   const invalidate = (keys: string[]) => {
     keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }))
@@ -65,9 +74,9 @@ export default function MasterDataView() {
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const updateUser = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson(`/api/pengguna/${id}`, { ...data, aktor: role }, 'PATCH'),
-    onSuccess: () => { invalidate(['pengguna']); toast({ title: 'Akun diperbarui' }) },
-    onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
+    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson<Pengguna>(`/api/pengguna/${id}`, { ...data, aktor: role }, 'PATCH'),
+    onSuccess: (u) => { invalidate(['pengguna']); setEditUser(null); toast({ title: 'Karyawan diperbarui', description: `Data ${u.nama} tersimpan.` }) },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui karyawan', description: e.message, variant: 'destructive' }),
   })
   const updateToko = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson<Toko>(`/api/toko/${id}`, { ...data, aktor: role }, 'PATCH'),
@@ -87,6 +96,23 @@ export default function MasterDataView() {
 
   const barcodeData = (u: UnitAsset) => `SN:${u.serialNumber}|MOD:${u.modelUnit}|TOK:${u.toko?.kodeToko ?? '-'}`
 
+  const tokoTampil = useMemo(
+    () => (tokoList ?? []).filter((t) => matchQuery([t.kodeToko, t.namaToko, t.alamat, t.kontak, t.barcodeToko], cariToko)),
+    [tokoList, cariToko]
+  )
+  const custTampil = useMemo(
+    () => (customerList ?? []).filter((c) => matchQuery([c.nama, c.noWa, c.alamat, ...c.unitAssets.map((u) => u.modelUnit)], cariCust)),
+    [customerList, cariCust]
+  )
+  const unitTampil = useMemo(
+    () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi], cariUnit)),
+    [unitList, cariUnit]
+  )
+  const userTampil = useMemo(
+    () => (userList ?? []).filter((u) => matchQuery([u.nama, u.email, u.username, u.noWa, u.wilayahKerja, u.role], cariUser)),
+    [userList, cariUser]
+  )
+
   return (
     <Tabs defaultValue="toko" className="space-y-4">
       <TabsList className="flex-wrap">
@@ -102,7 +128,7 @@ export default function MasterDataView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Master Toko Mitra</CardTitle>
-              <CardDescription>Profil toko, siklus kunjungan, barcode toko untuk scan kunjungan, dan kepatuhan (ALT-01) · {(tokoList ?? []).length} toko, gulir di dalam tabel</CardDescription>
+              <CardDescription>Profil toko, siklus kunjungan, barcode toko untuk scan kunjungan, dan kepatuhan (ALT-01) · {tokoTampil.length} toko, gulir di dalam tabel</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportTokoOpen(true)}>
@@ -112,6 +138,9 @@ export default function MasterDataView() {
             </div>
           </CardHeader>
           <CardContent>
+            <div className="mb-3">
+              <QuickSearch value={cariToko} onChange={setCariToko} placeholder="Cari kode / nama / alamat / kontak toko…" className="max-w-xs" resultCount={tokoTampil.length} />
+            </div>
             {tokoLoading ? (
               <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
@@ -129,7 +158,7 @@ export default function MasterDataView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(tokoList ?? []).map((t) => (
+                    {tokoTampil.map((t) => (
                       <TableRow key={t.id}>
                         <TableCell>
                           <p className="text-xs font-semibold text-slate-800">{t.namaToko}</p>
@@ -177,11 +206,14 @@ export default function MasterDataView() {
             <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setCustOpen(true)}><Plus className="mr-1 h-4 w-4" /> Customer Baru</Button>
           </CardHeader>
           <CardContent>
+            <div className="mb-3">
+              <QuickSearch value={cariCust} onChange={setCariCust} placeholder="Cari nama / WA / alamat customer…" className="max-w-xs" resultCount={custTampil.length} />
+            </div>
             {customerLoading ? (
               <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {(customerList ?? []).map((c) => (
+                {custTampil.map((c) => (
                   <div key={c.id} className="rounded-xl border p-4">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-800">{c.nama}</p>
@@ -199,6 +231,9 @@ export default function MasterDataView() {
                     </div>
                   </div>
                 ))}
+                {custTampil.length === 0 && (
+                  <p className="py-8 text-center text-sm text-slate-500 sm:col-span-2 xl:col-span-3">Tidak ada customer yang cocok dengan pencarian.</p>
+                )}
               </div>
             )}
           </CardContent>
@@ -216,6 +251,9 @@ export default function MasterDataView() {
             <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setUnitOpen(true)}><Plus className="mr-1 h-4 w-4" /> Registrasi Unit</Button>
           </CardHeader>
           <CardContent>
+            <div className="mb-3">
+              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari serial / model / toko / pemilik…" className="max-w-xs" resultCount={unitTampil.length} />
+            </div>
             {unitLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
@@ -232,7 +270,7 @@ export default function MasterDataView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(unitList ?? []).map((u) => (
+                    {unitTampil.map((u) => (
                       <TableRow key={u.id}>
                         <TableCell>
                           <p className="text-xs font-semibold text-slate-800">{u.modelUnit}</p>
@@ -272,8 +310,11 @@ export default function MasterDataView() {
             <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setUserOpen(true)}><Plus className="mr-1 h-4 w-4" /> Karyawan Baru</Button>
           </CardHeader>
           <CardContent>
+            <div className="mb-3">
+              <QuickSearch value={cariUser} onChange={setCariUser} placeholder="Cari nama / email / username / wilayah…" className="max-w-xs" resultCount={userTampil.length} />
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {(userList ?? []).map((u) => (
+              {userTampil.map((u) => (
                 <div key={u.id} className="flex items-start gap-3 rounded-xl border p-4">
                   <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white',
                     !u.aktif ? 'bg-slate-400' : u.role === 'ADMIN_WORKSHOP' ? 'bg-emerald-600' : u.role === 'TEKNISI' ? 'bg-amber-500' : u.role === 'MANAGER' ? 'bg-violet-600' : 'bg-teal-600')}>
@@ -291,6 +332,9 @@ export default function MasterDataView() {
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-emerald-700" onClick={() => { setEditUser(u); setEditUserForm({ nama: u.nama, email: u.email, username: u.username ?? '', role: u.role, noWa: u.noWa ?? '', wilayahKerja: u.wilayahKerja ?? '' }) }} aria-label={`Edit ${u.nama}`} title="Edit data karyawan">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-500 hover:text-emerald-700" onClick={() => { setResetPwUser(u); setResetPwValue('') }} aria-label={`Reset password ${u.nama}`} title="Reset password login">
                       <KeyRound className="h-3.5 w-3.5" />
                     </Button>
@@ -300,6 +344,9 @@ export default function MasterDataView() {
                   </div>
                 </div>
               ))}
+              {userTampil.length === 0 && (
+                <p className="py-8 text-center text-sm text-slate-500 sm:col-span-2 xl:col-span-3">Tidak ada karyawan yang cocok dengan pencarian.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -375,6 +422,55 @@ export default function MasterDataView() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setUserOpen(false)}>Batal</Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newUser.nama || !newUser.email || addUser.isPending} onClick={() => addUser.mutate()}><Plus className="mr-1 h-4 w-4" /> Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog edit karyawan */}
+      <Dialog open={!!editUser} onOpenChange={(o) => !o && setEditUser(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Karyawan</DialogTitle>
+            <DialogDescription>Perubahan email/username langsung berlaku untuk login berikutnya.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5"><Label>Nama</Label><Input value={editUserForm.nama} onChange={(e) => setEditUserForm({ ...editUserForm, nama: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Email (login)</Label><Input type="email" value={editUserForm.email} onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Username (opsional)</Label><Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="kosongkan bila tak dipakai" /></div>
+            <div className="space-y-1.5">
+              <Label>Peran</Label>
+              <Select value={editUserForm.role} onValueChange={(v) => setEditUserForm({ ...editUserForm, role: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ADMIN_WORKSHOP">Admin Workshop</SelectItem>
+                  <SelectItem value="TEKNISI">Teknisi Lapangan</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="PRODUSEN">Produsen</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5"><Label>No. WhatsApp</Label><Input value={editUserForm.noWa} onChange={(e) => setEditUserForm({ ...editUserForm, noWa: e.target.value })} placeholder="628xxx" /></div>
+            <div className="space-y-1.5"><Label>Wilayah Kerja</Label><Input value={editUserForm.wilayahKerja} onChange={(e) => setEditUserForm({ ...editUserForm, wilayahKerja: e.target.value })} placeholder="cth: Jakarta Timur" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUser(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!editUser || !editUserForm.nama.trim() || !editUserForm.email.trim() || updateUser.isPending}
+              onClick={() => editUser && updateUser.mutate({
+                id: editUser.id,
+                data: {
+                  nama: editUserForm.nama.trim(),
+                  email: editUserForm.email.trim(),
+                  username: editUserForm.username.trim() || null,
+                  role: editUserForm.role,
+                  noWa: editUserForm.noWa.trim() || null,
+                  wilayahKerja: editUserForm.wilayahKerja.trim() || null,
+                },
+              })}
+            >
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Send, Bot, Smartphone, ScanLine, Lightbulb, Radio, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 
 const CONTOH_COMMANDS = [
   '#LAPOR SN-ACSP-2024-00532 PRT-CMP-02 Kompresor tidak menyala sama sekali',
@@ -67,6 +68,11 @@ export default function GatewayView() {
   const channelMessages = useMemo(
     () => (messages ?? []).filter((m) => (m.channel ?? 'WHATSAPP') === channel),
     [messages, channel]
+  )
+  const [cariPesan, setCariPesan] = useState('')
+  const pesanTampil = useMemo(
+    () => channelMessages.filter((m) => matchQuery([m.pengirim, m.pesan], cariPesan)),
+    [channelMessages, cariPesan]
   )
 
   const sendMutation = useMutation({
@@ -138,20 +144,25 @@ export default function GatewayView() {
         </CardHeader>
 
         <CardContent className="flex min-h-0 flex-1 flex-col gap-0 p-0">
+          <div className="border-b bg-white px-3 py-2">
+            <QuickSearch value={cariPesan} onChange={setCariPesan} placeholder="Cari pesan / pengirim di riwayat chat…" resultCount={pesanTampil.length} />
+          </div>
           <div ref={scrollRef} className="h-[460px] flex-1 overflow-y-auto bg-[#ece5dd] p-4">
             {isLoading ? (
               <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
-            ) : channelMessages.length === 0 ? (
+            ) : pesanTampil.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
                 <Radio className="h-8 w-8 text-slate-400" />
-                <p className="text-sm font-medium text-slate-600">Belum ada pesan via {meta.label}</p>
-                <p className="max-w-xs text-xs text-slate-400">
-                  Kirim laporan dengan format <span className="font-mono">#LAPOR</span> untuk memicu bot. Channel WhatsApp &amp; Telegram punya log pesan terpisah.
-                </p>
+                <p className="text-sm font-medium text-slate-600">{channelMessages.length === 0 ? `Belum ada pesan via ${meta.label}` : 'Tidak ada pesan yang cocok dengan pencarian'}</p>
+                {channelMessages.length === 0 && (
+                  <p className="max-w-xs text-xs text-slate-400">
+                    Kirim laporan dengan format <span className="font-mono">#LAPOR</span> untuk memicu bot. Channel WhatsApp &amp; Telegram punya log pesan terpisah.
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                {channelMessages.map((m) => {
+                {pesanTampil.map((m) => {
                   const isBot = m.tipe === 'OUT'
                   const msgMeta = parseMeta(m.meta)
                   return (

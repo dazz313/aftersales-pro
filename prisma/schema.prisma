@@ -39,6 +39,7 @@ model MasterToko {
   createdAt        DateTime    @default(now())
   unitAssets       UnitAsset[]
   kunjungan        Kunjungan[]
+  orders           PermintaanOrder[]
 }
 
 // ==========================================
@@ -51,6 +52,7 @@ model MasterCustomer {
   alamat     String?
   createdAt  DateTime    @default(now())
   unitAssets UnitAsset[]
+  orders     PermintaanOrder[]
 }
 
 // ==========================================
@@ -74,6 +76,7 @@ model MasterSparepart {
   hargaKlaim     Float                @default(0) // nilai klaim per unit ke produsen
   createdAt      DateTime             @default(now())
   serviceParts   ServiceRequestPart[]
+  orders         PermintaanOrder[]
 }
 
 // ==========================================
@@ -164,6 +167,35 @@ model ServiceRequestPart {
   statusKonfirmasi String          @default("MENUNGGU")
   serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
   sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
+}
+
+// ==========================================
+// 8. Permintaan Order Sparepart dari Customer (customer_order)
+// Customer (toko/perorangan) memesan part — termasuk part yang stok
+// titipannya kosong. Status: BARU | DITERUSKAN | DATANG | SELESAI | BATAL
+// - DITERUSKAN: order diteruskan ke produsen/supplier
+// - DATANG: part tiba → stok inventory (bisa jual) otomatis bertambah
+// - SELESAI: part diserahkan ke pemesan
+// ==========================================
+model PermintaanOrder {
+  id           Int              @id @default(autoincrement())
+  noOrder      String           @unique
+  tipeCustomer String           @default("PERORANGAN") // TOKO | PERORANGAN
+  tokoId       Int?
+  customerId   Int?
+  namaPemesan  String
+  sparepartId  Int?
+  kodePart     String
+  namaPart     String
+  brand        String           @default("")
+  qty          Int              @default(1)
+  status       String           @default("BARU")
+  catatan      String?
+  createdAt    DateTime         @default(now())
+  tglSelesai   DateTime?
+  toko         MasterToko?      @relation(fields: [tokoId], references: [id])
+  customer     MasterCustomer?  @relation(fields: [customerId], references: [id])
+  sparepart    MasterSparepart? @relation(fields: [sparepartId], references: [id])
 }
 
 // ==========================================

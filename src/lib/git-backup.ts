@@ -69,7 +69,7 @@ const SENSITIVE_KEY = /private|token|secret|password|passwd|pwd|key/i
 /** Tulis snapshot lengkap seluruh DB. Mengembalikan path absolut file atau null. */
 export async function writeDbSnapshot(): Promise<string | null> {
   try {
-    const [tokos, customers, spareparts, units, kunjungan, tikets, pengguna, pengaturan, audit, backupLog] = await Promise.all([
+    const [tokos, customers, spareparts, units, kunjungan, tikets, orders, pengguna, pengaturan, audit, backupLog] = await Promise.all([
       db.masterToko.findMany({ orderBy: { kodeToko: 'asc' } }),
       db.masterCustomer.findMany({ orderBy: { nama: 'asc' } }),
       db.masterSparepart.findMany({ orderBy: { kodePart: 'asc' } }),
@@ -80,6 +80,7 @@ export async function writeDbSnapshot(): Promise<string | null> {
         orderBy: { createdAt: 'desc' },
         take: 2000,
       }),
+      db.permintaanOrder.findMany({ orderBy: { createdAt: 'desc' }, take: 2000 }),
       db.pengguna.findMany({ orderBy: { id: 'asc' } }),
       db.pengaturan.findMany({ orderBy: { kunci: 'asc' } }),
       db.auditLog.findMany({ orderBy: { id: 'desc' }, take: 1000 }),
@@ -97,6 +98,7 @@ export async function writeDbSnapshot(): Promise<string | null> {
       unitAsset: units,
       kunjungan,
       serviceRequest: tikets,
+      permintaanOrder: orders,
       pengguna: pengguna.map((u) => ({ ...u, passwordHash: u.passwordHash ? '***' : null })),
       pengaturan: pengaturan.map((p) => ({
         ...p,

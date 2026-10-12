@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, formatRupiah, type Sparepart } from '@/lib/api'
+import { fetcher, postJson, formatRupiah, type Sparepart, type Toko, type Customer, type PermintaanOrder } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,13 +10,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
-import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown } from 'lucide-react'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
+import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown, Pencil, Trash2, ClipboardList, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function InventoryView() {
@@ -25,6 +27,9 @@ export default function InventoryView() {
   const { role, navIntent, clearNavIntent } = useAppStore()
   const [restockTarget, setRestockTarget] = useState<Sparepart | null>(null)
   const [restockQty, setRestockQty] = useState('10')
+  const [editTarget, setEditTarget] = useState<Sparepart | null>(null)
+  const [editForm, setEditForm] = useState({ namaPart: '', brandKompatibel: '', supplier: '', stokJual: '0', stokGaransi: '0', reorderLimit: '5', hargaKlaim: '0' })
+  const [deleteTarget, setDeleteTarget] = useState<Sparepart | null>(null)
   const [roFormOpen, setRoFormOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
@@ -49,6 +54,94 @@ export default function InventoryView() {
     queryKey: ['spareparts'],
     queryFn: () => fetcher<Sparepart[]>('/api/sparepart'),
   })
+  const { data: orders } = useQuery<PermintaanOrder[]>({
+    queryKey: ['orders'],
+    queryFn: () => fetcher<PermintaanOrder[]>('/api/order'),
+  })
+  const { data: tokoList } = useQuery<Toko[]>({
+    queryKey: ['toko'],
+    queryFn: () => fetcher<Toko[]>('/api/toko'),
+  })
+  const { data: customerList } = useQuery<Customer[]>({
+    queryKey: ['customers'],
+    queryFn: () => fetcher<Customer[]>('/api/customer'),
+  })
+
+  // Form order customer
+  const [orderOpen, setOrderOpen] = useState(false)
+  const [cariOrder, setCariOrder] = useState('')
+  const [orderForm, setOrderForm] = useState({ tipe: 'TOKO' as 'TOKO' | 'PERORANGAN', pemilikId: '', namaPemesan: '', sparepartId: '', qty: '1', catatan: '' })
+  const openOrder = (sparepartId?: number) => {
+    setOrderForm({ tipe: 'TOKO', pemilikId: '', namaPemesan: '', sparepartId: sparepartId ? String(sparepartId) : '', qty: '1', catatan: '' })
+    setOrderOpen(true)
+  }
+
+  const invalidateOrder = () => {
+    queryClient.invalidateQueries({ queryKey: ['orders'] })
+    queryClient.invalidateQueries({ queryKey: ['spareparts'] })
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    queryClient.invalidateQueries({ queryKey: ['alerts'] })
+    queryClient.invalidateQueries({ queryKey: ['audit'] })
+  }
+
+  const createOrder = useMutation({
+    mutationFn: () =>
+      postJson('/api/order', {
+        tipeCustomer: orderForm.tipe,
+        tokoId: orderForm.tipe === 'TOKO' && orderForm.pemilikId ? Number(orderForm.pemilikId) : undefined,
+        customerId: orderForm.tipe === 'PERORANGAN' && orderForm.pemilikId ? Number(orderForm.pemilikId) : undefined,
+        namaPemesan: orderForm.namaPemesan.trim() || undefined,
+        sparepartId: Number(orderForm.sparepartId),
+        qty: Number(orderForm.qty) || 1,
+        catatan: orderForm.catatan.trim() || undefined,
+        aktor: role,
+      }),
+    onSuccess: (o: unknown) => {
+      invalidateOrder()
+      setOrderOpen(false)
+      const no = (o as { noOrder?: string })?.noOrder ?? ''
+      toast({ title: 'Order tercatat', description: `Permintaan ${no} tersimpan sebagai BARU.` })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mencatat order', description: e.message, variant: 'destructive' }),
+  })
+
+  const orderAksi = useMutation({
+    mutationFn: ({ id, aksi }: { id: number; aksi: string }) =>
+      postJson(`/api/order/${id}`, { aksi, aktor: role }, 'PATCH'),
+    onSuccess: (_d, v) => {
+      invalidateOrder()
+      const label: Record<string, string> = { TERUSKAN: 'diteruskan ke produsen', DATANG: 'tiba — stok bertambah', SELESAI: 'selesai & diserahkan', BATAL: 'dibatalkan' }
+      toast({ title: 'Order diperbarui', description: `Order ${label[v.aksi] ?? v.aksi}.` })
+    },
+    onError: (e: Error) => toast({ title: 'Aksi order ditolak', description: e.message, variant: 'destructive' }),
+  })
+
+  // Stok titipan yang kosong, dikelompokkan per brand
+  const kosongPerBrand = useMemo(() => {
+    const map = new Map<string, Sparepart[]>()
+    for (const p of parts ?? []) {
+      if (!p.kosong) continue
+      const brands = (p.brandKompatibel ?? '').split(',').map((b) => b.trim()).filter(Boolean)
+      if (brands.length === 0) {
+        const arr = map.get('Tanpa brand') ?? []
+        arr.push(p)
+        map.set('Tanpa brand', arr)
+      } else {
+        for (const b of brands) {
+          const arr = map.get(b) ?? []
+          arr.push(p)
+          map.set(b, arr)
+        }
+      }
+    }
+    return [...map.entries()].sort((a, b) => b[1].length - a[1].length)
+  }, [parts])
+
+  const orderTampil = useMemo(() => {
+    const q = cariOrder.trim()
+    if (!q) return orders ?? []
+    return (orders ?? []).filter((o) => matchQuery([o.noOrder, o.namaPemesan, o.kodePart, o.namaPart, o.brand, o.status, o.catatan], q))
+  }, [orders, cariOrder])
 
   const restockMutation = useMutation({
     mutationFn: ({ id, qty, jenis }: { id: number; qty: number; jenis: 'JUAL' | 'GARANSI' }) =>
@@ -85,6 +178,56 @@ export default function InventoryView() {
     onError: (e: Error) => toast({ title: 'Gagal menambah sparepart', description: e.message, variant: 'destructive' }),
   })
 
+  const openEdit = (p: Sparepart) => {
+    setEditTarget(p)
+    setEditForm({
+      namaPart: p.namaPart,
+      brandKompatibel: p.brandKompatibel ?? '',
+      supplier: p.supplier ?? '',
+      stokJual: String(p.stokJual ?? 0),
+      stokGaransi: String(p.stokGaransi ?? 0),
+      reorderLimit: String(p.reorderLimit),
+      hargaKlaim: String(p.hargaKlaim),
+    })
+  }
+
+  const updateMutation = useMutation({
+    mutationFn: () =>
+      postJson(`/api/sparepart/${editTarget!.id}`, {
+        namaPart: editForm.namaPart.trim(),
+        brandKompatibel: editForm.brandKompatibel.trim(),
+        supplier: editForm.supplier.trim(),
+        stokJual: Math.max(0, Math.trunc(Number(editForm.stokJual) || 0)),
+        stokGaransi: Math.max(0, Math.trunc(Number(editForm.stokGaransi) || 0)),
+        reorderLimit: Math.max(0, Math.trunc(Number(editForm.reorderLimit) || 0)),
+        hargaKlaim: Math.max(0, Number(editForm.hargaKlaim) || 0),
+        aktor: role,
+      }, 'PATCH'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spareparts'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['alerts'] })
+      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      queryClient.invalidateQueries({ queryKey: ['service-tickets'] })
+      setEditTarget(null)
+      toast({ title: 'Sparepart diperbarui', description: 'Perubahan data tersimpan & stok tersinkron.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui sparepart', description: e.message, variant: 'destructive' }),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => postJson(`/api/sparepart/${id}`, {}, 'DELETE'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['spareparts'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['alerts'] })
+      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      setDeleteTarget(null)
+      toast({ title: 'Sparepart dihapus', description: 'Item keluar dari katalog inventory.' })
+    },
+    onError: (e: Error) => toast({ title: 'Tidak dapat menghapus', description: e.message, variant: 'destructive' }),
+  })
+
   const kritis = (parts ?? []).filter((p) => p.ropAlert)
   const kosong = (parts ?? []).filter((p) => p.kosong)
   const tampilParts = useMemo(() => {
@@ -93,12 +236,7 @@ export default function InventoryView() {
     if (stokFilter === 'KOSONG') list = list.filter((p) => p.kosong)
     const q = cari.trim().toLowerCase()
     if (q) {
-      list = list.filter((p) =>
-        [p.kodePart, p.namaPart, p.brandKompatibel ?? '', p.supplier ?? '']
-          .join(' ')
-          .toLowerCase()
-          .includes(q)
-      )
+      list = list.filter((p) => matchQuery([p.kodePart, p.namaPart, p.brandKompatibel, p.supplier], q))
     }
     return list
   }, [parts, stokFilter, cari])
@@ -156,9 +294,10 @@ export default function InventoryView() {
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Urutan tampil: order customer + stok kosong di atas (portable), tabel scroll terbatas seperti Master Toko */}
+      <div className="flex flex-col gap-4">
         {/* Tabel stok */}
-        <Card className="lg:col-span-2">
+        <Card className="order-3">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Stok Sparepart Inventory</CardTitle>
@@ -175,12 +314,12 @@ export default function InventoryView() {
           </CardHeader>
           <CardContent>
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Input
+              <QuickSearch
                 value={cari}
-                onChange={(e) => setCari(e.target.value)}
+                onChange={setCari}
                 placeholder="Cari kode / nama / brand / supplier…"
-                className="h-8 max-w-xs text-xs"
-                aria-label="Cari sparepart"
+                className="max-w-xs flex-1"
+                resultCount={tampilParts.length}
               />
             </div>
             {stokFilter !== 'SEMUA' && (
@@ -208,10 +347,10 @@ export default function InventoryView() {
                     <TableRow>
                       <TableHead>Kode Sparepart</TableHead>
                       <TableHead>Nama Sparepart</TableHead>
-                      <TableHead className="hidden md:table-cell">Brand Kompatibel</TableHead>
-                      <TableHead className="hidden md:table-cell">Supplier</TableHead>
+                      <TableHead>Brand Kompatibel</TableHead>
+                      <TableHead>Supplier</TableHead>
                       <TableHead>Jual / Garansi (Total)</TableHead>
-                      <TableHead className="hidden sm:table-cell">Nilai Klaim/unit</TableHead>
+                      <TableHead>Nilai Klaim/unit</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
@@ -233,10 +372,10 @@ export default function InventoryView() {
                           <TableCell>
                             <p className="text-xs font-semibold text-slate-800">{p.namaPart}</p>
                           </TableCell>
-                          <TableCell className="hidden max-w-36 truncate text-xs text-slate-600 md:table-cell" title={p.brandKompatibel || ''}>
+                          <TableCell className="max-w-36 truncate text-xs text-slate-600" title={p.brandKompatibel || ''}>
                             {p.brandKompatibel?.trim() || '—'}
                           </TableCell>
-                          <TableCell className="hidden max-w-36 truncate text-xs text-slate-600 md:table-cell" title={p.supplier || ''}>
+                          <TableCell className="max-w-36 truncate text-xs text-slate-600" title={p.supplier || ''}>
                             {p.supplier?.trim() || '—'}
                           </TableCell>
                           <TableCell className="w-44">
@@ -246,7 +385,7 @@ export default function InventoryView() {
                             </div>
                             <Progress value={pct} className="mt-1 h-1.5" aria-label={`Stok ${p.stokInventory} dari limit ${p.reorderLimit}`} />
                           </TableCell>
-                          <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{formatRupiah(p.hargaKlaim)}</TableCell>
+                          <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatRupiah(p.hargaKlaim)}</TableCell>
                           <TableCell>
                             {p.kosong ? (
                               <Badge variant="destructive" className="gap-1 text-[10px]"><PackageX className="h-2.5 w-2.5" /> KOSONG</Badge>
@@ -257,9 +396,17 @@ export default function InventoryView() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setRestockTarget(p); setRestockJenis('JUAL'); setRestockQty(String(Math.max(p.reorderLimit * 2, 5))) }}>
-                              <PackagePlus className="mr-1 h-3 w-3" /> Restock
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setRestockTarget(p); setRestockJenis('JUAL'); setRestockQty(String(Math.max(p.reorderLimit * 2, 5))) }}>
+                                <PackagePlus className="mr-1 h-3 w-3" /> Restock
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-600 hover:text-emerald-700" onClick={() => openEdit(p)} aria-label={`Edit ${p.kodePart}`} title="Edit sparepart">
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-400 hover:text-rose-600" onClick={() => setDeleteTarget(p)} aria-label={`Hapus ${p.kodePart}`} title="Hapus sparepart">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       )
@@ -271,8 +418,8 @@ export default function InventoryView() {
           </CardContent>
         </Card>
 
-        {/* Draft Re-Order (ALT-03) — dropdown agar halaman tidak kepanjangan */}
-        <Collapsible open={roOpen} onOpenChange={setRoOpen}>
+        {/* Draft Re-Order (ALT-03) — selalu terlihat di halaman yang sama */}
+        <Collapsible open={roOpen} onOpenChange={setRoOpen} className="order-4">
           <Card>
             <CollapsibleTrigger asChild>
               <div className="cursor-pointer select-none" role="button" tabIndex={0} aria-expanded={roOpen} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setRoOpen(!roOpen) } }}>
@@ -291,23 +438,25 @@ export default function InventoryView() {
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-3">
                 {reorderDraft.length === 0 ? (
                   <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Semua stok aman. Tidak ada draft re-order.</p>
                 ) : (
                   <>
-                    {reorderDraft.map((r, i) => (
-                      <div key={i} className="rounded-lg border border-amber-200 bg-amber-50/60 p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="truncate text-xs font-semibold text-slate-800">{r.namaPart}</p>
-                            <p className="font-mono text-[10px] text-slate-500">{r.kodePart} · stok {r.stok} / limit {r.limit}</p>
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {reorderDraft.map((r, i) => (
+                        <div key={i} className="rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-xs font-semibold text-slate-800">{r.namaPart}</p>
+                              <p className="font-mono text-[10px] text-slate-500">{r.kodePart} · stok {r.stok} / limit {r.limit}</p>
+                            </div>
+                            <Badge className="shrink-0 bg-amber-500 text-[10px] text-white hover:bg-amber-500">+{r.usulanQty} pcs</Badge>
                           </div>
-                          <Badge className="shrink-0 bg-amber-500 text-[10px] text-white hover:bg-amber-500">+{r.usulanQty} pcs</Badge>
+                          <p className="mt-1 text-[10px] text-slate-500">Estimasi nilai reorder: <span className="font-semibold">{formatRupiah(r.nilai)}</span></p>
                         </div>
-                        <p className="mt-1 text-[10px] text-slate-500">Estimasi nilai reorder: <span className="font-semibold">{formatRupiah(r.nilai)}</span></p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                     <Button className="w-full bg-amber-600 hover:bg-amber-700" onClick={() => setRoFormOpen(true)}>
                       <PackagePlus className="mr-1.5 h-4 w-4" /> Kirim Permintaan ke Produsen
                     </Button>
@@ -317,7 +466,253 @@ export default function InventoryView() {
             </CollapsibleContent>
           </Card>
         </Collapsible>
+      {/* Stok titipan kosong per brand — calon order customer */}
+      <Card className="order-1 border-rose-200">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PackageX className="h-4 w-4 text-rose-600" /> Stok Titipan Kosong per Brand
+              {(parts ?? []).filter((p) => p.kosong).length > 0 && (
+                <Badge variant="destructive" className="text-[10px]">{(parts ?? []).filter((p) => p.kosong).length} item</Badge>
+              )}
+            </CardTitle>
+            <CardDescription>Stok konsinyasi yang habis — cepat catat order bila ada customer memesan</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {kosongPerBrand.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Tidak ada stok kosong. Semua titipan tersedia.</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {kosongPerBrand.map(([brand, items]) => (
+                <div key={brand} className="rounded-lg border border-rose-200 bg-rose-50/50 p-3">
+                  <p className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-800">
+                    {brand}
+                    <Badge variant="outline" className="border-rose-300 text-[10px] text-rose-700">{items.length} kosong</Badge>
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1.5">
+                        <div className="min-w-0">
+                          <p className="truncate text-[11px] font-medium text-slate-700">{p.namaPart}</p>
+                          <p className="font-mono text-[10px] text-slate-400">{p.kodePart}</p>
+                        </div>
+                        <Button size="sm" variant="outline" className="h-6 shrink-0 px-2 text-[10px]" onClick={() => openOrder(p.id)}>
+                          Order
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Permintaan order customer */}
+      <Card className="order-2">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardList className="h-4 w-4 text-teal-700" /> Permintaan Order Customer
+              {(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length > 0 && (
+                <Badge className="bg-teal-600 text-[10px] text-white hover:bg-teal-600">
+                  {(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length} aktif
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>Pesanan sparepart dari toko / perorangan · BARU → diteruskan → datang (stok+) → selesai</CardDescription>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button size="sm" className="bg-teal-700 hover:bg-teal-800" onClick={() => openOrder()}>
+              <Plus className="mr-1 h-4 w-4" /> Catat Order
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-3">
+            <QuickSearch value={cariOrder} onChange={setCariOrder} placeholder="Cari no. order / pemesan / part…" className="max-w-xs" resultCount={orderTampil.length} />
+          </div>
+          {orderTampil.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">
+              {(orders ?? []).length === 0 ? 'Belum ada permintaan order. Catat saat customer memesan part.' : 'Tidak ada order yang cocok dengan pencarian.'}
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No. Order</TableHead>
+                    <TableHead>Pemesan</TableHead>
+                    <TableHead>Part × Qty</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orderTampil.map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell>
+                        <p className="font-mono text-[11px] font-semibold text-slate-800">{o.noOrder}</p>
+                        <p className="text-[10px] text-slate-400">{new Date(o.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-xs font-medium text-slate-800">{o.namaPemesan}</p>
+                        <p className="text-[10px] text-slate-400">{o.tipeCustomer === 'TOKO' ? 'Toko' : 'Perorangan'}{o.catatan ? ` · ${o.catatan}` : ''}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-xs text-slate-800">{o.namaPart} <span className="font-bold">×{o.qty}</span></p>
+                        <p className="font-mono text-[10px] text-slate-400">{o.kodePart}{o.brand ? ` · ${o.brand}` : ''}</p>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'text-[10px]',
+                            o.status === 'BARU' && 'border-amber-300 text-amber-700',
+                            o.status === 'DITERUSKAN' && 'border-sky-300 text-sky-700',
+                            o.status === 'DATANG' && 'border-violet-300 text-violet-700',
+                            o.status === 'SELESAI' && 'border-emerald-300 text-emerald-700',
+                            o.status === 'BATAL' && 'border-slate-300 text-slate-400'
+                          )}
+                        >
+                          {o.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {o.status === 'BARU' && (
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" disabled={orderAksi.isPending} onClick={() => orderAksi.mutate({ id: o.id, aksi: 'TERUSKAN' })}>
+                              <Send className="mr-1 h-3 w-3" /> Teruskan
+                            </Button>
+                          )}
+                          {(o.status === 'BARU' || o.status === 'DITERUSKAN') && (
+                            <Button size="sm" variant="outline" className="h-7 border-violet-300 px-2 text-[11px] text-violet-700" disabled={orderAksi.isPending} onClick={() => orderAksi.mutate({ id: o.id, aksi: 'DATANG' })}>
+                              <Truck className="mr-1 h-3 w-3" /> Datang
+                            </Button>
+                          )}
+                          {o.status === 'DATANG' && (
+                            <Button size="sm" variant="outline" className="h-7 border-emerald-300 px-2 text-[11px] text-emerald-700" disabled={orderAksi.isPending} onClick={() => orderAksi.mutate({ id: o.id, aksi: 'SELESAI' })}>
+                              Selesai
+                            </Button>
+                          )}
+                          {(o.status === 'BARU' || o.status === 'DITERUSKAN') && (
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-400 hover:text-rose-600" disabled={orderAksi.isPending} onClick={() => orderAksi.mutate({ id: o.id, aksi: 'BATAL' })}>
+                              <X className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       </div>
+
+      {/* Dialog catat order customer */}
+      <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Catat Permintaan Order</DialogTitle>
+            <DialogDescription>Pesanan sparepart dari customer — tercatat BARU, teruskan ke produsen saat dipesan.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Pemesan — Toko atau Perorangan</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={orderForm.tipe === 'TOKO' ? 'default' : 'outline'}
+                  className={orderForm.tipe === 'TOKO' ? 'bg-teal-700 hover:bg-teal-800' : ''}
+                  onClick={() => setOrderForm({ ...orderForm, tipe: 'TOKO', pemilikId: '', namaPemesan: '' })}
+                >
+                  Toko
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={orderForm.tipe === 'PERORANGAN' ? 'default' : 'outline'}
+                  className={orderForm.tipe === 'PERORANGAN' ? 'bg-teal-700 hover:bg-teal-800' : ''}
+                  onClick={() => setOrderForm({ ...orderForm, tipe: 'PERORANGAN', pemilikId: '', namaPemesan: '' })}
+                >
+                  Perorangan
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>{orderForm.tipe === 'TOKO' ? 'Pilih Toko (otomatis dari data toko)' : 'Pilih Customer (opsional — otomatis dari data customer)'}</Label>
+              <Select value={orderForm.pemilikId} onValueChange={(v) => {
+                const list = orderForm.tipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])
+                const found = list.find((p) => String(p.id) === v)
+                const nama = orderForm.tipe === 'TOKO'
+                  ? (found as Toko | undefined)?.namaToko ?? ''
+                  : (found as Customer | undefined)?.nama ?? ''
+                setOrderForm({ ...orderForm, pemilikId: v, namaPemesan: orderForm.tipe === 'TOKO' ? nama : orderForm.namaPemesan })
+              }}>
+                <SelectTrigger aria-label="Pilih pemesan"><SelectValue placeholder={orderForm.tipe === 'TOKO' ? '— Pilih toko —' : '— Pilih customer / isi nama manual —'} /></SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {(orderForm.tipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
+                    <SelectItem key={p.id} value={String(p.id)}>
+                      {orderForm.tipe === 'TOKO' ? `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` : (p as Customer).nama}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {orderForm.tipe === 'PERORANGAN' && (
+              <div className="space-y-1.5">
+                <Label>Nama Pemesan</Label>
+                <Input value={orderForm.namaPemesan} onChange={(e) => setOrderForm({ ...orderForm, namaPemesan: e.target.value })} placeholder="Nama perorangan / isi otomatis dari customer" />
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label>Sparepart Dipesan</Label>
+              <Select value={orderForm.sparepartId} onValueChange={(v) => setOrderForm({ ...orderForm, sparepartId: v })}>
+                <SelectTrigger aria-label="Pilih sparepart"><SelectValue placeholder="— Pilih part —" /></SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {(parts ?? []).map((p) => (
+                    <SelectItem key={p.id} value={String(p.id)} textValue={`${p.kodePart} ${p.namaPart}`}>
+                      {p.kodePart} · {p.namaPart} ({p.kosong ? 'KOSONG' : `stok ${p.stokInventory}`})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Qty</Label>
+                <Input type="number" min="1" value={orderForm.qty} onChange={(e) => setOrderForm({ ...orderForm, qty: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Catatan (opsional)</Label>
+                <Input value={orderForm.catatan} onChange={(e) => setOrderForm({ ...orderForm, catatan: e.target.value })} placeholder="cth: ditunggu Senin" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOrderOpen(false)}>Batal</Button>
+            <Button
+              className="bg-teal-700 hover:bg-teal-800"
+              disabled={
+                !orderForm.sparepartId ||
+                Number(orderForm.qty) < 1 ||
+                (orderForm.tipe === 'TOKO' && !orderForm.pemilikId) ||
+                (orderForm.tipe === 'PERORANGAN' && !orderForm.pemilikId && !orderForm.namaPemesan.trim()) ||
+                createOrder.isPending
+              }
+              onClick={() => createOrder.mutate()}
+            >
+              <Plus className="mr-1 h-4 w-4" /> Simpan Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog restock */}
       <Dialog open={!!restockTarget} onOpenChange={(o) => !o && setRestockTarget(null)}>
@@ -354,8 +749,87 @@ export default function InventoryView() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog item baru */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      {/* Dialog edit sparepart */}
+      <Dialog open={!!editTarget} onOpenChange={(o) => !o && setEditTarget(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Sparepart {editTarget && <span className="font-mono text-sm text-slate-500">{editTarget.kodePart}</span>}</DialogTitle>
+            <DialogDescription>Kode tidak dapat diubah karena dipakai di tiket &amp; riwayat. Total stok = jual + garansi (otomatis).</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Nama Sparepart</Label>
+              <Input value={editForm.namaPart} onChange={(e) => setEditForm({ ...editForm, namaPart: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Brand Kompatibel</Label>
+              <Input value={editForm.brandKompatibel} onChange={(e) => setEditForm({ ...editForm, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Supplier</Label>
+              <Input value={editForm.supplier} onChange={(e) => setEditForm({ ...editForm, supplier: e.target.value })} placeholder="cth: PT Sinar Elektronik" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Stok Bisa Jual</Label>
+              <Input type="number" min="0" value={editForm.stokJual} onChange={(e) => setEditForm({ ...editForm, stokJual: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Stok Garansi</Label>
+              <Input type="number" min="0" value={editForm.stokGaransi} onChange={(e) => setEditForm({ ...editForm, stokGaransi: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Reorder Limit (ROP)</Label>
+              <Input type="number" min="0" value={editForm.reorderLimit} onChange={(e) => setEditForm({ ...editForm, reorderLimit: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Harga Klaim (Rp)</Label>
+              <Input type="number" min="0" value={editForm.hargaKlaim} onChange={(e) => setEditForm({ ...editForm, hargaKlaim: e.target.value })} />
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500">
+            Total stok menjadi {(Number(editForm.stokJual) || 0) + (Number(editForm.stokGaransi) || 0)} unit.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!editTarget || !editForm.namaPart.trim() || updateMutation.isPending}
+              onClick={() => updateMutation.mutate()}
+            >
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog konfirmasi hapus sparepart */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Hapus Sparepart?</DialogTitle>
+            <DialogDescription>
+              {deleteTarget && (
+                <span><span className="font-mono font-semibold">{deleteTarget.kodePart}</span> — {deleteTarget.namaPart} akan keluar dari katalog. Tindakan ini tidak dapat dibatalkan.</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="rounded-md bg-amber-50 p-2.5 text-xs text-amber-800">
+            Sparepart yang sudah dipakai di tiket service tidak dapat dihapus (dilindungi sistem).
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Batal</Button>
+            <Button
+              variant="destructive"
+              disabled={!deleteTarget || deleteMutation.isPending}
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+            >
+              <Trash2 className="mr-1 h-4 w-4" /> Ya, Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog item baru */}      <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Tambah Sparepart Inventory</DialogTitle>

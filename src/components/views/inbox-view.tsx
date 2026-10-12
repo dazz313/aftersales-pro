@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import { Inbox, MapPin, Wrench, Archive, XCircle, ArrowRightLeft, Barcode, ScanText, User } from 'lucide-react'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 import { cn } from '@/lib/utils'
 
 type Folder = 'KUNJUNGAN' | 'SERVICE'
@@ -36,6 +37,7 @@ export default function InboxView() {
   const [tokoId, setTokoId] = useState<Record<number, string>>({})
   const [teknisiId, setTeknisiId] = useState<Record<number, string>>({})
   const [alasan, setAlasan] = useState<Record<number, string>>({})
+  const [cariInbox, setCariInbox] = useState('')
 
   const { data, isLoading } = useQuery({
     queryKey: ['inbox', folder, tab],
@@ -65,6 +67,11 @@ export default function InboxView() {
   })
 
   const defaultTeks = (it: InboxItem) => teks[it.id] ?? [it.caption, it.barcode, it.ocrText].find((s) => s && /#LAPOR/i.test(s)) ?? it.caption ?? it.barcode ?? it.ocrText ?? ''
+  const inboxItems = data?.items ?? []
+  const inboxTampil = useMemo(
+    () => inboxItems.filter((it) => matchQuery([it.pengirim, it.caption, it.barcode, it.ocrText, it.hasilRef, it.fileName, it.status], cariInbox)),
+    [inboxItems, cariInbox]
+  )
   const tokoOtomatis = (it: InboxItem) => it.hasilRef?.startsWith('TOKO:')
     ? (tokoList ?? []).find((t) => t.kodeToko === it.hasilRef!.slice(5))?.id
     : undefined
@@ -95,16 +102,17 @@ export default function InboxView() {
               <TabsTrigger value="SEMUA" className="text-xs">Semua</TabsTrigger>
             </TabsList>
           </Tabs>
+          <QuickSearch value={cariInbox} onChange={setCariInbox} placeholder="Cari pengirim / caption / barcode / teks…" className="min-w-52 flex-1" resultCount={inboxTampil.length} />
         </CardContent>
       </Card>
 
       {isLoading ? (
         <div className="space-y-2">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-40" />)}</div>
-      ) : (data?.items ?? []).length === 0 ? (
-        <Card><CardContent className="py-10 text-center text-sm text-slate-500">Tidak ada item. Inbox kosong — semua data Telegram sudah terkontrol.</CardContent></Card>
+      ) : inboxTampil.length === 0 ? (
+        <Card><CardContent className="py-10 text-center text-sm text-slate-500">{(data?.items ?? []).length === 0 ? 'Tidak ada item. Inbox kosong — semua data Telegram sudah terkontrol.' : 'Tidak ada item yang cocok dengan pencarian.'}</CardContent></Card>
       ) : (
         <div className="grid gap-3 xl:grid-cols-2">
-          {(data?.items ?? []).map((it) => {
+          {inboxTampil.map((it) => {
             const url = inboxFileUrl(it)
             const open = expand === it.id
             const pending = it.status === 'PENDING'

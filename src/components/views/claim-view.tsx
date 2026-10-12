@@ -14,6 +14,7 @@ import { useAppStore } from '@/lib/store'
 import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Printer, Truck, X } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 import { cn } from '@/lib/utils'
 
 const KLAIM_TABS = ['DRAFT', 'SUBMITTED', 'PAID'] as const
@@ -33,6 +34,7 @@ export default function ClaimView() {
   const [sjOpen, setSjOpen] = useState(false)
   // Tab klaim dikontrol agar bisa diarahkan dari Dashboard (KPI "Klaim Tertahan")
   const [klaimTab, setKlaimTab] = useState<'DRAFT' | 'SUBMITTED' | 'PAID'>('DRAFT')
+  const [cariKlaim, setCariKlaim] = useState('')
 
   // Konsumsi navIntent dari Dashboard → buka tab klaim yang diminta
   // (dijalankan di callback async agar tidak setState sinkron di effect body)
@@ -51,6 +53,22 @@ export default function ClaimView() {
   })
 
   const finishTickets = useMemo(() => (tickets ?? []).filter((t) => t.status === 'FINISH'), [tickets])
+
+  const klaimTampil = useMemo(() => {
+    const q = cariKlaim.trim()
+    if (!q) return finishTickets
+    return finishTickets.filter((t) => matchQuery([
+      t.noTiket,
+      t.unitAsset.toko?.kodeToko,
+      t.unitAsset.toko?.namaToko,
+      t.unitAsset.modelUnit,
+      t.unitAsset.serialNumber,
+      t.unitAsset.customer?.nama,
+      t.noSttb,
+      t.noSuratJalan,
+      ...t.parts.map((p) => `${p.sparepart?.kodePart ?? ''} ${p.sparepart?.namaPart ?? ''}`),
+    ], q))
+  }, [finishTickets, cariKlaim])
 
   const totals = useMemo(() => {
     const t = { DRAFT: 0, SUBMITTED: 0, PAID: 0 }
@@ -290,6 +308,15 @@ export default function ClaimView() {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-3">
+            <QuickSearch
+              value={cariKlaim}
+              onChange={setCariKlaim}
+              placeholder="Cari tiket / toko / unit / part…"
+              className="max-w-sm"
+              resultCount={klaimTampil.length}
+            />
+          </div>
           <Tabs value={klaimTab} onValueChange={(v) => setKlaimTab(v as 'DRAFT' | 'SUBMITTED' | 'PAID')}>
             <TabsList>
               {KLAIM_TABS.map((t) => (
@@ -306,7 +333,7 @@ export default function ClaimView() {
                     Total nilai: <span className="font-bold text-slate-700">{formatRupiah(totals.value[t])}</span>
                   </span>
                 </div>
-                {renderTable(finishTickets.filter((tk) => tk.statusKlaimProdusen === t), t)}
+                {renderTable(klaimTampil.filter((tk) => tk.statusKlaimProdusen === t), t)}
               </TabsContent>
             ))}
           </Tabs>

@@ -29,13 +29,14 @@ function git(args) {
 }
 
 async function dumpDb(db) {
-  const [tokos, customers, spareparts, units, kunjungan, tikets, pengguna, pengaturan, audit, backupLog] = await Promise.all([
+  const [tokos, customers, spareparts, units, kunjungan, tikets, orders, pengguna, pengaturan, audit, backupLog] = await Promise.all([
     db.masterToko.findMany({ orderBy: { kodeToko: 'asc' } }),
     db.masterCustomer.findMany({ orderBy: { nama: 'asc' } }),
     db.masterSparepart.findMany({ orderBy: { kodePart: 'asc' } }),
     db.unitAsset.findMany({ orderBy: { serialNumber: 'asc' } }),
     db.kunjungan.findMany({ orderBy: { tglKunjungan: 'desc' }, take: 2000 }),
     db.serviceRequest.findMany({ include: { parts: true }, orderBy: { createdAt: 'desc' }, take: 2000 }),
+    db.permintaanOrder.findMany({ orderBy: { createdAt: 'desc' }, take: 2000 }),
     db.pengguna.findMany({ orderBy: { id: 'asc' } }),
     db.pengaturan.findMany({ orderBy: { kunci: 'asc' } }),
     db.auditLog.findMany({ orderBy: { id: 'desc' }, take: 1000 }),
@@ -49,6 +50,7 @@ async function dumpDb(db) {
     unitAsset: units,
     kunjungan,
     serviceRequest: tikets,
+    permintaanOrder: orders,
     pengguna: pengguna.map((u) => ({ ...u, passwordHash: u.passwordHash ? '***' : null })),
     pengaturan: pengaturan.map((p) => ({ ...p, nilai: SENSITIVE_KEY.test(p.kunci) ? '***' : p.nilai })),
     auditLog: audit,

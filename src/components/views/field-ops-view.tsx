@@ -18,6 +18,7 @@ import { useAppStore } from '@/lib/store'
 import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
+import QuickSearch, { matchQuery } from '@/components/quick-search'
 
 interface LookupResult {
   toko: Toko
@@ -86,6 +87,11 @@ export default function FieldOpsView() {
   const tokoTampil = useMemo(
     () => (onlyLate ? (tokoList ?? []).filter((t) => t.visitTerlambat) : tokoList ?? []),
     [tokoList, onlyLate]
+  )
+  const [cariKunjungan, setCariKunjungan] = useState('')
+  const kunjunganTampil = useMemo(
+    () => (kunjunganList ?? []).filter((k) => matchQuery([k.toko.kodeToko, k.toko.namaToko, k.teknisi.nama, k.teknisi.wilayahKerja, k.catatanStokRusak, k.barcodeTerscan, k.metodeCheckin], cariKunjungan)),
+    [kunjunganList, cariKunjungan]
   )
 
   const invalidateAll = () => {
@@ -473,13 +479,16 @@ export default function FieldOpsView() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-4 w-4 text-slate-500" /> Riwayat Kunjungan Onsite
           </CardTitle>
-          <CardDescription>Bukti kunjungan lapangan — metode check-in: scan barcode toko atau manual · {(kunjunganList ?? []).length} kunjungan, gulir di dalam tabel</CardDescription>
+          <CardDescription>Bukti kunjungan lapangan — metode check-in: scan barcode toko atau manual · {kunjunganTampil.length} kunjungan, gulir di dalam tabel</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-3">
+            <QuickSearch value={cariKunjungan} onChange={setCariKunjungan} placeholder="Cari toko / teknisi / catatan…" className="max-w-xs" resultCount={kunjunganTampil.length} />
+          </div>
           {kunjunganLoading ? (
             <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
-          ) : (kunjunganList ?? []).length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">Belum ada riwayat kunjungan.</p>
+          ) : kunjunganTampil.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">{(kunjunganList ?? []).length === 0 ? 'Belum ada riwayat kunjungan.' : 'Tidak ada kunjungan yang cocok dengan pencarian.'}</p>
           ) : (
             <div className="max-h-[60vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
               <Table>
@@ -494,7 +503,7 @@ export default function FieldOpsView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(kunjunganList ?? []).map((k) => (
+                  {kunjunganTampil.map((k) => (
                     <TableRow key={k.id}>
                       <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatWaktu(k.tglKunjungan)}</TableCell>
                       <TableCell>
