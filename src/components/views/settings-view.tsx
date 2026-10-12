@@ -599,7 +599,7 @@ export default function SettingsView() {
             <CardTitle className="flex items-center gap-2 text-base">
               <ScrollText className="h-4 w-4 text-slate-600" /> Audit Activity Logs
             </CardTitle>
-            <CardDescription>Jejak lengkap setiap perubahan data: siapa, kapan, dan apa yang berubah (Modul 6 PRD)</CardDescription>
+            <CardDescription>Jejak lengkap setiap perubahan data: siapa, kapan, dan apa yang berubah (Modul 6 PRD) · gulir di dalam daftar</CardDescription>
           </div>
           <Badge variant="outline">{filteredLogs.length} entri</Badge>
         </CardHeader>
@@ -607,7 +607,7 @@ export default function SettingsView() {
           {logsLoading ? (
             <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : (
-            <ScrollArea className="max-h-[640px] pr-3">
+            <ScrollArea className="max-h-[420px] pr-3">
               <div className="space-y-2">
                 {filteredLogs.map((l) => (
                   <div key={l.id} className="flex items-start gap-3 rounded-lg border p-3 transition hover:bg-slate-50">
