@@ -87,7 +87,7 @@ export default function MasterDataView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Master Toko Mitra</CardTitle>
-              <CardDescription>Profil toko, siklus kunjungan, barcode toko untuk scan kunjungan, dan kepatuhan (ALT-01)</CardDescription>
+              <CardDescription>Profil toko, siklus kunjungan, barcode toko untuk scan kunjungan, dan kepatuhan (ALT-01) · {(tokoList ?? []).length} toko, gulir di dalam tabel</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportTokoOpen(true)}>
@@ -100,7 +100,7 @@ export default function MasterDataView() {
             {tokoLoading ? (
               <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="max-h-[60vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
                 <Table>
                   <TableHeader>
                     <TableRow>

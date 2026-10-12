@@ -10,12 +10,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
-import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X } from 'lucide-react'
+import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function InventoryView() {
@@ -98,6 +99,8 @@ export default function InventoryView() {
     usulanQty: Math.max(p.reorderLimit * 2 - p.stokInventory, 5),
     nilai: Math.max(p.reorderLimit * 2 - p.stokInventory, 5) * p.hargaKlaim,
   }))
+  // Draft re-order disembunyikan dalam dropdown agar halaman tidak kepanjangan
+  const [roOpen, setRoOpen] = useState(true)
 
   return (
     <div className="space-y-4">
@@ -147,7 +150,7 @@ export default function InventoryView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Stok Sparepart Inventory</CardTitle>
-              <CardDescription>Barang titipan produsen — reserve otomatis saat tiket service dibuat</CardDescription>
+              <CardDescription>Barang titipan produsen — reserve otomatis saat tiket service dibuat · {tampilParts.length} item, gulir di dalam tabel</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
@@ -178,7 +181,7 @@ export default function InventoryView() {
             {isLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="max-h-[60vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -236,38 +239,50 @@ export default function InventoryView() {
           </CardContent>
         </Card>
 
-        {/* Draft Re-Order (ALT-03) */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShoppingCart className="h-4 w-4 text-amber-600" /> Draft Re-Order Sparepart
-            </CardTitle>
-            <CardDescription>ALT-03 — auto-generated dari item di bawah reorder point</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {reorderDraft.length === 0 ? (
-              <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Semua stok aman. Tidak ada draft re-order.</p>
-            ) : (
-              <>
-                {reorderDraft.map((r, i) => (
-                  <div key={i} className="rounded-lg border border-amber-200 bg-amber-50/60 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-semibold text-slate-800">{r.namaPart}</p>
-                        <p className="font-mono text-[10px] text-slate-500">{r.kodePart} · stok {r.stok} / limit {r.limit}</p>
-                      </div>
-                      <Badge className="shrink-0 bg-amber-500 text-[10px] text-white hover:bg-amber-500">+{r.usulanQty} pcs</Badge>
-                    </div>
-                    <p className="mt-1 text-[10px] text-slate-500">Estimasi nilai reorder: <span className="font-semibold">{formatRupiah(r.nilai)}</span></p>
+        {/* Draft Re-Order (ALT-03) — dropdown agar halaman tidak kepanjangan */}
+        <Collapsible open={roOpen} onOpenChange={setRoOpen}>
+          <Card>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer select-none">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <ShoppingCart className="h-4 w-4 text-amber-600" /> Draft Re-Order Sparepart
+                      {reorderDraft.length > 0 && <Badge className="bg-amber-500 text-[10px] text-white hover:bg-amber-500">{reorderDraft.length} item</Badge>}
+                    </CardTitle>
+                    <CardDescription>ALT-03 — auto-generated dari item di bawah reorder point · klik untuk buka/tutup</CardDescription>
                   </div>
-                ))}
-                <Button className="w-full bg-amber-600 hover:bg-amber-700" onClick={() => setRoFormOpen(true)}>
-                  <PackagePlus className="mr-1.5 h-4 w-4" /> Kirim Permintaan ke Produsen
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
+                  <ChevronDown className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', roOpen && 'rotate-180')} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="space-y-2">
+                {reorderDraft.length === 0 ? (
+                  <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Semua stok aman. Tidak ada draft re-order.</p>
+                ) : (
+                  <>
+                    {reorderDraft.map((r, i) => (
+                      <div key={i} className="rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-semibold text-slate-800">{r.namaPart}</p>
+                            <p className="font-mono text-[10px] text-slate-500">{r.kodePart} · stok {r.stok} / limit {r.limit}</p>
+                          </div>
+                          <Badge className="shrink-0 bg-amber-500 text-[10px] text-white hover:bg-amber-500">+{r.usulanQty} pcs</Badge>
+                        </div>
+                        <p className="mt-1 text-[10px] text-slate-500">Estimasi nilai reorder: <span className="font-semibold">{formatRupiah(r.nilai)}</span></p>
+                      </div>
+                    ))}
+                    <Button className="w-full bg-amber-600 hover:bg-amber-700" onClick={() => setRoFormOpen(true)}>
+                      <PackagePlus className="mr-1.5 h-4 w-4" /> Kirim Permintaan ke Produsen
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       </div>
 
       {/* Dialog restock */}

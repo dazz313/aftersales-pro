@@ -427,7 +427,7 @@ export default function FieldOpsView() {
               <p className="text-xs text-slate-500">{onlyLate ? 'Semua toko ON TRACK — hapus filter untuk melihat seluruh toko.' : 'Belum ada data toko terdaftar.'}</p>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid max-h-[560px] gap-3 overflow-y-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
               {tokoTampil.map((t) => {
                 const late = t.visitTerlambat
                 return (
@@ -473,7 +473,7 @@ export default function FieldOpsView() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-4 w-4 text-slate-500" /> Riwayat Kunjungan Onsite
           </CardTitle>
-          <CardDescription>Bukti kunjungan lapangan — metode check-in: scan barcode toko atau manual</CardDescription>
+          <CardDescription>Bukti kunjungan lapangan — metode check-in: scan barcode toko atau manual · {(kunjunganList ?? []).length} kunjungan, gulir di dalam tabel</CardDescription>
         </CardHeader>
         <CardContent>
           {kunjunganLoading ? (
@@ -481,7 +481,7 @@ export default function FieldOpsView() {
           ) : (kunjunganList ?? []).length === 0 ? (
             <p className="py-8 text-center text-sm text-slate-500">Belum ada riwayat kunjungan.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="max-h-[60vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
               <Table>
                 <TableHeader>
                   <TableRow>

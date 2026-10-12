@@ -1,6 +1,22 @@
 # Worklog
 
 ---
+Task ID: 12
+Agent: Muse Spark (opencode)
+Task: Batasi scroll halaman — tabel scroll internal + section panjang jadi dropdown
+
+Work Log:
+- Pola seragam di 3 area: header kartu tetap statis + tabel dibungkus max-h-60vh overflow-auto dengan thead sticky + jumlah item di deskripsi ("gulir di dalam tabel")
+- inventory-view: tabel stok + Draft Re-Order dijadikan Collapsible (trigger header + badge jumlah + chevron, default terbuka)
+- master-data-view (tab Toko): tabel Master Toko Mitra scroll internal
+- field-ops-view: grid Kepatuhan max-h-560px scroll internal + tabel Riwayat Kunjungan scroll internal
+- Pelajaran build: server lama mengunci .next/standalone (EPERM) → stop dulu sebelum npm run build
+- Verifikasi: eslint bersih, build sukses, string baru ada di chunk client, /login 200
+
+Stage Summary:
+- Tidak ada lagi scroll halaman kepanjangan di Inventory / Master Toko / Field Ops
+
+---
 Task ID: 11
 Agent: Muse Spark (opencode)
 Task: Cek rollback Task 5 lalu kembali ke main (hasil: sama saja)
