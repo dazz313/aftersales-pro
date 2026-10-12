@@ -607,10 +607,10 @@ export default function SettingsView() {
           {logsLoading ? (
             <div className="space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : (
-            <ScrollArea className="max-h-[420px] pr-3">
+            <ScrollArea className="h-[calc(100vh-340px)] min-h-[240px] pr-3">
               <div className="space-y-2">
                 {filteredLogs.map((l) => (
-                  <div key={l.id} className="flex items-start gap-3 rounded-lg border p-3 transition hover:bg-slate-50">
+                  <div key={l.id} className="flex items-start gap-3 rounded-lg border p-2 transition hover:bg-slate-50">
                     <Badge variant="outline" className={cn('shrink-0 font-mono text-[9px]', aksiTone(l.aksi))}>
                       {l.aksi}
                     </Badge>
