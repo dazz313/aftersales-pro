@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:11:34.497Z",
+  "generatedAt": "2026-10-13T22:11:56.260Z",
   "masterToko": [
     {
       "id": 123,
@@ -1547,54 +1547,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 38,
-      "serialNumber": "03020073129",
-      "modelUnit": "MCM-509",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 129,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 57,
-      "serialNumber": "03040129852",
-      "modelUnit": "MCM-512C SBC",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 132,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 39,
-      "serialNumber": "43070098367",
-      "modelUnit": "MCM-609",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 129,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 40,
-      "serialNumber": "43110031525",
-      "modelUnit": "KAW-1689",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 130,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 34,
       "serialNumber": "44010003998",
       "modelUnit": "MCM-586",
@@ -1619,84 +1571,12 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 37,
-      "serialNumber": "44050061941",
-      "modelUnit": "KG-502 C",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 41,
-      "serialNumber": "AH336947",
-      "modelUnit": "KG-302 C",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 130,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 61,
-      "serialNumber": "FE02313377",
-      "modelUnit": "JET-100 BIT",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 124,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 60,
-      "serialNumber": "ZD152841",
-      "modelUnit": "PS-230 BIT",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 124,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 62,
-      "serialNumber": "ZN032175",
-      "modelUnit": "PS-230 BIT",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 134,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 64,
       "serialNumber": "ZX350005",
       "modelUnit": "PS-135 E",
       "merk": "Shimizu",
       "nama": "",
       "tokoId": 136,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 42,
-      "serialNumber": "ZX393847",
-      "modelUnit": "PS-130 BIT",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 124,
       "customerId": null,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
@@ -1723,6 +1603,96 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 268,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZN032175",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZN032175 — PS-230 BIT",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:56.243Z"
+    },
+    {
+      "id": 267,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "FE02313377",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): FE02313377 — JET-100 BIT",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:54.043Z"
+    },
+    {
+      "id": 266,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZD152841",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZD152841 — PS-230 BIT",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:52.218Z"
+    },
+    {
+      "id": 265,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AH336947",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): AH336947 — KG-302 C",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:50.193Z"
+    },
+    {
+      "id": 264,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44050061941",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44050061941 — KG-502 C",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:45.468Z"
+    },
+    {
+      "id": 263,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03020073129",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03020073129 — MCM-509",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:43.493Z"
+    },
+    {
+      "id": 262,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "43070098367",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43070098367 — MCM-609",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:41.850Z"
+    },
+    {
+      "id": 261,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "43110031525",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43110031525 — KAW-1689",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:40.009Z"
+    },
+    {
+      "id": 260,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX393847",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZX393847 — PS-130 BIT",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:38.370Z"
+    },
+    {
+      "id": 259,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03040129852",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03040129852 — MCM-512C SBC",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:36.147Z"
+    },
     {
       "id": 258,
       "aksi": "DELETE_UNIT_ASSET",
