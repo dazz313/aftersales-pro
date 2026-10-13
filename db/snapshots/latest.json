@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:11:56.260Z",
+  "generatedAt": "2026-10-13T22:21:46.249Z",
   "masterToko": [
     {
       "id": 123,
@@ -1535,52 +1535,16 @@
   ],
   "unitAsset": [
     {
-      "id": 36,
-      "serialNumber": "02060012333",
-      "modelUnit": "KAS-1607 PL",
-      "merk": "Miyako",
+      "id": 67,
+      "serialNumber": "2602316915",
+      "modelUnit": "RI-602E (W)",
+      "merk": "Rinnai",
       "nama": "",
-      "tokoId": 123,
+      "tokoId": 164,
       "customerId": null,
-      "statusGaransi": "GARANSI",
+      "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 34,
-      "serialNumber": "44010003998",
-      "modelUnit": "MCM-586",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 128,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 35,
-      "serialNumber": "44020001427",
-      "modelUnit": "KAS-1697 DRW",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 64,
-      "serialNumber": "ZX350005",
-      "modelUnit": "PS-135 E",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 136,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
+      "createdAt": "2026-10-13T22:21:46.222Z"
     }
   ],
   "kunjungan": [],
@@ -1603,6 +1567,51 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 273,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2602316915",
+      "deskripsi": "Unit baru teregistrasi: RI-602E (W) (STOK_TOKO)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:21:46.234Z"
+    },
+    {
+      "id": 272,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44010003998",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44010003998 — MCM-586",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:12:04.540Z"
+    },
+    {
+      "id": 271,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44020001427",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44020001427 — KAS-1697 DRW",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:12:02.380Z"
+    },
+    {
+      "id": 270,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "02060012333",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 02060012333 — KAS-1607 PL",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:12:00.338Z"
+    },
+    {
+      "id": 269,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX350005",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZX350005 — PS-135 E",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:58.059Z"
+    },
     {
       "id": 268,
       "aksi": "DELETE_UNIT_ASSET",
