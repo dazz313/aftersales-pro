@@ -64,3 +64,47 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Gagal memperbarui unit' }, { status: 500 })
   }
 }
+
+// DELETE /api/unit/[id] - hapus unit registrasi (mengakomodir kesalahan input).
+// Terkunci bila unit sudah punya tiket service — riwayat & klaim harus utuh.
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
+    const { id } = await params
+    const existing = await db.unitAsset.findUnique({
+      where: { id: Number(id) },
+      include: { serviceRequests: { select: { noTiket: true } } },
+    })
+    if (!existing) {
+      return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
+    }
+    if (existing.serviceRequests.length > 0) {
+      const noList = existing.serviceRequests.map((t) => t.noTiket).join(', ')
+      return NextResponse.json(
+        { error: `Unit ${existing.serialNumber} terkunci: sudah punya tiket ${noList} — riwayat service & klaim produsen harus utuh sehingga tidak dapat dihapus.` },
+        { status: 409 }
+      )
+    }
+    let body: { aktor?: string } = {}
+    try {
+      body = await request.json()
+    } catch {
+      body = {}
+    }
+    await db.unitAsset.delete({ where: { id: Number(id) } })
+    await logAudit({
+      aksi: 'DELETE_UNIT_ASSET',
+      entitas: 'unit_asset',
+      entitasId: existing.serialNumber,
+      deskripsi: `Unit dihapus dari registrasi (koreksi kesalahan input): ${existing.serialNumber} — ${existing.modelUnit}`,
+      aktor: body.aktor,
+    })
+    await autoGitBackup('DELETE', 'unit_asset', existing.serialNumber, body.aktor)
+    return NextResponse.json({ ok: true, serialNumber: existing.serialNumber })
+  } catch (error) {
+    console.error('Unit DELETE error:', error)
+    return NextResponse.json({ error: 'Gagal menghapus unit' }, { status: 500 })
+  }
+}

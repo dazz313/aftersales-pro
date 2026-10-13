@@ -22,7 +22,7 @@ import HistoryInput from '@/components/history-input'
 import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function MasterDataView() {
@@ -73,6 +73,8 @@ export default function MasterDataView() {
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
   // Edit unit
   const [editUnit, setEditUnit] = useState<UnitAsset | null>(null)
+  // Hapus unit (koreksi kesalahan input registrasi)
+  const [deleteUnit, setDeleteUnit] = useState<UnitAsset | null>(null)
   const [editUnitForm, setEditUnitForm] = useState({ modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   // Quick input kode+nama part dari Master Data → tiket + otomatis PROSES
   const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
@@ -213,6 +215,15 @@ export default function MasterDataView() {
       toast({ title: 'Unit diperbarui', description: 'Koreksi data tersimpan.' })
     },
     onError: (e: Error) => toast({ title: 'Gagal memperbarui unit', description: e.message, variant: 'destructive' }),
+  })
+  const deleteUnitMutation = useMutation({
+    mutationFn: (id: number) => postJson(`/api/unit/${id}`, { aktor: role }, 'DELETE'),
+    onSuccess: () => {
+      invalidate(['units', 'toko', 'customer', 'dashboard', 'service-tickets', 'alerts'])
+      setDeleteUnit(null)
+      toast({ title: 'Unit dihapus', description: 'Data unit keluar dari registrasi.' })
+    },
+    onError: (e: Error) => toast({ title: 'Unit tidak dapat dihapus', description: e.message, variant: 'destructive' }),
   })
   const resetPw = useMutation({
     mutationFn: () => postJson(`/api/pengguna/${resetPwUser!.id}`, { password: resetPwValue, aktor: role }, 'PATCH'),
@@ -435,6 +446,11 @@ export default function MasterDataView() {
                             <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
                               <Pencil className="h-3 w-3" />
                             </Button>
+                            {(u.serviceRequests ?? []).length === 0 && (
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-400 hover:text-red-600" onClick={() => setDeleteUnit(u)} aria-label={`Hapus ${u.serialNumber}`} title="Hapus unit (koreksi kesalahan input registrasi)">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
                             <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setQrUnit(u)}>
                               <Barcode className="mr-1 h-3 w-3" /> Stiker
                             </Button>
@@ -782,6 +798,35 @@ export default function MasterDataView() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog konfirmasi hapus unit (koreksi kesalahan input registrasi) */}
+      <Dialog open={!!deleteUnit} onOpenChange={(o) => !o && setDeleteUnit(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Hapus Unit?</DialogTitle>
+            <DialogDescription>
+              {deleteUnit && (
+                <span>
+                  <span className="font-mono font-semibold">{deleteUnit.serialNumber}</span> — {deleteUnit.modelUnit} akan dihapus dari registrasi. Tindakan ini tidak dapat dibatalkan.
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <p className="rounded-md bg-amber-50 p-2.5 text-xs text-amber-800">
+            Unit ini belum punya tiket service — aman dihapus untuk mengoreksi kesalahan input (serial/model/toko).
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteUnit(null)}>Batal</Button>
+            <Button
+              variant="destructive"
+              disabled={!deleteUnit || deleteUnitMutation.isPending}
+              onClick={() => deleteUnit && deleteUnitMutation.mutate(deleteUnit.id)}
+            >
+              <Trash2 className="mr-1 h-4 w-4" /> Ya, Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialog quick input kode+nama part → tiket otomatis PROSES bila ready */}
       <Dialog open={!!partUnit} onOpenChange={(o) => !o && setPartUnit(null)}>
         <DialogContent className="sm:max-w-md">
@@ -863,9 +908,9 @@ export default function MasterDataView() {
             {partUnit && (partUnit.tokoId || partUnit.statusGaransi !== 'NON_GARANSI') && (
               <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">Unit {partUnit.tokoId ? 'stok toko' : 'garansi'} — biaya jasa Rp 0 (otomatis).</p>
             )}
-            {(!partForm.deskripsi.trim() || !partForm.kodePart.trim() || !partForm.namaPart.trim()) && (
+            {(!partFormValid && !dupPartKode.size && !partRowSetengah) && (
               <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
-                Lengkapi dulu: {[!partForm.deskripsi.trim() && 'deskripsi', !partForm.kodePart.trim() && 'kode', !partForm.namaPart.trim() && 'nama'].filter(Boolean).join(', ')} — tombol Simpan aktif setelah lengkap.
+                Lengkapi dulu: {[!partForm.deskripsi.trim() && 'deskripsi', partsLengkap.length === 0 && 'kode + nama part'].filter(Boolean).join(', ')} — tombol Simpan aktif setelah lengkap.
               </p>
             )}
           </div>
@@ -873,7 +918,7 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setPartUnit(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!partUnit || !partForm.deskripsi.trim() || !partForm.kodePart.trim() || !partForm.namaPart.trim() || createTiketPart.isPending}
+              disabled={!partUnit || !partFormValid || createTiketPart.isPending}
               onClick={() => createTiketPart.mutate()}
             >
               <PackagePlus className="mr-1 h-4 w-4" /> Simpan &amp; Proses
