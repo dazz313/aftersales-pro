@@ -316,7 +316,7 @@ export default function InventoryView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Stok Sparepart Inventory</CardTitle>
-              <CardDescription>5 komponen: kode · nama · brand kompatibel · stok jual/garansi · supplier — reserve otomatis saat tiket dibuat · {tampilParts.length} item</CardDescription>
+              <CardDescription>2 kelompok kolom terpisah: Stok Brand (jual/garansi — reserve otomatis saat tiket) · Part per Unit (terpakai &amp; dipesan ORDER_PRODUSEN — tidak menambah stok) · {tampilParts.length} item</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
@@ -364,7 +364,8 @@ export default function InventoryView() {
                       <TableHead>Nama Sparepart</TableHead>
                       <TableHead>Brand Kompatibel</TableHead>
                       <TableHead>Supplier</TableHead>
-                      <TableHead>Jual / Garansi (Total)</TableHead>
+                      <TableHead>Stok Brand (Jual/Garansi)</TableHead>
+                      <TableHead>Part per Unit</TableHead>
                       <TableHead>Nilai Klaim/unit</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Aksi</TableHead>
@@ -373,7 +374,7 @@ export default function InventoryView() {
                   <TableBody>
                     {tampilParts.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="py-8 text-center text-sm text-slate-500">
+                        <TableCell colSpan={9} className="py-8 text-center text-sm text-slate-500">
                           Tidak ada item yang cocok dengan filter aktif.
                         </TableCell>
                       </TableRow>
@@ -402,9 +403,17 @@ export default function InventoryView() {
                               <span className="text-[10px] text-slate-400">({p.stokInventory} total / ROP {p.reorderLimit})</span>
                             </div>
                             <Progress value={pct} className="mt-1 h-1.5" aria-label={`Stok ${p.stokInventory} dari limit ${p.reorderLimit}`} />
-                            <p className="mt-0.5 text-[10px] text-slate-500" title="Kumulatif part terpakai di tiket service — tidak mengurangi stok brand">
-                              Terpakai <span className="font-semibold text-slate-700">{p.totalTerpakai ?? 0}</span>
-                            </p>
+                          </TableCell>
+                          <TableCell className="w-40 whitespace-nowrap">
+                            <div className="flex items-baseline gap-1" title="Kumulatif part terpakai di tiket service — tidak mengurangi stok brand">
+                              <span className="text-[10px] text-slate-500">Terpakai</span>
+                              <span className="text-sm font-semibold text-slate-800">{p.totalTerpakai ?? 0}</span>
+                            </div>
+                            <div className="flex items-baseline gap-1" title={p.menungguDi?.length ? `Menunggu di tiket: ${p.menungguDi.join(', ')}` : 'Part dipesan khusus untuk unit (ORDER_PRODUSEN) — tidak menambah stok brand'}>
+                              <span className="text-[10px] text-slate-500">Dipesan</span>
+                              <span className={cn('text-sm font-semibold', (p.dipesanPerUnit ?? 0) > 0 ? 'text-rose-600' : 'text-slate-400')}>{p.dipesanPerUnit ?? 0}</span>
+                              {(p.dipesanPerUnit ?? 0) > 0 && <span className="text-[9px] text-rose-500">ORDER</span>}
+                            </div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatRupiah(p.hargaKlaim)}</TableCell>
                           <TableCell>
@@ -636,6 +645,50 @@ export default function InventoryView() {
               </Table>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Order Part per Unit — terpisah dari order customer (stok) */}
+      <Card className="order-2 border-rose-200">
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Truck className="h-4 w-4 text-rose-600" /> Order Part per Unit (ORDER_PRODUSEN)
+              {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length > 0 && (
+                <Badge variant="destructive" className="text-[10px]">{(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length} part</Badge>
+              )}
+            </CardTitle>
+            <CardDescription>Part yang dipesan khusus dari tiket service — menambah stok brand saat “Terima Part Produsen”, bukan bagian order customer</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const perUnit = (parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0)
+            if (perUnit.length === 0) {
+              return <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Tidak ada part per unit yang sedang dipesan. Semua part di tiket ready dari stok.</p>
+            }
+            return (
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {perUnit.map((p) => (
+                  <div key={p.id} className="rounded-lg border border-rose-200 bg-rose-50/60 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-slate-800">{p.namaPart}</p>
+                        <p className="font-mono text-[10px] text-slate-500">{p.kodePart}</p>
+                      </div>
+                      <Badge className="shrink-0 bg-rose-600 text-[10px] text-white hover:bg-rose-600">×{p.dipesanPerUnit ?? 0}</Badge>
+                    </div>
+                    {p.menungguDi && p.menungguDi.length > 0 && (
+                      <p className="mt-1 truncate text-[10px] text-slate-600" title={p.menungguDi.join(', ')}>
+                        Tiket: {p.menungguDi.join(', ')}
+                      </p>
+                    )}
+                    <p className="mt-1 text-[10px] text-slate-500">Terpakai total: <span className="font-semibold text-slate-700">{p.totalTerpakai ?? 0}</span> · Stok brand: <span className="font-semibold text-slate-700">{p.stokInventory}</span></p>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
         </CardContent>
       </Card>
       </div>

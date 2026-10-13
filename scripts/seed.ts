@@ -253,6 +253,12 @@ async function main() {
   })
   console.log('✅ Service Request:', 6)
 
+  // totalTerpakai = kumulatif part di semua tiket (bukan stok brand)
+  const terpakaiPerPart = await prisma.serviceRequestPart.groupBy({ by: ['sparepartId'], _sum: { qty: true } })
+  for (const r of terpakaiPerPart) {
+    await prisma.masterSparepart.update({ where: { id: r.sparepartId }, data: { totalTerpakai: r._sum.qty ?? 0 } })
+  }
+
   // ============ KUNJUNGAN TOKO ============
   await prisma.kunjungan.createMany({
     data: [

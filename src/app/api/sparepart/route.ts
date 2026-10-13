@@ -10,7 +10,7 @@ export async function GET() {
     const parts = await db.masterSparepart.findMany({
       include: {
         serviceParts: {
-          where: { statusPart: 'READY' },
+          where: { statusPart: 'ORDER_PRODUSEN' },
           include: { serviceRequest: { select: { noTiket: true, status: true } } },
         },
         _count: { select: { serviceParts: true } },
@@ -20,7 +20,11 @@ export async function GET() {
     const result = parts.map((p) => ({
       ...p,
       _count: undefined,
+      serviceParts: undefined,
       dipakai: p._count.serviceParts,
+      // Part per unit: dipesan khusus untuk unit (dari tiket) — TIDAK menambah stok brand.
+      dipesanPerUnit: p.serviceParts.reduce((a, s) => a + s.qty, 0),
+      menungguDi: [...new Set(p.serviceParts.map((s) => s.serviceRequest.noTiket))],
       ropAlert: p.stokInventory <= p.reorderLimit,
       kosong: p.stokInventory === 0,
     }))

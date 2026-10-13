@@ -35,6 +35,10 @@ export interface Sparepart {
   stokInventory: number
   /** Kumulatif part terpakai di tiket — tidak memengaruhi stok brand. */
   totalTerpakai?: number
+  /** Qty ORDER_PRODUSEN (dipesan khusus per unit, menunggu kiriman) — bukan stok brand. */
+  dipesanPerUnit?: number
+  /** No. tiket yang menunggu part ini (saat dipesanPerUnit > 0). */
+  menungguDi?: string[]
   reorderLimit: number
   hargaKlaim: number
   createdAt: string
