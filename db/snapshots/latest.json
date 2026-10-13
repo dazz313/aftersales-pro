@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:44:28.430Z",
+  "generatedAt": "2026-10-13T22:52:29.525Z",
   "masterToko": [
     {
       "id": 123,
@@ -1587,6 +1587,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 276,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "FSDFSDFSD",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, tokoId, customerId, statusGaransi, tglPembelian (FSDFSDFSD)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:52:29.507Z"
+    },
     {
       "id": 275,
       "aksi": "CREATE_UNIT_ASSET",
