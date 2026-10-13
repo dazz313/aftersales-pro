@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:43:52.598Z",
+  "generatedAt": "2026-10-13T22:44:28.430Z",
   "masterToko": [
     {
       "id": 123,
@@ -1553,6 +1553,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T22:21:46.222Z"
+    },
+    {
+      "id": 68,
+      "serialNumber": "FSDFSDFSD",
+      "modelUnit": "RI-602E (W)",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": null,
+      "customerId": 27,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": "2026-02-14T00:00:00.000Z",
+      "createdAt": "2026-10-13T22:44:28.404Z"
     }
   ],
   "kunjungan": [],
@@ -1575,6 +1587,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 275,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "FSDFSDFSD",
+      "deskripsi": "Unit baru teregistrasi: RI-602E (W) (GARANSI)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:44:28.415Z"
+    },
     {
       "id": 274,
       "aksi": "CREATE_MASTER_CUSTOMER",
