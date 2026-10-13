@@ -81,6 +81,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Teknisi tidak ditemukan' }, { status: 404 })
     }
 
+    // Tanggal check-in boleh diisi manual (backdate) — default: saat ini.
+    let tglKunjungan: Date | undefined
+    if (body.tglKunjungan) {
+      const d = new Date(String(body.tglKunjungan))
+      if (Number.isNaN(d.getTime())) {
+        return NextResponse.json({ error: 'Tanggal check-in tidak valid' }, { status: 400 })
+      }
+      if (d.getTime() > Date.now() + 24 * 3600 * 1000) {
+        return NextResponse.json({ error: 'Tanggal check-in tidak boleh melebihi besok' }, { status: 400 })
+      }
+      tglKunjungan = d
+    }
+
     const [kunjungan] = await Promise.all([
       db.kunjungan.create({
         data: {
@@ -88,14 +101,15 @@ export async function POST(request: Request) {
           teknisiId: Number(body.teknisiId),
           metodeCheckin,
           barcodeTerscan,
-          fotoOnsite: body.fotoOnsite ?? null,
+          tglKunjungan,
+          fotoOnsite: body.fotoOnsite || null,
           catatanStokRusak: body.catatanStokRusak ?? null,
         },
       }),
-      // Update tgl visit terakhir toko (siklus kunjungan reset)
+      // Update tgl visit terakhir toko (siklus kunjungan reset) — ikut tanggal check-in
       db.masterToko.update({
         where: { id: toko.id },
-        data: { tglVisitTerakhir: new Date() },
+        data: { tglVisitTerakhir: tglKunjungan ?? new Date() },
       }),
     ])
 
@@ -103,7 +117,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_KUNJUNGAN',
       entitas: 'kunjungan',
       entitasId: String(kunjungan.id),
-      deskripsi: `Teknisi ${teknisi.nama} check-in ${metodeCheckin === 'SCAN_BARCODE' ? 'via scan barcode' : 'manual'} di ${toko.namaToko} (${toko.kodeToko})${barcodeTerscan ? ` — barcode: ${barcodeTerscan}` : ''}`,
+      deskripsi: `Teknisi ${teknisi.nama} check-in ${metodeCheckin === 'SCAN_BARCODE' ? 'via scan barcode' : 'manual'} di ${toko.namaToko} (${toko.kodeToko})${barcodeTerscan ? ` · barcode: ${barcodeTerscan}` : ''}${tglKunjungan ? ` · tgl ${tglKunjungan.toLocaleString('id-ID')}` : ''}`,
       aktor: teknisi.nama,
     })
 

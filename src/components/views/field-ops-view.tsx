@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X, Pencil } from 'lucide-react'
+import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X, Pencil, CalendarDays } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
@@ -51,6 +51,7 @@ export default function FieldOpsView() {
   const [teknisiId, setTeknisiId] = useState('')
   const [catatanManual, setCatatanManual] = useState('')
   const [fotoFile, setFotoFile] = useState('')
+  const [tglManual, setTglManual] = useState('')
   // Filter drill-down dari Dashboard (KPI "Toko Telat Visit")
   const [onlyLate, setOnlyLate] = useState(false)
 
@@ -226,6 +227,13 @@ export default function FieldOpsView() {
     onError: (e: Error) => toast({ title: 'Gagal menyimpan catatan', description: e.message, variant: 'destructive' }),
   })
 
+  // Nilai default input datetime-local (format lokal — bukan UTC)
+  const dtLocalNow = () => {
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+  }
+
   // ===== Check-in manual =====
   const manualCheckin = useMutation({
     mutationFn: () =>
@@ -233,8 +241,9 @@ export default function FieldOpsView() {
         tokoId: selectedToko?.id,
         teknisiId: Number(teknisiId),
         metodeCheckin: 'MANUAL',
+        tglKunjungan: tglManual ? new Date(tglManual).toISOString() : undefined,
         catatanStokRusak: catatanManual || null,
-        fotoOnsite: fotoFile || null,
+        fotoOnsite: fotoFile.trim() || null,
       }),
     onSuccess: () => {
       invalidateAll()
@@ -250,7 +259,8 @@ export default function FieldOpsView() {
   const bukaCheckin = (toko: Toko) => {
     setSelectedToko(toko)
     setCheckinOpen(true)
-    setFotoFile(`onsite-${toko.kodeToko.toLowerCase()}-${Date.now()}.jpg`)
+    setFotoFile('')
+    setTglManual(dtLocalNow())
     if (!teknisiId && teknisiOnly[0]) setTeknisiId(String(teknisiOnly[0].id))
   }
 
@@ -609,9 +619,13 @@ export default function FieldOpsView() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label><Camera className="mr-1 inline h-3 w-3" /> Foto Onsite</Label>
-                <Input value={fotoFile} onChange={(e) => setFotoFile(e.target.value)} className="font-mono text-xs" aria-label="Nama file foto onsite" />
+                <Label><CalendarDays className="mr-1 inline h-3 w-3" /> Tanggal Check-in</Label>
+                <Input type="datetime-local" value={tglManual} onChange={(e) => setTglManual(e.target.value)} aria-label="Tanggal check-in" />
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label><Camera className="mr-1 inline h-3 w-3" /> Foto Onsite <span className="font-normal text-slate-400">(opsional)</span></Label>
+              <Input value={fotoFile} onChange={(e) => setFotoFile(e.target.value)} placeholder="Kosongkan bila tidak ada foto — cth: onsite-tok-001.jpg" className="font-mono text-xs" aria-label="Nama file foto onsite (opsional)" />
             </div>
             <div className="space-y-1.5">
               <Label>Catatan Stok Rusak / Temuan</Label>

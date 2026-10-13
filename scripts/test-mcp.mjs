@@ -16,6 +16,8 @@ import fs from 'node:fs'
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 const SERVER = path.join(ROOT, 'mcp', 'server.mjs')
+// DB lokal Windows (fallback bila env tidak di-set) — path absolut anti-backslash untuk Prisma
+const LOCAL_DB_URL = `file:${path.join(ROOT, 'db', 'custom.db').replace(/\\/g, '/')}`
 
 let nextId = 1
 const pending = new Map()
@@ -59,7 +61,7 @@ async function main() {
   console.log('→ Spawn MCP server (stdio)...')
   proc = spawn(process.execPath, [SERVER], {
     cwd: ROOT,
-    env: { ...process.env, DATABASE_URL: 'file:/home/z/my-project/db/custom.db' },
+    env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || LOCAL_DB_URL },
     stdio: ['pipe', 'pipe', 'pipe'],
   })
   proc.stdout.setEncoding('utf8')

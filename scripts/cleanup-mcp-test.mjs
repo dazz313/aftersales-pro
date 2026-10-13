@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client'
 import fs from 'node:fs'
 import path from 'node:path'
 
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 const db = new PrismaClient()
 const [kodeToko, custId, partId, kunjunganId] = process.argv.slice(2)
 
@@ -37,7 +38,7 @@ async function main() {
   console.log(`- backup log MCP dihapus: ${b.count}`)
 
   // File snapshot uji
-  const dir = '/home/z/my-project/db/backups'
+  const dir = path.join(ROOT, 'db', 'backups')
   if (fs.existsSync(dir)) {
     for (const f of fs.readdirSync(dir)) {
       if (f.startsWith('backup-mcp-')) {
