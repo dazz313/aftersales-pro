@@ -152,8 +152,11 @@ export default function MasterDataView() {
     onSuccess: (t: unknown) => {
       invalidate(['units', 'service-tickets', 'spareparts', 'dashboard', 'alerts'])
       setPartUnit(null)
-      const no = (t as { noTiket?: string })?.noTiket ?? ''
-      toast({ title: 'Part tercatat', description: `Tiket ${no} — kode+nama terinput, otomatis PROSES bila stok ready.` })
+      const tt = (t as { noTiket?: string; status?: string }) ?? {}
+      toast({
+        title: 'Part tersimpan',
+        description: `Tiket ${tt.noTiket ?? ''} — ${tt.status === 'PROSES' ? 'stok ready, otomatis PROSES.' : 'stok kosong, tercatat ORDER & menunggu di panel Belum Terproses.'}`,
+      })
     },
     onError: (e: Error) => toast({ title: 'Gagal mencatat part', description: e.message, variant: 'destructive' }),
   })
@@ -771,6 +774,11 @@ export default function MasterDataView() {
             )}
             {partUnit && (partUnit.tokoId || partUnit.statusGaransi !== 'NON_GARANSI') && (
               <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">Unit {partUnit.tokoId ? 'stok toko' : 'garansi'} — biaya jasa Rp 0 (otomatis).</p>
+            )}
+            {(!partForm.deskripsi.trim() || !partForm.kodePart.trim() || !partForm.namaPart.trim()) && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Lengkapi dulu: {[!partForm.deskripsi.trim() && 'deskripsi', !partForm.kodePart.trim() && 'kode', !partForm.namaPart.trim() && 'nama'].filter(Boolean).join(', ')} — tombol Simpan aktif setelah lengkap.
+              </p>
             )}
           </div>
           <DialogFooter>

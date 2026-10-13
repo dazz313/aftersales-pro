@@ -249,6 +249,9 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
             </Button>
           </div>
           <p className="text-[10px] text-slate-400">Kode baru otomatis masuk katalog &amp; muncul di surat jalan.</p>
+          {(!balasKode.trim() || !balasNama.trim()) && (
+            <p className="text-[10px] text-amber-700">Isi kode + nama part untuk mengaktifkan tombol Catat.</p>
+          )}
         </div>
       )}
 
