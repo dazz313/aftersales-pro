@@ -4,7 +4,7 @@ import { logAudit } from '@/lib/audit'
 import { backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 
-// GET /api/sparepart - list sparepart + status ROP
+// GET /api/sparepart - list sparepart + status ROP + hitungan pemakaian di tiket
 export async function GET() {
   try {
     const parts = await db.masterSparepart.findMany({
@@ -13,11 +13,14 @@ export async function GET() {
           where: { statusPart: 'READY' },
           include: { serviceRequest: { select: { noTiket: true, status: true } } },
         },
+        _count: { select: { serviceParts: true } },
       },
       orderBy: { kodePart: 'asc' },
     })
     const result = parts.map((p) => ({
       ...p,
+      _count: undefined,
+      dipakai: p._count.serviceParts,
       ropAlert: p.stokInventory <= p.reorderLimit,
       kosong: p.stokInventory === 0,
     }))

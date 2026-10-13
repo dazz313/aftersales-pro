@@ -80,10 +80,16 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const roleDenied = requireManagerSession(session)
     if (roleDenied) return roleDenied
     const { id } = await params
-    const used = await db.serviceRequestPart.count({ where: { sparepartId: Number(id) } })
-    if (used > 0) {
+    const used = await db.serviceRequestPart.findMany({
+      where: { sparepartId: Number(id) },
+      include: { serviceRequest: { select: { noTiket: true, status: true } } },
+      take: 6,
+    })
+    if (used.length > 0) {
+      const total = await db.serviceRequestPart.count({ where: { sparepartId: Number(id) } })
+      const daftar = used.map((u) => `${u.serviceRequest.noTiket} (${u.serviceRequest.status})`).join(', ')
       return NextResponse.json(
-        { error: `Tidak dapat menghapus: sparepart sudah dipakai di ${used} tiket service` },
+        { error: `Tidak dapat menghapus: dipakai di ${total} tiket (${daftar}${total > used.length ? ', …' : ''}). Hapus/selesaikan tiket terkait dulu, atau biarkan sebagai arsip katalog.` },
         { status: 409 }
       )
     }

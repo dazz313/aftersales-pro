@@ -38,6 +38,8 @@ export interface Sparepart {
   createdAt: string
   ropAlert: boolean
   kosong: boolean
+  /** Jumlah tiket yang memakai part ini (0 = aman dihapus). */
+  dipakai?: number
 }
 
 export type StatusGaransi = 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'

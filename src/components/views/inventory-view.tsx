@@ -383,6 +383,9 @@ export default function InventoryView() {
                         <TableRow key={p.id} className={cn(p.kosong && 'bg-rose-50/60', p.ropAlert && !p.kosong && 'bg-amber-50/50')}>
                           <TableCell>
                             <p className="font-mono text-[11px] font-semibold text-slate-800">{p.kodePart}</p>
+                            {(p.dipakai ?? 0) > 0 && (
+                              <p className="text-[10px] text-slate-500" title="Part ini dipakai di tiket — tidak dapat dihapus">Dipakai {p.dipakai} tiket</p>
+                            )}
                           </TableCell>
                           <TableCell>
                             <p className="text-xs font-semibold text-slate-800">{p.namaPart}</p>
@@ -867,14 +870,21 @@ export default function InventoryView() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <p className="rounded-md bg-amber-50 p-2.5 text-xs text-amber-800">
-            Sparepart yang sudah dipakai di tiket service tidak dapat dihapus (dilindungi sistem).
-          </p>
+          {(deleteTarget?.dipakai ?? 0) > 0 ? (
+            <p className="rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-800">
+              Terkunci: part ini dipakai di <span className="font-bold">{deleteTarget!.dipakai} tiket service</span> —
+              riwayat tiket harus utuh sehingga tidak dapat dihapus. Hapus/selesaikan tiket terkait dulu bila memang perlu.
+            </p>
+          ) : (
+            <p className="rounded-md bg-amber-50 p-2.5 text-xs text-amber-800">
+              Part ini belum dipakai di tiket mana pun — aman dihapus.
+            </p>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Batal</Button>
             <Button
               variant="destructive"
-              disabled={!deleteTarget || deleteMutation.isPending}
+              disabled={!deleteTarget || (deleteTarget.dipakai ?? 0) > 0 || deleteMutation.isPending}
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
             >
               <Trash2 className="mr-1 h-4 w-4" /> Ya, Hapus
