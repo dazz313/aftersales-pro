@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:10:51.764Z",
+  "generatedAt": "2026-10-13T22:11:13.424Z",
   "masterToko": [
     {
       "id": 123,
@@ -1547,18 +1547,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 55,
-      "serialNumber": "03010006502",
-      "modelUnit": "MCM-507",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 126,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 58,
       "serialNumber": "03010039792",
       "modelUnit": "MCM-508 SBC",
@@ -1595,42 +1583,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 53,
-      "serialNumber": "2505248042",
-      "modelUnit": "RI-522 CE",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 52,
-      "serialNumber": "2505637174",
-      "modelUnit": "RI-522 A",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 50,
-      "serialNumber": "2511015067",
-      "modelUnit": "RI-712 GA",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 43,
       "serialNumber": "2601008866",
       "modelUnit": "RH-127 SS",
@@ -1649,42 +1601,6 @@
       "merk": "Rinnai",
       "nama": "",
       "tokoId": 127,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 51,
-      "serialNumber": "2601373365",
-      "modelUnit": "RI-602 AG",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 54,
-      "serialNumber": "2602344144",
-      "modelUnit": "RI-522C",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 127,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 56,
-      "serialNumber": "40090574358",
-      "modelUnit": "MCM-508 SBC DG",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 132,
       "customerId": null,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
@@ -1847,36 +1763,12 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 49,
-      "serialNumber": "ZL108269",
-      "modelUnit": "PS-135 E",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 131,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 62,
       "serialNumber": "ZN032175",
       "modelUnit": "PS-230 BIT",
       "merk": "Shimizu",
       "nama": "",
       "tokoId": 134,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 63,
-      "serialNumber": "ZN394656",
-      "modelUnit": "PS-130 BIT",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 135,
       "customerId": null,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
@@ -1927,6 +1819,87 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 250,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZL108269",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZL108269 — PS-135 E",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:13.404Z"
+    },
+    {
+      "id": 249,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "40090574358",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 40090574358 — MCM-508 SBC DG",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:11.416Z"
+    },
+    {
+      "id": 248,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2511015067",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2511015067 — RI-712 GA",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:09.248Z"
+    },
+    {
+      "id": 247,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2601373365",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2601373365 — RI-602 AG",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:07.639Z"
+    },
+    {
+      "id": 246,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2505637174",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2505637174 — RI-522 A",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:05.138Z"
+    },
+    {
+      "id": 245,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2505248042",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2505248042 — RI-522 CE",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:11:00.862Z"
+    },
+    {
+      "id": 244,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03010006502",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03010006502 — MCM-507",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:58.993Z"
+    },
+    {
+      "id": 243,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2602344144",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602344144 — RI-522C",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:56.501Z"
+    },
+    {
+      "id": 242,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZN394656",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZN394656 — PS-130 BIT",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:53.905Z"
+    },
     {
       "id": 241,
       "aksi": "DELETE_UNIT_ASSET",
