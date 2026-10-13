@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T21:54:08.305Z",
+  "generatedAt": "2026-10-13T21:54:36.840Z",
   "masterToko": [
     {
       "id": 123,
@@ -455,7 +455,7 @@
     {
       "id": 164,
       "kodeToko": "TOK-042",
-      "namaToko": "Tk. Semeru",
+      "namaToko": "Tk. Semeru a.Yani",
       "alamat": "Jl. Ahmad Yani",
       "kontak": null,
       "frekuensiVisit": 14,
@@ -1554,6 +1554,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 218,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-042",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T21:54:36.816Z"
+    },
     {
       "id": 217,
       "aksi": "IMPORT_MASTER_TOKO",
