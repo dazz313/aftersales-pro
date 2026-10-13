@@ -11,7 +11,8 @@ import { cn } from '@/lib/utils'
 
 /**
  * Stiker Barcode UNIT ASSET — layout:
- * tanggal, nama toko, merk, model/tipe, nomor seri, status (STOK-TOKO/GARANSI/NON-GARANSI)
+ * tgl input, toko/customer (toko atau perorangan sesuai input), merk,
+ * model/tipe, nomor seri, status (STOK-TOKO/GARANSI/NON-GARANSI) + tgl garansi.
  * Barcode CODE128 asli (jsbarcode) dari serial number agar bisa dipindai.
  */
 export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitAsset | null; onOpenChange: (o: boolean) => void }) {
@@ -47,7 +48,9 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
   }, [unit])
 
   const statusLabel = unit ? (GARANSI_LABEL[unit.statusGaransi] ?? unit.statusGaransi.replace('_', '-')) : ''
-  const tanggal = unit ? formatTanggal(unit.tglPembelian ?? unit.createdAt) : '-'
+  // Tanggal awal = tanggal input registrasi; tgl garansi (tgl beli) tampil di field Status
+  const tanggalInput = unit ? formatTanggal(unit.createdAt) : '-'
+  const tglGaransi = unit?.tglPembelian ? formatTanggal(unit.tglPembelian) : null
 
   return (
     <Dialog open={!!unit} onOpenChange={onOpenChange}>
@@ -56,7 +59,7 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
           <>
             <DialogHeader>
               <DialogTitle>Stiker Barcode Unit</DialogTitle>
-              <DialogDescription>Tempel di unit — teknisi scan untuk identifikasi garansi &amp; asal toko.</DialogDescription>
+              <DialogDescription>Tempel di unit — teknisi scan untuk identifikasi garansi &amp; asal toko/customer.</DialogDescription>
             </DialogHeader>
             <div className="mx-auto w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white p-4 text-center shadow-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unit Asset Sticker</p>
@@ -66,17 +69,28 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
                 <canvas ref={canvasRef} aria-label={`Barcode ${unit.serialNumber}`} />
               </div>
 
-              {/* Layout sesuai permintaan: tanggal, nama toko, merk, model/tipe, nomor seri, status */}
+              {/* Layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
               <dl className="mt-3 space-y-1 border-t border-dashed border-slate-200 pt-3 text-left">
                 <div className="flex justify-between gap-2 text-xs">
-                  <dt className="shrink-0 text-slate-400">Tanggal</dt>
-                  <dd className="font-medium text-slate-800">{tanggal}</dd>
+                  <dt className="shrink-0 text-slate-400">Tanggal Input</dt>
+                  <dd className="font-medium text-slate-800">{tanggalInput}</dd>
                 </div>
                 <div className="flex justify-between gap-2 text-xs">
-                  <dt className="shrink-0 text-slate-400">Nama Toko</dt>
+                  <dt className="shrink-0 text-slate-400">Toko / Customer</dt>
                   <dd className="text-right font-semibold text-slate-900">
-                    {unit.toko?.namaToko ?? '-'}
-                    {unit.toko && <span className="ml-1 font-mono text-[10px] font-normal text-slate-400">{unit.toko.kodeToko}</span>}
+                    {unit.toko ? (
+                      <>
+                        {unit.toko.namaToko}
+                        <span className="ml-1 font-mono text-[10px] font-normal text-slate-400">{unit.toko.kodeToko}</span>
+                      </>
+                    ) : unit.customer ? (
+                      <>
+                        {unit.customer.nama}
+                        <span className="ml-1 text-[10px] font-normal text-slate-400">Perorangan</span>
+                      </>
+                    ) : (
+                      '-'
+                    )}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-2 text-xs">
@@ -93,7 +107,7 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
                 </div>
                 <div className="flex items-center justify-between gap-2 text-xs">
                   <dt className="shrink-0 text-slate-400">Status</dt>
-                  <dd>
+                  <dd className="text-right">
                     <Badge
                       variant="outline"
                       className={cn(
@@ -107,6 +121,11 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
                     >
                       {statusLabel}
                     </Badge>
+                    {tglGaransi && (
+                      <p className="mt-0.5 text-[10px] font-normal text-slate-500" title="Tgl pembelian — awal masa garansi">
+                        {tglGaransi}
+                      </p>
+                    )}
                   </dd>
                 </div>
                 {unit.nama?.trim() && (

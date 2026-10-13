@@ -457,6 +457,7 @@ export default function ServiceView() {
                     <TableHead>Status</TableHead>
                     <TableHead>Kode Sparepart</TableHead>
                     <TableHead>Nama Sparepart</TableHead>
+                    {(tab === 'REQUEST' || tab === 'PROSES') && <TableHead>Kerusakan</TableHead>}
                     <TableHead className="hidden sm:table-cell">Umur</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
@@ -538,6 +539,13 @@ export default function ServiceView() {
                             </div>
                           )}
                         </TableCell>
+                        {(tab === 'REQUEST' || tab === 'PROSES') && (
+                          <TableCell className="max-w-48">
+                            <p className="truncate text-xs text-slate-700" title={t.deskripsiKerusakan ?? ''}>
+                              {t.deskripsiKerusakan?.trim() || <span className="text-slate-400">—</span>}
+                            </p>
+                          </TableCell>
+                        )}
                         <TableCell className="hidden sm:table-cell">
                           <p className="text-xs text-slate-500">{t.umurTiketJam ?? 0} jam</p>
                           <p className="text-[10px] text-slate-400">{formatWaktu(t.createdAt)}</p>

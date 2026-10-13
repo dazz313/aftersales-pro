@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import SearchSelect from '@/components/search-select'
+import HistoryInput from '@/components/history-input'
 import type { ServiceTicket, Sparepart } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import {
@@ -23,6 +24,7 @@ import {
   PackageCheck,
   Store,
   Flag,
+  X,
 } from 'lucide-react'
 
 export const SUMBER_LABEL: Record<string, string> = {
@@ -187,11 +189,60 @@ interface ActionsProps {
 /** Tombol aksi kontekstual sesuai tahap alur. */
 export function ServiceFlowActions({ ticket, pending, onAction, spareparts, saran, onKirimWa, waPending }: ActionsProps) {
   const [sj, setSj] = useState('')
-  const [tambahId, setTambahId] = useState('')
-  const [tambahQty, setTambahQty] = useState('1')
-  const [balasKode, setBalasKode] = useState('')
-  const [balasNama, setBalasNama] = useState('')
-  const [balasQty, setBalasQty] = useState('1')
+  // Baris dinamis kode + nama part (balasan produsen) — baris kosong baru
+  // otomatis bertambah saat baris terakhir terisi lengkap.
+  type BalasRow = { key: number; kode: string; nama: string; qty: string }
+  const [balasRows, setBalasRows] = useState<BalasRow[]>([{ key: 0, kode: '', nama: '', qty: '1' }])
+  const balasKey = useRef(1)
+  // Baris dinamis tambah sparepart katalog — perilaku auto-tambah yang sama.
+  type TambahRow = { key: number; sparepartId: string; qty: string }
+  const [tambahRows, setTambahRows] = useState<TambahRow[]>([{ key: 0, sparepartId: '', qty: '1' }])
+  const tambahKey = useRef(1)
+  // Kerusakan quick-edit (REQUEST/PROSES) — tersimpan via UPDATE_JASA.
+  const [rusak, setRusak] = useState(ticket.deskripsiKerusakan ?? '')
+  // Ganti tiket → ulangi form dari awal
+  useEffect(() => {
+    setBalasRows([{ key: balasKey.current++, kode: '', nama: '', qty: '1' }])
+    setTambahRows([{ key: tambahKey.current++, sparepartId: '', qty: '1' }])
+    setRusak(ticket.deskripsiKerusakan ?? '')
+    setSj('')
+  }, [ticket.id])
+  useEffect(() => {
+    setBalasRows((rows) => {
+      const last = rows[rows.length - 1]
+      if (last && last.kode.trim() && last.nama.trim()) {
+        return [...rows, { key: balasKey.current++, kode: '', nama: '', qty: '1' }]
+      }
+      return rows
+    })
+  }, [balasRows])
+  useEffect(() => {
+    setTambahRows((rows) => {
+      const last = rows[rows.length - 1]
+      if (last && last.sparepartId) {
+        return [...rows, { key: tambahKey.current++, sparepartId: '', qty: '1' }]
+      }
+      return rows
+    })
+  }, [tambahRows])
+  const balasKodeList = balasRows.map((r) => r.kode.trim().toUpperCase())
+  const dupBalasKode = (() => {
+    const count = new Map<string, number>()
+    for (const k of balasKodeList) if (k) count.set(k, (count.get(k) ?? 0) + 1)
+    return new Set(balasKodeList.filter((k) => k && (count.get(k) ?? 0) > 1))
+  })()
+  const isiBalasSaran = (kodePart: string, namaPart: string) => {
+    setBalasRows((rows) => {
+      const idx = rows.findIndex((r) => !r.kode.trim() && !r.nama.trim())
+      if (idx >= 0) return rows.map((r, i) => (i === idx ? { ...r, kode: kodePart, nama: namaPart } : r))
+      return [...rows, { key: balasKey.current++, kode: kodePart, nama: namaPart, qty: '1' }]
+    })
+  }
+  const hapusBalasRow = (key: number) =>
+    setBalasRows((rows) => (rows.length > 1 ? rows.filter((r) => r.key !== key) : rows))
+  const hapusTambahRow = (key: number) =>
+    setTambahRows((rows) => (rows.length > 1 ? rows.filter((r) => r.key !== key) : rows))
+  const rusakBerubah = rusak !== (ticket.deskripsiKerusakan ?? '')
   const butuhPart = ticket.parts.length > 0
   const menunggu = ticket.parts.filter((p) => p.statusKonfirmasi === 'MENUNGGU')
   const adaTidakReady = ticket.parts.some((p) => p.statusKonfirmasi === 'TIDAK_READY')
@@ -223,33 +274,59 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                   type="button"
                   className="rounded-full border border-teal-300 bg-white px-2 py-0.5 font-mono text-[10px] text-teal-700 hover:bg-teal-50"
                   title={`${s.namaPart} — dipakai ${s.count}× sebelumnya`}
-                  onClick={() => { setBalasKode(s.kodePart); setBalasNama(s.namaPart) }}
+                  onClick={() => isiBalasSaran(s.kodePart, s.namaPart)}
                 >
                   {s.kodePart} ({s.count}×)
                 </button>
               ))}
             </div>
           )}
-          <div className="flex gap-1.5">
-            <Input value={balasKode} onChange={(e) => setBalasKode(e.target.value.toUpperCase())} placeholder="Kode part" className="h-7 font-mono text-[11px]" aria-label="Kode sparepart dari produsen" />
-            <Input value={balasNama} onChange={(e) => setBalasNama(e.target.value)} placeholder="Nama part" className="h-7 text-[11px]" aria-label="Nama sparepart dari produsen" />
-            <Input type="number" min="1" value={balasQty} onChange={(e) => setBalasQty(e.target.value)} className="h-7 w-14 text-[11px]" aria-label="Jumlah" />
-            <Button
-              size="sm"
-              className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
-              disabled={pending || !balasKode.trim() || !balasNama.trim() || Number(balasQty) < 1}
-              onClick={() => {
-                onAction({ aksi: 'INPUT_PART_PRODUSEN', kodePart: balasKode.trim(), namaPart: balasNama.trim(), qty: Number(balasQty) })
-                setBalasKode('')
-                setBalasNama('')
-                setBalasQty('1')
-              }}
-            >
-              <PackagePlus className="mr-1 h-3 w-3" /> Catat
-            </Button>
-          </div>
-          <p className="text-[10px] text-slate-400">Kode baru otomatis masuk katalog &amp; muncul di surat jalan.</p>
-          {(!balasKode.trim() || !balasNama.trim()) && (
+          {balasRows.map((row, i) => {
+            const kodeRow = row.kode.trim().toUpperCase()
+            const dup = kodeRow !== '' && dupBalasKode.has(kodeRow)
+            const lengkap = row.kode.trim() !== '' && row.nama.trim() !== ''
+            return (
+              <div key={row.key} className="space-y-1">
+                <div className="flex gap-1.5">
+                  <Input value={row.kode} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, kode: e.target.value.toUpperCase() } : r)))} placeholder="Kode part" className={cn('h-7 font-mono text-[11px]', dup && 'border-red-400')} aria-label={`Kode sparepart baris ${i + 1}`} />
+                  <Input value={row.nama} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, nama: e.target.value } : r)))} placeholder="Nama part" className="h-7 text-[11px]" aria-label={`Nama sparepart baris ${i + 1}`} />
+                  <Input type="number" min="1" value={row.qty} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, qty: e.target.value } : r)))} className="h-7 w-14 shrink-0 text-[11px]" aria-label={`Jumlah baris ${i + 1}`} />
+                  <Button
+                    size="sm"
+                    className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
+                    disabled={pending || !lengkap || Number(row.qty) < 1 || dup}
+                    title={lengkap ? 'Catat part ini ke tiket' : 'Isi kode + nama dulu'}
+                    onClick={() => {
+                      onAction({ aksi: 'INPUT_PART_PRODUSEN', kodePart: row.kode.trim(), namaPart: row.nama.trim(), qty: Number(row.qty) })
+                      setBalasRows((rows) => {
+                        const next = rows.filter((r) => r.key !== row.key)
+                        return next.length ? next : [{ key: balasKey.current++, kode: '', nama: '', qty: '1' }]
+                      })
+                    }}
+                  >
+                    <PackagePlus className="mr-1 h-3 w-3" /> Catat
+                  </Button>
+                  {balasRows.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0 text-slate-400 hover:text-red-600"
+                      onClick={() => hapusBalasRow(row.key)}
+                      aria-label={`Hapus baris ${i + 1}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+                {dup && (
+                  <p className="text-[10px] font-medium text-red-600">Kode {kodeRow} sudah ada di baris lain — gabungkan qty-nya jadi satu baris.</p>
+                )}
+              </div>
+            )
+          })}
+          <p className="text-[10px] text-slate-400">Baris kosong otomatis bertambah saat kode + nama terisi. Kode baru otomatis masuk katalog &amp; muncul di surat jalan.</p>
+          {!balasRows.some((r) => r.kode.trim() && r.nama.trim()) && (
             <p className="text-[10px] text-amber-700">Isi kode + nama part untuk mengaktifkan tombol Catat.</p>
           )}
         </div>
@@ -304,32 +381,71 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
       {(ticket.status === 'PROSES' || ticket.status === 'REQUEST') && (spareparts ?? []).length > 0 && (
         <div className="space-y-1.5">
           <Label className="text-xs">Tambah sparepart saat pengerjaan</Label>
-          <div className="flex gap-1.5">
-            <div className="min-w-0 flex-1">
-              <SearchSelect
-                value={tambahId}
-                onChange={setTambahId}
-                options={(spareparts ?? []).map((p) => ({
-                  value: String(p.id),
-                  label: `${p.kodePart} · ${p.namaPart}`,
-                  sub: `jual ${p.stokJual}/garansi ${p.stokGaransi}`,
-                }))}
-                placeholder="— Ketik part —"
-                ariaLabel="Pilih sparepart tambahan"
-                className="h-7 text-[11px]"
-              />
+          {tambahRows.map((row, i) => (
+            <div key={row.key} className="flex gap-1.5">
+              <div className="min-w-0 flex-1">
+                <SearchSelect
+                  value={row.sparepartId}
+                  onChange={(v) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, sparepartId: v } : r)))}
+                  options={(spareparts ?? []).map((p) => ({
+                    value: String(p.id),
+                    label: `${p.kodePart} · ${p.namaPart}`,
+                    sub: `jual ${p.stokJual}/garansi ${p.stokGaransi}`,
+                  }))}
+                  placeholder="— Ketik part —"
+                  ariaLabel={`Pilih sparepart tambahan baris ${i + 1}`}
+                  className="h-7 text-[11px]"
+                />
+              </div>
+              <Input type="number" min="1" value={row.qty} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, qty: e.target.value } : r)))} className="h-7 w-16 shrink-0 text-[11px]" aria-label={`Jumlah baris ${i + 1}`} />
+              <Button
+                size="sm"
+                className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
+                disabled={pending || !row.sparepartId || Number(row.qty) < 1}
+                onClick={() => {
+                  onAction({ aksi: 'TAMBAH_PART', sparepartId: Number(row.sparepartId), qty: Number(row.qty) })
+                  setTambahRows((rows) => {
+                    const next = rows.filter((r) => r.key !== row.key)
+                    return next.length ? next : [{ key: tambahKey.current++, sparepartId: '', qty: '1' }]
+                  })
+                }}
+              >
+                Tambah
+              </Button>
+              {tambahRows.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-slate-400 hover:text-red-600"
+                  onClick={() => hapusTambahRow(row.key)}
+                  aria-label={`Hapus baris ${i + 1}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
-            <Input type="number" min="1" value={tambahQty} onChange={(e) => setTambahQty(e.target.value)} className="h-7 w-16 text-[11px]" aria-label="Jumlah" />
+          ))}
+          <p className="text-[10px] text-slate-400">Baris kosong otomatis bertambah saat part dipilih. Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen.</p>
+        </div>
+      )}
+
+      {/* Kerusakan quick-edit — tampil di mode REQUEST & PROSES */}
+      {(ticket.status === 'REQUEST' || ticket.status === 'PROSES') && (
+        <div className="space-y-1.5 rounded-md border p-2">
+          <Label className="text-xs">Kerusakan</Label>
+          <HistoryInput historyKey="service-deskripsi" value={rusak} onChange={(e) => setRusak(e.target.value)} placeholder="Deskripsi kerusakan…" aria-label="Deskripsi kerusakan" />
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] text-slate-400">Ubah lalu Simpan untuk memperbarui tiket.</p>
             <Button
               size="sm"
-              className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
-              disabled={pending || !tambahId || Number(tambahQty) < 1}
-              onClick={() => { onAction({ aksi: 'TAMBAH_PART', sparepartId: Number(tambahId), qty: Number(tambahQty) }); setTambahId(''); setTambahQty('1') }}
+              className="h-7 shrink-0 bg-emerald-600 text-[11px] hover:bg-emerald-700"
+              disabled={pending || !rusak.trim() || !rusakBerubah}
+              onClick={() => onAction({ aksi: 'UPDATE_JASA', deskripsiKerusakan: rusak.trim(), biayaJasa: ticket.biayaJasa })}
             >
-              Tambah
+              Simpan Kerusakan
             </Button>
           </div>
-          <p className="text-[10px] text-slate-400">Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen.</p>
         </div>
       )}
 

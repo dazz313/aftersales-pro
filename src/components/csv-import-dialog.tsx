@@ -153,11 +153,16 @@ const CONFIG: Record<
     description: 'Registrasi banyak unit asset sekaligus per toko — cocok untuk pendataan stok toko baru.',
     templateUrl: '/api/unit/import',
     apiUrl: '/api/unit/import',
-    requiredCols: ['no_seri', 'model_tipe'],
-    optionalCols: ['nama', 'merk', 'kode_toko', 'nama_customer', 'status', 'tgl_pembelian'],
+    requiredCols: ['nomor_seri', 'model_tipe'],
+    optionalCols: ['toko_customer', 'merk', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
     columns: [
-      { label: 'No. Seri', get: (r) => r.kode },
-      { label: 'Nama / Model', get: (r) => r.nama },
+      {
+        label: 'Toko / Customer',
+        get: (r) => {
+          const d = r.data as { insert?: { tokoKey?: string; customerNama?: string } } | undefined
+          return d?.insert?.tokoKey?.trim() || d?.insert?.customerNama?.trim() || '—'
+        },
+      },
       {
         label: 'Merk',
         get: (r) => {
@@ -166,32 +171,20 @@ const CONFIG: Record<
         },
       },
       {
-        label: 'Toko',
+        label: 'Model / Tipe',
         get: (r) => {
-          const d = r.data as { insert?: { tokoKey?: string } } | undefined
-          return d?.insert?.tokoKey?.trim() || '—'
+          const d = r.data as { insert?: { modelUnit?: string } } | undefined
+          return d?.insert?.modelUnit?.trim() || r.nama || '—'
         },
       },
+      { label: 'Nomor Seri', get: (r) => r.kode },
       {
-        label: 'Customer',
+        label: 'Status + Tgl Garansi',
         get: (r) => {
-          const d = r.data as { insert?: { customerNama?: string } } | undefined
-          return d?.insert?.customerNama?.trim() || '—'
-        },
-      },
-      {
-        label: 'Status',
-        get: (r) => {
-          const d = r.data as { insert?: { statusGaransi?: string } } | undefined
-          return d?.insert?.statusGaransi === 'NON_GARANSI' ? 'NON-GARANSI' : d?.insert?.statusGaransi === 'STOK_TOKO' ? 'STOK-TOKO' : 'GARANSI'
-        },
-      },
-      {
-        label: 'Tgl Beli',
-        get: (r) => {
-          const d = r.data as { insert?: { tglPembelian?: Date | null } } | undefined
+          const d = r.data as { insert?: { statusGaransi?: string; tglPembelian?: Date | null } } | undefined
+          const s = d?.insert?.statusGaransi === 'NON_GARANSI' ? 'NON-GARANSI' : d?.insert?.statusGaransi === 'STOK_TOKO' ? 'STOK-TOKO' : 'GARANSI'
           const t = d?.insert?.tglPembelian
-          return t ? new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+          return t ? `${s} · ${new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}` : s
         },
       },
     ],

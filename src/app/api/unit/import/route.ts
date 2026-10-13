@@ -6,14 +6,18 @@ import { requireActiveSession } from '@/lib/auth-server'
 import { parseBrandRules, detectGaransi } from '@/lib/brand'
 import { parseCsv, validateUnitRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
 
-// GET /api/unit/import — unduh template CSV registrasi massal unit per toko
+// GET /api/unit/import — unduh template CSV registrasi massal unit per toko/perorangan
+// Urutan kolom mengikuti layout Master Barcode: toko_customer, merk,
+// model_tipe, nomor_seri, status + tgl_garansi (tgl beli = awal masa garansi,
+// tampil di field Status) + opsional nama_unit & nama_customer.
+// Header lama (nama_toko, tanggal, tgl_pembelian, no_seri) tetap dikenali saat impor.
 export async function GET() {
   const csv = buildCsvTemplate(
-    ['no_seri', 'model_tipe', 'nama', 'merk', 'kode_toko', 'nama_customer', 'status', 'tgl_pembelian'],
+    ['toko_customer', 'merk', 'model_tipe', 'nomor_seri', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
     [
-      ['SN-ACSP-2025-10001', 'AC Split 1 PK Inverter SE-9000', 'AC Ruang Tamu', 'Samsung', 'TOK-001', 'Bpk. Hendra Gunawan', 'GARANSI', '08/2025'],
-      ['SN-ACSP-2025-10002', 'AC Split 1/2 PK SE-5000', '', 'LG', 'TOK-001', '', 'GARANSI', '2025-08-15'],
-      ['SN-CWAS-2023-10311', 'Chest Freezer 300L CF-30', 'Freezer Dapur', 'Aqua', 'TOK-002', 'Warung Makan Bu Tini', 'NON-GARANSI', '15/03/2023'],
+      ['TOK-001', 'Samsung', 'AC Split 1 PK Inverter SE-9000', 'SN-ACSP-2025-10001', 'STOK-TOKO', '', 'AC Ruang Tamu', 'Bpk. Hendra Gunawan'],
+      ['TOK-001', 'LG', 'AC Split 1/2 PK SE-5000', 'SN-ACSP-2025-10002', 'GARANSI', '2025-08-15', '', ''],
+      ['', 'Aqua', 'Chest Freezer 300L CF-30', 'SN-CWAS-2023-10311', 'NON-GARANSI', '15/03/2023', 'Freezer Dapur', 'Warung Makan Bu Tini'],
     ]
   )
   return new Response(csv, {

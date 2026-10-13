@@ -488,25 +488,27 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
 export const CSV_MAX_ROWS = MAX_ROWS
 
 // ============================================================
-// Unit Asset (registrasi massal per toko)
-// Komponen utama: nama, model/tipe, no seri, status, tgl pembelian
-// (tgl toleransi bulan saja), merk + relasi toko/customer.
-// Resolusi toko/customer ke ID dilakukan di API (butuh database).
+// Unit Asset (registrasi massal per toko/perorangan)
+// Urutan layout master: toko/customer, merk, model/tipe, nomor_seri,
+// status + tgl garansi (tgl pembelian = awal masa garansi).
+// Tanggal input diisi otomatis saat registrasi.
+// Relasi toko/customer ke ID dilakukan di API (butuh database).
+// Header lama (nama_toko, tanggal, tgl_pembelian, no_seri, ...) tetap dikenali.
 // ============================================================
 
 export const UNIT_ALIASES: Record<string, string> = {
-  serialNumber: 'no_seri|noseri|no seri|serial|serial_number|serialnumber|sn|nomor_seri|nomor seri',
-  modelUnit: 'model|tipe|type|model_tipe|modelunit|model_unit|modelunit|varian',
+  serialNumber: 'no_seri|noseri|no seri|nomor_seri|nomorseri|nomor seri|serial|serial_number|serialnumber|sn',
+  modelUnit: 'model|tipe|type|model_tipe|modeltipe|model/tipe|modelunit|model_unit|modelunit|varian',
   nama: 'nama|nama_unit|namaunit|nama unit|label|nama_panggilan',
   merk: 'merk|brand|merek|manufacturer|pabrikan',
-  toko: 'toko|kode_toko|kodetoko|kode toko|nama_toko|namatoko|nama toko|store',
+  toko: 'toko|kode_toko|kodetoko|kode toko|nama_toko|namatoko|nama toko|toko_customer|tokocustomer|toko/customer|store',
   customer: 'customer|nama_customer|namacustomer|nama customer|pemilik|pelanggan|pembeli',
   statusGaransi: 'status|garansi|status_garansi|statusgaransi|status garansi|kondisi_garansi',
-  tglPembelian: 'tgl_beli|tglbeli|tgl_beli|tanggal_beli|tanggalbeli|tanggal beli|tgl_pembelian|tglpembelian|tgl pembelian|bulan_beli|tahun_beli',
+  tglPembelian: 'tanggal|tgl|tgl_beli|tglbeli|tanggal_beli|tanggalbeli|tanggal beli|tgl_pembelian|tglpembelian|tgl pembelian|tgl_garansi|tglgaransi|tanggal_garansi|tanggalgaransi|bulan_beli|tahun_beli',
 }
 
 export const UNIT_REQUIRED_LABELS: Record<string, string> = {
-  serialNumber: '"no_seri"',
+  serialNumber: '"nomor_seri"',
   modelUnit: '"model/tipe"',
 }
 

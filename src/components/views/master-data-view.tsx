@@ -383,7 +383,7 @@ export default function MasterDataView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Master Barcode / Unit Asset</CardTitle>
-              <CardDescription>Tanggal · Nama toko · Merk · Model/Tipe · Nomor seri · Status (stok toko, garansi, non-garansi) — cetak stiker &amp; scan dengan kamera HP</CardDescription>
+              <CardDescription>Tanggal input · Toko/Customer · Merk · Model/Tipe · Nomor seri · Status + tgl garansi — cetak stiker &amp; scan dengan kamera HP</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportUnitOpen(true)}>
@@ -394,7 +394,7 @@ export default function MasterDataView() {
           </CardHeader>
           <CardContent>
             <div className="mb-3">
-              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari tanggal / toko / merk / model / seri / status…" className="max-w-xs" resultCount={unitTampil.length} />
+              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari toko / customer / merk / model / seri / status…" className="max-w-xs" resultCount={unitTampil.length} />
             </div>
             {unitLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
@@ -403,8 +403,8 @@ export default function MasterDataView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Tanggal</TableHead>
-                      <TableHead>Nama Toko</TableHead>
+                      <TableHead>Tanggal Input</TableHead>
+                      <TableHead>Toko / Customer</TableHead>
                       <TableHead>Merk</TableHead>
                       <TableHead>Model / Tipe</TableHead>
                       <TableHead>Nomor Seri</TableHead>
@@ -415,12 +415,19 @@ export default function MasterDataView() {
                   <TableBody>
                     {unitTampil.map((u) => (
                       <TableRow key={u.id}>
-                        <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatTanggal(u.tglPembelian ?? u.createdAt)}</TableCell>
+                        <TableCell className="whitespace-nowrap text-xs text-slate-600" title="Tanggal input registrasi unit">
+                          {formatTanggal(u.createdAt)}
+                        </TableCell>
                         <TableCell className="text-xs text-slate-700">
                           {u.toko ? (
                             <>
                               <p className="font-medium text-slate-800">{u.toko.namaToko}</p>
                               <p className="font-mono text-[10px] text-slate-400">{u.toko.kodeToko}</p>
+                            </>
+                          ) : u.customer ? (
+                            <>
+                              <p className="font-medium text-slate-800">{u.customer.nama}</p>
+                              <p className="text-[10px] text-slate-400">Perorangan{u.customer.noWa ? ` · ${u.customer.noWa}` : ''}</p>
                             </>
                           ) : (
                             <span className="text-slate-400">-</span>
@@ -436,6 +443,11 @@ export default function MasterDataView() {
                           <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
                             {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
                           </Badge>
+                          {u.tglPembelian && (
+                            <p className="mt-0.5 whitespace-nowrap text-[10px] text-slate-500" title="Tgl pembelian — awal masa garansi">
+                              {formatTanggal(u.tglPembelian)}
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
@@ -968,7 +980,7 @@ export default function MasterDataView() {
       {/* Dialog stiker barcode toko (Code-128 asli — dipindai saat kunjungan) */}
       <TokoBarcodeSticker toko={stickerToko} onOpenChange={(o) => !o && setStickerToko(null)} />
 
-      {/* Dialog stiker barcode unit — layout: tanggal, nama toko, merk, model/tipe, nomor seri, status */}
+      {/* Dialog stiker barcode unit — layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
       <UnitBarcodeSticker unit={qrUnit} onOpenChange={(o) => !o && setQrUnit(null)} />
     </Tabs>
   )
