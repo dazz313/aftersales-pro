@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -18,6 +17,8 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import SearchSelect from '@/components/search-select'
+import HistoryInput from '@/components/history-input'
 import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown, Pencil, Trash2, ClipboardList, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -110,10 +111,24 @@ export default function InventoryView() {
       postJson(`/api/order/${id}`, { aksi, aktor: role }, 'PATCH'),
     onSuccess: (_d, v) => {
       invalidateOrder()
-      const label: Record<string, string> = { TERUSKAN: 'diteruskan ke produsen', DATANG: 'tiba — stok bertambah', SELESAI: 'selesai & diserahkan', BATAL: 'dibatalkan' }
+      const label: Record<string, string> = { TERUSKAN: 'diteruskan ke produsen', DATANG: 'tiba — stok bertambah', SELESAI: 'selesai & diserahkan', BATAL: 'dibatalkan', UPDATE_DATA: 'dikoreksi' }
       toast({ title: 'Order diperbarui', description: `Order ${label[v.aksi] ?? v.aksi}.` })
     },
     onError: (e: Error) => toast({ title: 'Aksi order ditolak', description: e.message, variant: 'destructive' }),
+  })
+
+  // Koreksi order (qty/catatan) — hanya saat BARU
+  const [editOrder, setEditOrder] = useState<PermintaanOrder | null>(null)
+  const [editOrderForm, setEditOrderForm] = useState({ qty: '1', catatan: '' })
+  const updateOrder = useMutation({
+    mutationFn: () =>
+      postJson(`/api/order/${editOrder!.id}`, { aksi: 'UPDATE_DATA', qty: Number(editOrderForm.qty) || 1, catatan: editOrderForm.catatan.trim() || null, aktor: role }, 'PATCH'),
+    onSuccess: () => {
+      invalidateOrder()
+      setEditOrder(null)
+      toast({ title: 'Order dikoreksi', description: 'Qty & catatan tersimpan.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mengoreksi order', description: e.message, variant: 'destructive' }),
   })
 
   // Stok titipan yang kosong, dikelompokkan per brand
@@ -583,6 +598,11 @@ export default function InventoryView() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {o.status === 'BARU' && (
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => { setEditOrder(o); setEditOrderForm({ qty: String(o.qty), catatan: o.catatan ?? '' }) }} aria-label={`Koreksi order ${o.noOrder}`} title="Koreksi qty/catatan">
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          )}
+                          {o.status === 'BARU' && (
                             <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" disabled={orderAksi.isPending} onClick={() => orderAksi.mutate({ id: o.id, aksi: 'TERUSKAN' })}>
                               <Send className="mr-1 h-3 w-3" /> Teruskan
                             </Button>
@@ -647,42 +667,44 @@ export default function InventoryView() {
             </div>
             <div className="space-y-1.5">
               <Label>{orderForm.tipe === 'TOKO' ? 'Pilih Toko (otomatis dari data toko)' : 'Pilih Customer (opsional — otomatis dari data customer)'}</Label>
-              <Select value={orderForm.pemilikId} onValueChange={(v) => {
-                const list = orderForm.tipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])
-                const found = list.find((p) => String(p.id) === v)
-                const nama = orderForm.tipe === 'TOKO'
-                  ? (found as Toko | undefined)?.namaToko ?? ''
-                  : (found as Customer | undefined)?.nama ?? ''
-                setOrderForm({ ...orderForm, pemilikId: v, namaPemesan: orderForm.tipe === 'TOKO' ? nama : orderForm.namaPemesan })
-              }}>
-                <SelectTrigger aria-label="Pilih pemesan"><SelectValue placeholder={orderForm.tipe === 'TOKO' ? '— Pilih toko —' : '— Pilih customer / isi nama manual —'} /></SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {(orderForm.tipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {orderForm.tipe === 'TOKO' ? `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` : (p as Customer).nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchSelect
+                value={orderForm.pemilikId}
+                onChange={(v) => {
+                  const list = orderForm.tipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])
+                  const found = list.find((p) => String(p.id) === v)
+                  const nama = orderForm.tipe === 'TOKO'
+                    ? (found as Toko | undefined)?.namaToko ?? ''
+                    : (found as Customer | undefined)?.nama ?? ''
+                  setOrderForm({ ...orderForm, pemilikId: v, namaPemesan: orderForm.tipe === 'TOKO' ? nama : orderForm.namaPemesan })
+                }}
+                options={(orderForm.tipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
+                  orderForm.tipe === 'TOKO'
+                    ? { value: String(p.id), label: `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` }
+                    : { value: String(p.id), label: (p as Customer).nama }
+                ))}
+                placeholder={orderForm.tipe === 'TOKO' ? '— Ketik kode/nama toko —' : '— Ketik nama customer —'}
+                ariaLabel="Pilih pemesan"
+              />
             </div>
             {orderForm.tipe === 'PERORANGAN' && (
               <div className="space-y-1.5">
                 <Label>Nama Pemesan</Label>
-                <Input value={orderForm.namaPemesan} onChange={(e) => setOrderForm({ ...orderForm, namaPemesan: e.target.value })} placeholder="Nama perorangan / isi otomatis dari customer" />
+                <HistoryInput historyKey="order-pemesan" value={orderForm.namaPemesan} onChange={(e) => setOrderForm({ ...orderForm, namaPemesan: e.target.value })} placeholder="Nama perorangan / isi otomatis dari customer" />
               </div>
             )}
             <div className="space-y-1.5">
               <Label>Sparepart Dipesan</Label>
-              <Select value={orderForm.sparepartId} onValueChange={(v) => setOrderForm({ ...orderForm, sparepartId: v })}>
-                <SelectTrigger aria-label="Pilih sparepart"><SelectValue placeholder="— Pilih part —" /></SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {(parts ?? []).map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)} textValue={`${p.kodePart} ${p.namaPart}`}>
-                      {p.kodePart} · {p.namaPart} ({p.kosong ? 'KOSONG' : `stok ${p.stokInventory}`})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchSelect
+                value={orderForm.sparepartId}
+                onChange={(v) => setOrderForm({ ...orderForm, sparepartId: v })}
+                options={(parts ?? []).map((p) => ({
+                  value: String(p.id),
+                  label: `${p.kodePart} · ${p.namaPart}`,
+                  sub: p.kosong ? 'KOSONG' : `stok ${p.stokInventory}`,
+                }))}
+                placeholder="— Ketik kode/nama part —"
+                ariaLabel="Pilih sparepart"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -691,7 +713,7 @@ export default function InventoryView() {
               </div>
               <div className="space-y-1.5">
                 <Label>Catatan (opsional)</Label>
-                <Input value={orderForm.catatan} onChange={(e) => setOrderForm({ ...orderForm, catatan: e.target.value })} placeholder="cth: ditunggu Senin" />
+                <HistoryInput historyKey="order-catatan" value={orderForm.catatan} onChange={(e) => setOrderForm({ ...orderForm, catatan: e.target.value })} placeholder="cth: ditunggu Senin" />
               </div>
             </div>
           </div>
@@ -709,6 +731,38 @@ export default function InventoryView() {
               onClick={() => createOrder.mutate()}
             >
               <Plus className="mr-1 h-4 w-4" /> Simpan Order
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog koreksi order (qty/catatan, hanya saat BARU) */}
+      <Dialog open={!!editOrder} onOpenChange={(o) => !o && setEditOrder(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Koreksi Order {editOrder && <span className="font-mono text-sm text-slate-500">{editOrder.noOrder}</span>}</DialogTitle>
+            <DialogDescription>
+              {editOrder && <span>{editOrder.namaPart} · {editOrder.namaPemesan}</span>}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Qty</Label>
+              <Input type="number" min="1" value={editOrderForm.qty} onChange={(e) => setEditOrderForm({ ...editOrderForm, qty: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Catatan</Label>
+              <HistoryInput historyKey="order-catatan" value={editOrderForm.catatan} onChange={(e) => setEditOrderForm({ ...editOrderForm, catatan: e.target.value })} placeholder="—" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOrder(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!editOrder || Number(editOrderForm.qty) < 1 || updateOrder.isPending}
+              onClick={() => updateOrder.mutate()}
+            >
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Koreksi
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -759,15 +813,15 @@ export default function InventoryView() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Nama Sparepart</Label>
-              <Input value={editForm.namaPart} onChange={(e) => setEditForm({ ...editForm, namaPart: e.target.value })} />
+              <HistoryInput historyKey="part-nama" value={editForm.namaPart} onChange={(e) => setEditForm({ ...editForm, namaPart: e.target.value })} />
             </div>
             <div className="space-y-1.5">
               <Label>Brand Kompatibel</Label>
-              <Input value={editForm.brandKompatibel} onChange={(e) => setEditForm({ ...editForm, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
+              <HistoryInput historyKey="part-brand" value={editForm.brandKompatibel} onChange={(e) => setEditForm({ ...editForm, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
             </div>
             <div className="space-y-1.5">
               <Label>Supplier</Label>
-              <Input value={editForm.supplier} onChange={(e) => setEditForm({ ...editForm, supplier: e.target.value })} placeholder="cth: PT Sinar Elektronik" />
+              <HistoryInput historyKey="part-supplier" value={editForm.supplier} onChange={(e) => setEditForm({ ...editForm, supplier: e.target.value })} placeholder="cth: PT Sinar Elektronik" />
             </div>
             <div className="space-y-1.5">
               <Label>Stok Bisa Jual</Label>
@@ -842,15 +896,15 @@ export default function InventoryView() {
             </div>
             <div className="space-y-1.5">
               <Label>Nama Sparepart</Label>
-              <Input value={newPart.namaPart} onChange={(e) => setNewPart({ ...newPart, namaPart: e.target.value })} placeholder="cth: Kompresor 3/4 PK" />
+              <HistoryInput historyKey="part-nama" value={newPart.namaPart} onChange={(e) => setNewPart({ ...newPart, namaPart: e.target.value })} placeholder="cth: Kompresor 3/4 PK" />
             </div>
             <div className="space-y-1.5">
               <Label>Brand Kompatibel</Label>
-              <Input value={newPart.brandKompatibel} onChange={(e) => setNewPart({ ...newPart, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
+              <HistoryInput historyKey="part-brand" value={newPart.brandKompatibel} onChange={(e) => setNewPart({ ...newPart, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
             </div>
             <div className="space-y-1.5">
               <Label>Supplier</Label>
-              <Input value={newPart.supplier} onChange={(e) => setNewPart({ ...newPart, supplier: e.target.value })} placeholder="cth: PT Sinar Elektronik" />
+              <HistoryInput historyKey="part-supplier" value={newPart.supplier} onChange={(e) => setNewPart({ ...newPart, supplier: e.target.value })} placeholder="cth: PT Sinar Elektronik" />
             </div>
             <div className="space-y-1.5">
               <Label>Stok Bisa Jual</Label>

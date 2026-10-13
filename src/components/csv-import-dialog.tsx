@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { postJson } from '@/lib/api'
-import { parseCsv, validateTokoRows, validateSparepartRows, CSV_MAX_ROWS, type ValidatedRow } from '@/lib/csv'
+import { parseCsv, validateTokoRows, validateSparepartRows, validateUnitRows, CSV_MAX_ROWS, type ValidatedRow } from '@/lib/csv'
 import { useAppStore } from '@/lib/store'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -29,7 +29,7 @@ import {
   MinusCircle,
 } from 'lucide-react'
 
-export type ImportKind = 'toko' | 'sparepart'
+export type ImportKind = 'toko' | 'sparepart' | 'unit'
 
 export interface ImportResult {
   total: number
@@ -148,6 +148,54 @@ const CONFIG: Record<
       },
     ],
   },
+  unit: {
+    title: 'Import Massal Unit (CSV)',
+    description: 'Registrasi banyak unit asset sekaligus per toko — cocok untuk pendataan stok toko baru.',
+    templateUrl: '/api/unit/import',
+    apiUrl: '/api/unit/import',
+    requiredCols: ['no_seri', 'model_tipe'],
+    optionalCols: ['nama', 'merk', 'kode_toko', 'nama_customer', 'status', 'tgl_pembelian'],
+    columns: [
+      { label: 'No. Seri', get: (r) => r.kode },
+      { label: 'Nama / Model', get: (r) => r.nama },
+      {
+        label: 'Merk',
+        get: (r) => {
+          const d = r.data as { insert?: { merk?: string } } | undefined
+          return d?.insert?.merk?.trim() || '—'
+        },
+      },
+      {
+        label: 'Toko',
+        get: (r) => {
+          const d = r.data as { insert?: { tokoKey?: string } } | undefined
+          return d?.insert?.tokoKey?.trim() || '—'
+        },
+      },
+      {
+        label: 'Customer',
+        get: (r) => {
+          const d = r.data as { insert?: { customerNama?: string } } | undefined
+          return d?.insert?.customerNama?.trim() || '—'
+        },
+      },
+      {
+        label: 'Status',
+        get: (r) => {
+          const d = r.data as { insert?: { statusGaransi?: string } } | undefined
+          return d?.insert?.statusGaransi === 'NON_GARANSI' ? 'NON-GARANSI' : 'GARANSI'
+        },
+      },
+      {
+        label: 'Tgl Beli',
+        get: (r) => {
+          const d = r.data as { insert?: { tglPembelian?: Date | null } } | undefined
+          const t = d?.insert?.tglPembelian
+          return t ? new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'
+        },
+      },
+    ],
+  },
 }
 
 type PreviewStatus = 'new' | 'update' | 'skip' | 'error'
@@ -184,7 +232,9 @@ export default function CsvImportDialog({ kind, open, onOpenChange, existingCode
 
   const validation = useMemo(() => {
     if (!parsed || parsed.rows.length === 0) return null
-    return kind === 'toko' ? validateTokoRows(parsed.headers, parsed.rows) : validateSparepartRows(parsed.headers, parsed.rows)
+    if (kind === 'toko') return validateTokoRows(parsed.headers, parsed.rows)
+    if (kind === 'unit') return validateUnitRows(parsed.headers, parsed.rows)
+    return validateSparepartRows(parsed.headers, parsed.rows)
   }, [parsed, kind])
 
   const previewRows = useMemo(() => {

@@ -137,7 +137,9 @@ export function parseNum(v: string): number | null {
   return Number.NaN
 }
 
-/** Tanggal fleksibel: YYYY-MM-DD atau DD/MM/YYYY (juga - dan .). Kosong → null. */
+/** Tanggal fleksibel: YYYY-MM-DD, DD/MM/YYYY (juga - dan .),
+ *  atau BULAN SAJA: MM/YYYY, YYYY-MM, MM-YYYY (tanggal = tgl 1).
+ *  Kosong → null. */
 export function parseDateFlexible(v: string): Date | null {
   const s = v.trim()
   if (!s) return null
@@ -150,6 +152,15 @@ export function parseDateFlexible(v: string): Date | null {
   if (m) {
     const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]))
     return Number.isNaN(d.getTime()) ? null : d
+  }
+  // Toleransi bulan saja (hari = 1): "08/2025", "2025-08", "08-2025"
+  m = /^(\d{1,2})[/.\-](\d{4})$/.exec(s)
+  if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12) {
+    return new Date(Number(m[2]), Number(m[1]) - 1, 1)
+  }
+  m = /^(\d{4})[/.\-](\d{1,2})$/.exec(s)
+  if (m && Number(m[2]) >= 1 && Number(m[2]) <= 12) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, 1)
   }
   return null
 }
@@ -208,7 +219,7 @@ export interface ValidatedRow<T> {
   row: number
   kode: string
   nama: string
-  status: 'pending' | 'error'
+  status: 'pending' | 'error' | 'skip'
   message?: string
   data?: T
 }
@@ -275,7 +286,7 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
     if (tv) {
       const d = parseDateFlexible(tv)
       if (!d) {
-        acc.push({ row: rowNum, kode, nama, status: 'error', message: `Tanggal "${tv}" tidak dikenali (gunakan YYYY-MM-DD atau DD/MM/YYYY)` })
+        acc.push({ row: rowNum, kode, nama, status: 'error', message: `Tanggal "${tv}" tidak dikenali (gunakan YYYY-MM-DD, DD/MM/YYYY, atau bulan saja MM/YYYY)` })
         return
       }
       tglVisitTerakhir = d
@@ -475,3 +486,137 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
 }
 
 export const CSV_MAX_ROWS = MAX_ROWS
+
+// ============================================================
+// Unit Asset (registrasi massal per toko)
+// Komponen utama: nama, model/tipe, no seri, status, tgl pembelian
+// (tgl toleransi bulan saja), merk + relasi toko/customer.
+// Resolusi toko/customer ke ID dilakukan di API (butuh database).
+// ============================================================
+
+export const UNIT_ALIASES: Record<string, string> = {
+  serialNumber: 'no_seri|noseri|no seri|serial|serial_number|serialnumber|sn|nomor_seri|nomor seri',
+  modelUnit: 'model|tipe|type|model_tipe|modelunit|model_unit|modelunit|varian',
+  nama: 'nama|nama_unit|namaunit|nama unit|label|nama_panggilan',
+  merk: 'merk|brand|merek|manufacturer|pabrikan',
+  toko: 'toko|kode_toko|kodetoko|kode toko|nama_toko|namatoko|nama toko|store',
+  customer: 'customer|nama_customer|namacustomer|nama customer|pemilik|pelanggan|pembeli',
+  statusGaransi: 'status|garansi|status_garansi|statusgaransi|status garansi|kondisi_garansi',
+  tglPembelian: 'tgl_beli|tglbeli|tgl_beli|tanggal_beli|tanggalbeli|tanggal beli|tgl_pembelian|tglpembelian|tgl pembelian|bulan_beli|tahun_beli',
+}
+
+export const UNIT_REQUIRED_LABELS: Record<string, string> = {
+  serialNumber: '"no_seri"',
+  modelUnit: '"model/tipe"',
+}
+
+/** Status garansi fleksibel: mengandung "non"/"tidak"/"habis"/"expired" → NON_GARANSI, sisanya GARANSI. */
+export function parseStatusGaransi(v: string): 'GARANSI' | 'NON_GARANSI' {
+  return /non|tidak|habis|expired|void|rusak|mati/i.test(v.trim()) ? 'NON_GARANSI' : 'GARANSI'
+}
+
+export interface UnitInsertData {
+  serialNumber: string
+  modelUnit: string
+  nama: string
+  merk: string
+  tokoKey: string // kode atau nama toko (diresolusi di API)
+  customerNama: string // nama customer (dicari, bila tak ada dibuat baru)
+  statusGaransi: 'GARANSI' | 'NON_GARANSI'
+  statusOtomatis: boolean // true bila kolom status kosong → API boleh auto-deteksi dari merk+tgl
+  tglPembelian: Date | null
+}
+
+export interface UnitUpdateData {
+  modelUnit: string
+  nama?: string
+  merk?: string
+  tokoKey?: string
+  customerNama?: string
+  statusGaransi?: 'GARANSI' | 'NON_GARANSI'
+  statusOtomatis?: boolean
+  tglPembelian?: Date | null
+}
+
+export interface UnitValidated {
+  insert: UnitInsertData
+  update: UnitUpdateData
+}
+
+export function validateUnitRows(headers: string[], rows: string[][]): {
+  acc: ValidatedRow<UnitValidated>[]
+  headerError?: string
+} {
+  const { map, missing } = mapHeaders(headers, UNIT_ALIASES, ['serialNumber', 'modelUnit'])
+  if (missing.length) {
+    const label = missing.map((m) => UNIT_REQUIRED_LABELS[m]).join(' dan ')
+    return {
+      acc: [],
+      headerError: `Kolom wajib ${label} tidak ditemukan pada baris pertama CSV. Unduh template untuk melihat format yang benar.`,
+    }
+  }
+
+  const acc: ValidatedRow<UnitValidated>[] = []
+  const seen = new Set<string>()
+
+  rows.forEach((r, idx) => {
+    const rowNum = idx + 2
+    const get = (f: string) => (map[f] === undefined ? '' : (r[map[f]] ?? '').trim())
+    const serial = get('serialNumber').toUpperCase()
+    const model = get('modelUnit')
+    const nama = get('nama')
+    const merk = get('merk')
+
+    if (!serial) {
+      acc.push({ row: rowNum, kode: serial, nama: nama || model, status: 'error', message: 'No. seri kosong — kolom no seri wajib diisi' })
+      return
+    }
+    if (!model) {
+      acc.push({ row: rowNum, kode: serial, nama: nama || serial, status: 'error', message: 'Model/tipe kosong — kolom model wajib diisi' })
+      return
+    }
+    if (seen.has(serial)) {
+      acc.push({ row: rowNum, kode: serial, nama: nama || model, status: 'error', message: `No. seri "${serial}" muncul lebih dari satu kali di dalam file` })
+      return
+    }
+    seen.add(serial)
+
+    const statusRaw = get('statusGaransi')
+    const statusGaransi = parseStatusGaransi(statusRaw || 'GARANSI')
+
+    let tglPembelian: Date | null = null
+    const tb = get('tglPembelian')
+    if (tb) {
+      const d = parseDateFlexible(tb)
+      if (!d) {
+        acc.push({ row: rowNum, kode: serial, nama: nama || model, status: 'error', message: `Tgl pembelian "${tb}" tidak dikenali (gunakan YYYY-MM-DD, DD/MM/YYYY, atau bulan saja MM/YYYY)` })
+        return
+      }
+      tglPembelian = d
+    }
+
+    const tokoKey = get('toko')
+    const customerNama = get('customer')
+
+    acc.push({
+      row: rowNum,
+      kode: serial,
+      nama: nama || model,
+      status: 'pending',
+      data: {
+        insert: { serialNumber: serial, modelUnit: model, nama, merk, tokoKey, customerNama, statusGaransi, statusOtomatis: !statusRaw, tglPembelian },
+        update: {
+          modelUnit: model,
+          ...(nama ? { nama } : {}),
+          ...(merk ? { merk } : {}),
+          ...(tokoKey ? { tokoKey } : {}),
+          ...(customerNama ? { customerNama } : {}),
+          ...(statusRaw ? { statusGaransi } : { statusOtomatis: true }),
+          ...(tb ? { tglPembelian } : {}),
+        },
+      },
+    })
+  })
+
+  return { acc }
+}

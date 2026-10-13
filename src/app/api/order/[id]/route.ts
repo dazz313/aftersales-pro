@@ -3,8 +3,8 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 
-// PATCH /api/order/[id] - transisi status order customer
-// Aksi: TERUSKAN (ke produsen) | DATANG (part tiba → stok+) | SELESAI (diserahkan) | BATAL
+// PATCH /api/order/[id] - koreksi data & transisi status order customer
+// Aksi: UPDATE_DATA (koreksi qty/catatan, hanya saat BARU) | TERUSKAN | DATANG | SELESAI | BATAL
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
@@ -15,6 +15,41 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     const aksi = body.aksi as string
     const aktor = body.aktor ?? 'ADMIN'
+
+    if (aksi === 'UPDATE_DATA') {
+      if (existing.status !== 'BARU') {
+        return NextResponse.json({ error: 'Hanya order BARU yang dapat dikoreksi' }, { status: 409 })
+      }
+      const data: Record<string, unknown> = {}
+      if (body.qty !== undefined) {
+        const qty = Math.trunc(Number(body.qty) || 0)
+        if (qty < 1) {
+          return NextResponse.json({ error: 'Qty minimal 1' }, { status: 400 })
+        }
+        data.qty = qty
+      }
+      if (body.catatan !== undefined) data.catatan = body.catatan ? String(body.catatan) : null
+      if (Object.keys(data).length === 0) {
+        return NextResponse.json({ error: 'Tidak ada perubahan data' }, { status: 400 })
+      }
+      const updated = await db.permintaanOrder.update({
+        where: { id: existing.id },
+        data,
+        include: {
+          toko: { select: { id: true, kodeToko: true, namaToko: true } },
+          customer: { select: { id: true, nama: true } },
+        },
+      })
+      await logAudit({
+        aksi: 'UPDATE_ORDER_CUSTOMER',
+        entitas: 'permintaan_order',
+        entitasId: existing.noOrder,
+        deskripsi: `Order ${existing.noOrder} dikoreksi: ${Object.keys(data).join(', ')}`,
+        aktor,
+      })
+      await autoGitBackup('UPDATE', 'permintaan_order', existing.noOrder, aktor)
+      return NextResponse.json(updated)
+    }
 
     if (aksi === 'TERUSKAN') {
       if (existing.status !== 'BARU') {

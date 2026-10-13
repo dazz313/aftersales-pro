@@ -17,6 +17,9 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import SearchSelect from '@/components/search-select'
+import HistoryInput from '@/components/history-input'
+import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil } from 'lucide-react'
@@ -31,14 +34,33 @@ export default function MasterDataView() {
   const { data: customerList, isLoading: customerLoading } = useQuery<Customer[]>({ queryKey: ['customers'], queryFn: () => fetcher<Customer[]>('/api/customer') })
   const { data: unitList, isLoading: unitLoading } = useQuery<UnitAsset[]>({ queryKey: ['units'], queryFn: () => fetcher<UnitAsset[]>('/api/unit') })
   const { data: userList } = useQuery<Pengguna[]>({ queryKey: ['pengguna'], queryFn: () => fetcher<Pengguna[]>('/api/pengguna') })
+  const { data: brandSettings } = useQuery<{ map: Record<string, string> }>({
+    queryKey: ['pengaturan-brand'],
+    queryFn: () => fetcher<{ map: Record<string, string> }>('/api/pengaturan'),
+  })
+  const brandRules: BrandRule[] = useMemo(() => parseBrandRules(brandSettings?.map['brand_daftar']), [brandSettings])
+  // Status garansi otomatis dari merk + tgl pembelian (false = user ubah manual)
+  const [unitGaransiAuto, setUnitGaransiAuto] = useState(true)
+
+  const setUnitMerk = (merk: string) => {
+    const g = !newUnit.tokoId && merk.trim() && newUnit.tglPembelian ? detectGaransi(merk, new Date(newUnit.tglPembelian), brandRules) : null
+    setNewUnit({ ...newUnit, merk, ...(g ? { statusGaransi: g } : {}) })
+    if (g) setUnitGaransiAuto(true)
+  }
+  const setUnitTgl = (tgl: string) => {
+    const g = !newUnit.tokoId && newUnit.merk.trim() && tgl ? detectGaransi(newUnit.merk, new Date(tgl), brandRules) : null
+    setNewUnit({ ...newUnit, tglPembelian: tgl, ...(g ? { statusGaransi: g } : {}) })
+    if (g) setUnitGaransiAuto(true)
+  }
 
   // ===== Form states =====
   const [importTokoOpen, setImportTokoOpen] = useState(false)
+  const [importUnitOpen, setImportUnitOpen] = useState(false)
   const [tokoOpen, setTokoOpen] = useState(false)
   const [custOpen, setCustOpen] = useState(false)
   const [stickerToko, setStickerToko] = useState<Toko | null>(null)
   const [unitOpen, setUnitOpen] = useState(false)
-  const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
+  const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   const [qrUnit, setQrUnit] = useState<UnitAsset | null>(null)
   const [userOpen, setUserOpen] = useState(false)
   const [newUser, setNewUser] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
@@ -49,6 +71,9 @@ export default function MasterDataView() {
   const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
   const [editCust, setEditCust] = useState<Customer | null>(null)
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
+  // Edit unit
+  const [editUnit, setEditUnit] = useState<UnitAsset | null>(null)
+  const [editUnitForm, setEditUnitForm] = useState({ modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   // Edit karyawan
   const [editUser, setEditUser] = useState<Pengguna | null>(null)
   const [editUserForm, setEditUserForm] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
@@ -64,8 +89,8 @@ export default function MasterDataView() {
   }
 
   const addUnit = useMutation({
-    mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, aktor: role }),
-    onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' }); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
+    mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, tglPembelian: newUnit.tokoId ? null : newUnit.tglPembelian || null, aktor: role }),
+    onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' }); setUnitGaransiAuto(true); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const addUser = useMutation({
@@ -88,6 +113,37 @@ export default function MasterDataView() {
     onSuccess: (c) => { invalidate(['customers', 'units']); setEditCust(null); toast({ title: 'Customer diperbarui', description: `Data ${c.nama} tersimpan.` }) },
     onError: (e: Error) => toast({ title: 'Gagal memperbarui customer', description: e.message, variant: 'destructive' }),
   })
+  const openEditUnit = (u: UnitAsset) => {
+    setEditUnit(u)
+    setEditUnitForm({
+      modelUnit: u.modelUnit,
+      merk: u.merk ?? '',
+      nama: u.nama ?? '',
+      tokoId: u.tokoId ? String(u.tokoId) : '',
+      customerId: u.customerId ? String(u.customerId) : '',
+      statusGaransi: u.statusGaransi,
+      tglPembelian: u.tglPembelian ? new Date(u.tglPembelian).toISOString().slice(0, 10) : '',
+    })
+  }
+  const updateUnit = useMutation({
+    mutationFn: () =>
+      postJson(`/api/unit/${editUnit!.id}`, {
+        modelUnit: editUnitForm.modelUnit.trim(),
+        merk: editUnitForm.merk.trim(),
+        nama: editUnitForm.nama.trim(),
+        tokoId: editUnitForm.tokoId ? Number(editUnitForm.tokoId) : null,
+        customerId: editUnitForm.customerId ? Number(editUnitForm.customerId) : null,
+        statusGaransi: editUnitForm.statusGaransi,
+        tglPembelian: editUnitForm.tokoId ? null : editUnitForm.tglPembelian || null,
+        aktor: role,
+      }, 'PATCH'),
+    onSuccess: () => {
+      invalidate(['units', 'toko', 'dashboard', 'service-tickets'])
+      setEditUnit(null)
+      toast({ title: 'Unit diperbarui', description: 'Koreksi data tersimpan.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui unit', description: e.message, variant: 'destructive' }),
+  })
   const resetPw = useMutation({
     mutationFn: () => postJson(`/api/pengguna/${resetPwUser!.id}`, { password: resetPwValue, aktor: role }, 'PATCH'),
     onSuccess: () => { invalidate(['pengguna']); setResetPwUser(null); setResetPwValue(''); toast({ title: 'Password direset', description: 'Karyawan dapat login dengan password baru.' }) },
@@ -105,7 +161,7 @@ export default function MasterDataView() {
     [customerList, cariCust]
   )
   const unitTampil = useMemo(
-    () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi], cariUnit)),
+    () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.merk, u.nama, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi], cariUnit)),
     [unitList, cariUnit]
   )
   const userTampil = useMemo(
@@ -248,7 +304,12 @@ export default function MasterDataView() {
               <CardTitle className="text-base">Master Barcode / Unit Asset</CardTitle>
               <CardDescription>Format barcode: SN:[serial]|MOD:[model]|TOK:[kode_toko] — cetak stiker &amp; scan dengan kamera HP</CardDescription>
             </div>
-            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setUnitOpen(true)}><Plus className="mr-1 h-4 w-4" /> Registrasi Unit</Button>
+            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+              <Button size="sm" variant="outline" onClick={() => setImportUnitOpen(true)}>
+                <Upload className="mr-1 h-4 w-4" /> Import CSV
+              </Button>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setUnitOpen(true)}><Plus className="mr-1 h-4 w-4" /> Registrasi Unit</Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mb-3">
@@ -275,6 +336,9 @@ export default function MasterDataView() {
                         <TableCell>
                           <p className="text-xs font-semibold text-slate-800">{u.modelUnit}</p>
                           <p className="font-mono text-[10px] text-slate-400">{u.serialNumber}</p>
+                          {(u.merk?.trim() || u.nama?.trim()) && (
+                            <p className="text-[10px] text-slate-500">{[u.merk?.trim(), u.nama?.trim()].filter(Boolean).join(' · ')}</p>
+                          )}
                         </TableCell>
                         <TableCell className="hidden text-xs text-slate-600 md:table-cell">{u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '-'}</TableCell>
                         <TableCell className="hidden text-xs text-slate-600 lg:table-cell">{u.customer?.nama ?? '-'}</TableCell>
@@ -285,9 +349,14 @@ export default function MasterDataView() {
                         </TableCell>
                         <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{formatTanggal(u.tglPembelian)}</TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setQrUnit(u)}>
-                            <Barcode className="mr-1 h-3 w-3" /> Stiker
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setQrUnit(u)}>
+                              <Barcode className="mr-1 h-3 w-3" /> Stiker
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -363,24 +432,35 @@ export default function MasterDataView() {
           <DialogHeader><DialogTitle>Registrasi Unit Asset</DialogTitle><DialogDescription>Unit baru akan mendapat serial number unik untuk stiker barcode/QR.</DialogDescription></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5"><Label>Serial Number</Label><Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-ACSP-2026-XXXXX" className="font-mono" /></div>
-            <div className="space-y-1.5"><Label>Model Unit</Label><Input value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="AC Split 1 PK ..." /></div>
+            <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="AC Split 1 PK ..." /></div>
+            <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={newUnit.merk} onChange={(e) => setUnitMerk(e.target.value)} placeholder="cth: Miyako, Rinnai, Shimizu" /></div>
+            <div className="space-y-1.5"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: AC Ruang Tamu" /></div>
             <div className="space-y-1.5">
               <Label>Toko Mitra</Label>
-              <Select value={newUnit.tokoId} onValueChange={(v) => setNewUnit({ ...newUnit, tokoId: v })}>
-                <SelectTrigger><SelectValue placeholder="— Pilih toko —" /></SelectTrigger>
-                <SelectContent>{(tokoList ?? []).map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.kodeToko} — {t.namaToko}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchSelect
+                value={newUnit.tokoId}
+                onChange={(v) => setNewUnit({ ...newUnit, tokoId: v, ...(v ? { statusGaransi: 'GARANSI' } : {}) })}
+                options={(tokoList ?? []).map((t) => ({ value: String(t.id), label: `${t.kodeToko} — ${t.namaToko}` }))}
+                placeholder="— Ketik kode/nama toko —"
+                ariaLabel="Pilih toko mitra"
+              />
+              {newUnit.tokoId && (
+                <p className="text-[11px] text-emerald-700">Stok toko — otomatis GARANSI, tgl pembelian dinonaktifkan.</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Customer</Label>
-              <Select value={newUnit.customerId} onValueChange={(v) => setNewUnit({ ...newUnit, customerId: v })}>
-                <SelectTrigger><SelectValue placeholder="— Pilih —" /></SelectTrigger>
-                <SelectContent>{(customerList ?? []).map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.nama}</SelectItem>)}</SelectContent>
-              </Select>
+              <SearchSelect
+                value={newUnit.customerId}
+                onChange={(v) => setNewUnit({ ...newUnit, customerId: v })}
+                options={(customerList ?? []).map((c) => ({ value: String(c.id), label: c.nama, sub: c.noWa ?? undefined }))}
+                placeholder="— Ketik nama customer —"
+                ariaLabel="Pilih customer"
+              />
             </div>
             <div className="space-y-1.5">
-              <Label>Status Garansi</Label>
-              <Select value={newUnit.statusGaransi} onValueChange={(v) => setNewUnit({ ...newUnit, statusGaransi: v })}>
+              <Label>Status Garansi {unitGaransiAuto && newUnit.merk.trim() && newUnit.tglPembelian ? <span className="font-normal text-emerald-700">(otomatis dari masa garansi)</span> : null}</Label>
+              <Select value={newUnit.statusGaransi} onValueChange={(v) => { setNewUnit({ ...newUnit, statusGaransi: v }); setUnitGaransiAuto(false) }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="GARANSI">GARANSI</SelectItem>
@@ -388,7 +468,7 @@ export default function MasterDataView() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5"><Label>Tgl Pembelian</Label><Input type="date" value={newUnit.tglPembelian} onChange={(e) => setNewUnit({ ...newUnit, tglPembelian: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Tgl Pembelian {newUnit.tokoId ? '— nonaktif (stok toko)' : ''}</Label><Input type="date" value={newUnit.tokoId ? '' : newUnit.tglPembelian} onChange={(e) => setUnitTgl(e.target.value)} disabled={!!newUnit.tokoId} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUnitOpen(false)}>Batal</Button>
@@ -401,7 +481,7 @@ export default function MasterDataView() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Tambah Karyawan</DialogTitle><DialogDescription>Manajemen peran pengelola sistem.</DialogDescription></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Nama</Label><Input value={newUser.nama} onChange={(e) => setNewUser({ ...newUser, nama: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Nama</Label><HistoryInput historyKey="user-nama" value={newUser.nama} onChange={(e) => setNewUser({ ...newUser, nama: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Email</Label><Input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Username (opsional)</Label><Input value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} placeholder="otomatis dari email" /></div>
             <div className="space-y-1.5"><Label>Kode Teknisi (opsional)</Label><Input value={newUser.kodeTeknisi} onChange={(e) => setNewUser({ ...newUser, kodeTeknisi: e.target.value.toUpperCase() })} placeholder="cth: TKN-001" className="font-mono" /></div>
@@ -419,7 +499,7 @@ export default function MasterDataView() {
               </Select>
             </div>
             <div className="space-y-1.5"><Label>No. WhatsApp</Label><Input value={newUser.noWa} onChange={(e) => setNewUser({ ...newUser, noWa: e.target.value })} placeholder="628xxx" /></div>
-            <div className="space-y-1.5 sm:col-span-2"><Label>Wilayah Kerja (untuk teknisi)</Label><Input value={newUser.wilayahKerja} onChange={(e) => setNewUser({ ...newUser, wilayahKerja: e.target.value })} placeholder="cth: Jakarta Timur" /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Wilayah Kerja (untuk teknisi)</Label><HistoryInput historyKey="user-wilayah" value={newUser.wilayahKerja} onChange={(e) => setNewUser({ ...newUser, wilayahKerja: e.target.value })} placeholder="cth: Jakarta Timur" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUserOpen(false)}>Batal</Button>
@@ -436,7 +516,7 @@ export default function MasterDataView() {
             <DialogDescription>Perubahan email/username langsung berlaku untuk login berikutnya.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Nama</Label><Input value={editUserForm.nama} onChange={(e) => setEditUserForm({ ...editUserForm, nama: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Nama</Label><HistoryInput historyKey="user-nama" value={editUserForm.nama} onChange={(e) => setEditUserForm({ ...editUserForm, nama: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Email (login)</Label><Input type="email" value={editUserForm.email} onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Username (opsional)</Label><Input value={editUserForm.username} onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })} placeholder="kosongkan bila tak dipakai" /></div>
             <div className="space-y-1.5"><Label>Kode Teknisi (opsional)</Label><Input value={editUserForm.kodeTeknisi} onChange={(e) => setEditUserForm({ ...editUserForm, kodeTeknisi: e.target.value.toUpperCase() })} placeholder="cth: TKN-001" className="font-mono" /></div>
@@ -453,7 +533,7 @@ export default function MasterDataView() {
               </Select>
             </div>
             <div className="space-y-1.5"><Label>No. WhatsApp</Label><Input value={editUserForm.noWa} onChange={(e) => setEditUserForm({ ...editUserForm, noWa: e.target.value })} placeholder="628xxx" /></div>
-            <div className="space-y-1.5"><Label>Wilayah Kerja</Label><Input value={editUserForm.wilayahKerja} onChange={(e) => setEditUserForm({ ...editUserForm, wilayahKerja: e.target.value })} placeholder="cth: Jakarta Timur" /></div>
+            <div className="space-y-1.5"><Label>Wilayah Kerja</Label><HistoryInput historyKey="user-wilayah" value={editUserForm.wilayahKerja} onChange={(e) => setEditUserForm({ ...editUserForm, wilayahKerja: e.target.value })} placeholder="cth: Jakarta Timur" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditUser(null)}>Batal</Button>
@@ -516,8 +596,8 @@ export default function MasterDataView() {
             <DialogDescription>Kode toko &amp; barcode tidak dapat diubah karena dipakai di unit, kunjungan, dan tiket.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5 sm:col-span-2"><Label>Nama Toko</Label><Input value={editTokoForm.namaToko} onChange={(e) => setEditTokoForm({ ...editTokoForm, namaToko: e.target.value })} /></div>
-            <div className="space-y-1.5 sm:col-span-2"><Label>Alamat</Label><Input value={editTokoForm.alamat} onChange={(e) => setEditTokoForm({ ...editTokoForm, alamat: e.target.value })} placeholder="—" /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Nama Toko</Label><HistoryInput historyKey="toko-nama" value={editTokoForm.namaToko} onChange={(e) => setEditTokoForm({ ...editTokoForm, namaToko: e.target.value })} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Alamat</Label><HistoryInput historyKey="toko-alamat" value={editTokoForm.alamat} onChange={(e) => setEditTokoForm({ ...editTokoForm, alamat: e.target.value })} placeholder="—" /></div>
             <div className="space-y-1.5"><Label>Kontak</Label><Input value={editTokoForm.kontak} onChange={(e) => setEditTokoForm({ ...editTokoForm, kontak: e.target.value })} placeholder="—" /></div>
             <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" min="1" value={editTokoForm.frekuensiVisit} onChange={(e) => setEditTokoForm({ ...editTokoForm, frekuensiVisit: e.target.value })} /></div>
           </div>
@@ -542,9 +622,9 @@ export default function MasterDataView() {
             <DialogDescription>Perubahan nama langsung tercermin di unit milik customer ini.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
-            <div className="space-y-1.5"><Label>Nama</Label><Input value={editCustForm.nama} onChange={(e) => setEditCustForm({ ...editCustForm, nama: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Nama</Label><HistoryInput historyKey="customer-nama" value={editCustForm.nama} onChange={(e) => setEditCustForm({ ...editCustForm, nama: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>No. WhatsApp</Label><Input value={editCustForm.noWa} onChange={(e) => setEditCustForm({ ...editCustForm, noWa: e.target.value })} placeholder="628xxx" /></div>
-            <div className="space-y-1.5"><Label>Alamat</Label><Input value={editCustForm.alamat} onChange={(e) => setEditCustForm({ ...editCustForm, alamat: e.target.value })} placeholder="—" /></div>
+            <div className="space-y-1.5"><Label>Alamat</Label><HistoryInput historyKey="customer-alamat" value={editCustForm.alamat} onChange={(e) => setEditCustForm({ ...editCustForm, alamat: e.target.value })} placeholder="—" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditCust(null)}>Batal</Button>
@@ -558,6 +638,80 @@ export default function MasterDataView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog edit unit */}
+      <Dialog open={!!editUnit} onOpenChange={(o) => !o && setEditUnit(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Unit {editUnit && <span className="font-mono text-sm text-slate-500">{editUnit.serialNumber}</span>}</DialogTitle>
+            <DialogDescription>Nomor seri tidak dapat diubah karena dipakai di tiket &amp; barcode.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={editUnitForm.modelUnit} onChange={(e) => setEditUnitForm({ ...editUnitForm, modelUnit: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={editUnitForm.merk} onChange={(e) => setEditUnitForm({ ...editUnitForm, merk: e.target.value })} /></div>
+            <div className="space-y-1.5 sm:col-span-2"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={editUnitForm.nama} onChange={(e) => setEditUnitForm({ ...editUnitForm, nama: e.target.value })} /></div>
+            <div className="space-y-1.5">
+              <Label>Toko Mitra</Label>
+              <SearchSelect
+                value={editUnitForm.tokoId}
+                onChange={(v) => setEditUnitForm({ ...editUnitForm, tokoId: v, ...(v ? { statusGaransi: 'GARANSI' } : {}) })}
+                options={(tokoList ?? []).map((t) => ({ value: String(t.id), label: `${t.kodeToko} — ${t.namaToko}` }))}
+                placeholder="— Tanpa toko —"
+                ariaLabel="Pilih toko mitra"
+              />
+              {editUnitForm.tokoId && (
+                <p className="text-[11px] text-emerald-700">Stok toko — otomatis GARANSI, tgl pembelian dinonaktifkan.</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label>Customer</Label>
+              <SearchSelect
+                value={editUnitForm.customerId}
+                onChange={(v) => setEditUnitForm({ ...editUnitForm, customerId: v })}
+                options={(customerList ?? []).map((c) => ({ value: String(c.id), label: c.nama, sub: c.noWa ?? undefined }))}
+                placeholder="— Tanpa customer —"
+                ariaLabel="Pilih customer"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Status Garansi</Label>
+              <Select value={editUnitForm.statusGaransi} onValueChange={(v) => setEditUnitForm({ ...editUnitForm, statusGaransi: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="GARANSI">GARANSI</SelectItem>
+                  <SelectItem value="NON_GARANSI">NON-GARANSI</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5"><Label>Tgl Pembelian {editUnitForm.tokoId ? '— nonaktif (stok toko)' : ''}</Label><Input type="date" value={editUnitForm.tokoId ? '' : editUnitForm.tglPembelian} onChange={(e) => setEditUnitForm({ ...editUnitForm, tglPembelian: e.target.value })} disabled={!!editUnitForm.tokoId} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditUnit(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!editUnit || !editUnitForm.modelUnit.trim() || updateUnit.isPending}
+              onClick={() => updateUnit.mutate()}
+            >
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog import massal unit via CSV */}
+      <CsvImportDialog
+        kind="unit"
+        open={importUnitOpen}
+        onOpenChange={setImportUnitOpen}
+        existingCodes={(unitList ?? []).map((u) => u.serialNumber)}
+        onSuccess={(r) => {
+          invalidate(['units', 'toko', 'dashboard', 'alerts'])
+          toast({
+            title: 'Import unit selesai',
+            description: `${r.inserted} unit ditambahkan, ${r.updated} diperbarui, ${r.skipped} dilewati, ${r.failed} gagal.`,
+          })
+        }}
+      />
 
       {/* Dialog import massal toko via CSV */}
       <CsvImportDialog

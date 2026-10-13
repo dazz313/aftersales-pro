@@ -41,6 +41,8 @@ export async function POST(request: Request) {
       data: {
         serialNumber: body.serialNumber,
         modelUnit: body.modelUnit,
+        merk: String(body.merk ?? '').trim(),
+        nama: String(body.nama ?? '').trim(),
         tokoId: body.tokoId ? Number(body.tokoId) : null,
         customerId: body.customerId ? Number(body.customerId) : null,
         statusGaransi: body.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : 'GARANSI',

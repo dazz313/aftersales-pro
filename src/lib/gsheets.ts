@@ -70,8 +70,8 @@ export async function collectBackupData(): Promise<SheetData[]> {
     {
       nama: 'Unit Asset',
       rows: [
-        ['Serial Number', 'Model Unit', 'Toko', 'Pemilik', 'Status Garansi', 'Tgl Pembelian'],
-        ...units.map((u) => [u.serialNumber, u.modelUnit, u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '', u.customer?.nama ?? '', u.statusGaransi, fmt(u.tglPembelian)]),
+        ['Serial Number', 'Model Unit', 'Merk', 'Nama Unit', 'Toko', 'Pemilik', 'Status Garansi', 'Tgl Pembelian'],
+        ...units.map((u) => [u.serialNumber, u.modelUnit, u.merk ?? '', u.nama ?? '', u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '', u.customer?.nama ?? '', u.statusGaransi, fmt(u.tglPembelian)]),
       ],
     },
     {

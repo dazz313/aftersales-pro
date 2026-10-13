@@ -88,6 +88,8 @@ model UnitAsset {
   id              Int              @id @default(autoincrement())
   serialNumber    String           @unique
   modelUnit       String
+  merk            String           @default("") // merk/brand unit (mis. Samsung, Daikin)
+  nama            String           @default("") // nama panggilan unit (mis. "AC Ruang Tamu")
   tokoId          Int?
   customerId      Int?
   statusGaransi   String           @default("GARANSI") // GARANSI | NON_GARANSI

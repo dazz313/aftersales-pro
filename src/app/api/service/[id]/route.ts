@@ -323,16 +323,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     if (aksi === 'UPDATE_JASA') {
+      const data: Record<string, unknown> = { biayaJasa: Number(body.biayaJasa) || 0 }
+      if (body.deskripsiKerusakan !== undefined) data.deskripsiKerusakan = String(body.deskripsiKerusakan ?? '')
       const updated = await db.serviceRequest.update({
         where: { id: ticketId },
-        data: { biayaJasa: Number(body.biayaJasa) || 0 },
+        data,
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
       await logAudit({
         aksi: 'UPDATE_BIAYA_JASA',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Biaya jasa diubah menjadi Rp ${Number(body.biayaJasa).toLocaleString('id-ID')}`,
+        deskripsi: body.deskripsiKerusakan !== undefined
+          ? `Deskripsi & biaya jasa tiket diperbarui (jasa Rp ${Number(body.biayaJasa).toLocaleString('id-ID')})`
+          : `Biaya jasa diubah menjadi Rp ${Number(body.biayaJasa).toLocaleString('id-ID')}`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import SearchSelect from '@/components/search-select'
 import type { ServiceTicket, Sparepart } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import {
@@ -238,16 +238,20 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts }: Ac
         <div className="space-y-1.5">
           <Label className="text-xs">Tambah sparepart saat pengerjaan</Label>
           <div className="flex gap-1.5">
-            <Select value={tambahId} onValueChange={setTambahId}>
-              <SelectTrigger className="h-7 text-[11px]" aria-label="Pilih sparepart tambahan"><SelectValue placeholder="— Pilih part —" /></SelectTrigger>
-              <SelectContent className="max-h-56">
-                {(spareparts ?? []).map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)} textValue={`${p.kodePart} ${p.namaPart}`}>
-                    {p.kodePart} · {p.namaPart} (jual {p.stokJual}/garansi {p.stokGaransi})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="min-w-0 flex-1">
+              <SearchSelect
+                value={tambahId}
+                onChange={setTambahId}
+                options={(spareparts ?? []).map((p) => ({
+                  value: String(p.id),
+                  label: `${p.kodePart} · ${p.namaPart}`,
+                  sub: `jual ${p.stokJual}/garansi ${p.stokGaransi}`,
+                }))}
+                placeholder="— Ketik part —"
+                ariaLabel="Pilih sparepart tambahan"
+                className="h-7 text-[11px]"
+              />
+            </div>
             <Input type="number" min="1" value={tambahQty} onChange={(e) => setTambahQty(e.target.value)} className="h-7 w-16 text-[11px]" aria-label="Jumlah" />
             <Button
               size="sm"

@@ -117,16 +117,16 @@ async function main() {
   // ============ UNIT ASSET (dengan serial number) ============
   const unitList = await Promise.all(
     [
-      { serialNumber: 'SN-ACSP-2023-00101', modelUnit: 'AC Split 1 PK Inverter SE-9000', tokoId: tokoList[0].id, customerId: customerList[0].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(200) },
-      { serialNumber: 'SN-ACSP-2023-00102', modelUnit: 'AC Split 1 PK Inverter SE-9000', tokoId: tokoList[0].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(800) },
-      { serialNumber: 'SN-ACSP-2024-00203', modelUnit: 'AC Split 1/2 PK SE-5000', tokoId: tokoList[1].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(120) },
-      { serialNumber: 'SN-ACSP-2024-00204', modelUnit: 'AC Split 1/2 PK SE-5000', tokoId: tokoList[1].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(90) },
-      { serialNumber: 'SN-CWAS-2022-00311', modelUnit: 'Chest Freezer 300L CF-30', tokoId: tokoList[2].id, customerId: customerList[4].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(1100) },
-      { serialNumber: 'SN-CWAS-2024-00312', modelUnit: 'Chest Freezer 200L CF-20', tokoId: tokoList[2].id, customerId: customerList[5].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(60) },
-      { serialNumber: 'SN-MESC-2023-00421', modelUnit: 'Mesin Cuci Front Load 8kg FL-80', tokoId: tokoList[3].id, customerId: customerList[0].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(300) },
-      { serialNumber: 'SN-MESC-2023-00422', modelUnit: 'Mesin Cuci Top Load 7kg TL-70', tokoId: tokoList[4].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(700) },
-      { serialNumber: 'SN-ACSP-2024-00531', modelUnit: 'AC Split 1 PK Inverter SE-9000', tokoId: tokoList[5].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(45) },
-      { serialNumber: 'SN-ACSP-2024-00532', modelUnit: 'AC Standing Floor 5PK SF-500', tokoId: tokoList[5].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(30) },
+      { serialNumber: 'SN-ACSP-2023-00101', modelUnit: 'AC Split 1 PK Inverter SE-9000', merk: 'Samsung', nama: 'AC Ruang Tamu', tokoId: tokoList[0].id, customerId: customerList[0].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(200) },
+      { serialNumber: 'SN-ACSP-2023-00102', modelUnit: 'AC Split 1 PK Inverter SE-9000', merk: 'Samsung', nama: '', tokoId: tokoList[0].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(800) },
+      { serialNumber: 'SN-ACSP-2024-00203', modelUnit: 'AC Split 1/2 PK SE-5000', merk: 'LG', nama: 'AC Kamar Utama', tokoId: tokoList[1].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(120) },
+      { serialNumber: 'SN-ACSP-2024-00204', modelUnit: 'AC Split 1/2 PK SE-5000', merk: 'LG', nama: '', tokoId: tokoList[1].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(90) },
+      { serialNumber: 'SN-CWAS-2022-00311', modelUnit: 'Chest Freezer 300L CF-30', merk: 'Aqua', nama: 'Freezer Dapur', tokoId: tokoList[2].id, customerId: customerList[4].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(1100) },
+      { serialNumber: 'SN-CWAS-2024-00312', modelUnit: 'Chest Freezer 200L CF-20', merk: 'Aqua', nama: '', tokoId: tokoList[2].id, customerId: customerList[5].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(60) },
+      { serialNumber: 'SN-MESC-2023-00421', modelUnit: 'Mesin Cuci Front Load 8kg FL-80', merk: 'Polytron', nama: 'Mesin Cuci Rumah', tokoId: tokoList[3].id, customerId: customerList[0].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(300) },
+      { serialNumber: 'SN-MESC-2023-00422', modelUnit: 'Mesin Cuci Top Load 7kg TL-70', merk: 'Polytron', nama: '', tokoId: tokoList[4].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(700) },
+      { serialNumber: 'SN-ACSP-2024-00531', modelUnit: 'AC Split 1 PK Inverter SE-9000', merk: 'Daikin', nama: 'AC Kantor', tokoId: tokoList[5].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(45) },
+      { serialNumber: 'SN-ACSP-2024-00532', modelUnit: 'AC Standing Floor 5PK SF-500', merk: 'Daikin', nama: '', tokoId: tokoList[5].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(30) },
     ].map((u) => prisma.unitAsset.create({ data: u }))
   )
   console.log('✅ Unit Asset:', unitList.length)

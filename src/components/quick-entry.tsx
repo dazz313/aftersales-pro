@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
+import HistoryInput from '@/components/history-input'
 import { Plus, Store, Users, ScanLine, Radio, Zap } from 'lucide-react'
 
 /**
@@ -53,8 +54,8 @@ export function AddTokoDialog({ open, onOpenChange }: { open: boolean; onOpenCha
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5"><Label htmlFor="qa-kode">Kode Toko</Label><Input id="qa-kode" value={newToko.kodeToko} onChange={(e) => setNewToko({ ...newToko, kodeToko: e.target.value.toUpperCase() })} placeholder="TOK-007" className="font-mono" /></div>
-          <div className="space-y-1.5"><Label htmlFor="qa-nama">Nama Toko</Label><Input id="qa-nama" value={newToko.namaToko} onChange={(e) => setNewToko({ ...newToko, namaToko: e.target.value })} placeholder="cth: Elektronik Sejahtera" /></div>
-          <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="qa-alamat">Alamat</Label><Input id="qa-alamat" value={newToko.alamat} onChange={(e) => setNewToko({ ...newToko, alamat: e.target.value })} /></div>
+          <div className="space-y-1.5"><Label htmlFor="qa-nama">Nama Toko</Label><HistoryInput historyKey="toko-nama" id="qa-nama" value={newToko.namaToko} onChange={(e) => setNewToko({ ...newToko, namaToko: e.target.value })} placeholder="cth: Elektronik Sejahtera" /></div>
+          <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="qa-alamat">Alamat</Label><HistoryInput historyKey="toko-alamat" id="qa-alamat" value={newToko.alamat} onChange={(e) => setNewToko({ ...newToko, alamat: e.target.value })} /></div>
           <div className="space-y-1.5"><Label htmlFor="qa-kontak">Kontak</Label><Input id="qa-kontak" value={newToko.kontak} onChange={(e) => setNewToko({ ...newToko, kontak: e.target.value })} placeholder="021-xxx / 08xx" /></div>
           <div className="space-y-1.5"><Label htmlFor="qa-siklus">Siklus Visit (hari)</Label><Input id="qa-siklus" type="number" value={newToko.frekuensiVisit} onChange={(e) => setNewToko({ ...newToko, frekuensiVisit: e.target.value })} /></div>
         </div>
@@ -94,9 +95,9 @@ export function AddCustomerDialog({ open, onOpenChange }: { open: boolean; onOpe
           <DialogDescription>Data pemilik unit (end-user).</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
-          <div className="space-y-1.5"><Label htmlFor="qc-nama">Nama</Label><Input id="qc-nama" value={newCust.nama} onChange={(e) => setNewCust({ ...newCust, nama: e.target.value })} /></div>
+          <div className="space-y-1.5"><Label htmlFor="qc-nama">Nama</Label><HistoryInput historyKey="customer-nama" id="qc-nama" value={newCust.nama} onChange={(e) => setNewCust({ ...newCust, nama: e.target.value })} /></div>
           <div className="space-y-1.5"><Label htmlFor="qc-wa">No. WhatsApp</Label><Input id="qc-wa" value={newCust.noWa} onChange={(e) => setNewCust({ ...newCust, noWa: e.target.value })} placeholder="628xxx" /></div>
-          <div className="space-y-1.5"><Label htmlFor="qc-alamat">Alamat</Label><Input id="qc-alamat" value={newCust.alamat} onChange={(e) => setNewCust({ ...newCust, alamat: e.target.value })} /></div>
+          <div className="space-y-1.5"><Label htmlFor="qc-alamat">Alamat</Label><HistoryInput historyKey="customer-alamat" id="qc-alamat" value={newCust.alamat} onChange={(e) => setNewCust({ ...newCust, alamat: e.target.value })} /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>

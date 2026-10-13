@@ -9,16 +9,16 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X } from 'lucide-react'
+import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, Barcode, XCircle, Video, VideoOff, Zap, X, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import SearchSelect from '@/components/search-select'
+import HistoryInput from '@/components/history-input'
 
 interface LookupResult {
   toko: Toko
@@ -106,6 +106,20 @@ export default function FieldOpsView() {
   const checkinMutation = useMutation({
     mutationFn: (body: Record<string, unknown>) => postJson<Kunjungan>('/api/kunjungan', body),
     onSuccess: () => invalidateAll(),
+  })
+
+  // Koreksi catatan kunjungan
+  const [editKunj, setEditKunj] = useState<Kunjungan | null>(null)
+  const [editCatatan, setEditCatatan] = useState('')
+  const updateKunjungan = useMutation({
+    mutationFn: () =>
+      postJson(`/api/kunjungan/${editKunj!.id}`, { catatanStokRusak: editCatatan.trim() || null, aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH'),
+    onSuccess: () => {
+      invalidateAll()
+      setEditKunj(null)
+      toast({ title: 'Kunjungan diperbarui', description: 'Koreksi catatan tersimpan.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui kunjungan', description: e.message, variant: 'destructive' }),
   })
 
   const prosesBarcode = async (raw: string) => {
@@ -259,14 +273,13 @@ export default function FieldOpsView() {
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <Label><Users className="mr-1 inline h-3 w-3" /> Teknisi yang berkunjung</Label>
-                <Select value={teknisiScanId} onValueChange={setTeknisiScanId}>
-                  <SelectTrigger aria-label="Pilih teknisi untuk scan"><SelectValue placeholder="— Pilih teknisi —" /></SelectTrigger>
-                  <SelectContent>
-                    {teknisiOnly.map((t) => (
-                      <SelectItem key={t.id} value={String(t.id)}>{t.nama} ({t.wilayahKerja})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchSelect
+                  value={teknisiScanId}
+                  onChange={setTeknisiScanId}
+                  options={teknisiOnly.map((t) => ({ value: String(t.id), label: t.nama, sub: t.wilayahKerja ?? undefined }))}
+                  placeholder="— Ketik nama teknisi —"
+                  ariaLabel="Pilih teknisi untuk scan"
+                />
               </div>
 
               {/* Area kamera */}
@@ -385,7 +398,7 @@ export default function FieldOpsView() {
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Catatan kondisi di toko</Label>
-              <Textarea value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." rows={3} />
+              <HistoryInput historyKey="kunjungan-catatan" value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." />
             </div>
           </div>
           <DialogFooter>
@@ -498,8 +511,9 @@ export default function FieldOpsView() {
                     <TableHead>Toko</TableHead>
                     <TableHead>Metode</TableHead>
                     <TableHead className="hidden sm:table-cell">Teknisi</TableHead>
-                    <TableHead className="hidden md:table-cell">Catatan Stok Rusak</TableHead>
-                    <TableHead className="hidden lg:table-cell">Foto</TableHead>
+                      <TableHead className="hidden md:table-cell">Catatan Stok Rusak</TableHead>
+                      <TableHead className="hidden lg:table-cell">Foto</TableHead>
+                      <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -534,6 +548,11 @@ export default function FieldOpsView() {
                           <span className="text-xs text-slate-300">—</span>
                         )}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => { setEditKunj(k); setEditCatatan(k.catatanStokRusak ?? '') }} aria-label="Koreksi catatan kunjungan" title="Koreksi catatan">
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -542,6 +561,28 @@ export default function FieldOpsView() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog koreksi catatan kunjungan */}
+      <Dialog open={!!editKunj} onOpenChange={(o) => !o && setEditKunj(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Koreksi Catatan Kunjungan</DialogTitle>
+            <DialogDescription>
+              {editKunj && <span>{editKunj.toko.namaToko} ({editKunj.toko.kodeToko}) · {formatWaktu(editKunj.tglKunjungan)}</span>}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label>Catatan Stok Rusak / Kondisi Toko</Label>
+            <HistoryInput historyKey="kunjungan-catatan" value={editCatatan} onChange={(e) => setEditCatatan(e.target.value)} placeholder="cth: 2 unit AC display kipas berbunyi…" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditKunj(null)}>Batal</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!editKunj || updateKunjungan.isPending} onClick={() => updateKunjungan.mutate()}>
+              <Pencil className="mr-1 h-4 w-4" /> Simpan Koreksi
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog Check-in Manual */}
       <Dialog open={checkinOpen} onOpenChange={setCheckinOpen}>
@@ -559,14 +600,13 @@ export default function FieldOpsView() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label><Users className="mr-1 inline h-3 w-3" /> Teknisi</Label>
-                <Select value={teknisiId} onValueChange={setTeknisiId}>
-                  <SelectTrigger aria-label="Pilih teknisi"><SelectValue placeholder="— Pilih —" /></SelectTrigger>
-                  <SelectContent>
-                    {teknisiOnly.map((t) => (
-                      <SelectItem key={t.id} value={String(t.id)}>{t.nama} ({t.wilayahKerja})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchSelect
+                  value={teknisiId}
+                  onChange={setTeknisiId}
+                  options={teknisiOnly.map((t) => ({ value: String(t.id), label: t.nama, sub: t.wilayahKerja ?? undefined }))}
+                  placeholder="— Ketik nama teknisi —"
+                  ariaLabel="Pilih teknisi"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label><Camera className="mr-1 inline h-3 w-3" /> Foto Onsite</Label>
@@ -575,7 +615,7 @@ export default function FieldOpsView() {
             </div>
             <div className="space-y-1.5">
               <Label>Catatan Stok Rusak / Temuan</Label>
-              <Textarea value={catatanManual} onChange={(e) => setCatatanManual(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." rows={2} />
+              <HistoryInput historyKey="kunjungan-catatan" value={catatanManual} onChange={(e) => setCatatanManual(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." />
             </div>
           </div>
           <DialogFooter>

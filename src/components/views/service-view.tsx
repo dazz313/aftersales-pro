@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -20,9 +19,11 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import SearchSelect from '@/components/search-select'
+import HistoryInput from '@/components/history-input'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -51,6 +52,9 @@ export default function ServiceView() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [sjOpen, setSjOpen] = useState(false)
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
+  const [tiketEdit, setTiketEdit] = useState(false)
+  const [tiketDesc, setTiketDesc] = useState('')
+  const [tiketJasa, setTiketJasa] = useState('0')
   const [finishTarget, setFinishTarget] = useState<ServiceTicket | null>(null)
   const [notaFile, setNotaFile] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
@@ -67,6 +71,12 @@ export default function ServiceView() {
     }, 0)
     return () => clearTimeout(t)
   }, [navIntent, clearNavIntent])
+
+  // Ganti tiket di dialog detail → tutup mode koreksi
+  const openDetail = (t: ServiceTicket | null) => {
+    setTiketEdit(false)
+    setDetail(t)
+  }
 
   const { data: tickets, isLoading } = useQuery<ServiceTicket[]>({
     queryKey: ['service-tickets'],
@@ -206,7 +216,7 @@ export default function ServiceView() {
       postJson<ServiceTicket>(`/api/service/${id}`, { ...body, aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH'),
     onSuccess: (t) => {
       invalidateAll()
-      setDetail(t)
+      openDetail(t)
       toast({ title: 'Alur diperbarui', description: `Tiket ${t.noTiket} — tahap alur tercatat.` })
     },
     onError: (e: Error) => toast({ title: 'Aksi ditolak', description: e.message, variant: 'destructive' }),
@@ -382,7 +392,7 @@ export default function ServiceView() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <button onClick={() => setDetail(t)} className="text-left font-mono text-xs font-semibold text-emerald-700 hover:underline">
+                            <button onClick={() => openDetail(t)} className="text-left font-mono text-xs font-semibold text-emerald-700 hover:underline">
                               {t.noTiket}
                             </button>
                             {t.noSttb && <span className="font-mono text-[10px] text-slate-400">{t.noSttb}</span>}
@@ -458,7 +468,7 @@ export default function ServiceView() {
                                 </Button>
                               </a>
                             )}
-                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={() => setDetail(t)}>
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={() => openDetail(t)}>
                               <Eye className="h-3 w-3" />
                             </Button>
                           </div>
@@ -506,8 +516,34 @@ export default function ServiceView() {
                   </div>
                 </div>
                 <div>
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Deskripsi Kerusakan</p>
-                  <p className="text-slate-700">{detail.deskripsiKerusakan ?? '-'}</p>
+                  <div className="mb-1 flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Deskripsi Kerusakan</p>
+                    {detail.status !== 'FINISH' && !tiketEdit && (
+                      <Button size="sm" variant="ghost" className="h-6 px-1.5 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => { setTiketDesc(detail.deskripsiKerusakan ?? ''); setTiketJasa(String(detail.biayaJasa)); setTiketEdit(true) }}>
+                        <Pencil className="mr-1 h-3 w-3" /> Koreksi
+                      </Button>
+                    )}
+                  </div>
+                  {tiketEdit ? (
+                    <div className="space-y-2 rounded-lg border p-2.5">
+                      <HistoryInput historyKey="service-deskripsi" value={tiketDesc} onChange={(e) => setTiketDesc(e.target.value)} placeholder="Deskripsi kerusakan…" aria-label="Koreksi deskripsi" />
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs text-slate-500">Jasa Rp</Label>
+                        <Input type="number" min={0} value={tiketJasa} onChange={(e) => setTiketJasa(e.target.value)} className="h-7 text-xs" aria-label="Koreksi biaya jasa" />
+                        <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => setTiketEdit(false)}>Batal</Button>
+                        <Button
+                          size="sm"
+                          className="h-7 bg-emerald-600 text-[11px] hover:bg-emerald-700"
+                          disabled={flowMutation.isPending}
+                          onClick={() => { flowMutation.mutate({ id: detail.id, body: { aksi: 'UPDATE_JASA', deskripsiKerusakan: tiketDesc, biayaJasa: Number(tiketJasa) || 0 } }); setTiketEdit(false) }}
+                        >
+                          Simpan
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-slate-700">{detail.deskripsiKerusakan ?? '-'}</p>
+                  )}
                 </div>
                 <div>
                   <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Sparepart</p>
@@ -641,29 +677,32 @@ export default function ServiceView() {
             </div>
             <div className="space-y-1.5">
               <Label>{formTipe === 'TOKO' ? 'Pilih Toko (otomatis dari data toko)' : 'Pilih Customer (otomatis dari data customer)'}</Label>
-              <Select value={formPemilik} onValueChange={(v) => { setFormPemilik(v); setFormUnit('') }}>
-                <SelectTrigger aria-label="Pilih pemilik unit"><SelectValue placeholder={formTipe === 'TOKO' ? '— Pilih toko —' : '— Pilih customer —'} /></SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {(formTipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {formTipe === 'TOKO' ? `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` : (p as Customer).nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchSelect
+                value={formPemilik}
+                onChange={(v) => { setFormPemilik(v); setFormUnit('') }}
+                options={(formTipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
+                  formTipe === 'TOKO'
+                    ? { value: String(p.id), label: `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` }
+                    : { value: String(p.id), label: (p as Customer).nama }
+                ))}
+                placeholder={formTipe === 'TOKO' ? '— Ketik kode/nama toko —' : '— Ketik nama customer —'}
+                ariaLabel="Pilih pemilik unit"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Pilih Unit Milik {formTipe === 'TOKO' ? 'Toko' : 'Customer'} Tersebut</Label>
-              <Select value={formUnit} onValueChange={setFormUnit} disabled={!formPemilik}>
-                <SelectTrigger aria-label="Pilih unit"><SelectValue placeholder={formPemilik ? '— Pilih unit —' : '— Pilih pemilik dulu —'} /></SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {unitPilihan.map((u) => (
-                    <SelectItem key={u.id} value={String(u.id)} textValue={`${u.serialNumber} ${u.modelUnit}`}>
-                      {u.serialNumber} · {u.modelUnit} ({u.statusGaransi.replace('_', '-')})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchSelect
+                value={formUnit}
+                onChange={setFormUnit}
+                disabled={!formPemilik}
+                options={unitPilihan.map((u) => ({
+                  value: String(u.id),
+                  label: `${u.serialNumber} · ${u.modelUnit}`,
+                  sub: `${u.merk?.trim() ? `${u.merk.trim()} · ` : ''}${u.statusGaransi.replace('_', '-')}`,
+                }))}
+                placeholder={formPemilik ? '— Ketik serial/model —' : '— Pilih pemilik dulu —'}
+                ariaLabel="Pilih unit"
+              />
               {formPemilik && unitPilihan.length === 0 && (
                 <p className="text-[11px] text-amber-700">Belum ada unit terdaftar untuk pemilik ini — registrasikan dulu di Master Data → Unit Asset.</p>
               )}
@@ -704,7 +743,7 @@ export default function ServiceView() {
             )}
             <div className="space-y-1.5">
               <Label>Deskripsi Kerusakan</Label>
-              <Textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: AC tidak dingin, indikator berkedip..." rows={2} />
+              <HistoryInput historyKey="service-deskripsi" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: AC tidak dingin, indikator berkedip..." />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -725,16 +764,17 @@ export default function ServiceView() {
             </div>
             <div className="space-y-1.5">
               <Label>Reserve Sparepart (opsional — bisa ditambah saat pengerjaan)</Label>
-              <Select value={formParts[0] ?? ''} onValueChange={(v) => setFormParts(v ? [v] : [])}>
-                <SelectTrigger aria-label="Pilih sparepart"><SelectValue placeholder="— Tanpa part —" /></SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {parts?.filter((p) => p.stokInventory > 0).map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)} textValue={`${p.kodePart} ${p.namaPart}`}>
-                      {p.kodePart} · {p.namaPart} — {[p.brandKompatibel?.trim(), p.supplier?.trim()].filter(Boolean).join(' · ') || 'tanpa brand/supplier'} (jual {p.stokJual}/garansi {p.stokGaransi})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchSelect
+                value={formParts[0] ?? ''}
+                onChange={(v) => setFormParts(v ? [v] : [])}
+                options={(parts ?? []).filter((p) => p.stokInventory > 0).map((p) => ({
+                  value: String(p.id),
+                  label: `${p.kodePart} · ${p.namaPart}`,
+                  sub: `${[p.brandKompatibel?.trim(), p.supplier?.trim()].filter(Boolean).join(' · ') || 'tanpa brand/supplier'} (jual ${p.stokJual}/garansi ${p.stokGaransi})`,
+                }))}
+                placeholder="— Ketik kode/nama part —"
+                ariaLabel="Pilih sparepart"
+              />
             </div>
             <p className="flex items-start gap-1.5 rounded-md bg-emerald-50 p-2.5 text-xs text-emerald-800">
               <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0" />

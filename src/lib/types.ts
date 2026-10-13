@@ -44,6 +44,8 @@ export interface UnitAsset {
   id: number
   serialNumber: string
   modelUnit: string
+  merk: string
+  nama: string
   tokoId: number | null
   customerId: number | null
   statusGaransi: 'GARANSI' | 'NON_GARANSI'

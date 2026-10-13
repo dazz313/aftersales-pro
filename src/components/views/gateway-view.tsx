@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, gatewaySimulate, fetchGatewayStatus, formatWaktu, type WaMessage, type GatewayStatus } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -14,6 +13,7 @@ import { Send, Bot, Smartphone, ScanLine, Lightbulb, Radio, CheckCircle2, XCircl
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import HistoryInput from '@/components/history-input'
 
 const CONTOH_COMMANDS = [
   '#LAPOR SN-ACSP-2024-00532 PRT-CMP-02 Kompresor tidak menyala sama sekali',
@@ -213,7 +213,8 @@ export default function GatewayView() {
               </select>
             </div>
             <div className="flex gap-2">
-              <Input
+              <HistoryInput
+                historyKey="gateway-pesan"
                 value={pesan}
                 onChange={(e) => setPesan(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && kirim()}

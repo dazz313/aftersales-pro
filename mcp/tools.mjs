@@ -307,6 +307,8 @@ export const TOOLS = [
       properties: {
         serialNumber: str,
         modelUnit: str,
+        merk: { type: 'string', description: 'Merk/brand unit (mis. Samsung)' },
+        nama: { type: 'string', description: 'Nama panggilan unit (mis. AC Ruang Tamu)' },
         tokoId: num,
         customerId: num,
         statusGaransi: { type: 'string', enum: ['GARANSI', 'NON_GARANSI'] },
@@ -658,7 +660,7 @@ async function hListUnit(args) {
   const where = {
     ...(args.tokoId ? { tokoId: Number(args.tokoId) } : {}),
     ...(args.statusGaransi ? { statusGaransi: args.statusGaransi } : {}),
-    ...(q ? { OR: [{ serialNumber: { contains: q } }, { modelUnit: { contains: q } }] } : {}),
+    ...(q ? { OR: [{ serialNumber: { contains: q } }, { modelUnit: { contains: q } }, { merk: { contains: q } }, { nama: { contains: q } }] } : {}),
   }
   const [total, rows] = await Promise.all([
     db.unitAsset.count({ where }),
@@ -670,7 +672,7 @@ async function hListUnit(args) {
   return jsonOut({
     total,
     unit: rows.map((u) => ({
-      id: u.id, serialNumber: u.serialNumber, modelUnit: u.modelUnit,
+      id: u.id, serialNumber: u.serialNumber, modelUnit: u.modelUnit, merk: u.merk ?? '', nama: u.nama ?? '',
       toko: u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : null,
       pemilik: u.customer?.nama ?? null, statusGaransi: u.statusGaransi,
       tglPembelian: fmtTanggal(u.tglPembelian),
@@ -687,6 +689,8 @@ async function hAddUnit(args) {
   const unit = await db.unitAsset.create({
     data: {
       serialNumber, modelUnit,
+      merk: String(args.merk ?? '').trim(),
+      nama: String(args.nama ?? '').trim(),
       tokoId: args.tokoId ? Number(args.tokoId) : null,
       customerId: args.customerId ? Number(args.customerId) : null,
       statusGaransi: args.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : 'GARANSI',

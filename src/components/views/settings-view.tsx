@@ -22,8 +22,9 @@ import { useAppStore } from '@/lib/store'
 import {
   Building2, Save, ScrollText, ShieldCheck, DatabaseBackup, History,
   Radio, Smartphone, Send, CloudUpload, RefreshCw, CheckCircle2, XCircle, CircleAlert,
-  Monitor, Bot, Copy, Inbox, ChevronDown, Download, Upload, Clock, ImagePlus,
+  Monitor, Bot, Copy, Inbox, ChevronDown, Download, Upload, Clock, ImagePlus, Tags, Trash2, Plus,
 } from 'lucide-react'
+import { parseBrandRules, type BrandRule } from '@/lib/brand'
 import { cn } from '@/lib/utils'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 
@@ -53,7 +54,7 @@ const STATUS_TONE: Record<string, string> = {
   FAILED: 'border-rose-300 bg-rose-50 text-rose-700',
 }
 
-type SecKey = 'profil' | 'gateway' | 'backup' | 'desktop' | 'keamanan'
+type SecKey = 'profil' | 'merk' | 'gateway' | 'backup' | 'desktop' | 'keamanan'
 
 /** Section dropdown — header selalu terlihat, isi bisa dibuka/tutup agar halaman tidak kepanjangan. */
 function SettingSection({
@@ -124,9 +125,12 @@ export default function SettingsView() {
   const [form, setForm] = useState<Record<string, string>>({})
   const [gwForm, setGwForm] = useState<Record<string, string>>({})
   const [gsForm, setGsForm] = useState<Record<string, string>>({})
+  // Daftar merk & masa garansi (null = ikut data server, belum diedit user)
+  const [brandRows, setBrandRows] = useState<BrandRule[] | null>(null)
+  const [brandBaru, setBrandBaru] = useState({ nama: '', garansiBulan: '12' })
   const [desktopInfo, setDesktopInfo] = useState<AsproDesktopInfo | null>(null)
   // Section dropdown — default: profil & gateway terbuka, sisanya tertutup
-  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: true, gateway: true, backup: false, desktop: false, keamanan: false })
+  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: true, merk: true, gateway: true, backup: false, desktop: false, keamanan: false })
   const toggleSec = (k: SecKey) => setSecOpen((s) => ({ ...s, [k]: !s[k] }))
 
   // Deteksi mode desktop (Electron preload) untuk path MCP yang pasti
@@ -356,6 +360,19 @@ export default function SettingsView() {
 
   const gw = (k: string) => gwForm[k] ?? settings?.map[k] ?? ''
   const gs = (k: string) => gsForm[k] ?? settings?.map[k] ?? ''
+  const brandList: BrandRule[] = brandRows ?? parseBrandRules(settings?.map['brand_daftar'])
+
+  const saveBrand = useMutation({
+    mutationFn: (rows: BrandRule[]) =>
+      postJson('/api/pengaturan', { settings: { brand_daftar: JSON.stringify(rows) }, aktor: role }, 'PUT'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pengaturan'] })
+      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      setBrandRows(null)
+      toast({ title: 'Daftar merk tersimpan', description: 'Deteksi garansi otomatis memakai masa garansi ini.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menyimpan merk', description: e.message, variant: 'destructive' }),
+  })
 
   const [cariLog, setCariLog] = useState('')
   const filteredLogs = useMemo(
@@ -421,6 +438,86 @@ export default function SettingsView() {
             </div>
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveMutation.isPending} onClick={() => saveMutation.mutate()}>
               <Save className="mr-1.5 h-4 w-4" /> Simpan Profil
+            </Button>
+        </SettingSection>
+
+        {/* ===== MERK & MASA GARANSI ===== */}
+        <SettingSection
+          sec="merk"
+          title="Merk & Masa Garansi"
+          icon={<Tags className="h-4 w-4 text-emerald-600" />}
+          desc="Daftar merk yang ditangani + masa garansi tiap merk — dipakai deteksi otomatis saat input tanggal pembelian"
+          contentClass="space-y-3"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
+            <div className="space-y-2">
+              {brandList.map((b, i) => (
+                <div key={`${b.nama}-${i}`} className="flex items-center gap-2 rounded-lg border p-2">
+                  <p className="min-w-0 flex-1 truncate text-xs font-semibold text-slate-800">{b.nama}</p>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={String(b.garansiBulan)}
+                    onChange={(e) => {
+                      const v = Math.max(0, Math.trunc(Number(e.target.value) || 0))
+                      setBrandRows(brandList.map((x, j) => (j === i ? { ...x, garansiBulan: v } : x)))
+                    }}
+                    className="h-7 w-20 text-xs"
+                    aria-label={`Masa garansi ${b.nama} (bulan)`}
+                  />
+                  <span className="text-[10px] text-slate-500">bln</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-slate-400 hover:text-rose-600"
+                    aria-label={`Hapus merk ${b.nama}`}
+                    onClick={() => setBrandRows(brandList.filter((_, j) => j !== i))}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+              {brandList.length === 0 && (
+                <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">Belum ada merk — tambahkan di bawah.</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={brandBaru.nama}
+                onChange={(e) => setBrandBaru({ ...brandBaru, nama: e.target.value })}
+                placeholder="Nama merk baru…"
+                className="h-8 flex-1 text-xs"
+                aria-label="Nama merk baru"
+              />
+              <Input
+                type="number"
+                min={0}
+                value={brandBaru.garansiBulan}
+                onChange={(e) => setBrandBaru({ ...brandBaru, garansiBulan: e.target.value })}
+                className="h-8 w-20 text-xs"
+                aria-label="Masa garansi merk baru (bulan)"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 shrink-0"
+                disabled={!brandBaru.nama.trim()}
+                onClick={() => {
+                  const nama = brandBaru.nama.trim()
+                  if (brandList.some((x) => x.nama.toLowerCase() === nama.toLowerCase())) {
+                    toast({ title: 'Merk sudah ada', description: `"${nama}" sudah terdaftar.`, variant: 'destructive' })
+                    return
+                  }
+                  setBrandRows([...brandList, { nama, garansiBulan: Math.max(0, Math.trunc(Number(brandBaru.garansiBulan) || 0)) }])
+                  setBrandBaru({ nama: '', garansiBulan: '12' })
+                }}
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" /> Tambah
+              </Button>
+            </div>
+            <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveBrand.isPending} onClick={() => saveBrand.mutate(brandList)}>
+              <Save className="mr-1.5 h-4 w-4" /> Simpan Merk &amp; Garansi
             </Button>
         </SettingSection>
 

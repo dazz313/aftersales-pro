@@ -7,15 +7,15 @@ import type { Toko, Pengguna } from '@/lib/types'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import { Inbox, MapPin, Wrench, Archive, XCircle, ArrowRightLeft, Barcode, ScanText, User } from 'lucide-react'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import SearchSelect from '@/components/search-select'
+import HistoryInput from '@/components/history-input'
 import { cn } from '@/lib/utils'
 
 type Folder = 'KUNJUNGAN' | 'SERVICE'
@@ -174,17 +174,23 @@ export default function InboxView() {
                             <div className="grid gap-2 sm:grid-cols-2">
                               <div className="space-y-1.5">
                                 <Label className="text-xs">Toko</Label>
-                                <Select value={tokoId[it.id] ?? String(tokoOtomatis(it) ?? '')} onValueChange={(v) => setTokoId({ ...tokoId, [it.id]: v })}>
-                                  <SelectTrigger><SelectValue placeholder="— Pilih toko —" /></SelectTrigger>
-                                  <SelectContent>{(tokoList ?? []).map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.namaToko} ({t.kodeToko})</SelectItem>)}</SelectContent>
-                                </Select>
+                                <SearchSelect
+                                  value={tokoId[it.id] ?? String(tokoOtomatis(it) ?? '')}
+                                  onChange={(v) => setTokoId({ ...tokoId, [it.id]: v })}
+                                  options={(tokoList ?? []).map((t) => ({ value: String(t.id), label: `${t.namaToko} (${t.kodeToko})` }))}
+                                  placeholder="— Ketik nama/kode toko —"
+                                  ariaLabel="Pilih toko"
+                                />
                               </div>
                               <div className="space-y-1.5">
                                 <Label className="text-xs">Teknisi</Label>
-                                <Select value={teknisiId[it.id] ?? ''} onValueChange={(v) => setTeknisiId({ ...teknisiId, [it.id]: v })}>
-                                  <SelectTrigger><SelectValue placeholder="— Pilih —" /></SelectTrigger>
-                                  <SelectContent>{teknisiOnly.map((t) => <SelectItem key={t.id} value={String(t.id)}>{t.nama}</SelectItem>)}</SelectContent>
-                                </Select>
+                                <SearchSelect
+                                  value={teknisiId[it.id] ?? ''}
+                                  onChange={(v) => setTeknisiId({ ...teknisiId, [it.id]: v })}
+                                  options={teknisiOnly.map((t) => ({ value: String(t.id), label: t.nama, sub: t.wilayahKerja ?? undefined }))}
+                                  placeholder="— Ketik nama teknisi —"
+                                  ariaLabel="Pilih teknisi"
+                                />
                               </div>
                               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 sm:col-span-2" disabled={mut.isPending}
                                 onClick={() => mut.mutate({ aksi: 'APPROVE_KUNJUNGAN', id: it.id, tokoId: Number(tokoId[it.id] ?? tokoOtomatis(it)), teknisiId: Number(teknisiId[it.id]), catatan: it.caption })}>
@@ -205,7 +211,7 @@ export default function InboxView() {
                             )}
                           </div>
                           <div className="flex gap-2">
-                            <Input value={alasan[it.id] ?? ''} onChange={(e) => setAlasan({ ...alasan, [it.id]: e.target.value })} placeholder="Alasan penolakan…" className="text-xs" />
+                            <HistoryInput historyKey="inbox-alasan" value={alasan[it.id] ?? ''} onChange={(e) => setAlasan({ ...alasan, [it.id]: e.target.value })} placeholder="Alasan penolakan…" className="text-xs" />
                             <Button size="sm" variant="outline" className="shrink-0 border-rose-300 text-rose-600 hover:bg-rose-50" disabled={mut.isPending}
                               onClick={() => mut.mutate({ aksi: 'TOLAK', id: it.id, alasan: alasan[it.id] || 'Ditolak admin' })}>
                               <XCircle className="mr-1 h-3.5 w-3.5" /> Tolak
