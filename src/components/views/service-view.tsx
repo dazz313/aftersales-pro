@@ -401,7 +401,8 @@ export default function ServiceView() {
                     <TableHead>Unit (Serial · Model)</TableHead>
                     <TableHead className="hidden md:table-cell">Toko</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="hidden lg:table-cell">Part</TableHead>
+                    <TableHead>Kode Sparepart</TableHead>
+                    <TableHead>Nama Sparepart</TableHead>
                     <TableHead className="hidden sm:table-cell">Umur</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
@@ -442,15 +443,43 @@ export default function ServiceView() {
                             {t.status === 'FINISH' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
                           </div>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
+                        <TableCell>
                           {t.parts.length === 0 ? (
                             <span className="text-xs text-slate-400">—</span>
                           ) : (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-col gap-1">
                               {t.parts.map((p) => (
-                                <Badge key={p.id} variant="outline" className={cn('text-[9px]', p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700')} title={`${p.sparepart?.namaPart ?? ''}${p.sparepart?.brandKompatibel ? ` · ${p.sparepart.brandKompatibel}` : ''}${p.sparepart?.supplier ? ` · ${p.sparepart.supplier}` : ''} · qty ${p.qty}`}>
-                                  {p.sparepart?.kodePart} · {p.statusPart === 'READY' ? 'READY' : 'ORDER'}
-                                </Badge>
+                                <span
+                                  key={p.id}
+                                  title={`${p.sparepart?.namaPart ?? ''} · qty ${p.qty} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`}
+                                  className={cn(
+                                    'whitespace-nowrap font-mono text-[10px] font-semibold',
+                                    p.statusPart === 'READY' ? 'text-emerald-700' : 'text-rose-600'
+                                  )}
+                                >
+                                  {p.sparepart?.kodePart ?? '?'} <span className="font-normal text-slate-400">×{p.qty}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="max-w-44">
+                          {t.parts.length === 0 ? (
+                            <span className="text-xs text-slate-400">—</span>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              {t.parts.map((p) => (
+                                <span
+                                  key={p.id}
+                                  title={`${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`}
+                                  className={cn(
+                                    'truncate text-[11px]',
+                                    p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
+                                  )}
+                                >
+                                  {p.sparepart?.namaPart ?? '?'}
+                                  {p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
+                                </span>
                               ))}
                             </div>
                           )}

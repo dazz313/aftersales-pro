@@ -46,12 +46,12 @@ import {
 
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
+  { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
   { key: 'inbox', label: 'Inbox', icon: Inbox, desc: 'Penampungan data Telegram' },
   { key: 'gateway', label: 'Gateway', icon: Radio, desc: 'Bot WhatsApp & Telegram' },
   { key: 'service', label: 'Service Tiket', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
   { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
   { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
-  { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
   { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, Backup & audit log' },
 ]
