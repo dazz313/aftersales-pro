@@ -14,6 +14,17 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
+// Backup DB SEBELUM build — melindungi data produksi saat upgrade/penambahan
+// fitur. Build DIBATALKAN bila backup gagal (set BACKUP_SKIP=1 untuk paksa).
+if (process.env.BACKUP_SKIP !== '1') {
+  console.log('→ Backup database sebelum build...')
+  const b = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'backup-db.mjs')], { cwd: ROOT, stdio: 'inherit' })
+  if (b.status !== 0) {
+    console.error('✗ Backup database GAGAL — build dihentikan agar data tidak hilang. Perbaiki dulu, atau BACKUP_SKIP=1 bila yakin.')
+    process.exit(1)
+  }
+}
+
 function cp(src, dest) {
   if (!fs.existsSync(src)) {
     console.warn(`! Lewati (tidak ada): ${src}`)

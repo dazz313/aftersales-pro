@@ -655,7 +655,9 @@ export default function InventoryView() {
             <CardTitle className="flex items-center gap-2 text-base">
               <Truck className="h-4 w-4 text-rose-600" /> Order Part per Unit (ORDER_PRODUSEN)
               {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length > 0 && (
-                <Badge variant="destructive" className="text-[10px]">{(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length} part</Badge>
+                <Badge variant="destructive" className="text-[10px]">
+                  {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length} part · {(parts ?? []).reduce((a, p) => a + (p.dipesanPerUnit ?? 0), 0)} pcs
+                </Badge>
               )}
             </CardTitle>
             <CardDescription>Part yang dipesan khusus dari tiket service — menambah stok brand saat “Terima Part Produsen”, bukan bagian order customer</CardDescription>
@@ -665,25 +667,20 @@ export default function InventoryView() {
           {(() => {
             const perUnit = (parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0)
             if (perUnit.length === 0) {
-              return <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Tidak ada part per unit yang sedang dipesan. Semua part di tiket ready dari stok.</p>
+              return <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">Tidak ada part per unit yang sedang dipesan — semua part di tiket ready dari stok.</p>
             }
             return (
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-1.5 sm:grid-cols-2">
                 {perUnit.map((p) => (
-                  <div key={p.id} className="rounded-lg border border-rose-200 bg-rose-50/60 p-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-semibold text-slate-800">{p.namaPart}</p>
-                        <p className="font-mono text-[10px] text-slate-500">{p.kodePart}</p>
-                      </div>
-                      <Badge className="shrink-0 bg-rose-600 text-[10px] text-white hover:bg-rose-600">×{p.dipesanPerUnit ?? 0}</Badge>
-                    </div>
-                    {p.menungguDi && p.menungguDi.length > 0 && (
-                      <p className="mt-1 truncate text-[10px] text-slate-600" title={p.menungguDi.join(', ')}>
-                        Tiket: {p.menungguDi.join(', ')}
+                  <div key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50/60 px-2.5 py-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-slate-800" title={p.namaPart}>{p.namaPart}</p>
+                      <p className="truncate font-mono text-[10px] text-slate-500" title={`${p.kodePart} · Terpakai ${p.totalTerpakai ?? 0} · Stok brand ${p.stokInventory}${p.menungguDi?.length ? ` · Tiket: ${p.menungguDi.join(', ')}` : ''}`}>
+                        {p.kodePart} · Terpakai {p.totalTerpakai ?? 0} · Stok {p.stokInventory}
+                        {p.menungguDi?.length ? ` · ${p.menungguDi.join(', ')}` : ''}
                       </p>
-                    )}
-                    <p className="mt-1 text-[10px] text-slate-500">Terpakai total: <span className="font-semibold text-slate-700">{p.totalTerpakai ?? 0}</span> · Stok brand: <span className="font-semibold text-slate-700">{p.stokInventory}</span></p>
+                    </div>
+                    <Badge className="shrink-0 bg-rose-600 text-[10px] text-white hover:bg-rose-600">×{p.dipesanPerUnit ?? 0}</Badge>
                   </div>
                 ))}
               </div>
