@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:10:09.422Z",
+  "generatedAt": "2026-10-13T22:10:31.094Z",
   "masterToko": [
     {
       "id": 123,
@@ -1547,18 +1547,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 27,
-      "serialNumber": "02070304887",
-      "modelUnit": "HM-620",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 127,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 28,
       "serialNumber": "02100010647",
       "modelUnit": "MCM-606-A",
@@ -1574,18 +1562,6 @@
       "id": 55,
       "serialNumber": "03010006502",
       "modelUnit": "MCM-507",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 126,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 21,
-      "serialNumber": "03010012479",
-      "modelUnit": "MCM-528",
       "merk": "Miyako",
       "nama": "",
       "tokoId": 126,
@@ -1643,18 +1619,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 25,
-      "serialNumber": "03050030726",
-      "modelUnit": "KAS-1607 GB",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 127,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 30,
       "serialNumber": "03050071936",
       "modelUnit": "KAS-1607 PL",
@@ -1697,18 +1661,6 @@
       "merk": "Rinnai",
       "nama": "",
       "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 24,
-      "serialNumber": "2511700906",
-      "modelUnit": "RI-522 A",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 127,
       "customerId": null,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
@@ -1775,18 +1727,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 23,
-      "serialNumber": "2602651578",
-      "modelUnit": "RI-522 E",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 127,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 56,
       "serialNumber": "40090574358",
       "modelUnit": "MCM-508 SBC DG",
@@ -1826,18 +1766,6 @@
       "id": 33,
       "serialNumber": "43050018006",
       "modelUnit": "WDP-300",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 126,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 22,
-      "serialNumber": "43050349398",
-      "modelUnit": "MCM-528",
       "merk": "Miyako",
       "nama": "",
       "tokoId": 126,
@@ -1901,18 +1829,6 @@
       "merk": "Miyako",
       "nama": "",
       "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
-      "id": 26,
-      "serialNumber": "44030035188",
-      "modelUnit": "MCM-559 SBC",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": 127,
       "customerId": null,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
@@ -2107,6 +2023,69 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 233,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "02070304887",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 02070304887 — HM-620",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:31.078Z"
+    },
+    {
+      "id": 232,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44030035188",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44030035188 — MCM-559 SBC",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:29.137Z"
+    },
+    {
+      "id": 231,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03050030726",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03050030726 — KAS-1607 GB",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:27.324Z"
+    },
+    {
+      "id": 230,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2511700906",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2511700906 — RI-522 A",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:24.759Z"
+    },
+    {
+      "id": 229,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2602651578",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602651578 — RI-522 E",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:22.806Z"
+    },
+    {
+      "id": 228,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "43050349398",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43050349398 — MCM-528",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:21.054Z"
+    },
+    {
+      "id": 227,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03010012479",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03010012479 — MCM-528",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:10:18.659Z"
+    },
     {
       "id": 226,
       "aksi": "DELETE_UNIT_ASSET",
