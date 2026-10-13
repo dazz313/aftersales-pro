@@ -11,6 +11,7 @@ import {
   Radio,
   MapPin,
   Package,
+  SearchCheck,
   Database,
   FileSpreadsheet,
   Settings2,
@@ -29,6 +30,7 @@ import ServiceView from '@/components/views/service-view'
 import GatewayView from '@/components/views/gateway-view'
 import FieldOpsView from '@/components/views/field-ops-view'
 import InventoryView from '@/components/views/inventory-view'
+import SparepartFinderView from '@/components/views/sparepart-finder-view'
 import MasterDataView from '@/components/views/master-data-view'
 import ClaimView from '@/components/views/claim-view'
 import SettingsView from '@/components/views/settings-view'
@@ -52,6 +54,7 @@ const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ clas
   { key: 'service', label: 'Service Tiket', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
   { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
   { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
+  { key: 'lacak', label: 'Lacak Sparepart', icon: SearchCheck, desc: 'Cari part dari riwayat kerusakan' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
   { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, Backup & audit log' },
 ]
@@ -292,6 +295,7 @@ export default function Home() {
           {view === 'gateway' && <GatewayView />}
           {view === 'field-ops' && <FieldOpsView />}
           {view === 'inventory' && <InventoryView />}
+          {view === 'lacak' && <SparepartFinderView />}
           {view === 'master' && <MasterDataView />}
           {view === 'claim' && <ClaimView />}
           {view === 'settings' && <SettingsView />}

@@ -9,6 +9,7 @@ export type ViewKey =
   | 'gateway'
   | 'field-ops'
   | 'inventory'
+  | 'lacak'
   | 'master'
   | 'claim'
   | 'settings'
