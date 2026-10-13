@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:04:24.802Z",
+  "generatedAt": "2026-10-13T22:09:48.217Z",
   "masterToko": [
     {
       "id": 123,
@@ -1775,18 +1775,6 @@
       "createdAt": "2026-10-13T22:04:24.761Z"
     },
     {
-      "id": 14,
-      "serialNumber": "2602316915",
-      "modelUnit": "RI-602 E (W)",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 123,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:04:24.761Z"
-    },
-    {
       "id": 54,
       "serialNumber": "2602344144",
       "modelUnit": "RI-522C",
@@ -2191,6 +2179,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 220,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2602316915",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602316915 — RI-602 E (W)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:09:48.201Z"
+    },
     {
       "id": 219,
       "aksi": "IMPORT_UNIT_ASSET",
