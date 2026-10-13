@@ -456,6 +456,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             stokJual: { decrement: ambilJual },
             stokGaransi: { decrement: qty - ambilJual },
             stokInventory: { decrement: qty },
+            totalTerpakai: { increment: qty },
           },
         })
         statusPart = 'READY'
@@ -540,6 +541,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             stokJual: { decrement: ambilJual },
             stokGaransi: { decrement: qty - ambilJual },
             stokInventory: { decrement: qty },
+            totalTerpakai: { increment: qty },
           },
         })
         statusPart = 'READY'
@@ -600,17 +602,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
       for (const p of parts) {
         await db.serviceRequestPart.update({ where: { id: p.id }, data: { statusPart: 'READY' } })
-        // Part datang dari produsen → masuk stok GARANSI lalu langsung terpakai tiket ini
+        // Part dipesan KHUSUS untuk unit ini → TIDAK menyentuh stok brand
+        // (stokJual/stokGaransi/stokInventory), hanya dicatat sebagai terpakai
+        // agar jumlah pemakaian part tetap terlihat di inventory.
         await db.masterSparepart.update({
           where: { id: p.sparepartId },
-          data: { stokGaransi: { increment: p.qty }, stokInventory: { increment: p.qty } },
+          data: { totalTerpakai: { increment: p.qty } },
         })
       }
       await logAudit({
         aksi: 'TERIMA_PART_PRODUSEN',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `${parts.length} part diterima dari produsen dan dialokasikan ke tiket`,
+        deskripsi: `${parts.length} part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +${parts.reduce((n, p) => n + p.qty, 0)})`,
         aktor,
       })
       await backupSparepartToGit('TERIMA_PART', existing.noTiket, aktor)

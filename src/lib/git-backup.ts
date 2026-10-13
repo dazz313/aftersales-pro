@@ -22,6 +22,7 @@ export interface SparepartSnapshotRow {
   stokJual: number
   stokGaransi: number
   stokInventory: number
+  totalTerpakai: number
   reorderLimit: number
   hargaKlaim: number
   updatedAt: string
@@ -139,6 +140,7 @@ export async function backupSparepartToGit(aksi: string, kodePart: string, aktor
       stokJual: s.stokJual ?? 0,
       stokGaransi: s.stokGaransi ?? 0,
       stokInventory: s.stokInventory ?? 0,
+      totalTerpakai: s.totalTerpakai ?? 0,
       reorderLimit: s.reorderLimit ?? 5,
       hargaKlaim: s.hargaKlaim ?? 0,
       updatedAt: new Date().toISOString(),

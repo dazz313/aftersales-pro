@@ -70,9 +70,13 @@ model MasterSparepart {
   // 5. supplier (nama supplier)
   brandKompatibel String              @default("")
   supplier        String              @default("")
+  // Stok BRAND (fisik di gudang) — hanya bergerak saat stok masuk/keluar gudang.
   stokJual       Int                  @default(0)
   stokGaransi    Int                  @default(0)
   stokInventory Int                  @default(0)
+  // Pemakaian per unit — part ORDER khusus unit TIDAK menyentuh stok brand,
+  // hanya dicatat di sini agar "banyaknya part terpakai" tetap terlihat.
+  totalTerpakai  Int                  @default(0)
   reorderLimit   Int                  @default(5)
   hargaKlaim     Float                @default(0) // nilai klaim per unit ke produsen
   createdAt      DateTime             @default(now())

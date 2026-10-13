@@ -110,6 +110,7 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
         stokJual: { decrement: ambilJual },
         stokGaransi: { decrement: ambilGaransi },
         stokInventory: { decrement: 1 },
+        totalTerpakai: { increment: 1 },
       },
     })
     const noSttb = generateNoSttb(noTiket)

@@ -94,6 +94,7 @@ export async function POST(request: Request) {
             stokJual: { decrement: ambilJual },
             stokGaransi: { decrement: qty - ambilJual },
             stokInventory: { decrement: qty },
+            totalTerpakai: { increment: qty },
           },
         })
         partResults.push({ part: sp.namaPart, status: 'READY' })
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
             stokJual: { decrement: ambilJual },
             stokGaransi: { decrement: qty - ambilJual },
             stokInventory: { decrement: qty },
+            totalTerpakai: { increment: qty },
           },
         })
         produsenStatus = 'READY'

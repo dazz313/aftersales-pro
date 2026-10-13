@@ -33,6 +33,8 @@ export interface Sparepart {
   stokJual: number
   stokGaransi: number
   stokInventory: number
+  /** Kumulatif part terpakai di tiket — tidak memengaruhi stok brand. */
+  totalTerpakai?: number
   reorderLimit: number
   hargaKlaim: number
   createdAt: string

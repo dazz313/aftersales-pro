@@ -402,6 +402,9 @@ export default function InventoryView() {
                               <span className="text-[10px] text-slate-400">({p.stokInventory} total / ROP {p.reorderLimit})</span>
                             </div>
                             <Progress value={pct} className="mt-1 h-1.5" aria-label={`Stok ${p.stokInventory} dari limit ${p.reorderLimit}`} />
+                            <p className="mt-0.5 text-[10px] text-slate-500" title="Kumulatif part terpakai di tiket service — tidak mengurangi stok brand">
+                              Terpakai <span className="font-semibold text-slate-700">{p.totalTerpakai ?? 0}</span>
+                            </p>
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatRupiah(p.hargaKlaim)}</TableCell>
                           <TableCell>
@@ -845,6 +848,10 @@ export default function InventoryView() {
           </div>
           <p className="text-[11px] text-slate-500">
             Total stok menjadi {(Number(editForm.stokJual) || 0) + (Number(editForm.stokGaransi) || 0)} unit.
+          </p>
+          <p className="rounded-md bg-slate-50 p-2 text-[11px] text-slate-600">
+            Total terpakai di tiket: <span className="font-semibold text-slate-800">{editTarget?.totalTerpakai ?? 0}</span> —
+            tercatat otomatis, tidak memengaruhi stok brand & tidak bisa diedit manual.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditTarget(null)}>Batal</Button>
