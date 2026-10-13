@@ -22,6 +22,8 @@ import HistoryInput from '@/components/history-input'
 import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
+import UnitBarcodeSticker from '@/components/unit-barcode-sticker'
+import { GARANSI_LABEL } from '@/lib/types'
 import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -231,8 +233,6 @@ export default function MasterDataView() {
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
 
-  const barcodeData = (u: UnitAsset) => `SN:${u.serialNumber}|MOD:${u.modelUnit}|TOK:${u.toko?.kodeToko ?? '-'}`
-
   const tokoTampil = useMemo(
     () => (tokoList ?? []).filter((t) => matchQuery([t.kodeToko, t.namaToko, t.alamat, t.kontak, t.barcodeToko], cariToko)),
     [tokoList, cariToko]
@@ -383,7 +383,7 @@ export default function MasterDataView() {
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <div>
               <CardTitle className="text-base">Master Barcode / Unit Asset</CardTitle>
-              <CardDescription>Format barcode: SN:[serial]|MOD:[model]|TOK:[kode_toko] — cetak stiker &amp; scan dengan kamera HP</CardDescription>
+              <CardDescription>Tanggal · Nama toko · Merk · Model/Tipe · Nomor seri · Status (stok toko, garansi, non-garansi) — cetak stiker &amp; scan dengan kamera HP</CardDescription>
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-2">
               <Button size="sm" variant="outline" onClick={() => setImportUnitOpen(true)}>
@@ -394,7 +394,7 @@ export default function MasterDataView() {
           </CardHeader>
           <CardContent>
             <div className="mb-3">
-              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari serial / model / toko / pemilik…" className="max-w-xs" resultCount={unitTampil.length} />
+              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari tanggal / toko / merk / model / seri / status…" className="max-w-xs" resultCount={unitTampil.length} />
             </div>
             {unitLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
@@ -403,32 +403,40 @@ export default function MasterDataView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Serial · Model</TableHead>
-                      <TableHead className="hidden md:table-cell">Toko</TableHead>
-                      <TableHead className="hidden lg:table-cell">Pemilik</TableHead>
-                      <TableHead>Garansi</TableHead>
-                      <TableHead className="hidden sm:table-cell">Belinya</TableHead>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Nama Toko</TableHead>
+                      <TableHead>Merk</TableHead>
+                      <TableHead>Model / Tipe</TableHead>
+                      <TableHead>Nomor Seri</TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead className="text-right">Barcode</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {unitTampil.map((u) => (
                       <TableRow key={u.id}>
-                        <TableCell>
-                          <p className="text-xs font-semibold text-slate-800">{u.modelUnit}</p>
-                          <p className="font-mono text-[10px] text-slate-400">{u.serialNumber}</p>
-                          {(u.merk?.trim() || u.nama?.trim()) && (
-                            <p className="text-[10px] text-slate-500">{[u.merk?.trim(), u.nama?.trim()].filter(Boolean).join(' · ')}</p>
+                        <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatTanggal(u.tglPembelian ?? u.createdAt)}</TableCell>
+                        <TableCell className="text-xs text-slate-700">
+                          {u.toko ? (
+                            <>
+                              <p className="font-medium text-slate-800">{u.toko.namaToko}</p>
+                              <p className="font-mono text-[10px] text-slate-400">{u.toko.kodeToko}</p>
+                            </>
+                          ) : (
+                            <span className="text-slate-400">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="hidden text-xs text-slate-600 md:table-cell">{u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '-'}</TableCell>
-                        <TableCell className="hidden text-xs text-slate-600 lg:table-cell">{u.customer?.nama ?? '-'}</TableCell>
+                        <TableCell className="text-xs text-slate-700">{u.merk?.trim() || <span className="text-slate-400">-</span>}</TableCell>
+                        <TableCell className="text-xs font-medium text-slate-800">
+                          {u.modelUnit}
+                          {u.nama?.trim() && <p className="text-[10px] font-normal text-slate-500">{u.nama.trim()}</p>}
+                        </TableCell>
+                        <TableCell className="font-mono text-[11px] font-semibold text-slate-900">{u.serialNumber}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
-                            {u.statusGaransi.replace('_', '-')}
+                            {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{formatTanggal(u.tglPembelian)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             {(() => {
@@ -960,36 +968,8 @@ export default function MasterDataView() {
       {/* Dialog stiker barcode toko (Code-128 asli — dipindai saat kunjungan) */}
       <TokoBarcodeSticker toko={stickerToko} onOpenChange={(o) => !o && setStickerToko(null)} />
 
-      {/* Dialog stiker barcode unit */}
-      <Dialog open={!!qrUnit} onOpenChange={(o) => !o && setQrUnit(null)}>
-        <DialogContent className="sm:max-w-sm">
-          {qrUnit && (
-            <>
-              <DialogHeader><DialogTitle>Stiker Barcode Unit</DialogTitle><DialogDescription>Format sesuai PRD Modul 1.2 — tempel di unit untuk dipindai teknisi onsite.</DialogDescription></DialogHeader>
-              <div className="mx-auto w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white p-4 text-center shadow-sm">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unit Asset Sticker</p>
-                <p className="mt-1 font-mono text-sm font-bold text-slate-900">{qrUnit.serialNumber}</p>
-                <p className="text-xs text-slate-600">{qrUnit.modelUnit}</p>
-                {/* Barcode visual (Code-128 style dekoratif) */}
-                <div className="mt-3 flex h-14 items-end justify-center gap-[2px] overflow-hidden" aria-hidden>
-                  {barcodeData(qrUnit).split('').map((ch, i) => (
-                    <div key={i} style={{ width: ((ch.charCodeAt(0) % 3) + 1), height: '100%', background: i % 2 ? '#fff' : '#1e293b' }} />
-                  ))}
-                </div>
-                <p className="mt-1 break-all font-mono text-[9px] text-slate-500">{barcodeData(qrUnit)}</p>
-                <div className="mt-2 flex justify-center gap-1">
-                  <Badge variant="outline" className="text-[9px]">{qrUnit.statusGaransi.replace('_', '-')}</Badge>
-                  <Badge variant="outline" className="text-[9px]">{qrUnit.toko?.kodeToko}</Badge>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setQrUnit(null)}>Tutup</Button>
-                <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => { window.print() }}><Barcode className="mr-1 h-4 w-4" /> Cetak Stiker</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Dialog stiker barcode unit — layout: tanggal, nama toko, merk, model/tipe, nomor seri, status */}
+      <UnitBarcodeSticker unit={qrUnit} onOpenChange={(o) => !o && setQrUnit(null)} />
     </Tabs>
   )
 }
