@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T23:51:47.499Z",
+  "generatedAt": "2026-10-13T23:52:08.309Z",
   "masterToko": [
     {
       "id": 169,
@@ -531,6 +531,13 @@
     }
   ],
   "masterCustomer": [
+    {
+      "id": 28,
+      "nama": "SUSILO",
+      "noWa": null,
+      "alamat": null,
+      "createdAt": "2026-10-13T23:52:08.261Z"
+    },
     {
       "id": 27,
       "nama": "SUSILO ",
@@ -1565,6 +1572,18 @@
   ],
   "unitAsset": [
     {
+      "id": 108,
+      "serialNumber": "02060012333",
+      "modelUnit": "KAS-1607 PL",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 78,
       "serialNumber": "02070304887",
       "modelUnit": "HM-620",
@@ -1613,6 +1632,18 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 121,
+      "serialNumber": "03010039792",
+      "modelUnit": "MCM-508 SBC",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 85,
       "serialNumber": "03020073129",
       "modelUnit": "MCM-509",
@@ -1637,6 +1668,18 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 120,
+      "serialNumber": "03040129852",
+      "modelUnit": "MCM-512C SBC",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": null,
+      "customerId": 28,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 76,
       "serialNumber": "03050030726",
       "modelUnit": "KAS-1607 GB",
@@ -1647,6 +1690,66 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T23:49:37.530Z"
+    },
+    {
+      "id": 106,
+      "serialNumber": "03050071936",
+      "modelUnit": "KAS-1607 PL",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 176,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 103,
+      "serialNumber": "03050072922",
+      "modelUnit": "KAS-1607",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 176,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 118,
+      "serialNumber": "2505248042",
+      "modelUnit": "RI-522 CE",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 117,
+      "serialNumber": "2505637174",
+      "modelUnit": "RI-522 A",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 115,
+      "serialNumber": "2511015067",
+      "modelUnit": "RI-712 GA",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
     },
     {
       "id": 75,
@@ -1661,6 +1764,18 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 112,
+      "serialNumber": "2601008866",
+      "modelUnit": "RH-127 SS",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 88,
       "serialNumber": "2601271041",
       "modelUnit": "RI-202 S",
@@ -1673,6 +1788,18 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 116,
+      "serialNumber": "2601373365",
+      "modelUnit": "RI-602 AG",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 81,
       "serialNumber": "2601407532",
       "modelUnit": "RI-602-BGX",
@@ -1683,6 +1810,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T23:49:37.530Z"
+    },
+    {
+      "id": 102,
+      "serialNumber": "2602316915",
+      "modelUnit": "RI-602 E (W)",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
     },
     {
       "id": 92,
@@ -1709,6 +1848,30 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 105,
+      "serialNumber": "2605388515",
+      "modelUnit": "RI-712 T",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 119,
+      "serialNumber": "40090574358",
+      "modelUnit": "MCM-508 SBC DG",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": null,
+      "customerId": 28,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 89,
       "serialNumber": "42090016750",
       "modelUnit": "MJ-709EP",
@@ -1719,6 +1882,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T23:49:37.530Z"
+    },
+    {
+      "id": 114,
+      "serialNumber": "42110363216",
+      "modelUnit": "MCM-528",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
     },
     {
       "id": 83,
@@ -1757,6 +1932,30 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 104,
+      "serialNumber": "43100173715",
+      "modelUnit": "MCM-609",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 110,
+      "serialNumber": "43110031525",
+      "modelUnit": "KAW-1689",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 183,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 94,
       "serialNumber": "44010001050",
       "modelUnit": "MCG-171",
@@ -1779,6 +1978,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T23:49:37.530Z"
+    },
+    {
+      "id": 107,
+      "serialNumber": "44020001427",
+      "modelUnit": "KAS-1697 DRW",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
     },
     {
       "id": 77,
@@ -1805,6 +2016,30 @@
       "createdAt": "2026-10-13T23:49:37.530Z"
     },
     {
+      "id": 109,
+      "serialNumber": "44050061941",
+      "modelUnit": "KG-502 C",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
+      "id": 113,
+      "serialNumber": "44070013614",
+      "modelUnit": "KG-202 CE",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 164,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
+    },
+    {
       "id": 82,
       "serialNumber": "908029173",
       "modelUnit": "SM-625",
@@ -1815,6 +2050,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T23:49:37.530Z"
+    },
+    {
+      "id": 111,
+      "serialNumber": "AH336947",
+      "modelUnit": "KG-302 C",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 183,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-13T23:52:08.275Z"
     },
     {
       "id": 101,
@@ -1981,6 +2228,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 283,
+      "aksi": "IMPORT_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": null,
+      "deskripsi": "Import CSV massal unit: 20 ditambahkan, 0 diperbarui, 33 dilewati, 0 gagal (mode: lewati)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T23:52:08.287Z"
+    },
     {
       "id": 282,
       "aksi": "UPDATE_MASTER_TOKO",
