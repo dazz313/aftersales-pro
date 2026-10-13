@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:21:46.249Z",
+  "generatedAt": "2026-10-13T22:43:52.598Z",
   "masterToko": [
     {
       "id": 123,
@@ -508,7 +508,15 @@
       "createdAt": "2026-10-13T21:54:08.268Z"
     }
   ],
-  "masterCustomer": [],
+  "masterCustomer": [
+    {
+      "id": 27,
+      "nama": "SUSILO ",
+      "noWa": "0853234234",
+      "alamat": "WATAMPONE",
+      "createdAt": "2026-10-13T22:43:52.572Z"
+    }
+  ],
   "masterSparepart": [
     {
       "id": 256,
@@ -1567,6 +1575,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 274,
+      "aksi": "CREATE_MASTER_CUSTOMER",
+      "entitas": "master_customer",
+      "entitasId": "27",
+      "deskripsi": "Customer baru: SUSILO ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T22:43:52.583Z"
+    },
     {
       "id": 273,
       "aksi": "CREATE_UNIT_ASSET",
