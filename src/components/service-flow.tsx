@@ -15,8 +15,10 @@ import {
   ClipboardList,
   Stethoscope,
   MessagesSquare,
+  MessageCircle,
   Wrench,
   PackageX,
+  PackagePlus,
   Truck,
   PackageCheck,
   Store,
@@ -166,18 +168,30 @@ export function ServiceFlowStepper({ ticket }: { ticket: ServiceTicket }) {
   )
 }
 
+export interface SaranPart {
+  kodePart: string
+  namaPart: string
+  count: number
+}
+
 interface ActionsProps {
   ticket: ServiceTicket
   pending: boolean
   onAction: (body: Record<string, unknown>) => void
   spareparts?: Sparepart[]
+  saran?: SaranPart[]
+  onKirimWa?: () => void
+  waPending?: boolean
 }
 
 /** Tombol aksi kontekstual sesuai tahap alur. */
-export function ServiceFlowActions({ ticket, pending, onAction, spareparts }: ActionsProps) {
+export function ServiceFlowActions({ ticket, pending, onAction, spareparts, saran, onKirimWa, waPending }: ActionsProps) {
   const [sj, setSj] = useState('')
   const [tambahId, setTambahId] = useState('')
   const [tambahQty, setTambahQty] = useState('1')
+  const [balasKode, setBalasKode] = useState('')
+  const [balasNama, setBalasNama] = useState('')
+  const [balasQty, setBalasQty] = useState('1')
   const butuhPart = ticket.parts.length > 0
   const menunggu = ticket.parts.filter((p) => p.statusKonfirmasi === 'MENUNGGU')
   const adaTidakReady = ticket.parts.some((p) => p.statusKonfirmasi === 'TIDAK_READY')
@@ -187,6 +201,56 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts }: Ac
   return (
     <div className="space-y-2 rounded-lg border border-dashed p-3">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Aksi Alur</p>
+
+      {/* 1-klik kirim ke produsen + input balasannya (kode + nama) */}
+      {(ticket.status === 'REQUEST' || ticket.status === 'PROSES') && (
+        <div className="space-y-1.5 rounded-md border border-emerald-300 bg-emerald-50/60 p-2">
+          <Label className="text-xs">Produsen — kirim &amp; catat balasan (cukup kode + nama)</Label>
+          <Button
+            size="sm"
+            className="h-7 w-full bg-[#25D366] text-[11px] text-white hover:bg-[#1fb857]"
+            disabled={pending || waPending || !onKirimWa}
+            onClick={() => onKirimWa?.()}
+          >
+            <MessageCircle className="mr-1 h-3 w-3" /> {waPending ? 'Menyiapkan…' : 'Kirim ke Produsen via WA'}
+          </Button>
+          {(saran ?? []).length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="text-[10px] text-slate-500">Sering dipakai {ticket.unitAsset.modelUnit}:</span>
+              {(saran ?? []).map((s) => (
+                <button
+                  key={s.kodePart}
+                  type="button"
+                  className="rounded-full border border-teal-300 bg-white px-2 py-0.5 font-mono text-[10px] text-teal-700 hover:bg-teal-50"
+                  title={`${s.namaPart} — dipakai ${s.count}× sebelumnya`}
+                  onClick={() => { setBalasKode(s.kodePart); setBalasNama(s.namaPart) }}
+                >
+                  {s.kodePart} ({s.count}×)
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-1.5">
+            <Input value={balasKode} onChange={(e) => setBalasKode(e.target.value.toUpperCase())} placeholder="Kode part" className="h-7 font-mono text-[11px]" aria-label="Kode sparepart dari produsen" />
+            <Input value={balasNama} onChange={(e) => setBalasNama(e.target.value)} placeholder="Nama part" className="h-7 text-[11px]" aria-label="Nama sparepart dari produsen" />
+            <Input type="number" min="1" value={balasQty} onChange={(e) => setBalasQty(e.target.value)} className="h-7 w-14 text-[11px]" aria-label="Jumlah" />
+            <Button
+              size="sm"
+              className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
+              disabled={pending || !balasKode.trim() || !balasNama.trim() || Number(balasQty) < 1}
+              onClick={() => {
+                onAction({ aksi: 'INPUT_PART_PRODUSEN', kodePart: balasKode.trim(), namaPart: balasNama.trim(), qty: Number(balasQty) })
+                setBalasKode('')
+                setBalasNama('')
+                setBalasQty('1')
+              }}
+            >
+              <PackagePlus className="mr-1 h-3 w-3" /> Catat
+            </Button>
+          </div>
+          <p className="text-[10px] text-slate-400">Kode baru otomatis masuk katalog &amp; muncul di surat jalan.</p>
+        </div>
+      )}
 
       {ticket.status === 'REQUEST' && menunggu.length > 0 && (
         <div className="space-y-1.5">
@@ -217,12 +281,12 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts }: Ac
         </Button>
       )}
 
-      {ticket.status === 'REQUEST' && ticket.penanganan === 'BELUM' && menunggu.length === 0 && (
+      {ticket.penanganan === 'BELUM' && menunggu.length === 0 && ticket.status !== 'FINISH' && (
         <div className="grid grid-cols-2 gap-1.5">
-          <Button size="sm" variant="outline" className="h-7 border-emerald-300 text-[11px] text-emerald-700" disabled={pending || !semuaPartReady} title={semuaPartReady ? 'Kerjakan tanpa penarikan' : 'Menunggu part READY'} onClick={() => onAction({ aksi: 'KERJAKAN_DI_TOKO' })}>
+          <Button size="sm" variant="outline" className="h-7 border-emerald-300 text-[11px] text-emerald-700" disabled={pending || !semuaPartReady} title={semuaPartReady ? 'Kerjakan tanpa penarikan' : 'Menunggu part READY — input kode+nama dulu'} onClick={() => onAction({ aksi: 'KERJAKAN_DI_TOKO' })}>
             <Wrench className="mr-1 h-3 w-3" /> Kerjakan di Toko
           </Button>
-          <Button size="sm" className="h-7 bg-violet-600 text-[11px] hover:bg-violet-700" disabled={pending || !semuaPartReady} title={semuaPartReady ? 'Tarik + terbitkan STTB' : 'Menunggu part READY'} onClick={() => onAction({ aksi: 'TARIK_WORKSHOP' })}>
+          <Button size="sm" className="h-7 bg-violet-600 text-[11px] hover:bg-violet-700" disabled={pending || !semuaPartReady} title={semuaPartReady ? 'Tarik + terbitkan STTB' : 'Menunggu part READY — input kode+nama dulu'} onClick={() => onAction({ aksi: 'TARIK_WORKSHOP' })}>
             <Truck className="mr-1 h-3 w-3" /> Tarik + STTB
           </Button>
         </div>

@@ -37,7 +37,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       data.customerId = customerId
     }
     if (body.statusGaransi !== undefined) {
-      data.statusGaransi = body.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : 'GARANSI'
+      data.statusGaransi = body.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : body.statusGaransi === 'STOK_TOKO' ? 'STOK_TOKO' : 'GARANSI'
     }
     if (body.tglPembelian !== undefined) {
       data.tglPembelian = body.tglPembelian ? new Date(body.tglPembelian) : null

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { isGaransi } from '@/lib/types'
 import { getSession } from '@/lib/auth'
 import * as XLSX from 'xlsx'
 import QRCode from 'qrcode'
@@ -101,7 +102,7 @@ export async function POST(request: Request) {
           kodePart: p.sparepart.kodePart,
           namaPart: p.sparepart.namaPart,
           qty: p.qty,
-          garansi: t.unitAsset.statusGaransi === 'GARANSI' ? 'GARANSI' : 'NON-GARANSI',
+          garansi: isGaransi(t.unitAsset.statusGaransi) ? 'GARANSI' : 'NON-GARANSI',
           kondisi: p.statusPart === 'READY' ? 'PART RUSAK / DIGANTI' : 'ORDER PRODUSEN',
           nilaiPart: (p.sparepart.hargaKlaim ?? 0) * p.qty,
         })

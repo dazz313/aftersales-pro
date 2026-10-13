@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     // Cek serial yang sudah ada di database (sekalian ambil merk/tgl untuk fallback auto)
     const serials = pendingRows.filter((a) => a.data).map((a) => a.data!.insert.serialNumber)
     const existing = serials.length
-      ? await db.unitAsset.findMany({ where: { serialNumber: { in: serials } }, select: { serialNumber: true, merk: true, tglPembelian: true } })
+      ? await db.unitAsset.findMany({ where: { serialNumber: { in: serials } }, select: { serialNumber: true, merk: true, tglPembelian: true, tokoId: true } })
       : []
     const existingMap = new Map(existing.map((e) => [e.serialNumber, e]))
     const existingSet = new Set(existing.map((e) => e.serialNumber))
@@ -140,15 +140,21 @@ export async function POST(request: Request) {
           ? undefined
           : null
       // Status: hormati kolom CSV bila diisi; bila kosong auto-deteksi dari merk+tgl pembelian
-      let statusGaransi: 'GARANSI' | 'NON_GARANSI' | undefined
+      let statusGaransi: 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI' | undefined
       if ('statusGaransi' in d && d.statusGaransi && !(d as { statusOtomatis?: boolean }).statusOtomatis) {
-        statusGaransi = d.statusGaransi as 'GARANSI' | 'NON_GARANSI'
+        statusGaransi = d.statusGaransi as 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
       } else {
+        // Kolom status kosong: stok toko (ada toko) → STOK_TOKO, else deteksi merk+tgl
         const prev = existingMap.get(a.data!.insert.serialNumber)
-        const merkEff = ('merk' in d && (d as { merk?: string }).merk) || a.data!.insert.merk || prev?.merk || ''
-        const tglRaw = ('tglPembelian' in d ? (d as { tglPembelian?: Date | null }).tglPembelian : undefined)
-        const tglEff = tglRaw !== undefined ? tglRaw : (a.data!.insert.tglPembelian ?? prev?.tglPembelian ?? null)
-        statusGaransi = detectGaransi(merkEff, tglEff, brandRules) ?? (isUpdate ? undefined : 'GARANSI')
+        const tokoEff = d.tokoKey ? resolveToko(d.tokoKey) : null
+        if (tokoEff || (!d.tokoKey && prev?.tokoId)) {
+          statusGaransi = 'STOK_TOKO'
+        } else {
+          const merkEff = ('merk' in d && (d as { merk?: string }).merk) || a.data!.insert.merk || prev?.merk || ''
+          const tglRaw = ('tglPembelian' in d ? (d as { tglPembelian?: Date | null }).tglPembelian : undefined)
+          const tglEff = tglRaw !== undefined ? tglRaw : (a.data!.insert.tglPembelian ?? prev?.tglPembelian ?? null)
+          statusGaransi = detectGaransi(merkEff, tglEff, brandRules) ?? (isUpdate ? undefined : 'GARANSI')
+        }
       }
       return {
         serialNumber: a.data!.insert.serialNumber,

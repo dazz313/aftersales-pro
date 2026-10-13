@@ -354,6 +354,7 @@ export default function SettingsView() {
     telepon_perusahaan: 'Telepon',
     email_perusahaan: 'Email',
     partner_produsen: 'Partner Produsen',
+    kontak_produsen: 'No. WA Produsen (untuk kirim permintaan part)',
     sla_jam_request: 'Batas SLA Request (jam)',
     batas_hari_klaim: 'Batas Hari Klaim (hari)',
   }

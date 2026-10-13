@@ -40,6 +40,17 @@ export interface Sparepart {
   kosong: boolean
 }
 
+export type StatusGaransi = 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
+
+/** STOK_TOKO otomatis dihitung garansi. */
+export const isGaransi = (s: string | null | undefined): boolean => s === 'GARANSI' || s === 'STOK_TOKO'
+
+export const GARANSI_LABEL: Record<string, string> = {
+  STOK_TOKO: 'STOK-TOKO',
+  GARANSI: 'GARANSI',
+  NON_GARANSI: 'NON-GARANSI',
+}
+
 export interface UnitAsset {
   id: number
   serialNumber: string
@@ -48,7 +59,7 @@ export interface UnitAsset {
   nama: string
   tokoId: number | null
   customerId: number | null
-  statusGaransi: 'GARANSI' | 'NON_GARANSI'
+  statusGaransi: StatusGaransi
   tglPembelian: string | null
   createdAt: string
   toko?: { id: number; kodeToko: string; namaToko: string } | null
@@ -78,6 +89,7 @@ export interface ServicePart {
   qty: number
   statusPart: 'READY' | 'ORDER_PRODUSEN'
   statusKonfirmasi: 'MENUNGGU' | 'READY' | 'TIDAK_READY'
+  sumberPart: 'KATALOG' | 'PRODUSEN'
   sparepart?: Sparepart & { reorderLimit?: number }
 }
 
@@ -274,6 +286,10 @@ export interface AlertsResponse {
 
 export interface DashboardData {
   tiket: { request: number; proses: number; finish: number; slaTerlambat: number; total: number }
+  belumProses: {
+    count: number
+    items: { noTiket: string; serial: string; model: string; toko: string; umurJam: number; adaPart: boolean }[]
+  }
   klaim: { pendingCount: number; pendingValue: number; submitted: number }
   stok: { totalItem: number; kritis: number; kosong: number; nilaiTotal: number }
   operasional: { totalToko: number; tokoTerlambatVisit: number; kunjungan7hari: number }

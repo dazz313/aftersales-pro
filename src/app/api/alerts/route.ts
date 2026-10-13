@@ -9,6 +9,7 @@ import { logAudit } from '@/lib/audit'
  * - ALT-02: SLA Sparepart Pending (REQUEST > 24 jam)
  * - ALT-03: Low Stock Sparepart (ROP)
  * - ALT-04: Potential Unclaimed Revenue (FINISH > 7 hari, klaim DRAFT)
+ * - ALT-05: Unit Belum Terproses (REQUEST tanpa part READY — berkala: >24 jam warning, >72 jam kritis)
  */
 export async function GET() {
   try {
@@ -115,7 +116,23 @@ export async function GET() {
       }
     })
 
-    const allAlerts = [...alerts1, ...alerts2, ...alerts3, ...alerts4]
+    // ===== ALT-05: Unit Belum Terproses (peringatan berkala agar tak dilupakan) =====
+    const alerts5 = tiketRequest
+      .filter((t) => !t.parts.some((p) => p.statusPart === 'READY'))
+      .map((t) => {
+        const jamBerlalu = Math.floor((now - new Date(t.createdAt).getTime()) / 3600000)
+        const kritis = jamBerlalu > 72
+        return {
+          kode: 'ALT-05',
+          nama: 'Unit Belum Terproses',
+          severity: kritis ? 'critical' : 'warning',
+          entitas: t.noTiket,
+          detail: `Belum ada kode + nama part yang READY selama ${jamBerlalu >= 24 ? `${Math.floor(jamBerlalu / 24)} hari` : `${jamBerlalu} jam`} — input dari Master Data (tombol Part) atau detail tiket`,
+          meta: { tiketId: t.id, noTiket: t.noTiket, jam: jamBerlalu },
+        }
+      })
+      .filter((a) => (a.meta as { jam: number }).jam > 24)
+    const allAlerts = [...alerts1, ...alerts2, ...alerts3, ...alerts4, ...alerts5]
     const critical = allAlerts.filter((a) => a.severity === 'critical').length
 
     return NextResponse.json({

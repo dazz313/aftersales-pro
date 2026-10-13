@@ -510,9 +510,14 @@ export const UNIT_REQUIRED_LABELS: Record<string, string> = {
   modelUnit: '"model/tipe"',
 }
 
-/** Status garansi fleksibel: mengandung "non"/"tidak"/"habis"/"expired" → NON_GARANSI, sisanya GARANSI. */
-export function parseStatusGaransi(v: string): 'GARANSI' | 'NON_GARANSI' {
-  return /non|tidak|habis|expired|void|rusak|mati/i.test(v.trim()) ? 'NON_GARANSI' : 'GARANSI'
+/** Status garansi 3 pilihan: mengandung "non"/"tidak"/"habis"/"expired" → NON_GARANSI;
+ *  mengandung "toko"/"titip"/"display"/"konsinyasi" → STOK_TOKO (otomatis garansi);
+ *  sisanya GARANSI. */
+export function parseStatusGaransi(v: string): 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI' {
+  const s = v.trim()
+  if (/non|tidak|habis|expired|void/i.test(s)) return 'NON_GARANSI'
+  if (/toko|titip|display|konsinyasi|pajang/i.test(s)) return 'STOK_TOKO'
+  return 'GARANSI'
 }
 
 export interface UnitInsertData {
@@ -522,7 +527,7 @@ export interface UnitInsertData {
   merk: string
   tokoKey: string // kode atau nama toko (diresolusi di API)
   customerNama: string // nama customer (dicari, bila tak ada dibuat baru)
-  statusGaransi: 'GARANSI' | 'NON_GARANSI'
+  statusGaransi: 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
   statusOtomatis: boolean // true bila kolom status kosong → API boleh auto-deteksi dari merk+tgl
   tglPembelian: Date | null
 }
@@ -533,7 +538,7 @@ export interface UnitUpdateData {
   merk?: string
   tokoKey?: string
   customerNama?: string
-  statusGaransi?: 'GARANSI' | 'NON_GARANSI'
+  statusGaransi?: 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
   statusOtomatis?: boolean
   tglPembelian?: Date | null
 }

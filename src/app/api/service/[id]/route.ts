@@ -34,7 +34,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
- *   | TAMBAH_PART
+ *   | TAMBAH_PART | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
  * → TIDAK_READY: terdaftar & simpan di toko | READY: kerjakan di toko / tarik workshop+STTB
@@ -60,6 +60,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (aksi === 'MULAI_PROSES') {
       if (existing.status !== 'REQUEST') {
         return NextResponse.json({ error: 'Hanya tiket REQUEST yang dapat diproses' }, { status: 409 })
+      }
+      // Aturan inti: tanpa kode+nama part yang READY → tidak bisa PROSES
+      if (!existing.parts.some((p) => p.statusPart === 'READY')) {
+        return NextResponse.json(
+          { error: 'Belum bisa diproses: input kode & nama sparepart dulu (tiket tercatat di panel Belum Terproses)' },
+          { status: 409 }
+        )
       }
       const noSttb = generateNoSttb(existing.noTiket)
       const updated = await db.serviceRequest.update({
@@ -134,8 +141,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // 3a) KERJAKAN_DI_TOKO — part ready: unit dikerjakan di toko (tanpa STTB)
     if (aksi === 'KERJAKAN_DI_TOKO') {
-      if (existing.status !== 'REQUEST') {
-        return NextResponse.json({ error: 'Hanya tiket REQUEST yang dapat mulai dikerjakan' }, { status: 409 })
+      if (existing.status === 'FINISH' || (existing.status === 'PROSES' && existing.penanganan !== 'BELUM')) {
+        return NextResponse.json({ error: 'Penanganan sudah ditentukan untuk tiket ini' }, { status: 409 })
+      }
+      if (existing.status !== 'REQUEST' && existing.status !== 'PROSES') {
+        return NextResponse.json({ error: 'Hanya tiket REQUEST/PROSES yang dapat mulai dikerjakan' }, { status: 409 })
       }
       const belumSiap = butuhPartSiap()
       if (belumSiap.length > 0) {
@@ -162,8 +172,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // 3b) TARIK_WORKSHOP — part ready: unit ditarik ke workshop dengan STTB
     if (aksi === 'TARIK_WORKSHOP') {
-      if (existing.status !== 'REQUEST') {
-        return NextResponse.json({ error: 'Hanya tiket REQUEST yang dapat ditarik ke workshop' }, { status: 409 })
+      if (existing.status === 'FINISH' || (existing.status === 'PROSES' && existing.penanganan !== 'BELUM')) {
+        return NextResponse.json({ error: 'Penanganan sudah ditentukan untuk tiket ini' }, { status: 409 })
+      }
+      if (existing.status !== 'REQUEST' && existing.status !== 'PROSES') {
+        return NextResponse.json({ error: 'Hanya tiket REQUEST/PROSES yang dapat ditarik ke workshop' }, { status: 409 })
       }
       const belumSiap = butuhPartSiap()
       if (belumSiap.length > 0) {
@@ -343,6 +356,128 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json(updated)
     }
 
+    // Aksi khusus: siapkan pesan WA ke produsen (1 klik → otomatis terkirim).
+    // Mengembalikan waUrl (wa.me dengan teks terisi) + mencatat pengiriman.
+    if (aksi === 'KIRIM_PRODUSEN_WA') {
+      const [cfg, produsen] = await Promise.all([
+        db.pengaturan.findUnique({ where: { kunci: 'kontak_produsen' } }),
+        db.pengguna.findFirst({ where: { role: 'PRODUSEN', aktif: true }, orderBy: { id: 'asc' } }),
+      ])
+      const noWa = (cfg?.nilai ?? '').replace(/\D/g, '') || (produsen?.noWa ?? '').replace(/\D/g, '')
+      if (!noWa) {
+        return NextResponse.json(
+          { error: 'Nomor WA produsen belum diisi (Pengaturan → Profil → No. WA Produsen)' },
+          { status: 409 }
+        )
+      }
+      const unitFull = await db.unitAsset.findUnique({
+        where: { id: existing.unitAssetId },
+        include: { toko: { select: { kodeToko: true, namaToko: true } } },
+      })
+      const teks =
+        `*PERMINTAAN PART* — ${existing.noTiket}\n` +
+        `Unit: ${unitFull?.modelUnit ?? existing.unitAsset.modelUnit}${unitFull?.merk ? ` (${unitFull.merk})` : ''}\n` +
+        `SN: ${existing.unitAsset.serialNumber}\n` +
+        `Toko: ${unitFull?.toko ? `${unitFull.toko.kodeToko} — ${unitFull.toko.namaToko}` : '-'}\n` +
+        `Kerusakan: ${existing.deskripsiKerusakan ?? '-'}\n` +
+        `Mohon info kode & nama sparepart + ketersediaan stok.`
+      await logAudit({
+        aksi: 'KIRIM_PRODUSEN_WA',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Permintaan part dikirim ke produsen via WA (${noWa})`,
+        aktor,
+      })
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json({ ...updated, waUrl: `https://wa.me/${noWa}?text=${encodeURIComponent(teks)}` })
+    }
+
+    // Aksi khusus: input balasan produsen (KODE + NAMA part).
+    // Bila kode belum ada di katalog → otomatis didaftarkan (tercollect),
+    // lalu dipasang ke tiket (reserve bila stok ada, ORDER bila kosong).
+    if (aksi === 'INPUT_PART_PRODUSEN') {
+      if (existing.status === 'FINISH') {
+        return NextResponse.json({ error: 'Tiket FINISH tidak dapat ditambah part' }, { status: 409 })
+      }
+      const kodePart = String(body.kodePart ?? '').trim().toUpperCase()
+      const namaPart = String(body.namaPart ?? '').trim()
+      const qty = Math.max(1, Math.trunc(Number(body.qty) || 1))
+      if (!kodePart || !namaPart) {
+        return NextResponse.json({ error: 'Kode dan nama sparepart dari produsen wajib diisi' }, { status: 400 })
+      }
+      let sp = await db.masterSparepart.findUnique({ where: { kodePart } })
+      if (!sp) {
+        const unitFull = await db.unitAsset.findUnique({ where: { id: existing.unitAssetId } })
+        sp = await db.masterSparepart.create({
+          data: {
+            kodePart,
+            namaPart,
+            brandKompatibel: unitFull?.merk ?? '',
+            supplier: '',
+            stokJual: 0,
+            stokGaransi: 0,
+            stokInventory: 0,
+            reorderLimit: 5,
+            hargaKlaim: 0,
+          },
+        })
+        await logAudit({
+          aksi: 'CREATE_MASTER_SPAREPART',
+          entitas: 'master_sparepart',
+          entitasId: sp.kodePart,
+          deskripsi: `Kode baru dari produsen otomatis masuk katalog: ${sp.namaPart}`,
+          aktor,
+        })
+      }
+      let statusPart = 'ORDER_PRODUSEN'
+      let statusKonfirmasi = 'MENUNGGU'
+      if (sp.stokInventory >= qty) {
+        const ambilJual = Math.min(sp.stokJual, qty)
+        await db.masterSparepart.update({
+          where: { id: sp.id },
+          data: {
+            stokJual: { decrement: ambilJual },
+            stokGaransi: { decrement: qty - ambilJual },
+            stokInventory: { decrement: qty },
+          },
+        })
+        statusPart = 'READY'
+        statusKonfirmasi = 'READY'
+        await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
+      }
+      await db.serviceRequestPart.create({
+        data: { serviceRequestId: ticketId, sparepartId: sp.id, qty, statusPart, statusKonfirmasi, sumberPart: 'PRODUSEN' },
+      })
+      await logAudit({
+        aksi: 'INPUT_PART_PRODUSEN',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Balasan produsen dicatat: ${sp.kodePart} ×${qty} → ${statusPart} (sumber PRODUSEN)`,
+        aktor,
+      })
+      // Aturan inti: kode+nama terinput & READY → otomatis PROSES
+      if (existing.status === 'REQUEST' && statusPart === 'READY') {
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES' } })
+        await logAudit({
+          aksi: 'AUTO_PROSES',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: 'Kode & nama part terinput dan READY → status otomatis REQUEST → PROSES',
+          aktor,
+        })
+      }
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
     // Aksi khusus: tambah sparepart saat pengerjaan (PROSES/REQUEST).
     // Stok cukup → READY (direserve); stok kurang → ORDER_PRODUSEN + menunggu konfirmasi.
     if (aksi === 'TAMBAH_PART') {
@@ -387,6 +522,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       })
       if (statusPart === 'READY') {
         await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
+      }
+      // Aturan inti: kode+nama terinput & READY → otomatis PROSES
+      if (existing.status === 'REQUEST' && statusPart === 'READY') {
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES' } })
+        await logAudit({
+          aksi: 'AUTO_PROSES',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: 'Kode & nama part terinput dan READY → status otomatis REQUEST → PROSES',
+          aktor,
+        })
       }
       const updated = await db.serviceRequest.findUnique({
         where: { id: ticketId },

@@ -34,7 +34,7 @@ export async function GET() {
       db.serviceRequest.count({ where: { statusKlaimProdusen: 'SUBMITTED' } }),
       db.masterSparepart.findMany(),
       db.serviceRequest.findMany({
-        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+        include: { unitAsset: { include: { toko: { select: { kodeToko: true, namaToko: true } } } }, parts: { include: { sparepart: true } } },
       }),
       db.masterToko.findMany(),
       db.kunjungan.count({
@@ -58,11 +58,11 @@ export async function GET() {
       .map(([model, jumlah]) => ({ model, jumlah }))
       .sort((a, b) => b.jumlah - a.jumlah)
 
-    // Distribusi garansi unit yang diservis
+    // Distribusi garansi unit yang diservis (STOK_TOKO dihitung garansi)
     const garansiCount = { GARANSI: 0, NON_GARANSI: 0 }
     for (const t of serviceRequests) {
-      if (t.unitAsset?.statusGaransi === 'GARANSI') garansiCount.GARANSI++
-      else garansiCount.NON_GARANSI++
+      if (t.unitAsset?.statusGaransi === 'NON_GARANSI') garansiCount.NON_GARANSI++
+      else garansiCount.GARANSI++
     }
 
     // Stok kritis (ALT-03)
@@ -96,6 +96,23 @@ export async function GET() {
       })
     }
 
+    // Unit belum terproses: REQUEST tanpa part READY (belum input kode+nama / stok kosong).
+    // Diurut tertua dulu agar tidak dilupakan karena lama pending.
+    const belumProsesSemua = serviceRequests
+      .filter((t) => t.status === 'REQUEST' && !t.parts.some((p) => p.statusPart === 'READY'))
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    const belumProses = {
+      count: belumProsesSemua.length,
+      items: belumProsesSemua.slice(0, 8).map((t) => ({
+        noTiket: t.noTiket,
+        serial: t.unitAsset?.serialNumber ?? '-',
+        model: t.unitAsset?.modelUnit ?? '-',
+        toko: t.unitAsset?.toko ? `${t.unitAsset.toko.kodeToko} — ${t.unitAsset.toko.namaToko}` : '-',
+        umurJam: Math.floor((now - new Date(t.createdAt).getTime()) / 3600000),
+        adaPart: t.parts.length > 0,
+      })),
+    }
+
     return NextResponse.json({
       tiket: {
         request: countRequest,
@@ -104,6 +121,7 @@ export async function GET() {
         slaTerlambat: tiketSlaTerlambat,
         total: countRequest + countProses + countFinish,
       },
+      belumProses,
       klaim: {
         pendingCount: claimsDraft.length,
         pendingValue: totalKlaimPending,

@@ -55,6 +55,14 @@ export async function POST(request: Request) {
       ? body.parts
       : []
 
+    // Jalan pintas: kode + nama part langsung (dari Master Data / balasan produsen).
+    // Bila kode belum ada di katalog → otomatis didaftarkan (tercollect).
+    const produsenKode = String(body.kodePart ?? '').trim().toUpperCase()
+    const produsenNama = String(body.namaPart ?? '').trim()
+    if ((produsenKode || produsenNama) && !(produsenKode && produsenNama)) {
+      return NextResponse.json({ error: 'Kode dan nama sparepart wajib diisi bersamaan' }, { status: 400 })
+    }
+
     // Validasi & reserve stok part
     const partResults: { part: string; status: string }[] = []
     for (const p of partsInput) {
@@ -78,30 +86,79 @@ export async function POST(request: Request) {
       }
     }
 
+    // Part dari kode produsen (baru/lama) — ikut direserve bila stok ada
+    let produsenSparepartId: number | null = null
+    let produsenStatus = 'ORDER_PRODUSEN'
+    let produsenKonfirmasi = 'MENUNGGU'
+    if (produsenKode && produsenNama) {
+      let sp = await db.masterSparepart.findUnique({ where: { kodePart: produsenKode } })
+      if (!sp) {
+        sp = await db.masterSparepart.create({
+          data: {
+            kodePart: produsenKode,
+            namaPart: produsenNama,
+            brandKompatibel: unit.merk ?? '',
+            supplier: '',
+            stokJual: 0,
+            stokGaransi: 0,
+            stokInventory: 0,
+            reorderLimit: 5,
+            hargaKlaim: 0,
+          },
+        })
+      }
+      const qty = Math.max(1, Math.trunc(Number(body.qty) || 1))
+      if (sp.stokInventory >= qty) {
+        const ambilJual = Math.min(sp.stokJual, qty)
+        await db.masterSparepart.update({
+          where: { id: sp.id },
+          data: {
+            stokJual: { decrement: ambilJual },
+            stokGaransi: { decrement: qty - ambilJual },
+            stokInventory: { decrement: qty },
+          },
+        })
+        produsenStatus = 'READY'
+        produsenKonfirmasi = 'READY'
+      }
+      produsenSparepartId = sp.id
+      partResults.push({ part: sp.namaPart, status: produsenStatus })
+    }
+
     const hasOrderPart = partResults.some((r) => r.status === 'ORDER_PRODUSEN')
+    const hasReadyPart = partResults.some((r) => r.status === 'READY')
     const sumberLaporan =
       body.sumberLaporan === 'KUNJUNGAN' || body.sumberLaporan === 'LAPORAN_TOKO' || body.sumberLaporan === 'LAPORAN_CUSTOMER'
         ? body.sumberLaporan
         : 'MANUAL'
-    // Klasifikasi garansi tiket manual:
-    // - tipe TOKO (stok toko) → otomatis GARANSI, biaya jasa dipaksa 0 (disable)
-    // - tipe PERORANGAN → ikut pilihan klasifikasi (GARANSI dari customer / NON_GARANSI)
+    // Klasifikasi garansi 3 pilihan:
+    // - STOK_TOKO (stok toko) → otomatis garansi, biaya jasa dipaksa 0 (disable)
+    // - GARANSI (dari customer) → biaya jasa dipaksa 0
+    // - NON_GARANSI → biaya jasa manual
     const tipeCustomer = body.customerType === 'TOKO' ? 'TOKO' : 'PERORANGAN'
-    const klasifikasiDiberi = body.klasifikasiGaransi === 'GARANSI' || body.klasifikasiGaransi === 'NON_GARANSI'
+    const klas = body.klasifikasiGaransi
+    const klasifikasiDiberi = klas === 'GARANSI' || klas === 'NON_GARANSI' || klas === 'STOK_TOKO'
     let biayaJasa = Number(body.biayaJasa) || 0
-    if (tipeCustomer === 'TOKO' || (tipeCustomer === 'PERORANGAN' && body.klasifikasiGaransi === 'GARANSI')) {
-      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'GARANSI' } })
-      unit.statusGaransi = 'GARANSI'
+    if (tipeCustomer === 'TOKO') {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'STOK_TOKO' } })
+      unit.statusGaransi = 'STOK_TOKO'
+      biayaJasa = 0
+    } else if (klas === 'GARANSI' || klas === 'STOK_TOKO') {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: klas } })
+      unit.statusGaransi = klas
       biayaJasa = 0
     } else if (klasifikasiDiberi) {
       await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'NON_GARANSI' } })
       unit.statusGaransi = 'NON_GARANSI'
     }
+    // Aturan inti: kode+nama part terinput & READY → otomatis PROSES.
+    // Tanpa part READY → tetap REQUEST (dipantau panel Belum Terproses).
+    const autoProses = hasReadyPart
     const ticket = await db.serviceRequest.create({
       data: {
         noTiket,
         unitAssetId: Number(body.unitAssetId),
-        status: 'REQUEST',
+        status: autoProses ? 'PROSES' : 'REQUEST',
         sumberLaporan,
         tipeCustomer,
         lokasiUnit: 'TOKO',
@@ -109,13 +166,24 @@ export async function POST(request: Request) {
         deskripsiKerusakan: body.deskripsiKerusakan,
         biayaJasa,
         parts: {
-          create: partsInput.map((p, i) => ({
-            sparepartId: Number(p.sparepartId),
-            qty: Number(p.qty) || 1,
-            statusPart: partResults[i]?.status ?? 'ORDER_PRODUSEN',
-            // Stok toko mencukupi = produsen dianggap READY; sisanya menunggu konfirmasi via WA
-            statusKonfirmasi: partResults[i]?.status === 'READY' ? 'READY' : 'MENUNGGU',
-          })),
+          create: [
+            ...partsInput.map((p, i) => ({
+              sparepartId: Number(p.sparepartId),
+              qty: Number(p.qty) || 1,
+              statusPart: partResults[i]?.status ?? 'ORDER_PRODUSEN',
+              // Stok toko mencukupi = produsen dianggap READY; sisanya menunggu konfirmasi via WA
+              statusKonfirmasi: partResults[i]?.status === 'READY' ? 'READY' : 'MENUNGGU',
+            })),
+            ...(produsenSparepartId
+              ? [{
+                  sparepartId: produsenSparepartId,
+                  qty: Math.max(1, Math.trunc(Number(body.qty) || 1)),
+                  statusPart: produsenStatus,
+                  statusKonfirmasi: produsenKonfirmasi,
+                  sumberPart: 'PRODUSEN',
+                }]
+              : []),
+          ],
         },
       },
       include: { unitAsset: { include: { toko: true } }, parts: { include: { sparepart: true } } },
@@ -125,7 +193,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${tipeCustomer === 'TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}`,
       aktor: body.aktor,
     })
     if (partResults.some((r) => r.status === 'READY')) {

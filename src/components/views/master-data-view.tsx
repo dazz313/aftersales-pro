@@ -22,7 +22,7 @@ import HistoryInput from '@/components/history-input'
 import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function MasterDataView() {
@@ -74,6 +74,9 @@ export default function MasterDataView() {
   // Edit unit
   const [editUnit, setEditUnit] = useState<UnitAsset | null>(null)
   const [editUnitForm, setEditUnitForm] = useState({ modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
+  // Quick input kode+nama part dari Master Data → tiket + otomatis PROSES
+  const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
+  const [partForm, setPartForm] = useState({ deskripsi: '', kodePart: '', namaPart: '', qty: '1', jasa: '0' })
   // Edit karyawan
   const [editUser, setEditUser] = useState<Pengguna | null>(null)
   const [editUserForm, setEditUserForm] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
@@ -125,6 +128,35 @@ export default function MasterDataView() {
       tglPembelian: u.tglPembelian ? new Date(u.tglPembelian).toISOString().slice(0, 10) : '',
     })
   }
+  const openInputPart = (u: UnitAsset) => {
+    setPartUnit(u)
+    setPartForm({ deskripsi: '', kodePart: '', namaPart: '', qty: '1', jasa: '0' })
+  }
+  const createTiketPart = useMutation({
+    mutationFn: () => {
+      const isToko = !!partUnit!.tokoId
+      const freeJasa = isToko || partUnit!.statusGaransi !== 'NON_GARANSI'
+      return postJson('/api/service', {
+        unitAssetId: partUnit!.id,
+        deskripsiKerusakan: partForm.deskripsi.trim(),
+        biayaJasa: freeJasa ? 0 : Number(partForm.jasa) || 0,
+        sumberLaporan: 'MANUAL',
+        customerType: isToko ? 'TOKO' : 'PERORANGAN',
+        klasifikasiGaransi: partUnit!.statusGaransi,
+        kodePart: partForm.kodePart.trim(),
+        namaPart: partForm.namaPart.trim(),
+        qty: Number(partForm.qty) || 1,
+        aktor: role,
+      })
+    },
+    onSuccess: (t: unknown) => {
+      invalidate(['units', 'service-tickets', 'spareparts', 'dashboard', 'alerts'])
+      setPartUnit(null)
+      const no = (t as { noTiket?: string })?.noTiket ?? ''
+      toast({ title: 'Part tercatat', description: `Tiket ${no} — kode+nama terinput, otomatis PROSES bila stok ready.` })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mencatat part', description: e.message, variant: 'destructive' }),
+  })
   const updateUnit = useMutation({
     mutationFn: () =>
       postJson(`/api/unit/${editUnit!.id}`, {
@@ -343,13 +375,16 @@ export default function MasterDataView() {
                         <TableCell className="hidden text-xs text-slate-600 md:table-cell">{u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '-'}</TableCell>
                         <TableCell className="hidden text-xs text-slate-600 lg:table-cell">{u.customer?.nama ?? '-'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'GARANSI' ? 'border-emerald-300 text-emerald-700' : 'border-amber-300 text-amber-700')}>
+                          <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
                             {u.statusGaransi.replace('_', '-')}
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{formatTanggal(u.tglPembelian)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
+                              <PackagePlus className="mr-1 h-3 w-3" /> Part
+                            </Button>
                             <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
                               <Pencil className="h-3 w-3" />
                             </Button>
@@ -439,7 +474,7 @@ export default function MasterDataView() {
               <Label>Toko Mitra</Label>
               <SearchSelect
                 value={newUnit.tokoId}
-                onChange={(v) => setNewUnit({ ...newUnit, tokoId: v, ...(v ? { statusGaransi: 'GARANSI' } : {}) })}
+                onChange={(v) => setNewUnit({ ...newUnit, tokoId: v, ...(v ? { statusGaransi: 'STOK_TOKO' } : {}) })}
                 options={(tokoList ?? []).map((t) => ({ value: String(t.id), label: `${t.kodeToko} — ${t.namaToko}` }))}
                 placeholder="— Ketik kode/nama toko —"
                 ariaLabel="Pilih toko mitra"
@@ -463,6 +498,7 @@ export default function MasterDataView() {
               <Select value={newUnit.statusGaransi} onValueChange={(v) => { setNewUnit({ ...newUnit, statusGaransi: v }); setUnitGaransiAuto(false) }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="STOK_TOKO">STOK TOKO (otomatis garansi)</SelectItem>
                   <SelectItem value="GARANSI">GARANSI</SelectItem>
                   <SelectItem value="NON_GARANSI">NON-GARANSI</SelectItem>
                 </SelectContent>
@@ -654,7 +690,7 @@ export default function MasterDataView() {
               <Label>Toko Mitra</Label>
               <SearchSelect
                 value={editUnitForm.tokoId}
-                onChange={(v) => setEditUnitForm({ ...editUnitForm, tokoId: v, ...(v ? { statusGaransi: 'GARANSI' } : {}) })}
+                onChange={(v) => setEditUnitForm({ ...editUnitForm, tokoId: v, ...(v ? { statusGaransi: 'STOK_TOKO' } : {}) })}
                 options={(tokoList ?? []).map((t) => ({ value: String(t.id), label: `${t.kodeToko} — ${t.namaToko}` }))}
                 placeholder="— Tanpa toko —"
                 ariaLabel="Pilih toko mitra"
@@ -678,6 +714,7 @@ export default function MasterDataView() {
               <Select value={editUnitForm.statusGaransi} onValueChange={(v) => setEditUnitForm({ ...editUnitForm, statusGaransi: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="STOK_TOKO">STOK TOKO (otomatis garansi)</SelectItem>
                   <SelectItem value="GARANSI">GARANSI</SelectItem>
                   <SelectItem value="NON_GARANSI">NON-GARANSI</SelectItem>
                 </SelectContent>
@@ -693,6 +730,57 @@ export default function MasterDataView() {
               onClick={() => updateUnit.mutate()}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog quick input kode+nama part → tiket otomatis PROSES bila ready */}
+      <Dialog open={!!partUnit} onOpenChange={(o) => !o && setPartUnit(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Input Part Unit</DialogTitle>
+            <DialogDescription>
+              {partUnit && <span>{partUnit.modelUnit} · <span className="font-mono">{partUnit.serialNumber}</span> — kode+nama terinput otomatis menjadikan tiket PROSES.</span>}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Deskripsi Kerusakan</Label>
+              <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder="cth: Kompresor mati total" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Kode Sparepart</Label>
+                <Input value={partForm.kodePart} onChange={(e) => setPartForm({ ...partForm, kodePart: e.target.value.toUpperCase() })} placeholder="PRT-XXX-00" className="font-mono" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Qty</Label>
+                <Input type="number" min="1" value={partForm.qty} onChange={(e) => setPartForm({ ...partForm, qty: e.target.value })} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Nama Sparepart</Label>
+              <HistoryInput historyKey="part-nama" value={partForm.namaPart} onChange={(e) => setPartForm({ ...partForm, namaPart: e.target.value })} placeholder="cth: Kompresor 1 PK" />
+            </div>
+            {partUnit && !partUnit.tokoId && partUnit.statusGaransi === 'NON_GARANSI' && (
+              <div className="space-y-1.5">
+                <Label>Biaya Jasa (Rp)</Label>
+                <Input type="number" min={0} value={partForm.jasa} onChange={(e) => setPartForm({ ...partForm, jasa: e.target.value })} />
+              </div>
+            )}
+            {partUnit && (partUnit.tokoId || partUnit.statusGaransi !== 'NON_GARANSI') && (
+              <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">Unit {partUnit.tokoId ? 'stok toko' : 'garansi'} — biaya jasa Rp 0 (otomatis).</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPartUnit(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!partUnit || !partForm.deskripsi.trim() || !partForm.kodePart.trim() || !partForm.namaPart.trim() || createTiketPart.isPending}
+              onClick={() => createTiketPart.mutate()}
+            >
+              <PackagePlus className="mr-1 h-4 w-4" /> Simpan &amp; Proses
             </Button>
           </DialogFooter>
         </DialogContent>

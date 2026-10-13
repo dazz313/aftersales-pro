@@ -292,7 +292,7 @@ export const TOOLS = [
       properties: {
         q: str,
         tokoId: num,
-        statusGaransi: { type: 'string', enum: ['GARANSI', 'NON_GARANSI'] },
+        statusGaransi: { type: 'string', enum: ['STOK_TOKO', 'GARANSI', 'NON_GARANSI'] },
         limit: { type: 'number', default: 20 },
         offset: { type: 'number', default: 0 },
       },
@@ -311,7 +311,7 @@ export const TOOLS = [
         nama: { type: 'string', description: 'Nama panggilan unit (mis. AC Ruang Tamu)' },
         tokoId: num,
         customerId: num,
-        statusGaransi: { type: 'string', enum: ['GARANSI', 'NON_GARANSI'] },
+        statusGaransi: { type: 'string', enum: ['STOK_TOKO', 'GARANSI', 'NON_GARANSI'] },
       },
       required: ['serialNumber', 'modelUnit'],
       additionalProperties: false,
@@ -693,7 +693,7 @@ async function hAddUnit(args) {
       nama: String(args.nama ?? '').trim(),
       tokoId: args.tokoId ? Number(args.tokoId) : null,
       customerId: args.customerId ? Number(args.customerId) : null,
-      statusGaransi: args.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : 'GARANSI',
+      statusGaransi: args.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : args.statusGaransi === 'STOK_TOKO' ? 'STOK_TOKO' : 'GARANSI',
     },
   })
   await logAudit({ aksi: 'CREATE', entitas: 'unit_asset', entitasId: unit.serialNumber, deskripsi: `Unit baru via MCP AI: ${unit.serialNumber} (${unit.modelUnit})` })

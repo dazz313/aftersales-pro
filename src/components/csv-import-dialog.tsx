@@ -183,7 +183,7 @@ const CONFIG: Record<
         label: 'Status',
         get: (r) => {
           const d = r.data as { insert?: { statusGaransi?: string } } | undefined
-          return d?.insert?.statusGaransi === 'NON_GARANSI' ? 'NON-GARANSI' : 'GARANSI'
+          return d?.insert?.statusGaransi === 'NON_GARANSI' ? 'NON-GARANSI' : d?.insert?.statusGaransi === 'STOK_TOKO' ? 'STOK-TOKO' : 'GARANSI'
         },
       },
       {

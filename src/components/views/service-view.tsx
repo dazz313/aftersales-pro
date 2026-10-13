@@ -124,7 +124,7 @@ export default function ServiceView() {
   const filtered = useMemo(() => {
     if (!tickets) return []
     let list = tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
-    if (garansiFilter !== 'SEMUA') list = list.filter((t) => t.unitAsset.statusGaransi === garansiFilter)
+    if (garansiFilter !== 'SEMUA') list = list.filter((t) => garansiFilter === 'GARANSI' ? t.unitAsset.statusGaransi !== 'NON_GARANSI' : t.unitAsset.statusGaransi === 'NON_GARANSI')
     if (modelFilter) list = list.filter((t) => t.unitAsset.modelUnit === modelFilter)
     if (cariTiket.trim()) {
       list = list.filter((t) => matchQuery([
@@ -221,6 +221,36 @@ export default function ServiceView() {
     },
     onError: (e: Error) => toast({ title: 'Aksi ditolak', description: e.message, variant: 'destructive' }),
   })
+
+  // Kirim WA ke produsen — buka wa.me yang sudah terisi otomatis
+  const waMutation = useMutation({
+    mutationFn: (id: number) =>
+      postJson<ServiceTicket & { waUrl?: string }>(`/api/service/${id}`, { aksi: 'KIRIM_PRODUSEN_WA', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH'),
+    onSuccess: (t) => {
+      invalidateAll()
+      if (t.waUrl) window.open(t.waUrl, '_blank', 'noopener')
+      toast({ title: 'WA produsen disiapkan', description: 'Pesan otomatis terisi — tinggal klik kirim di WhatsApp.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menyiapkan WA', description: e.message, variant: 'destructive' }),
+  })
+
+  // Saran part dari riwayat: part yang pernah dipakai untuk model unit yang sama
+  const saranParts = useMemo(() => {
+    if (!detail) return []
+    const hitung = new Map<string, { kodePart: string; namaPart: string; count: number }>()
+    for (const t of tickets ?? []) {
+      if (t.id === detail.id || t.unitAsset.modelUnit !== detail.unitAsset.modelUnit) continue
+      for (const p of t.parts) {
+        const kode = p.sparepart?.kodePart
+        if (!kode) continue
+        const e = hitung.get(kode) ?? { kodePart: kode, namaPart: p.sparepart?.namaPart ?? '', count: 0 }
+        e.count += p.qty
+        hitung.set(kode, e)
+      }
+    }
+    const dipakai = new Set(detail.parts.map((p) => p.sparepart?.kodePart))
+    return [...hitung.values()].filter((s) => !dipakai.has(s.kodePart)).sort((a, b) => b.count - a.count).slice(0, 4)
+  }, [tickets, detail])
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -438,7 +468,9 @@ export default function ServiceView() {
                               </Button>
                             )}
                             {t.status === 'REQUEST' && (
-                              <Button size="sm" className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700"
+                              <Button size="sm" className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700 disabled:opacity-40"
+                                disabled={!t.parts.some((p) => p.statusPart === 'READY')}
+                                title={t.parts.some((p) => p.statusPart === 'READY') ? 'Tarik + terbitkan STTB' : 'Input kode + nama part dulu (panel Belum Terproses)'}
                                 onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'MULAI_PROSES' } })}>
                                 <PlayCircle className="mr-1 h-3 w-3" /> Proses + STTB
                               </Button>
@@ -502,6 +534,9 @@ export default function ServiceView() {
                   ticket={detail}
                   pending={flowMutation.isPending}
                   spareparts={parts}
+                  saran={saranParts}
+                  waPending={waMutation.isPending}
+                  onKirimWa={() => waMutation.mutate(detail.id)}
                   onAction={(body) => flowMutation.mutate({ id: detail.id, body })}
                 />
                 <div className="rounded-lg bg-slate-50 p-3">
@@ -509,7 +544,7 @@ export default function ServiceView() {
                   <p className="font-medium text-slate-800">{detail.unitAsset.modelUnit}</p>
                   <p className="font-mono text-xs text-slate-500">{detail.unitAsset.serialNumber}</p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
-                    <Badge variant="outline" className={detail.unitAsset.statusGaransi === 'GARANSI' ? 'border-emerald-300 text-emerald-700' : 'border-amber-300 text-amber-700'}>
+                    <Badge variant="outline" className={detail.unitAsset.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : detail.unitAsset.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700'}>
                       {detail.unitAsset.statusGaransi.replace('_', '-')}
                     </Badge>
                     <Badge variant="outline">{detail.unitAsset.toko?.kodeToko} — {detail.unitAsset.toko?.namaToko}</Badge>
@@ -566,6 +601,11 @@ export default function ServiceView() {
                             <Badge variant="outline" className={p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}>
                               {p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
                             </Badge>
+                            {p.sumberPart === 'PRODUSEN' && (
+                              <Badge variant="outline" className="border-teal-300 text-[9px] text-teal-700" title="Kode dari balasan produsen — tampil di surat jalan">
+                                dari Produsen
+                              </Badge>
+                            )}
                             {p.statusKonfirmasi !== 'MENUNGGU' && (
                               <Badge variant="outline" className={cn('text-[9px]', p.statusKonfirmasi === 'READY' ? 'border-teal-300 text-teal-700' : 'border-rose-300 text-rose-700')}>
                                 Produsen: {p.statusKonfirmasi === 'READY' ? 'READY' : 'TIDAK READY'}

@@ -15,7 +15,7 @@ import {
 } from 'recharts'
 import {
   FileClock, Loader, CheckCircle2, Wallet, PackageX, MapPinOff, AlertTriangle,
-  RefreshCw, TrendingUp, Store, ClipboardList, ArrowUpRight, ChevronRight,
+  RefreshCw, TrendingUp, Store, ClipboardList, ArrowUpRight, ChevronRight, Hourglass,
 } from 'lucide-react'
 
 const MODEL_SHORT = (m: string) => (m.length > 22 ? m.slice(0, 20) + '…' : m)
@@ -26,6 +26,7 @@ const ALERT_DRILLDOWN: Record<string, { view: ViewKey; label: string; intent: Om
   'ALT-02': { view: 'service', label: 'Service Tiket', intent: { serviceStatus: 'REQUEST' } },
   'ALT-03': { view: 'inventory', label: 'Stok Inventory', intent: { inventoryFilter: 'kritis' } },
   'ALT-04': { view: 'claim', label: 'Klaim & Rekap', intent: { klaimTab: 'DRAFT' } },
+  'ALT-05': { view: 'service', label: 'Service Tiket', intent: { serviceStatus: 'REQUEST' } },
 }
 
 function KpiCard({
@@ -122,6 +123,44 @@ export default function DashboardView() {
         <KpiCard title="Kunjungan 7 Hari" value={String(dash.operasional.kunjungan7hari)} sub="Check-in onsite teknisi" icon={Store} tone="bg-emerald-400" onClick={() => navigateTo('field-ops', { fieldOpsFilter: 'kunjungan' })} />
         <KpiCard title="Total Tiket" value={String(dash.tiket.total)} sub={`${dash.klaim.submitted} klaim SUBMITTED menunggu pembayaran`} icon={ClipboardList} tone="bg-teal-400" onClick={() => navigateTo('service', { serviceStatus: 'SEMUA' })} />
       </div>
+
+      {/* Unit belum terproses — wajib input kode+nama part agar bisa PROSES */}
+      {dash.belumProses.count > 0 && (
+        <Card className="border-amber-300">
+          <CardHeader className="flex-row items-start justify-between space-y-0">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Hourglass className="h-4 w-4 text-amber-600" />
+                Unit Belum Terproses
+                <Badge className="bg-amber-500 text-[10px] text-white hover:bg-amber-500">{dash.belumProses.count} pending</Badge>
+              </CardTitle>
+              <CardDescription>Belum ada kode + nama sparepart yang READY — input dari Master Data (tombol Part) atau detail tiket agar tidak dilupakan</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => navigateTo('service', { serviceStatus: 'REQUEST' })} aria-label="Buka tiket REQUEST">
+              Buka Service <ChevronRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {dash.belumProses.items.map((t) => (
+                <div key={t.noTiket} className="rounded-lg border border-amber-200 bg-amber-50/60 p-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-mono text-xs font-semibold text-slate-800">{t.noTiket}</p>
+                    <Badge variant="outline" className={cn('text-[9px]', t.umurJam >= 72 ? 'border-rose-300 text-rose-700' : 'border-amber-300 text-amber-700')}>
+                      {t.umurJam >= 24 ? `${Math.floor(t.umurJam / 24)} hari` : `${t.umurJam} jam`}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 truncate text-[11px] text-slate-600">{t.model} · {t.serial}</p>
+                  <p className="truncate text-[10px] text-slate-400">{t.toko} · {t.adaPart ? 'menunggu part READY' : 'belum input part'}</p>
+                </div>
+              ))}
+            </div>
+            {dash.belumProses.count > dash.belumProses.items.length && (
+              <p className="mt-2 text-[11px] text-slate-500">+ {dash.belumProses.count - dash.belumProses.items.length} lainnya — buka Service untuk daftar penuh.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Grafik */}
       <div className="grid gap-4 lg:grid-cols-3">
@@ -229,7 +268,7 @@ export default function DashboardView() {
               )}
             </CardTitle>
             <CardDescription>
-              Aturan otomatis ALT-01 s/d ALT-04 · {alerts ? `evaluasi terakhir ${new Date(alerts.generatedAt).toLocaleTimeString('id-ID')}` : 'memuat…'}
+              Aturan otomatis ALT-01 s/d ALT-05 · {alerts ? `evaluasi terakhir ${new Date(alerts.generatedAt).toLocaleTimeString('id-ID')}` : 'memuat…'}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={refreshAll} disabled={isRefetching || alertRefetching}>

@@ -168,6 +168,7 @@ model ServiceRequestPart {
   qty              Int             @default(1)
   statusPart       String          @default("READY")
   statusKonfirmasi String          @default("MENUNGGU")
+  sumberPart       String          @default("KATALOG") // KATALOG | PRODUSEN (kode dari balasan produsen)
   serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
   sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
 }

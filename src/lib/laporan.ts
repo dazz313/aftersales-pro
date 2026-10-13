@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
+import { isGaransi } from '@/lib/types'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { sendGatewayMessage, labelChannel, type GatewayChannel } from '@/lib/gateway'
 
@@ -73,7 +74,7 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
 
   const noTiket = await generateNoTiket()
   const garansiInfo =
-    unit.statusGaransi === 'GARANSI'
+    isGaransi(unit.statusGaransi)
       ? `Unit terdeteksi *GARANSI* (${unit.modelUnit})`
       : `Unit terdeteksi *NON-GARANSI* (${unit.modelUnit})`
   const tokoInfo = unit.toko ? `dari ${unit.toko.namaToko} (${unit.toko.kodeToko})` : ''
