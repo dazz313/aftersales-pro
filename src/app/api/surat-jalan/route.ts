@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { isGaransi } from '@/lib/types'
-import { getSession } from '@/lib/auth'
+import { getActiveSession } from '@/lib/auth-server'
 import * as XLSX from 'xlsx'
 import QRCode from 'qrcode'
 
@@ -34,10 +34,13 @@ interface ItemRow {
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession(request)
+    const session = await getActiveSession(request)
+    if (!session) {
+      return NextResponse.json({ error: 'Sesi berakhir atau akun nonaktif. Silakan login ulang.' }, { status: 401 })
+    }
     const aktor = session?.nama ?? 'SYSTEM'
 
-    const body = await request.json().catch(() => null)
+    const body = await request.json().catch(() => null) as { noTiket?: unknown[]; format?: string } | null
     const noTiketList: string[] = Array.isArray(body?.noTiket)
       ? [...new Set(body.noTiket.map((s: unknown) => String(s).trim()).filter(Boolean))]
       : []

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getGatewayConfig } from '@/lib/gateway'
+import { getGatewayConfig, isWebhookAuthorized } from '@/lib/gateway'
 import { autoGitBackup } from '@/lib/git-backup'
 import { saveInboxFile, isImageName, type InboxKind } from '@/lib/telegram-files'
 import { scanImage } from '@/lib/vision'
@@ -62,6 +62,9 @@ function cariTeksLaporan(caption: string, barcode: string | null, ocr: string): 
 
 export async function POST(request: Request) {
   try {
+    if (!isWebhookAuthorized(request)) {
+      return NextResponse.json({ error: 'Webhook tidak terotorisasi' }, { status: 403 })
+    }
     const body = (await request.json()) as TgUpdate
     const msg = body.message
     if (!msg) return NextResponse.json({ ok: true, aksi: 'BUKAN_PESAN' })

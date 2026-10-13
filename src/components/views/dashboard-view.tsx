@@ -89,7 +89,7 @@ export default function DashboardView() {
 
   if (isLoading || !dash) {
     return (
-      <div className="space-y-4">
+      <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
         </div>
@@ -107,7 +107,7 @@ export default function DashboardView() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
       {/* Baris KPI utama — semuanya bisa diklik menuju data sumber */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard title="Tiket REQUEST" value={String(dash.tiket.request)} sub={`${dash.tiket.slaTerlambat} melewati SLA 24 jam`} icon={FileClock} tone="bg-amber-400" onClick={() => navigateTo('service', { serviceStatus: 'REQUEST' })} />
@@ -182,7 +182,7 @@ export default function DashboardView() {
               Lihat Tiket <ChevronRight className="ml-1 h-3.5 w-3.5" />
             </Button>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-60">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dash.tren14hari} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -200,7 +200,7 @@ export default function DashboardView() {
             <CardTitle className="text-base">Distribusi Garansi Unit</CardTitle>
             <CardDescription>Klik irisan/legenda untuk membuka tiket per garansi</CardDescription>
           </CardHeader>
-          <CardContent className="h-72">
+          <CardContent className="h-60">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -236,9 +236,9 @@ export default function DashboardView() {
           <CardTitle className="text-base">Tren Kerusakan per Model Unit</CardTitle>
           <CardDescription>Model dengan frekuensi kerusakan tertinggi — klik batang untuk membuka tiket model tersebut</CardDescription>
         </CardHeader>
-        <CardContent className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={dash.trenKerusakan.slice(0, 8).map((d) => ({ ...d, short: MODEL_SHORT(d.model) }))} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+        <CardContent className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dash.trenKerusakan.slice(0, 8).map((d) => ({ ...d, short: MODEL_SHORT(d.model) }))} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
               <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
               <YAxis type="category" dataKey="short" width={150} tick={{ fontSize: 10 }} />

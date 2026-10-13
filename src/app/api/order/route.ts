@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 
 // GET /api/order - daftar permintaan order sparepart customer
 export async function GET() {
@@ -30,6 +31,9 @@ async function generateNoOrder(): Promise<string> {
 // POST /api/order - catat permintaan order sparepart dari customer (toko/perorangan)
 export async function POST(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const body = await request.json()
     const sparepartId = body.sparepartId ? Number(body.sparepartId) : null
     const qty = Math.max(1, Math.trunc(Number(body.qty) || 1))

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoSttb } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -43,6 +44,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
  */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const { id } = await params
     const body = await request.json()
     const ticketId = Number(id)

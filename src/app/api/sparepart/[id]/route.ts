@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { backupSparepartToGit } from '@/lib/git-backup'
+import { requireActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 // PATCH /api/sparepart/[id] - update / restock sparepart
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const { id } = await params
     const body = await request.json()
     const existing = await db.masterSparepart.findUnique({ where: { id: Number(id) } })
@@ -68,9 +72,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
-// DELETE /api/sparepart/[id]
+// DELETE /api/sparepart/[id] - hanya Admin/Manager
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    const roleDenied = requireManagerSession(session)
+    if (roleDenied) return roleDenied
     const { id } = await params
     const used = await db.serviceRequestPart.count({ where: { sparepartId: Number(id) } })
     if (used > 0) {

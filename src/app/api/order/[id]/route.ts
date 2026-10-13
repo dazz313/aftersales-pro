@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 
 // PATCH /api/order/[id] - koreksi data & transisi status order customer
 // Aksi: UPDATE_DATA (koreksi qty/catatan, hanya saat BARU) | TERUSKAN | DATANG | SELESAI | BATAL
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const { id } = await params
     const body = await request.json()
     const existing = await db.permintaanOrder.findUnique({ where: { id: Number(id) } })

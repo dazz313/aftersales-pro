@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { runBackup, getBackupStatus } from '@/lib/gsheets'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 
 /**
  * GET /api/backup/sheets — status backup terakhir + riwayat + konfigurasi + dueNow (auto)
@@ -21,6 +22,9 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const body = await request.json().catch(() => ({}))
     const trigger = body.trigger === 'AUTO' ? 'AUTO' : 'MANUAL'
     const outcome = await runBackup(trigger, body.aktor)

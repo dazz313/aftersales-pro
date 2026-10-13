@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getSession } from '@/lib/auth'
+import { getActiveSession } from '@/lib/auth-server'
 
 export const BACKUP_TABLES = [
   'pengguna',
@@ -21,7 +21,7 @@ export const BACKUP_TABLES = [
 ] as const
 
 async function requireAdmin(request: Request) {
-  const session = await getSession(request)
+  const session = await getActiveSession(request)
   if (!session || !['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)) {
     return NextResponse.json({ error: 'Akses ditolak: hanya Admin Workshop/Manager' }, { status: 403 })
   }

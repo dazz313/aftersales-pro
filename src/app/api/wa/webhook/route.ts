@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { isWebhookAuthorized } from '@/lib/gateway'
 import { prosesLaporanTeks, type GatewayChannel } from '@/lib/laporan'
 
 // POST /api/wa/webhook - simulator Gateway (WhatsApp / Telegram), perilaku tidak berubah
 export async function POST(request: Request) {
   try {
+    if (!isWebhookAuthorized(request)) {
+      return NextResponse.json({ error: 'Webhook tidak terotorisasi' }, { status: 403 })
+    }
     const body = await request.json()
     const result = await prosesLaporanTeks({
       pesan: body.pesan || '',

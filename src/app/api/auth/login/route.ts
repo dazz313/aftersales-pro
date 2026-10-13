@@ -15,9 +15,30 @@ import {
  * Body: { email: string (email atau username), password: string }
  * Sukses: set cookie httpOnly aspro_session (JWT HS256, 7 hari) + token di body
  * (token dipakai client sebagai fallback Bearer saat cookie diblokir iframe).
+ * Proteksi brute-force: jeda 400ms + throttle 10x gagal / 5 menit per IP.
  */
+const gagalPerIp = new Map<string, { count: number; resetAt: number }>()
+const BATAS_GAGAL = 10
+const JANJI_THROTTLE_MS = 5 * 60_000
+
+function ipClient(request: Request): string {
+  const fwd = request.headers.get('x-forwarded-for')
+  if (fwd) return fwd.split(',')[0].trim()
+  return request.headers.get('x-real-ip')?.trim() || 'unknown'
+}
+
 export async function POST(request: Request) {
   try {
+    const ip = ipClient(request)
+    const now = Date.now()
+    const catat = gagalPerIp.get(ip)
+    if (catat && catat.resetAt > now && catat.count >= BATAS_GAGAL) {
+      return NextResponse.json(
+        { error: 'Terlalu banyak percobaan gagal. Coba lagi beberapa menit.' },
+        { status: 429 }
+      )
+    }
+    if (!catat || catat.resetAt <= now) gagalPerIp.set(ip, { count: 0, resetAt: now + JANJI_THROTTLE_MS })
     const body = await request.json().catch(() => null)
     const identifier = String(body?.email ?? '').trim()
     const password = String(body?.password ?? '')
@@ -33,6 +54,9 @@ export async function POST(request: Request) {
     )
 
     if (!user || !verifyPassword(password, user.passwordHash)) {
+      const cur = gagalPerIp.get(ipClient(request)) ?? { count: 0, resetAt: Date.now() + JANJI_THROTTLE_MS }
+      cur.count += 1
+      gagalPerIp.set(ipClient(request), cur)
       await logAudit({
         aksi: 'LOGIN_GAGAL',
         entitas: 'auth',
@@ -51,6 +75,7 @@ export async function POST(request: Request) {
       username: user.username,
       role: user.role as SessionRole,
     })
+    gagalPerIp.delete(ipClient(request))
 
     const res = NextResponse.json({
       ok: true,

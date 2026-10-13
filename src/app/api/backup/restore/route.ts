@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
-import { getSession } from '@/lib/auth'
+import { getActiveSession } from '@/lib/auth-server'
 import { BACKUP_TABLES } from '@/app/api/backup/db/route'
 
 // Urutan hapus: anak dulu baru induk (aman walau FK tidak dienforce)
@@ -36,7 +36,7 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024
  */
 export async function POST(request: Request) {
   try {
-    const session = await getSession(request)
+    const session = await getActiveSession(request)
     if (!session || !['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)) {
       return NextResponse.json({ error: 'Akses ditolak: hanya Admin Workshop/Manager' }, { status: 403 })
     }

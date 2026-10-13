@@ -1,15 +1,10 @@
+# AfterSales Pro — reverse proxy Caddy
+# Mode LAN/dev: http://server:81 → aplikasi di localhost:3000
 :81 {
-	@transform_port_query {
-		query XTransformPort=*
-	}
-
-	handle @transform_port_query {
-		reverse_proxy localhost:{query.XTransformPort} {
-			header_up Host {host}
-			header_up X-Forwarded-For {remote_host}
-			header_up X-Forwarded-Proto {scheme}
-			header_up X-Real-IP {remote_host}
-		}
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		# TANPA frame-ancestors: aplikasi didukung berjalan ter-embed iframe preview
 	}
 
 	handle {
@@ -21,3 +16,27 @@
 		}
 	}
 }
+
+# --- CONTOH PRODUKSI HTTPS (aktifkan bila punya domain) ---
+# aspro.contoh.co.id {
+# 	tls admin@contoh.co.id
+# 	header {
+# 		X-Content-Type-Options "nosniff"
+# 		Referrer-Policy "same-origin"
+# 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# 	}
+# 	handle {
+# 		reverse_proxy localhost:3000 {
+# 			header_up Host {host}
+# 			header_up X-Forwarded-For {remote_host}
+# 			header_up X-Forwarded-Proto {scheme}
+# 			header_up X-Real-IP {remote_host}
+# 		}
+# 	}
+# }
+#
+# CATATAN KEAMANAN:
+# - Jangan membuka port aplikasi (3000) ke internet — hanya lewat reverse proxy.
+# - Wajib isi AUTH_SECRET di .env server produksi (server menolak boot tanpanya).
+# - Disarankan isi WEBHOOK_SECRET agar webhook WA/Telegram tidak bisa
+#   dipanggil pihak tak dikenal (lihat .env.example).

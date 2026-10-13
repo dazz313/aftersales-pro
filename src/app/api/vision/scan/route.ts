@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 import { saveInboxFile, isImageName, MAX_FILE_BYTES, type InboxKind } from '@/lib/telegram-files'
 import { scanImage } from '@/lib/vision'
 
 // POST /api/vision/scan (FormData: file, pengirim, caption, folder=KUNJUNGAN|SERVICE) — butuh login
 export async function POST(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const form = await request.formData()
     const file = form.get('file')
     const pengirim = String(form.get('pengirim') ?? 'UPLOAD-UI')

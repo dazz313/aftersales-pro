@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { backupSparepartToGit } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 
 // GET /api/sparepart - list sparepart + status ROP
 export async function GET() {
@@ -47,6 +48,9 @@ function resolveStokCreate(body: {
 // POST /api/sparepart
 export async function POST(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const body = await request.json()
     if (!body.kodePart || !body.namaPart) {
       return NextResponse.json({ error: 'Kode part dan nama part wajib diisi' }, { status: 400 })

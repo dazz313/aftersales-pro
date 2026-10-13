@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { backupSparepartToGit } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 import { parseCsv, validateSparepartRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
 
 // GET /api/sparepart/import — unduh template CSV import sparepart
@@ -26,6 +27,9 @@ export async function GET() {
 // body: { csvText: string, mode: 'skip' | 'update', aktor?: string }
 export async function POST(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const body = await request.json()
     const csvText = typeof body.csvText === 'string' ? body.csvText : ''
     const mode: 'skip' | 'update' = body.mode === 'update' ? 'update' : 'skip'

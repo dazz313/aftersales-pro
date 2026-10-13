@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
-import { getSession } from '@/lib/auth'
+import { getActiveSession } from '@/lib/auth-server'
 
 const LOGO_DIR = ['upload', 'logo']
 const MAX_FILE_BYTES = 2 * 1024 * 1024
@@ -50,7 +50,7 @@ export async function GET() {
 /** POST /api/logo (FormData: file PNG/JPG/WebP/GIF ≤ 2MB) — hanya Admin/Manager. */
 export async function POST(request: Request) {
   try {
-    const session = await getSession(request)
+    const session = await getActiveSession(request)
     if (!session || !['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)) {
       return NextResponse.json({ error: 'Akses ditolak: hanya Admin Workshop/Manager' }, { status: 403 })
     }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 import * as XLSX from 'xlsx'
 
 /**
@@ -11,6 +12,9 @@ import * as XLSX from 'xlsx'
  */
 export async function GET(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const { searchParams } = new URL(request.url)
     const statusFilter = searchParams.get('status') // DRAFT | SUBMITTED | PAID | ALL
 

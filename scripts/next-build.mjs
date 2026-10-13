@@ -37,4 +37,17 @@ if (res.status !== 0) {
 
 cp(path.join(ROOT, '.next', 'static'), path.join(ROOT, '.next', 'standalone', '.next', 'static'))
 cp(path.join(ROOT, 'public'), path.join(ROOT, '.next', 'standalone', 'public'))
+// Sinkronkan .env mesin ini ke standalone: server warunkah chdir ke
+// .next/standalone saat boot, dan salinan .env basi di sana akan
+// membayangi .env asli (pernah menyebabkan AUTH_SECRET "hilang").
+// .env tetap gitignored — tiap mesin memakai secrets-nya sendiri.
+try {
+  const dotenv = path.join(ROOT, '.env')
+  if (fs.existsSync(dotenv)) {
+    fs.copyFileSync(dotenv, path.join(ROOT, '.next', 'standalone', '.env'))
+    console.log('✓ Sinkron .env → .next/standalone/.env')
+  }
+} catch (e) {
+  console.warn(`! Gagal menyinkron .env: ${e.message}`)
+}
 console.log('✓ Standalone build siap: .next/standalone')

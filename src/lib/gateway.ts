@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import { db } from '@/lib/db'
 
 /**
@@ -104,4 +105,20 @@ export async function sendGatewayMessage(channel: GatewayChannel, text: string):
 
 export function labelChannel(channel: string): string {
   return channel === 'TELEGRAM' ? 'Telegram' : 'WhatsApp'
+}
+
+/**
+ * Otorisasi webhook inbound (produksi).
+ * Bila env WEBHOOK_SECRET diisi, pemanggil wajib menyertakan nilai yang sama
+ * via query `?secret=` atau header `x-webhook-secret` (dibandingkan
+ * timing-safe). Bila env kosong → terbuka (mode dev/simulator).
+ */
+export function isWebhookAuthorized(request: Request): boolean {
+  const secret = process.env.WEBHOOK_SECRET
+  if (!secret) return true
+  const url = new URL(request.url)
+  const given = url.searchParams.get('secret') ?? request.headers.get('x-webhook-secret') ?? ''
+  const a = Buffer.from(given)
+  const b = Buffer.from(secret)
+  return a.length === b.length && a.length > 0 && timingSafeEqual(a, b)
 }

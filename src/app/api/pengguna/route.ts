@@ -3,13 +3,13 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { hashPassword } from '@/lib/auth-node'
-import { getSession } from '@/lib/auth'
+import { getActiveSession } from '@/lib/auth-server'
 
 const USER_PUBLIC = { id: true, nama: true, email: true, username: true, kodeTeknisi: true, role: true, noWa: true, wilayahKerja: true, aktif: true, createdAt: true }
 
 /** Hanya Admin Workshop & Manager boleh kelola akun karyawan */
 async function requireManager(request: Request): Promise<NextResponse | null> {
-  const session = await getSession(request)
+  const session = await getActiveSession(request)
   if (!session || !['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)) {
     return NextResponse.json({ error: 'Akses ditolak: hanya Admin Workshop/Manager' }, { status: 403 })
   }

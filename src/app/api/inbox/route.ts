@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getSession } from '@/lib/auth'
+import { getActiveSession } from '@/lib/auth-server'
 import { autoGitBackup } from '@/lib/git-backup'
 import { moveInboxFile, type InboxKind } from '@/lib/telegram-files'
 import { prosesLaporanTeks } from '@/lib/laporan'
 
 async function getRole(request: Request): Promise<string | null> {
-  const session = await getSession(request) // cookie ATAU Authorization: Bearer
+  // Sesi fresh dari DB: akun nonaktif / demosi langsung kehilangan akses kelola inbox
+  const session = await getActiveSession(request) // cookie ATAU Authorization: Bearer
   return session?.role ?? null
 }
 

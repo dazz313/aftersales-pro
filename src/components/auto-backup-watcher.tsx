@@ -25,7 +25,7 @@ export default function AutoBackupWatcher() {
   })
 
   const autoBackup = useMutation({
-    mutationFn: () => postJson('/api/backup/sheets', { trigger: 'AUTO' }),
+    mutationFn: () => postJson<{ status: string; message: string }>('/api/backup/sheets', { trigger: 'AUTO' }),
     onSuccess: (res: { status: string; message: string }) => {
       queryClient.invalidateQueries({ queryKey: ['backup-status'] })
       queryClient.invalidateQueries({ queryKey: ['audit'] })

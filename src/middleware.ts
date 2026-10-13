@@ -10,11 +10,13 @@ import { SESSION_COOKIE, verifySessionToken, type SessionPayload } from '@/lib/a
  *   tidak mengalami redirect loop — request navigasi halaman tidak bisa
  *   membawa header Authorization.
  * - /login saat sudah login (via cookie) → redirect /
- * Publik (tanpa login): /login, /api/auth/*, webhook gateway (dipanggil bot
- * eksternal), /api/backup/sheets (dipicu MCP AI / watcher backup).
+ * Publik (tanpa login): /login, /api/auth/*, /api/logo (logo tampil di halaman
+ * login), webhook gateway (dipanggil bot eksternal — amankan via WEBHOOK_SECRET
+ * di produksi). /api/backup/sheets SENGAJA tidak publik: watcher & MCP lewat
+ * jalur terautentikasi / langsung via lib.
  * Catatan: aplikasi single-route — semua view di "/" dengan navigasi internal.
  */
-const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/wa/webhook', '/api/telegram/webhook', '/api/backup/sheets']
+const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/logo', '/api/wa/webhook', '/api/telegram/webhook']
 
 async function getSessionFrom(request: NextRequest): Promise<SessionPayload | null> {
   const authz = request.headers.get('authorization')

@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 // PATCH /api/toko/[id] - update toko (termasuk check-in visit manual)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const { id } = await params
     const body = await request.json()
     const data: Record<string, unknown> = {}
@@ -31,9 +35,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
-// DELETE /api/toko/[id]
+// DELETE /api/toko/[id] - hanya Admin/Manager
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    const roleDenied = requireManagerSession(session)
+    if (roleDenied) return roleDenied
     const { id } = await params
     const tokoId = Number(id)
     const unitCount = await db.unitAsset.count({ where: { tokoId } })

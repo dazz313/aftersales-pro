@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 // PATCH /api/customer/[id] - update data customer (nama, no WA, alamat)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const { id } = await params
     const body = await request.json()
     const existing = await db.masterCustomer.findUnique({ where: { id: Number(id) } })
@@ -42,9 +46,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 }
 
-// DELETE /api/customer/[id]
+// DELETE /api/customer/[id] - hanya Admin/Manager
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    const roleDenied = requireManagerSession(session)
+    if (roleDenied) return roleDenied
     const { id } = await params
     const customerId = Number(id)
     const unitCount = await db.unitAsset.count({ where: { customerId } })

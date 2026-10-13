@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
 
 // GET /api/service - list semua tiket dengan relasi lengkap
 export async function GET() {
@@ -38,6 +39,9 @@ export async function GET() {
 // POST /api/service - buat tiket manual (oleh Admin Workshop)
 export async function POST(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    void session
     const body = await request.json()
     if (!body.unitAssetId || !body.deskripsiKerusakan) {
       return NextResponse.json({ error: 'Unit dan deskripsi kerusakan wajib diisi' }, { status: 400 })

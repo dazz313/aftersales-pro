@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 // GET /api/pengaturan - profile perusahaan
 export async function GET() {
@@ -16,9 +17,13 @@ export async function GET() {
   }
 }
 
-// PUT /api/pengaturan - update settings (bulk key-value)
+// PUT /api/pengaturan - update settings (bulk key-value), hanya Admin/Manager
 export async function PUT(request: Request) {
   try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    const roleDenied = requireManagerSession(session)
+    if (roleDenied) return roleDenied
     const body = await request.json()
     const entries: Record<string, string> = body.settings ?? {}
     const keys = Object.keys(entries)

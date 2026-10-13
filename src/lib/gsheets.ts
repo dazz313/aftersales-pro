@@ -1,3 +1,4 @@
+import { createSign } from 'node:crypto'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 
@@ -130,7 +131,7 @@ async function getAccessToken(serviceEmail: string, privateKey: string): Promise
 
   let signed: string
   try {
-    const signer = crypto.createSign('RSA-SHA256')
+    const signer = createSign('RSA-SHA256')
     signer.update(`${header}.${claim}`)
     signer.end()
     signed = signer.sign(normalizePrivateKey(privateKey), 'base64url')
