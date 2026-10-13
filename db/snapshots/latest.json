@@ -1,6 +1,457 @@
 {
-  "generatedAt": "2026-10-13T23:46:00.152Z",
+  "generatedAt": "2026-10-13T23:48:49.781Z",
   "masterToko": [
+    {
+      "id": 169,
+      "kodeToko": "TOK-001",
+      "namaToko": "Toko Sinar Logam",
+      "alamat": "Jl. Makmur, Watampone",
+      "kontak": "081245609649",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-001",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 170,
+      "kodeToko": "TOK-002",
+      "namaToko": "Toko Laris Jaya",
+      "alamat": "Jl. Beringin, Watampone",
+      "kontak": "08124257733",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-002",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 171,
+      "kodeToko": "TOK-003",
+      "namaToko": "Toko Ramah Elektronik",
+      "alamat": "Jl. Masjid No. 48, Watampone",
+      "kontak": "085234194034",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-003",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 172,
+      "kodeToko": "TOK-004",
+      "namaToko": "Toko Hidayat Elektronik",
+      "alamat": "Jl. Letjen Sukawati, Watampone",
+      "kontak": "081342011757",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-004",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 173,
+      "kodeToko": "TOK-005",
+      "namaToko": "Toko Pelita Elektronik",
+      "alamat": "Jl. Beringin, Jagong, Pankajene, Kec. Tanete Riattang, Bone",
+      "kontak": "081395849375",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-005",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 174,
+      "kodeToko": "TOK-006",
+      "namaToko": "Toko Surya Abadi",
+      "alamat": "Jl. Letjend. Soekawati, Watampone",
+      "kontak": "081342705440",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-006",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 175,
+      "kodeToko": "TOK-007",
+      "namaToko": "Toko Semeru Sukawati",
+      "alamat": "Jl. Letjend. Soekawati, Watampone",
+      "kontak": "082348656735 / 081242858785",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-007",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 176,
+      "kodeToko": "TOK-008",
+      "namaToko": "Toko Sentral Elektric",
+      "alamat": "Jl. Letjen Sukawati, Depan Toyota, Watampone",
+      "kontak": "085343528401",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-008",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 177,
+      "kodeToko": "TOK-009",
+      "namaToko": "Toko Senang",
+      "alamat": "Jl. Mesjid No. 24 / Jl. MT. Haryono, Palakka",
+      "kontak": "0811425796",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-009",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 178,
+      "kodeToko": "TOK-010",
+      "namaToko": "Toko Varia Mulia",
+      "alamat": "Watampone",
+      "kontak": "082192239239",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-010",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 179,
+      "kodeToko": "TOK-011",
+      "namaToko": "Toko Sinar Listrik Bangunan",
+      "alamat": "Jl. MT. Haryono, Depan Terminal, Watampone",
+      "kontak": "085242275635",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-011",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 180,
+      "kodeToko": "TOK-012",
+      "namaToko": "Toko Duta Logam",
+      "alamat": "Jl. Agus Salim No. 57",
+      "kontak": "08114101819",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-012",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 181,
+      "kodeToko": "TOK-013",
+      "namaToko": "Toko Havana",
+      "alamat": "Jl. Aiptu KS. Tubun, Kec. Tanete Riattang",
+      "kontak": "082192993911",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-013",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 182,
+      "kodeToko": "TOK-014",
+      "namaToko": "Toko Delta Elektronik",
+      "alamat": "Jl. Aiptu KS. Tubun, Kec. Tanete Riattang, Watampone",
+      "kontak": "085222581188",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-014",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 183,
+      "kodeToko": "TOK-015",
+      "namaToko": "Toko Volta",
+      "alamat": "Jl. Letjen. Sukawati",
+      "kontak": "08124205201",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-015",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 184,
+      "kodeToko": "TOK-016",
+      "namaToko": "Toko Global Elektronik",
+      "alamat": "Jl. K.H. Agus Salim, Watampone",
+      "kontak": "08991970661",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-016",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 185,
+      "kodeToko": "TOK-017",
+      "namaToko": "Toko Smart Home",
+      "alamat": "Jl. Letjen. Sukawati, Watampone",
+      "kontak": "085399393342",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-017",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 186,
+      "kodeToko": "TOK-018",
+      "namaToko": "Toko Mandiri Elektronik",
+      "alamat": "Jl. Poros Tanabatue-Palattae, Carima, Kec. Kahu, Kab. Bone",
+      "kontak": "085242151110",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-018",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 187,
+      "kodeToko": "TOK-019",
+      "namaToko": "Toko Indah Abadi",
+      "alamat": "Pammase, Ds. Selli, Kec. Bengo, Bone",
+      "kontak": "081355588866",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-019",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 188,
+      "kodeToko": "TOK-020",
+      "namaToko": "Toko Varia Maju",
+      "alamat": "Jl. Mesjid, Watampone",
+      "kontak": "082168878487",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-020",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 189,
+      "kodeToko": "TOK-021",
+      "namaToko": "Toko Melati Bangunan",
+      "alamat": "Jl. Ahmad Yani No. 55, Watampone",
+      "kontak": "085233220303",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-021",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 190,
+      "kodeToko": "TOK-022",
+      "namaToko": "Toko Surya Indah",
+      "alamat": "Jl. Ahmad Yani, Watampone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-022",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 191,
+      "kodeToko": "TOK-023",
+      "namaToko": "Toko Karya Bessi",
+      "alamat": "Jl. Sukawati",
+      "kontak": "0811448850",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-023",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 192,
+      "kodeToko": "TOK-024",
+      "namaToko": "Toko Logam Jaya",
+      "alamat": "Bone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-024",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 193,
+      "kodeToko": "TOK-025",
+      "namaToko": "Toko Aneka Baru",
+      "alamat": "Watampone",
+      "kontak": "0811466333",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-025",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 194,
+      "kodeToko": "TOK-026",
+      "namaToko": "Toko Varia Makmur",
+      "alamat": "Jl. Agus Salim, Watampone",
+      "kontak": "081341627953",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-026",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 195,
+      "kodeToko": "TOK-027",
+      "namaToko": "Toko Jaya Bessi",
+      "alamat": "Bone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-027",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 196,
+      "kodeToko": "TOK-028",
+      "namaToko": "Toko Anta Jaya",
+      "alamat": "Jl. Lapatau No. 1",
+      "kontak": "0811421389",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-028",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 197,
+      "kodeToko": "TOK-029",
+      "namaToko": "Toko Cahaya Baru",
+      "alamat": "Watampone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-029",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 198,
+      "kodeToko": "TOK-030",
+      "namaToko": "Toko Swalayan Jaya Bessi",
+      "alamat": "Watampone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-030",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 199,
+      "kodeToko": "TOK-031",
+      "namaToko": "Toko H. Sulaiman",
+      "alamat": "Jl. K.H. Agussalim",
+      "kontak": "08124200519",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-031",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 200,
+      "kodeToko": "TOK-032",
+      "namaToko": "Toko Aneka Logam",
+      "alamat": "Watampone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-032",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 201,
+      "kodeToko": "TOK-033",
+      "namaToko": "Toko Bintang",
+      "alamat": "Jl. Sukawati No. 38 A, Watampone",
+      "kontak": "085298716805",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-033",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 202,
+      "kodeToko": "TOK-034",
+      "namaToko": "Toko Rahma",
+      "alamat": "Jl. K.H. Agus Salim No. 17, Watampone",
+      "kontak": "0823466401345",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-034",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 203,
+      "kodeToko": "TOK-035",
+      "namaToko": "Toko Fatma Jaya",
+      "alamat": "Pasar Sentral Palakka",
+      "kontak": "085255666451",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-035",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 204,
+      "kodeToko": "TOK-036",
+      "namaToko": "Toko Rejeki Baru",
+      "alamat": "Pasar Sentral Palakka",
+      "kontak": "085244772686",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-036",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 205,
+      "kodeToko": "TOK-037",
+      "namaToko": "Toko Surya",
+      "alamat": "Jl. Sukawati No. 1",
+      "kontak": "081242199556",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-037",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 206,
+      "kodeToko": "TOK-038",
+      "namaToko": "Toko Mahkota",
+      "alamat": "Jl. Jend. Sukawati",
+      "kontak": "081241939999",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-038",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 207,
+      "kodeToko": "TOK-039",
+      "namaToko": "Toko Sinar Tuju-Tuju",
+      "alamat": "Jl. Libureng, Seli, Bengo, Bone",
+      "kontak": "081343958385",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-039",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 208,
+      "kodeToko": "TOK-040",
+      "namaToko": "Toko Fajar Abadi",
+      "alamat": "Jl. Komp. Pasar Sentral Palakka",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-040",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 209,
+      "kodeToko": "TOK-041",
+      "namaToko": "Toko Sumber Plastik",
+      "alamat": "Komp. Pasar Palakka",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-041",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
     {
       "id": 164,
       "kodeToko": "TOK-042",
@@ -11,6 +462,72 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-042",
       "createdAt": "2026-10-13T21:54:08.268Z"
+    },
+    {
+      "id": 210,
+      "kodeToko": "TOK-043",
+      "namaToko": "Toko Ria",
+      "alamat": "Komp. Pasar Palakka",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-043",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 211,
+      "kodeToko": "TOK-044",
+      "namaToko": "Toko Andika",
+      "alamat": "Jl. Poros Bone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-044",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 212,
+      "kodeToko": "TOK-045",
+      "namaToko": "Toko Shafwan Elektronik",
+      "alamat": "Jl. Poros Bone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-045",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 213,
+      "kodeToko": "TOK-046",
+      "namaToko": "Toko Ika Elektronik",
+      "alamat": "Jl. Poros Bone",
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-046",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 214,
+      "kodeToko": "TOK-047",
+      "namaToko": "Toko Baruna Bangunan",
+      "alamat": null,
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-047",
+      "createdAt": "2026-10-13T23:48:49.742Z"
+    },
+    {
+      "id": 215,
+      "kodeToko": "TOK-048",
+      "namaToko": "Toko Surya Plastik",
+      "alamat": null,
+      "kontak": null,
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-048",
+      "createdAt": "2026-10-13T23:48:49.742Z"
     }
   ],
   "masterCustomer": [
@@ -1046,20 +1563,7 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     }
   ],
-  "unitAsset": [
-    {
-      "id": 67,
-      "serialNumber": "2602316915",
-      "modelUnit": "RI-602E (W)",
-      "merk": "Rinnai",
-      "nama": "",
-      "tokoId": 164,
-      "customerId": null,
-      "statusGaransi": "STOK_TOKO",
-      "tglPembelian": null,
-      "createdAt": "2026-10-13T22:21:46.222Z"
-    }
-  ],
+  "unitAsset": [],
   "kunjungan": [],
   "serviceRequest": [],
   "permintaanOrder": [],
@@ -1080,6 +1584,24 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 280,
+      "aksi": "IMPORT_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": null,
+      "deskripsi": "Import CSV massal toko: 47 ditambahkan, 0 diperbarui, 1 dilewati, 0 gagal (mode: lewati)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T23:48:49.760Z"
+    },
+    {
+      "id": 279,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2602316915",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602316915 — RI-602E (W)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T23:46:12.375Z"
+    },
     {
       "id": 278,
       "aksi": "BULK_DELETE_MASTER_TOKO",
