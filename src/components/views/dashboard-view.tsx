@@ -1,7 +1,8 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { fetcher, formatRupiah, type DashboardData, type AlertsResponse } from '@/lib/api'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { fetcher, postJson, authHeaders, formatRupiah, type DashboardData, type AlertsResponse } from '@/lib/api'
+import { useToast } from '@/hooks/use-toast'
 import { useAppStore, type NavIntent, type ViewKey } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -16,6 +17,7 @@ import {
 import {
   FileClock, Loader, CheckCircle2, Wallet, PackageX, MapPinOff, AlertTriangle,
   RefreshCw, TrendingUp, Store, ClipboardList, ArrowUpRight, ChevronRight, Hourglass,
+  FileDown, FileSpreadsheet, Send,
 } from 'lucide-react'
 
 const MODEL_SHORT = (m: string) => (m.length > 22 ? m.slice(0, 20) + '…' : m)
@@ -81,6 +83,49 @@ export default function DashboardView() {
   })
 
   const { navigateTo } = useAppStore()
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
+  const unduhPending = async (format: 'pdf' | 'xlsx') => {
+    try {
+      const res = await fetch(`/api/pending/export?format=${format}`, { headers: authHeaders() })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal mengunduh (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `Unit-Pending.${format}`
+      const blob = await res.blob()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000)
+      toast({ title: 'Laporan pending diunduh', description: `File ${filename} siap diemailkan / dikirim ke grup.` })
+    } catch (e) {
+      toast({ title: 'Unduhan gagal', description: (e as Error).message, variant: 'destructive' })
+    }
+  }
+
+  const kirimGrup = useMutation({
+    mutationFn: () => {
+      const list = dash!.belumProses.items.slice(0, 10)
+      const baris = list.map((t, i) => `${i + 1}. ${t.noTiket} — ${t.model} (${t.toko}) — pending ${t.umurJam >= 24 ? `${Math.floor(t.umurJam / 24)} hari` : `${t.umurJam} jam`} — ${t.adaPart ? 'menunggu READY' : 'belum input part'}`)
+      const pesan =
+        `*UNIT PENDING* (${dash!.belumProses.count} unit >24 jam belum ada kode+nama part)\n` +
+        baris.join('\n') +
+        (dash!.belumProses.count > list.length ? `\n…dan ${dash!.belumProses.count - list.length} lainnya.` : '')
+      return postJson<{ ok: boolean; mode: string; detail: string }>('/api/gateway/kirim', { pesan })
+    },
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      toast({ title: res.ok ? `Ringkasan terkirim (${res.mode})` : 'Pengiriman gagal', description: res.detail, variant: res.ok ? 'default' : 'destructive' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mengirim ke grup', description: e.message, variant: 'destructive' }),
+  })
 
   const refreshAll = () => {
     refetchDash()
@@ -136,9 +181,20 @@ export default function DashboardView() {
               </CardTitle>
               <CardDescription>Belum ada kode + nama sparepart yang READY — input dari Master Data (tombol Part) atau detail tiket agar tidak dilupakan</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => navigateTo('service', { serviceStatus: 'REQUEST' })} aria-label="Buka tiket REQUEST">
-              Buka Service <ChevronRight className="ml-1 h-3.5 w-3.5" />
-            </Button>
+            <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+              <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]" onClick={() => void unduhPending('pdf')}>
+                <FileDown className="mr-1 h-3 w-3" /> PDF
+              </Button>
+              <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]" onClick={() => void unduhPending('xlsx')}>
+                <FileSpreadsheet className="mr-1 h-3 w-3" /> Excel
+              </Button>
+              <Button variant="outline" size="sm" className="h-7 border-teal-600 px-2 text-[11px] text-teal-700 hover:bg-teal-50" disabled={kirimGrup.isPending} onClick={() => kirimGrup.mutate()} title="Kirim ringkasan ke grup WA/Telegram">
+                <Send className="mr-1 h-3 w-3" /> Grup
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigateTo('service', { serviceStatus: 'REQUEST' })} aria-label="Buka tiket REQUEST">
+                Buka Service <ChevronRight className="ml-1 h-3.5 w-3.5" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">

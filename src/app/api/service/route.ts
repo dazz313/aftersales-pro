@@ -53,6 +53,18 @@ export async function POST(request: Request) {
     if (!unit) {
       return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
     }
+    // Cegah tiket ganda: unit yang masih punya tiket aktif tidak bisa dibuatkan tiket baru.
+    // (Menutup celah double-klik / webhook retry menyimpan data yang sama dua kali.)
+    const tiketAktif = await db.serviceRequest.findFirst({
+      where: { unitAssetId: unit.id, status: { in: ['REQUEST', 'PROSES'] } },
+      orderBy: { createdAt: 'desc' },
+    })
+    if (tiketAktif) {
+      return NextResponse.json(
+        { error: `Unit ${unit.serialNumber} sudah memiliki tiket aktif ${tiketAktif.noTiket} (status ${tiketAktif.status}) — tambah part / proses di tiket tersebut, jangan buat baru.` },
+        { status: 409 }
+      )
+    }
 
     const noTiket = await generateNoTiket()
     const partsInput: { sparepartId: number; qty: number }[] = Array.isArray(body.parts)

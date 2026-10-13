@@ -28,7 +28,6 @@ interface ItemRow {
   namaPart: string
   qty: number
   garansi: string
-  kondisi: string
   nilaiPart: number
 }
 
@@ -106,7 +105,6 @@ export async function POST(request: Request) {
           namaPart: p.sparepart.namaPart,
           qty: p.qty,
           garansi: isGaransi(t.unitAsset.statusGaransi) ? 'GARANSI' : 'NON-GARANSI',
-          kondisi: p.statusPart === 'READY' ? 'PART RUSAK / DIGANTI' : 'ORDER PRODUSEN',
           nilaiPart: (p.sparepart.hargaKlaim ?? 0) * p.qty,
         })
       }
@@ -123,40 +121,40 @@ export async function POST(request: Request) {
     const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1 })
 
     const filenameBase = `Surat-Jalan-${noSJ}`
+    // Nama penerima tanpa embel "(Produsen)" untuk dokumen
+    const penerimaBersih = penerima.replace(/\s*\(produsen\)/gi, '').trim() || penerima
 
     if (format === 'xlsx') {
       // ============ Excel: Sheet 1 Surat Jalan ============
       const headerInfo: (string | number)[][] = [
-        ['SURAT JALAN — PENGIRIMAN SPAREPART RUSAK / KLAIM GARANSI KE PRODUSEN'],
+        ['SURAT JALAN — PENGIRIMAN SPAREPART RUSAK'],
         [`No. Surat Jalan: ${noSJ}`, '', '', '', '', '', `Tanggal: ${tglCetak}`],
-        [`Pengirim: ${namaPengirim}`, '', '', '', '', '', `Kepada: ${penerima}`],
+        [`Pengirim: ${namaPengirim}`, '', '', '', '', '', `Kepada: ${penerimaBersih}`],
         [`Alamat: ${alamatPengirim}`, '', '', '', '', '', `QR verifikasi: ${qrPayload}`],
         [],
       ]
       const colHeader = [
         'No', 'No. Tiket', 'No. STTB', 'Serial Number', 'Model Unit', 'Toko Asal',
-        'Kode Part', 'Nama Sparepart', 'Qty', 'Garansi', 'Kondisi Part', 'Nilai Part (Rp)',
+        'Kode Part', 'Nama Sparepart', 'Qty', 'Garansi', 'Nilai Part (Rp)',
       ]
       const rows: (string | number)[][] = items.map((it, i) => [
         i + 1, it.noTiket, it.noSttb, it.serialNumber, it.modelUnit, it.tokoAsal,
-        it.kodePart, it.namaPart, it.qty, it.garansi, it.kondisi, it.nilaiPart,
+        it.kodePart, it.namaPart, it.qty, it.garansi, it.nilaiPart,
       ])
       const footer: (string | number)[][] = [
         [],
-        ['', '', '', '', '', '', '', '', `TOTAL: ${totalQty} pcs`, '', '', items.reduce((a, i) => a + i.nilaiPart, 0)],
-        ['', '', '', '', '', '', '', '', '', '', 'Biaya Jasa:', tickets.reduce((a, t) => a + t.biayaJasa, 0)],
-        ['', '', '', '', '', '', '', '', '', '', 'TOTAL KLAIM:', totalNilai],
+        ['', '', '', '', '', '', '', '', `TOTAL: ${totalQty} pcs`, '', items.reduce((a, i) => a + i.nilaiPart, 0)],
+        ['', '', '', '', '', '', '', '', '', 'Biaya Jasa:', tickets.reduce((a, t) => a + t.biayaJasa, 0)],
+        ['', '', '', '', '', '', '', '', '', 'TOTAL KLAIM:', totalNilai],
         [],
-        ['Pernyataan: Barang sebagaimana rincian di atas diserahkan kepada Produsen untuk proses klaim garansi / pemeriksaan part rusak.'],
-        [],
-        ['Pengirim (Workshop)', '', '', '', '', '', '', '', '', '', 'Penerima (Produsen)'],
+        ['Pengirim (Workshop)', '', '', '', '', '', '', '', '', '', 'Penerima'],
         ['_________________________', '', '', '', '', '', '', '', '', '', '_________________________'],
-        [namaPengirim, '', '', '', '', '', '', '', '', '', penerima],
+        [namaPengirim, '', '', '', '', '', '', '', '', '', penerimaBersih],
       ]
       const ws = XLSX.utils.aoa_to_sheet([...headerInfo, colHeader, ...rows, ...footer])
       ws['!cols'] = [
-        { wch: 4 }, { wch: 18 }, { wch: 20 }, { wch: 22 }, { wch: 28 }, { wch: 30 },
-        { wch: 14 }, { wch: 34 }, { wch: 6 }, { wch: 13 }, { wch: 20 }, { wch: 15 },
+        { wch: 4 }, { wch: 18 }, { wch: 20 }, { wch: 22 }, { wch: 30 }, { wch: 36 },
+        { wch: 20 }, { wch: 40 }, { wch: 6 }, { wch: 13 }, { wch: 16 },
       ]
 
       // ============ Sheet 2 Ringkasan per Tiket ============
@@ -230,7 +228,7 @@ export async function POST(request: Request) {
       doc.text('SURAT JALAN', M, 10)
       doc.setFontSize(9)
       doc.setFont('helvetica', 'normal')
-      doc.text('Pengiriman Sparepart Rusak / Klaim Garansi ke Produsen', M, 16)
+      doc.text('Pengiriman Sparepart Rusak', M, 16)
       doc.setFontSize(8)
       doc.text(namaPengirim, pageW - M, 9, { align: 'right' })
       doc.text(alamatPengirim, pageW - M, 14, { align: 'right', maxWidth: 90 })
@@ -254,7 +252,7 @@ export async function POST(request: Request) {
     doc.text(`Pengirim        : ${namaPengirim}`, M, y)
     y += 5
     doc.setFont('helvetica', 'normal')
-    doc.text(`Kepada          : ${penerima}`, M, y)
+    doc.text(`Kepada          : ${penerimaBersih}`, M, y)
     // Caption QR — di bawah gambar QR, tetap dalam margin kanan
     doc.setFontSize(6)
     doc.setTextColor(100, 116, 139)
@@ -270,18 +268,26 @@ export async function POST(request: Request) {
       return t + '…'
     }
 
-    // Tabel item
-    const cols: { title: string; x: number; w: number }[] = [
+    // Bungkus teks maks 2 baris agar kode part & nama toko TAMPIL LENGKAP
+    const wrap2 = (text: string, maxW: number): string[] => {
+      const lines = doc.splitTextToSize(text, maxW) as string[]
+      if (lines.length <= 2) return lines
+      const out = lines.slice(0, 2)
+      out[1] = fit(out[1], maxW)
+      return out
+    }
+
+    // Tabel item — kolom Kondisi dihapus; lebar dialihkan agar kode & toko muat penuh
+    const cols: { title: string; x: number; w: number; wrap?: boolean }[] = [
       { title: 'No', x: M, w: 8 },
       { title: 'No. Tiket', x: M + 8, w: 26 },
-      { title: 'Serial Number', x: M + 34, w: 28 },
-      { title: 'Model Unit', x: M + 62, w: 32 },
-      { title: 'Toko Asal', x: M + 94, w: 32 },
-      { title: 'Kode Part', x: M + 126, w: 18 },
-      { title: 'Nama Sparepart', x: M + 144, w: 50 },
-      { title: 'Qty', x: M + 194, w: 8 },
-      { title: 'Garansi', x: M + 202, w: 22 },
-      { title: 'Kondisi Part', x: M + 224, w: 37 },
+      { title: 'Serial Number', x: M + 34, w: 30 },
+      { title: 'Model Unit', x: M + 64, w: 34 },
+      { title: 'Toko Asal', x: M + 98, w: 44, wrap: true },
+      { title: 'Kode Part', x: M + 142, w: 26, wrap: true },
+      { title: 'Nama Sparepart', x: M + 168, w: 61, wrap: true },
+      { title: 'Qty', x: M + 229, w: 8 },
+      { title: 'Garansi', x: M + 237, w: 24 },
     ]
     const tableRight = M + 261
     if (tableRight > pageW - M) {
@@ -303,7 +309,13 @@ export async function POST(request: Request) {
     doc.setFontSize(8)
     let no = 1
     for (const it of items) {
-      if (y > pageH - 45) {
+      // Sel dengan wrap (toko, kode, nama) boleh 2 baris agar tampil lengkap
+      const c4 = wrap2(it.tokoAsal, cols[4].w - 2)
+      const c5 = wrap2(it.kodePart, cols[5].w - 2)
+      const c6 = wrap2(it.namaPart, cols[6].w - 2)
+      const baris = Math.max(c4.length, c5.length, c6.length)
+      const rowH = baris > 1 ? 11 : 6
+      if (y + rowH > pageH - 45) {
         doc.addPage()
         drawPageHeader()
         y += 2
@@ -313,19 +325,19 @@ export async function POST(request: Request) {
       // zebra
       if (no % 2 === 0) {
         doc.setFillColor(248, 250, 252)
-        doc.rect(M, y - 4, tableRight - M, 6, 'F')
+        doc.rect(M, y - 4, tableRight - M, rowH - 1, 'F')
       }
+      const yy = (i: number) => y + i * 4.5
       doc.text(String(no++), cols[0].x + 1.5, y)
       doc.text(fit(it.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
       doc.text(fit(it.serialNumber, cols[2].w - 2), cols[2].x + 1.5, y)
       doc.text(fit(it.modelUnit, cols[3].w - 2), cols[3].x + 1.5, y)
-      doc.text(fit(it.tokoAsal, cols[4].w - 2), cols[4].x + 1.5, y)
-      doc.text(fit(it.kodePart, cols[5].w - 2), cols[5].x + 1.5, y)
-      doc.text(fit(it.namaPart, cols[6].w - 2), cols[6].x + 1.5, y)
+      c4.forEach((ln, i) => doc.text(ln, cols[4].x + 1.5, yy(i)))
+      c5.forEach((ln, i) => doc.text(ln, cols[5].x + 1.5, yy(i)))
+      c6.forEach((ln, i) => doc.text(ln, cols[6].x + 1.5, yy(i)))
       doc.text(String(it.qty), cols[7].x + 1.5, y)
       doc.text(fit(it.garansi, cols[8].w - 2), cols[8].x + 1.5, y)
-      doc.text(fit(it.kondisi, cols[9].w - 2), cols[9].x + 1.5, y)
-      y += 6
+      y += rowH
     }
 
     // Baris total
@@ -340,26 +352,16 @@ export async function POST(request: Request) {
     doc.setFontSize(8.5)
     doc.text(`TOTAL — ${tickets.length} tiket / ${items.length} item part`, cols[1].x + 1.5, y)
     doc.text(`${totalQty} pcs`, cols[7].x + 1.5, y)
-    doc.text(fit(`Rp ${totalNilai.toLocaleString('id-ID')}`, cols[9].w - 2), cols[9].x + 1.5, y)
-    y += 10
+    doc.text(fit(`Rp ${totalNilai.toLocaleString('id-ID')}`, cols[8].w - 2), cols[8].x + 1.5, y)
+    y += 14
     doc.setFont('helvetica', 'normal')
-
-    // Pernyataan
-    const pernyataan =
-      `Barang sebagaimana rincian di atas diserahkan kepada ${penerima} untuk proses klaim garansi / ` +
-      'pemeriksaan part rusak. Part dikirim dari stok inventory workshop. Mohon pemeriksaan fisik ' +
-      'saat penerimaan; surat jalan ini menjadi bukti pengiriman yang sah apabila telah ditandatangani kedua belah pihak.'
-    doc.setFontSize(9)
-    doc.setTextColor(51, 65, 85)
-    doc.text(doc.splitTextToSize(pernyataan, pageW - 2 * M - 30), M, y)
-    y += Math.ceil(pernyataan.length / 110) * 5 + 12
 
     // Tanda tangan
     const colW = (pageW - 2 * M) / 2
     doc.setTextColor(30, 41, 59)
     doc.setFontSize(10)
-    doc.text(`Pengirim, (${namaPengirim})`, M + colW / 2, y, { align: 'center' })
-    doc.text(`Penerima, (${penerima})`, M + colW + colW / 2, y, { align: 'center' })
+    doc.text('Pengirim', M + colW / 2, y, { align: 'center' })
+    doc.text('Penerima', M + colW + colW / 2, y, { align: 'center' })
     y += 20
     doc.setDrawColor(100, 116, 139)
     doc.line(M + colW / 2 - 30, y, M + colW / 2 + 30, y)

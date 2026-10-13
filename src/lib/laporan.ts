@@ -72,6 +72,27 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
     return { ok: true, reply: replyText, aksi: 'PART_NOT_FOUND', channel, mode: fwd.mode }
   }
 
+  // Cegah tiket ganda (mis. retry webhook / laporan dikirim 2×):
+  // unit yang masih punya tiket aktif dipakai ulang, bukan dibuat baru.
+  const tiketAktif = await db.serviceRequest.findFirst({
+    where: { unitAssetId: unit.id, status: { in: ['REQUEST', 'PROSES'] } },
+    orderBy: { createdAt: 'desc' },
+  })
+  if (tiketAktif) {
+    const replyText =
+      `⚠️ Unit *${unit.serialNumber}* sudah memiliki tiket aktif *#${tiketAktif.noTiket}* (status ${tiketAktif.status}).\n` +
+      `Laporan dicatat tanpa membuat tiket ganda — pantau progres pada tiket tersebut.`
+    const fwd = await balas(channel, replyText, { noTiket: tiketAktif.noTiket, aksi: 'TIKET_DUPLIKAT_DITOLAK' })
+    await logAudit({
+      aksi: 'TIKET_DUPLIKAT_DITOLAK',
+      entitas: 'service_request',
+      entitasId: tiketAktif.noTiket,
+      deskripsi: `Laporan via ${labelChannel(channel)} Bot ditolak duplikat: unit ${unit.serialNumber} masih punya tiket aktif`,
+      aktor: `${labelChannel(channel)}-BOT`,
+    })
+    return { ok: true, reply: replyText, aksi: 'TIKET_DUPLIKAT_DITOLAK', noTiket: tiketAktif.noTiket, tiketId: tiketAktif.id, channel, mode: fwd.mode }
+  }
+
   const noTiket = await generateNoTiket()
   const garansiInfo =
     isGaransi(unit.statusGaransi)

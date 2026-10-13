@@ -439,7 +439,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
       let statusPart = 'ORDER_PRODUSEN'
       let statusKonfirmasi = 'MENUNGGU'
-      if (sp.stokInventory >= qty) {
+      // Cek duplikat SEBELUM menyentuh stok (agar 409 tidak membocorkan reserve)
+      const partLama = existing.parts.find((p) => p.sparepartId === sp.id)
+      const stokCukup = sp.stokInventory >= qty
+      if (partLama && partLama.statusPart === 'READY' && !stokCukup) {
+        return NextResponse.json(
+          { error: `Part ${sp.kodePart} sudah READY ×${partLama.qty} di tiket ini — stok tambahan tidak cukup. Restock dulu atau kurangi qty.` },
+          { status: 409 }
+        )
+      }
+      if (stokCukup) {
         const ambilJual = Math.min(sp.stokJual, qty)
         await db.masterSparepart.update({
           where: { id: sp.id },
@@ -453,16 +462,31 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         statusKonfirmasi = 'READY'
         await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
       }
-      await db.serviceRequestPart.create({
-        data: { serviceRequestId: ticketId, sparepartId: sp.id, qty, statusPart, statusKonfirmasi, sumberPart: 'PRODUSEN' },
-      })
-      await logAudit({
-        aksi: 'INPUT_PART_PRODUSEN',
-        entitas: 'service_request',
-        entitasId: existing.noTiket,
-        deskripsi: `Balasan produsen dicatat: ${sp.kodePart} ×${qty} → ${statusPart} (sumber PRODUSEN)`,
-        aktor,
-      })
+      // Cegah part ganda tanpa warning: kode yang sama digabung bila statusnya
+      // sama; bila beda status, baris baru dicatat eksplisit (jujur, tidak diam-diam).
+      if (partLama && partLama.statusPart === statusPart) {
+        await db.serviceRequestPart.update({ where: { id: partLama.id }, data: { qty: partLama.qty + qty } })
+        await logAudit({
+          aksi: 'INPUT_PART_PRODUSEN',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Balasan produsen digabung ke baris yang sama: ${sp.kodePart} +${qty} (total ${partLama.qty + qty}, ${statusPart}, sumber PRODUSEN)`,
+          aktor,
+        })
+      } else {
+        await db.serviceRequestPart.create({
+          data: { serviceRequestId: ticketId, sparepartId: sp.id, qty, statusPart, statusKonfirmasi, sumberPart: 'PRODUSEN' },
+        })
+        await logAudit({
+          aksi: 'INPUT_PART_PRODUSEN',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: partLama
+            ? `Balasan produsen dicatat terpisah (beda status): ${sp.kodePart} ×${qty} → ${statusPart} (sumber PRODUSEN)`
+            : `Balasan produsen dicatat: ${sp.kodePart} ×${qty} → ${statusPart} (sumber PRODUSEN)`,
+          aktor,
+        })
+      }
       // Aturan inti: kode+nama terinput & READY → otomatis PROSES
       if (existing.status === 'REQUEST' && statusPart === 'READY') {
         await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES' } })
@@ -499,7 +523,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
       let statusPart = 'ORDER_PRODUSEN'
       let statusKonfirmasi = 'MENUNGGU'
-      if (sp.stokInventory >= qty) {
+      // Cek duplikat SEBELUM menyentuh stok (agar 409 tidak membocorkan reserve)
+      const partLama = existing.parts.find((p) => p.sparepartId === sp.id)
+      const stokCukup = sp.stokInventory >= qty
+      if (partLama && partLama.statusPart === 'READY' && !stokCukup) {
+        return NextResponse.json(
+          { error: `Part ${sp.kodePart} sudah READY ×${partLama.qty} di tiket ini — stok tambahan tidak cukup. Restock dulu atau kurangi qty.` },
+          { status: 409 }
+        )
+      }
+      if (stokCukup) {
         const ambilJual = Math.min(sp.stokJual, qty)
         await db.masterSparepart.update({
           where: { id: sp.id },
@@ -512,18 +545,31 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         statusPart = 'READY'
         statusKonfirmasi = 'READY'
       }
-      await db.serviceRequestPart.create({
-        data: { serviceRequestId: ticketId, sparepartId: sp.id, qty, statusPart, statusKonfirmasi },
-      })
-      await logAudit({
-        aksi: 'TAMBAH_PART_SERVICE',
-        entitas: 'service_request',
-        entitasId: existing.noTiket,
-        deskripsi: statusPart === 'READY'
-          ? `Tambah part saat pengerjaan: ${sp.kodePart} ×${qty} READY (stok direserve)`
-          : `Tambah part saat pengerjaan: ${sp.kodePart} ×${qty} stok tidak cukup → ORDER ke produsen`,
-        aktor,
-      })
+      if (partLama && partLama.statusPart === statusPart) {
+        await db.serviceRequestPart.update({ where: { id: partLama.id }, data: { qty: partLama.qty + qty } })
+        await logAudit({
+          aksi: 'TAMBAH_PART_SERVICE',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Tambah part digabung ke baris yang sama: ${sp.kodePart} +${qty} (total ${partLama.qty + qty}, ${statusPart})`,
+          aktor,
+        })
+      } else {
+        await db.serviceRequestPart.create({
+          data: { serviceRequestId: ticketId, sparepartId: sp.id, qty, statusPart, statusKonfirmasi },
+        })
+        await logAudit({
+          aksi: 'TAMBAH_PART_SERVICE',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: partLama
+            ? `Tambah part dicatat terpisah (beda status): ${sp.kodePart} ×${qty} → ${statusPart}`
+            : statusPart === 'READY'
+              ? `Tambah part saat pengerjaan: ${sp.kodePart} ×${qty} READY (stok direserve)`
+              : `Tambah part saat pengerjaan: ${sp.kodePart} ×${qty} stok tidak cukup → ORDER ke produsen`,
+          aktor,
+        })
+      }
       if (statusPart === 'READY') {
         await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
       }

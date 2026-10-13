@@ -385,9 +385,18 @@ export default function MasterDataView() {
                         <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{formatTanggal(u.tglPembelian)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
-                            <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
-                              <PackagePlus className="mr-1 h-3 w-3" /> Part
-                            </Button>
+                            {(() => {
+                              const aktif = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST' || t.status === 'PROSES')
+                              return aktif ? (
+                                <Badge variant="outline" className="border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
+                                  {aktif.noTiket}
+                                </Badge>
+                              ) : (
+                                <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
+                                  <PackagePlus className="mr-1 h-3 w-3" /> Part
+                                </Button>
+                              )
+                            })()}
                             <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
                               <Pencil className="h-3 w-3" />
                             </Button>

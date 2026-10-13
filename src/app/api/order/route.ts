@@ -24,8 +24,13 @@ export async function GET() {
 async function generateNoOrder(): Promise<string> {
   const now = new Date()
   const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
-  const count = await db.permintaanOrder.count({ where: { noOrder: { startsWith: `ORD-${ymd}` } } })
-  return `ORD-${ymd}-${String(count + 1).padStart(4, '0')}`
+  const last = await db.permintaanOrder.findFirst({
+    where: { noOrder: { startsWith: `ORD-${ymd}` } },
+    orderBy: { noOrder: 'desc' },
+    select: { noOrder: true },
+  })
+  const seq = last ? parseInt(last.noOrder.slice(-4), 10) + 1 : 1
+  return `ORD-${ymd}-${String(Number.isFinite(seq) ? seq : 1).padStart(4, '0')}`
 }
 
 // POST /api/order - catat permintaan order sparepart dari customer (toko/perorangan)
