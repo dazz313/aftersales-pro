@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-13T22:52:29.525Z",
+  "generatedAt": "2026-10-13T23:13:51.032Z",
   "masterToko": [
     {
       "id": 123,
@@ -1553,18 +1553,6 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-13T22:21:46.222Z"
-    },
-    {
-      "id": 68,
-      "serialNumber": "FSDFSDFSD",
-      "modelUnit": "RI-602E (W)",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": null,
-      "customerId": 27,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": "2026-02-14T00:00:00.000Z",
-      "createdAt": "2026-10-13T22:44:28.404Z"
     }
   ],
   "kunjungan": [],
@@ -1587,6 +1575,15 @@
   ],
   "pengaturan": [],
   "auditLog": [
+    {
+      "id": 277,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "FSDFSDFSD",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): FSDFSDFSD — RI-602E (W)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-13T23:13:50.787Z"
+    },
     {
       "id": 276,
       "aksi": "UPDATE_UNIT_ASSET",
