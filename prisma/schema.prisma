@@ -154,6 +154,7 @@ model ServiceRequest {
   tglKlaim            DateTime?
   biayaJasa           Float                @default(0)
   tglFinish           DateTime?
+  tglTiket            DateTime            @default(now()) // tanggal kejadian/laporan — boleh backdated (data historis)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])

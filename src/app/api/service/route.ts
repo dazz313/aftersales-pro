@@ -17,7 +17,7 @@ export async function GET() {
         },
         parts: { include: { sparepart: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ tglTiket: 'desc' }, { createdAt: 'desc' }],
     })
     const now = Date.now()
     const result = tickets.map((t) => ({
@@ -46,6 +46,19 @@ export async function POST(request: Request) {
     if (!body.unitAssetId || !body.deskripsiKerusakan) {
       return NextResponse.json({ error: 'Unit dan deskripsi kerusakan wajib diisi' }, { status: 400 })
     }
+    // Tanggal kejadian/laporan — opsional, default sekarang. Mendukung backdate
+    // untuk upload data historis; ditolak bila invalid atau setelah besok.
+    let tglTiket = new Date()
+    if (body.tglTiket !== undefined && body.tglTiket !== null && body.tglTiket !== '') {
+      const parsed = new Date(body.tglTiket)
+      const batas = new Date()
+      batas.setDate(batas.getDate() + 1)
+      batas.setHours(23, 59, 59, 999)
+      if (Number.isNaN(parsed.getTime()) || parsed > batas) {
+        return NextResponse.json({ error: 'Tanggal tiket tidak valid atau melebihi batas' }, { status: 400 })
+      }
+      tglTiket = parsed
+    }
     const unit = await db.unitAsset.findUnique({
       where: { id: Number(body.unitAssetId) },
       include: { toko: true },
@@ -66,54 +79,82 @@ export async function POST(request: Request) {
       )
     }
 
-    const noTiket = await generateNoTiket()
-    const partsInput: { sparepartId: number; qty: number }[] = Array.isArray(body.parts)
-      ? body.parts
-      : []
+    const noTiket = await generateNoTiket(tglTiket)
 
-    // Jalan pintas: kode + nama part langsung (dari Master Data / balasan produsen).
-    // Bila kode belum ada di katalog → otomatis didaftarkan (tercollect).
-    const produsenKode = String(body.kodePart ?? '').trim().toUpperCase()
-    const produsenNama = String(body.namaPart ?? '').trim()
-    if ((produsenKode || produsenNama) && !(produsenKode && produsenNama)) {
+    // ===== Multi-part per tiket: 1 unit bisa punya >1 kode sparepart =====
+    // Tiap item: { sparepartId } dari katalog ATAU { kodePart + namaPart } manual.
+    type PartIn = { sparepartId?: number; kodePart?: string; namaPart?: string; qty: number }
+    const partsRaw: PartIn[] = Array.isArray(body.parts) ? body.parts : []
+
+    // Jalur lama (single kodePart+namaPart) tetap diterima demi kompatibilitas.
+    const legacyKode = String(body.kodePart ?? '').trim().toUpperCase()
+    const legacyNama = String(body.namaPart ?? '').trim()
+    if ((legacyKode || legacyNama) && !(legacyKode && legacyNama)) {
       return NextResponse.json({ error: 'Kode dan nama sparepart wajib diisi bersamaan' }, { status: 400 })
     }
-
-    // Validasi & reserve stok part
-    const partResults: { part: string; status: string }[] = []
-    for (const p of partsInput) {
-      const sp = await db.masterSparepart.findUnique({ where: { id: Number(p.sparepartId) } })
-      if (!sp) continue
-      const qty = Number(p.qty) || 1
-      if (sp.stokInventory >= qty) {
-        // Reserve: ambil dari stok BISA JUAL dulu, kekurangan dari stok GARANSI
-        const ambilJual = Math.min(sp.stokJual, qty)
-        await db.masterSparepart.update({
-          where: { id: sp.id },
-          data: {
-            stokJual: { decrement: ambilJual },
-            stokGaransi: { decrement: qty - ambilJual },
-            stokInventory: { decrement: qty },
-            totalTerpakai: { increment: qty },
-          },
-        })
-        partResults.push({ part: sp.namaPart, status: 'READY' })
-      } else {
-        partResults.push({ part: sp.namaPart, status: 'ORDER_PRODUSEN' })
-      }
+    if (legacyKode && legacyNama) {
+      partsRaw.push({ kodePart: legacyKode, namaPart: legacyNama, qty: Number(body.qty) || 1 })
     }
 
-    // Part dari kode produsen (baru/lama) — ikut direserve bila stok ada
-    let produsenSparepartId: number | null = null
-    let produsenStatus = 'ORDER_PRODUSEN'
-    let produsenKonfirmasi = 'MENUNGGU'
-    if (produsenKode && produsenNama) {
-      let sp = await db.masterSparepart.findUnique({ where: { kodePart: produsenKode } })
+    // Normalisasi + ANTI-PENGULANGAN: kode part yang sama tidak boleh dua
+    // kali dalam 1 tiket (dicek sebelum menyentuh stok).
+    type PartResolved = { spId: number | null; kode: string; nama: string; qty: number; manual: boolean }
+    const resolvedParts: PartResolved[] = []
+    const seenKode = new Set<string>()
+    for (const p of partsRaw) {
+      const qty = Math.max(1, Math.trunc(Number(p.qty) || 1))
+      let sp: { id: number; kodePart: string; namaPart: string } | null = null
+      let kode = ''
+      let nama = ''
+      let manual = false
+      if (Number(p.sparepartId) > 0) {
+        sp = await db.masterSparepart.findUnique({ where: { id: Number(p.sparepartId) } })
+        if (!sp) {
+          return NextResponse.json({ error: 'Sparepart tidak ditemukan' }, { status: 404 })
+        }
+        kode = sp.kodePart
+        nama = sp.namaPart
+      } else {
+        kode = String(p.kodePart ?? '').trim().toUpperCase()
+        nama = String(p.namaPart ?? '').trim()
+        if (!kode || !nama) {
+          return NextResponse.json(
+            { error: 'Tiap part wajib pilih dari katalog ATAU isi kode + nama bersamaan' },
+            { status: 400 }
+          )
+        }
+        manual = true
+        // Kode manual ternyata sudah ada di katalog → pakai part yang sama
+        sp = await db.masterSparepart.findUnique({ where: { kodePart: kode } })
+      }
+      if (seenKode.has(kode)) {
+        return NextResponse.json(
+          { error: `Part ${kode} (${nama}) dimasukkan dua kali dalam tiket ini — gabungkan jumlahnya jadi satu baris.` },
+          { status: 400 }
+        )
+      }
+      seenKode.add(kode)
+      resolvedParts.push({ spId: sp ? sp.id : null, kode, nama, qty, manual })
+    }
+
+    // Validasi & reserve stok per part (kode baru dari input manual otomatis terdaftar)
+    const partResults: { part: string; status: string }[] = []
+    const partsCreate: {
+      sparepartId: number
+      qty: number
+      statusPart: string
+      statusKonfirmasi: string
+      sumberPart?: string
+    }[] = []
+    for (const r of resolvedParts) {
+      let sp = r.spId
+        ? await db.masterSparepart.findUnique({ where: { id: r.spId } })
+        : await db.masterSparepart.findUnique({ where: { kodePart: r.kode } })
       if (!sp) {
         sp = await db.masterSparepart.create({
           data: {
-            kodePart: produsenKode,
-            namaPart: produsenNama,
+            kodePart: r.kode,
+            namaPart: r.nama,
             brandKompatibel: unit.merk ?? '',
             supplier: '',
             stokJual: 0,
@@ -124,23 +165,31 @@ export async function POST(request: Request) {
           },
         })
       }
-      const qty = Math.max(1, Math.trunc(Number(body.qty) || 1))
-      if (sp.stokInventory >= qty) {
-        const ambilJual = Math.min(sp.stokJual, qty)
+      let statusPart = 'ORDER_PRODUSEN'
+      let statusKonfirmasi = 'MENUNGGU'
+      if (sp.stokInventory >= r.qty) {
+        // Reserve: ambil dari stok BISA JUAL dulu, kekurangan dari stok GARANSI
+        const ambilJual = Math.min(sp.stokJual, r.qty)
         await db.masterSparepart.update({
           where: { id: sp.id },
           data: {
             stokJual: { decrement: ambilJual },
-            stokGaransi: { decrement: qty - ambilJual },
-            stokInventory: { decrement: qty },
-            totalTerpakai: { increment: qty },
+            stokGaransi: { decrement: r.qty - ambilJual },
+            stokInventory: { decrement: r.qty },
+            totalTerpakai: { increment: r.qty },
           },
         })
-        produsenStatus = 'READY'
-        produsenKonfirmasi = 'READY'
+        statusPart = 'READY'
+        statusKonfirmasi = 'READY'
       }
-      produsenSparepartId = sp.id
-      partResults.push({ part: sp.namaPart, status: produsenStatus })
+      partsCreate.push({
+        sparepartId: sp.id,
+        qty: r.qty,
+        statusPart,
+        statusKonfirmasi,
+        ...(r.manual ? { sumberPart: 'PRODUSEN' } : {}),
+      })
+      partResults.push({ part: sp.namaPart, status: statusPart })
     }
 
     const hasOrderPart = partResults.some((r) => r.status === 'ORDER_PRODUSEN')
@@ -183,26 +232,8 @@ export async function POST(request: Request) {
         penanganan: 'BELUM',
         deskripsiKerusakan: body.deskripsiKerusakan,
         biayaJasa,
-        parts: {
-          create: [
-            ...partsInput.map((p, i) => ({
-              sparepartId: Number(p.sparepartId),
-              qty: Number(p.qty) || 1,
-              statusPart: partResults[i]?.status ?? 'ORDER_PRODUSEN',
-              // Stok toko mencukupi = produsen dianggap READY; sisanya menunggu konfirmasi via WA
-              statusKonfirmasi: partResults[i]?.status === 'READY' ? 'READY' : 'MENUNGGU',
-            })),
-            ...(produsenSparepartId
-              ? [{
-                  sparepartId: produsenSparepartId,
-                  qty: Math.max(1, Math.trunc(Number(body.qty) || 1)),
-                  statusPart: produsenStatus,
-                  statusKonfirmasi: produsenKonfirmasi,
-                  sumberPart: 'PRODUSEN',
-                }]
-              : []),
-          ],
-        },
+        tglTiket,
+        parts: { create: partsCreate },
       },
       include: { unitAsset: { include: { toko: true } }, parts: { include: { sparepart: true } } },
     })
@@ -215,7 +246,7 @@ export async function POST(request: Request) {
       aktor: body.aktor,
     })
     if (partResults.some((r) => r.status === 'READY')) {
-      await backupSparepartToGit('RESERVE', partsInput.map((p) => String(p.sparepartId)).join(',') || noTiket, body.aktor)
+      await backupSparepartToGit('RESERVE', partsCreate.map((p) => String(p.sparepartId)).join(',') || noTiket, body.aktor)
     }
     await autoGitBackup('CREATE', 'service_request', noTiket, body.aktor)
 

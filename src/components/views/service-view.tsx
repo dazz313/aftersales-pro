@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatRupiah, formatTanggal, formatWaktu, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -181,12 +181,23 @@ export default function ServiceView() {
   const [formUnit, setFormUnit] = useState('')
   const [formDesc, setFormDesc] = useState('')
   const [formJasa, setFormJasa] = useState('100000')
-  const [formParts, setFormParts] = useState<string[]>([])
   const [formSumber, setFormSumber] = useState('MANUAL')
+  // Multi-part: 1 unit bisa butuh >1 kode sparepart — tiap baris pilih dari
+  // katalog ATAU tulis kode+nama manual (part baru otomatis terdaftar).
+  type PartRow = { key: number; mode: 'katalog' | 'manual'; sparepartId: string; kode: string; nama: string; qty: string }
+  const [formParts, setFormParts] = useState<PartRow[]>([
+    { key: 0, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' },
+  ])
+  const nextPartKey = useRef(1)
   // Klasifikasi customer: TOKO (stok toko → otomatis garansi) atau PERORANGAN
   const [formTipe, setFormTipe] = useState<'TOKO' | 'PERORANGAN'>('TOKO')
   const [formPemilik, setFormPemilik] = useState('')
   const [formKlasifikasi, setFormKlasifikasi] = useState<'GARANSI' | 'NON_GARANSI' | ''>('')
+  const [formTgl, setFormTgl] = useState(() => {
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+  })
 
   const garansiOtomatis = formTipe === 'TOKO'
   const klasifikasiFinal = garansiOtomatis ? 'GARANSI' : formKlasifikasi
@@ -199,15 +210,57 @@ export default function ServiceView() {
     return (units ?? []).filter((u) => (formTipe === 'TOKO' ? u.tokoId === pid : u.customerId === pid))
   }, [units, formTipe, formPemilik])
 
+  // ===== Validasi baris part: anti-pengulangan (kode sama tidak boleh 2x) =====
+  const updatePartRow = (key: number, patch: Partial<PartRow>) =>
+    setFormParts((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)))
+  const tambahPartRow = () =>
+    setFormParts((rows) => [...rows, { key: nextPartKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
+  const hapusPartRow = (key: number) => setFormParts((rows) => rows.filter((r) => r.key !== key))
+
+  const partKodePerRow = useMemo(
+    () =>
+      formParts.map((r) => {
+        if (r.mode === 'katalog') {
+          if (!r.sparepartId) return ''
+          return (parts ?? []).find((p) => p.id === Number(r.sparepartId))?.kodePart ?? ''
+        }
+        return r.kode.trim().toUpperCase()
+      }),
+    [formParts, parts]
+  )
+  const dupPartKode = useMemo(() => {
+    const count = new Map<string, number>()
+    for (const k of partKodePerRow) if (k) count.set(k, (count.get(k) ?? 0) + 1)
+    return new Set(partKodePerRow.filter((k) => k && (count.get(k) ?? 0) > 1))
+  }, [partKodePerRow])
+  const partRowInvalid = formParts.some((r) =>
+    r.mode === 'manual' ? (!r.kode.trim() && r.nama.trim()) || (r.kode.trim() && !r.nama.trim()) : false
+  )
+  const partsPayload = formParts
+    .map((r) => {
+      if (r.mode === 'katalog') {
+        return r.sparepartId
+          ? { sparepartId: Number(r.sparepartId), qty: Math.max(1, Number(r.qty) || 1) }
+          : null
+      }
+      const kode = r.kode.trim().toUpperCase()
+      const nama = r.nama.trim()
+      return kode && nama ? { kodePart: kode, namaPart: nama, qty: Math.max(1, Number(r.qty) || 1) } : null
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null)
+
   const resetFormTiket = () => {
     setFormUnit('')
     setFormDesc('')
     setFormJasa('100000')
-    setFormParts([])
+    setFormParts([{ key: nextPartKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
     setFormSumber('MANUAL')
     setFormTipe('TOKO')
     setFormPemilik('')
     setFormKlasifikasi('')
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    setFormTgl(`${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`)
   }
 
   // Aksi alur di dalam dialog detail — dialog tetap terbuka & menampilkan status baru
@@ -261,7 +314,8 @@ export default function ServiceView() {
         sumberLaporan: formSumber,
         customerType: formTipe,
         klasifikasiGaransi: klasifikasiFinal,
-        parts: formParts.map((id) => ({ sparepartId: Number(id), qty: 1 })),
+        tglTiket: formTgl ? new Date(formTgl).toISOString() : undefined,
+        parts: partsPayload,
       }),
     onSuccess: () => {
       invalidateAll()
@@ -814,7 +868,7 @@ export default function ServiceView() {
               <Label>Deskripsi Kerusakan</Label>
               <HistoryInput historyKey="service-deskripsi" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: AC tidak dingin, indikator berkedip..." />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label>Sumber Laporan</Label>
                 <Select value={formSumber} onValueChange={setFormSumber}>
@@ -827,23 +881,100 @@ export default function ServiceView() {
                 </Select>
               </div>
               <div className="space-y-1.5">
+                <Label>Tanggal Kejadian</Label>
+                <Input type="date" value={formTgl} onChange={(e) => setFormTgl(e.target.value)} aria-label="Tanggal kejadian tiket" />
+              </div>
+              <div className="space-y-1.5">
                 <Label>Biaya Repair (Rp){jasaDisabled && ' — nonaktif (garansi)'}</Label>
                 <Input type="number" value={jasaDisabled ? '0' : formJasa} onChange={(e) => setFormJasa(e.target.value)} disabled={jasaDisabled} />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Reserve Sparepart (opsional — bisa ditambah saat pengerjaan)</Label>
-              <SearchSelect
-                value={formParts[0] ?? ''}
-                onChange={(v) => setFormParts(v ? [v] : [])}
-                options={(parts ?? []).filter((p) => p.stokInventory > 0).map((p) => ({
-                  value: String(p.id),
-                  label: `${p.kodePart} · ${p.namaPart}`,
-                  sub: `${[p.brandKompatibel?.trim(), p.supplier?.trim()].filter(Boolean).join(' · ') || 'tanpa brand/supplier'} (jual ${p.stokJual}/garansi ${p.stokGaransi})`,
-                }))}
-                placeholder="— Ketik kode/nama part —"
-                ariaLabel="Pilih sparepart"
-              />
+            <p className="text-[11px] text-slate-500">Tanggal kejadian boleh diisi lama (data historis) — nomor tiket &amp; urutan daftar otomatis menyesuaikan tanggal ini.</p>
+            <div className="space-y-2">
+              <Label>Part untuk Unit Ini — boleh lebih dari satu kode</Label>
+              {formParts.map((row, i) => {
+                const kodeRow = partKodePerRow[i]
+                const dup = kodeRow !== '' && dupPartKode.has(kodeRow)
+                const setengah = row.mode === 'manual' && ((!row.kode.trim() && row.nama.trim()) || (row.kode.trim() && !row.nama.trim()))
+                return (
+                  <div key={row.key} className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 p-2">
+                    <div className="flex items-start gap-1.5">
+                      <div className="min-w-0 flex-1">
+                        {row.mode === 'katalog' ? (
+                          <SearchSelect
+                            value={row.sparepartId}
+                            onChange={(v) => updatePartRow(row.key, { sparepartId: v })}
+                            options={(parts ?? []).map((p) => ({
+                              value: String(p.id),
+                              label: `${p.kodePart} · ${p.namaPart}`,
+                              sub: `${p.brandKompatibel?.trim() ?? ''}${p.brandKompatibel?.trim() ? ' · ' : ''}stok ${p.stokInventory}`.replace(/^ · /, ''),
+                            }))}
+                            placeholder="— Ketik kode/nama part —"
+                            ariaLabel={`Pilih part baris ${i + 1}`}
+                          />
+                        ) : (
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <Input
+                              value={row.kode}
+                              onChange={(e) => updatePartRow(row.key, { kode: e.target.value.toUpperCase() })}
+                              placeholder="Kode part"
+                              className="h-9 font-mono text-xs"
+                              aria-label={`Kode part baris ${i + 1}`}
+                            />
+                            <Input
+                              value={row.nama}
+                              onChange={(e) => updatePartRow(row.key, { nama: e.target.value })}
+                              placeholder="Nama sparepart"
+                              className="h-9 text-xs"
+                              aria-label={`Nama sparepart baris ${i + 1}`}
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={row.qty}
+                        onChange={(e) => updatePartRow(row.key, { qty: e.target.value })}
+                        className="h-9 w-14 shrink-0 text-center text-xs"
+                        aria-label={`Jumlah part baris ${i + 1}`}
+                      />
+                      {formParts.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-8 shrink-0 text-slate-400 hover:text-red-600"
+                          onClick={() => hapusPartRow(row.key)}
+                          aria-label={`Hapus part baris ${i + 1}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="text-[11px] text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline"
+                      onClick={() =>
+                        updatePartRow(row.key, row.mode === 'katalog' ? { mode: 'manual', kode: '', nama: '' } : { mode: 'katalog', kode: '', nama: '' })
+                      }
+                    >
+                      {row.mode === 'katalog' ? '＋ belum ada di katalog? tulis kode & nama manual' : 'pilih dari katalog'}
+                    </button>
+                    {dup && (
+                      <p className="text-[11px] font-medium text-red-600">
+                        Kode {kodeRow} sudah dipilih di baris lain — gabungkan jumlahnya jadi satu baris (pengulangan tidak diizinkan).
+                      </p>
+                    )}
+                    {setengah && (
+                      <p className="text-[11px] font-medium text-red-600">Kode dan nama wajib diisi bersamaan.</p>
+                    )}
+                  </div>
+                )
+              })}
+              <Button type="button" variant="outline" size="sm" className="w-full border-dashed" onClick={tambahPartRow}>
+                <Plus className="mr-1 h-3.5 w-3.5" /> Tambah Part
+              </Button>
             </div>
             <p className="flex items-start gap-1.5 rounded-md bg-emerald-50 p-2.5 text-xs text-emerald-800">
               <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -854,7 +985,7 @@ export default function ServiceView() {
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!formPemilik || !formUnit || !formDesc.trim() || (!garansiOtomatis && !formKlasifikasi) || createMutation.isPending}
+              disabled={!formPemilik || !formUnit || !formDesc.trim() || (!garansiOtomatis && !formKlasifikasi) || partRowInvalid || dupPartKode.size > 0 || createMutation.isPending}
               onClick={() => createMutation.mutate()}
             >
               <Plus className="mr-1 h-4 w-4" /> Simpan Tiket

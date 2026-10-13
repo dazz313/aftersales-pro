@@ -30,10 +30,12 @@ export async function logAudit(params: {
  * Generator nomor tiket service: SV-YYYYMMDD-XXXX
  * Berbasis nomor TERBESAR hari itu (bukan count) agar nomor terhapus
  * tidak dipakai ulang dan tidak bentrok.
+ * `tgl` opsional — untuk tiket backdated (data historis), prefix tanggal
+ * menyesuaikan tanggal kejadian, sekuens tetap per-hari dari nomor terbesar.
  */
-export async function generateNoTiket(): Promise<string> {
-  const now = new Date()
-  const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+export async function generateNoTiket(tgl?: Date): Promise<string> {
+  const d = tgl && !Number.isNaN(tgl.getTime()) ? tgl : new Date()
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
   const last = await db.serviceRequest.findFirst({
     where: { noTiket: { startsWith: `SV-${ymd}` } },
     orderBy: { noTiket: 'desc' },

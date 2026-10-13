@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatTanggal, type Toko, type Customer, type UnitAsset, type Pengguna } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -22,7 +22,7 @@ import HistoryInput from '@/components/history-input'
 import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function MasterDataView() {
@@ -76,7 +76,15 @@ export default function MasterDataView() {
   const [editUnitForm, setEditUnitForm] = useState({ modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   // Quick input kode+nama part dari Master Data → tiket + otomatis PROSES
   const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
-  const [partForm, setPartForm] = useState({ deskripsi: '', kodePart: '', namaPart: '', qty: '1', jasa: '0' })
+  // Multi-part: 1 unit bisa butuh >1 kode+nama part berbeda — tiap baris satu
+  // kode (anti-pengulangan: kode sama ditolak, dicek client & server).
+  type PartUnitRow = { key: number; kodePart: string; namaPart: string; qty: string }
+  const [partForm, setPartForm] = useState({
+    deskripsi: '',
+    jasa: '0',
+    rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1' }] as PartUnitRow[],
+  })
+  const nextPartRowKey = useRef(1)
   // Edit karyawan
   const [editUser, setEditUser] = useState<Pengguna | null>(null)
   const [editUserForm, setEditUserForm] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
@@ -130,8 +138,33 @@ export default function MasterDataView() {
   }
   const openInputPart = (u: UnitAsset) => {
     setPartUnit(u)
-    setPartForm({ deskripsi: '', kodePart: '', namaPart: '', qty: '1', jasa: '0' })
+    setPartForm({
+      deskripsi: '',
+      jasa: '0',
+      rows: [{ key: nextPartRowKey.current++, kodePart: '', namaPart: '', qty: '1' }],
+    })
   }
+  const updatePartRow = (key: number, patch: Partial<PartUnitRow>) =>
+    setPartForm((f) => ({ ...f, rows: f.rows.map((r) => (r.key === key ? { ...r, ...patch } : r)) }))
+  const tambahPartRow = () =>
+    setPartForm((f) => ({ ...f, rows: [...f.rows, { key: nextPartRowKey.current++, kodePart: '', namaPart: '', qty: '1' }] }))
+  const hapusPartRow = (key: number) =>
+    setPartForm((f) => ({ ...f, rows: f.rows.filter((r) => r.key !== key) }))
+
+  // Validasi anti-pengulangan: kode sama tidak boleh dua kali dalam 1 tiket
+  const partKodePerRow = partForm.rows.map((r) => r.kodePart.trim().toUpperCase())
+  const dupPartKode = useMemo(() => {
+    const c = new Map<string, number>()
+    for (const k of partKodePerRow) if (k) c.set(k, (c.get(k) ?? 0) + 1)
+    return new Set(partKodePerRow.filter((k) => k && (c.get(k) ?? 0) > 1))
+  }, [partForm.rows])
+  const partRowSetengah = partForm.rows.some(
+    (r) => (r.kodePart.trim() && !r.namaPart.trim()) || (!r.kodePart.trim() && r.namaPart.trim())
+  )
+  const partsLengkap = partForm.rows.filter((r) => r.kodePart.trim() && r.namaPart.trim())
+  const partFormValid =
+    partForm.deskripsi.trim() !== '' && partsLengkap.length > 0 && !partRowSetengah && dupPartKode.size === 0
+
   const createTiketPart = useMutation({
     mutationFn: () => {
       const isToko = !!partUnit!.tokoId
@@ -143,9 +176,11 @@ export default function MasterDataView() {
         sumberLaporan: 'MANUAL',
         customerType: isToko ? 'TOKO' : 'PERORANGAN',
         klasifikasiGaransi: partUnit!.statusGaransi,
-        kodePart: partForm.kodePart.trim(),
-        namaPart: partForm.namaPart.trim(),
-        qty: Number(partForm.qty) || 1,
+        parts: partsLengkap.map((r) => ({
+          kodePart: r.kodePart.trim().toUpperCase(),
+          namaPart: r.namaPart.trim(),
+          qty: Math.max(1, Number(r.qty) || 1),
+        })),
         aktor: role,
       })
     },
@@ -761,19 +796,63 @@ export default function MasterDataView() {
               <Label>Deskripsi Kerusakan</Label>
               <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder="cth: Kompresor mati total" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Kode Sparepart</Label>
-                <Input value={partForm.kodePart} onChange={(e) => setPartForm({ ...partForm, kodePart: e.target.value.toUpperCase() })} placeholder="PRT-XXX-00" className="font-mono" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Qty</Label>
-                <Input type="number" min="1" value={partForm.qty} onChange={(e) => setPartForm({ ...partForm, qty: e.target.value })} />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Nama Sparepart</Label>
-              <HistoryInput historyKey="part-nama" value={partForm.namaPart} onChange={(e) => setPartForm({ ...partForm, namaPart: e.target.value })} placeholder="cth: Kompresor 1 PK" />
+            <div className="space-y-2">
+              <Label>Sparepart — boleh lebih satu kode (tiap baris kode & nama berbeda)</Label>
+              {partForm.rows.map((row, i) => {
+                const kodeRow = row.kodePart.trim().toUpperCase()
+                const dup = kodeRow !== '' && dupPartKode.has(kodeRow)
+                const setengah = (row.kodePart.trim() && !row.namaPart.trim()) || (!row.kodePart.trim() && row.namaPart.trim())
+                return (
+                  <div key={row.key} className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 p-2">
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        value={row.kodePart}
+                        onChange={(e) => updatePartRow(row.key, { kodePart: e.target.value.toUpperCase() })}
+                        placeholder="PRT-XXX-00"
+                        className={`h-9 min-w-0 flex-1 font-mono ${dup ? 'border-red-400' : ''}`}
+                        aria-label={`Kode sparepart baris ${i + 1}`}
+                      />
+                      <Input
+                        type="number"
+                        min="1"
+                        value={row.qty}
+                        onChange={(e) => updatePartRow(row.key, { qty: e.target.value })}
+                        className="h-9 w-14 shrink-0 text-center"
+                        aria-label={`Qty baris ${i + 1}`}
+                      />
+                      {partForm.rows.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-8 shrink-0 text-slate-400 hover:text-red-600"
+                          onClick={() => hapusPartRow(row.key)}
+                          aria-label={`Hapus part baris ${i + 1}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <HistoryInput
+                      historyKey="part-nama"
+                      value={row.namaPart}
+                      onChange={(e) => updatePartRow(row.key, { namaPart: e.target.value })}
+                      placeholder="cth: Kompresor 1 PK"
+                    />
+                    {dup && (
+                      <p className="text-[11px] font-medium text-red-600">
+                        Kode {kodeRow} sudah terisi di baris lain — hapus salah satu (pengulangan tidak diizinkan).
+                      </p>
+                    )}
+                    {setengah && (
+                      <p className="text-[11px] font-medium text-red-600">Kode dan nama wajib diisi bersamaan.</p>
+                    )}
+                  </div>
+                )
+              })}
+              <Button type="button" variant="outline" size="sm" className="w-full border-dashed" onClick={tambahPartRow}>
+                <Plus className="mr-1 h-3.5 w-3.5" /> Tambah Part
+              </Button>
             </div>
             {partUnit && !partUnit.tokoId && partUnit.statusGaransi === 'NON_GARANSI' && (
               <div className="space-y-1.5">

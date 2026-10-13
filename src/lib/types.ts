@@ -149,6 +149,7 @@ export interface ServiceTicket {
   tglKlaim: string | null
   biayaJasa: number
   tglFinish: string | null
+  tglTiket: string
   createdAt: string
   updatedAt: string
   unitAsset: UnitAsset & {

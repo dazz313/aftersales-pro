@@ -13,7 +13,7 @@ export async function GET() {
         customer: { select: { id: true, nama: true, noWa: true } },
         serviceRequests: { select: { id: true, noTiket: true, status: true }, orderBy: { createdAt: 'desc' } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ tglPembelian: 'desc' }, { createdAt: 'desc' }],
     })
     const result = units.map((u) => ({
       ...u,
