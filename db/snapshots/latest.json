@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T00:30:33.689Z",
+  "generatedAt": "2026-10-14T00:59:52.222Z",
   "masterToko": [
     {
       "id": 216,
@@ -2226,8 +2226,23 @@
       "createdAt": "2026-10-13T14:53:23.990Z"
     }
   ],
-  "pengaturan": [],
+  "pengaturan": [
+    {
+      "id": 54,
+      "kunci": "logo_perusahaan",
+      "nilai": "/api/logo"
+    }
+  ],
   "auditLog": [
+    {
+      "id": 289,
+      "aksi": "UPLOAD_LOGO",
+      "entitas": "pengaturan",
+      "entitasId": "logo_perusahaan",
+      "deskripsi": "Logo perusahaan diperbarui (logo-eracool.png, 380 KB)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-14T00:59:52.196Z"
+    },
     {
       "id": 288,
       "aksi": "IMPORT_UNIT_ASSET",
