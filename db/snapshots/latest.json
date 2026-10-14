@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T00:59:52.222Z",
+  "generatedAt": "2026-10-14T01:19:22.686Z",
   "masterToko": [
     {
       "id": 216,
@@ -73,7 +73,7 @@
       "namaToko": "Toko Semeru Sukawati",
       "alamat": "Jl. Letjend. Soekawati, Watampone",
       "kontak": "082348656735 / 081242858785",
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 5,
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-007",
       "createdAt": "2026-10-14T00:26:39.218Z"
@@ -2228,12 +2228,50 @@
   ],
   "pengaturan": [
     {
+      "id": 56,
+      "kunci": "alamat_perusahaan",
+      "nilai": "Jl. Onta No.10 Watampone"
+    },
+    {
+      "id": 57,
+      "kunci": "email_perusahaan",
+      "nilai": "eracoolteknik@gmail.com"
+    },
+    {
       "id": 54,
       "kunci": "logo_perusahaan",
       "nilai": "/api/logo"
+    },
+    {
+      "id": 55,
+      "kunci": "nama_perusahaan",
+      "nilai": "CV ERACOOL TEKNIK SOLUTION"
+    },
+    {
+      "id": 58,
+      "kunci": "partner_produsen",
+      "nilai": "PT. BHAKTI IDOLA TAMA"
     }
   ],
   "auditLog": [
+    {
+      "id": 291,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-007",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T01:19:22.667Z"
+    },
+    {
+      "id": 290,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: nama_perusahaan, alamat_perusahaan, email_perusahaan, partner_produsen",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T00:59:53.660Z"
+    },
     {
       "id": 289,
       "aksi": "UPLOAD_LOGO",
