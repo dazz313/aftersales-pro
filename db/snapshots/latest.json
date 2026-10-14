@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T14:19:49.500Z",
+  "generatedAt": "2026-10-14T14:21:20.406Z",
   "masterToko": [
     {
       "id": 216,
@@ -448,7 +448,7 @@
       "alamat": "Komp. Pasar Palakka",
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-08T14:21:00.000Z",
       "barcodeToko": "BC-TOK-041",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -2520,6 +2520,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 49,
+      "tokoId": 256,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-08T14:21:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 44,
       "tokoId": 258,
       "teknisiId": 27,
@@ -3216,6 +3226,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 338,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "49",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Sumber Plastik (TOK-041) · tgl 8/10/2026, 22.21.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T14:21:20.385Z"
+    },
     {
       "id": 337,
       "aksi": "CREATE_KUNJUNGAN",
