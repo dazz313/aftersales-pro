@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T14:21:20.406Z",
+  "generatedAt": "2026-10-14T14:23:27.931Z",
   "masterToko": [
     {
       "id": 216,
@@ -294,7 +294,7 @@
       "alamat": "Bone",
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-06T14:23:00.000Z",
       "barcodeToko": "BC-TOK-027",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -2550,6 +2550,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 50,
+      "tokoId": 242,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-06T14:23:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 45,
       "tokoId": 229,
       "teknisiId": 27,
@@ -3226,6 +3236,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 339,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "50",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Jaya Bessi (TOK-027) · tgl 6/10/2026, 22.23.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T14:23:27.911Z"
+    },
     {
       "id": 338,
       "aksi": "CREATE_KUNJUNGAN",
