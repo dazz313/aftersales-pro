@@ -7,17 +7,24 @@ import { scanImage } from '@/lib/vision'
 import { prosesLaporanTeks } from '@/lib/laporan'
 import { getInboxMode } from '@/lib/inbox'
 
+interface TgMessage {
+  message_id: number
+  message_thread_id?: number
+  from?: { first_name?: string; username?: string }
+  chat: { id: number; type?: string }
+  text?: string
+  caption?: string
+  photo?: { file_id: string }[]
+  document?: { file_id: string; mime_type?: string; file_name?: string }
+}
+
 interface TgUpdate {
   update_id?: number
-  message?: {
-    message_id: number
-    from?: { first_name?: string; username?: string }
-    chat: { id: number }
-    text?: string
-    caption?: string
-    photo?: { file_id: string }[]
-    document?: { file_id: string; mime_type?: string; file_name?: string }
-  }
+  message?: TgMessage
+  // Group/channel: postingan channel & pesan editan tidak masuk `message`
+  channel_post?: TgMessage
+  edited_message?: TgMessage
+  edited_channel_post?: TgMessage
 }
 
 async function downloadTelegramFile(token: string, fileId: string): Promise<{ buffer: Buffer; ext: string } | null> {
@@ -32,11 +39,13 @@ async function downloadTelegramFile(token: string, fileId: string): Promise<{ bu
   return { buffer: buf, ext: dot >= 0 ? fp.slice(dot) : '.jpg' }
 }
 
-async function balasTG(token: string, chatId: number | string, text: string) {
+async function balasTG(token: string, chatId: number | string, text: string, threadId?: number) {
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    // Balas SELALU ke chat asal (penting untuk group/topik); sertakan
+    // message_thread_id agar balasan masuk ke topik yang sama.
+    body: JSON.stringify({ chat_id: chatId, text, ...(threadId ? { message_thread_id: threadId } : {}) }),
     signal: AbortSignal.timeout(10_000),
   }).catch(() => undefined)
 }
@@ -66,12 +75,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Webhook tidak terotorisasi' }, { status: 403 })
     }
     const body = (await request.json()) as TgUpdate
-    const msg = body.message
+    // Group/channel: terima juga channel_post & pesan editan (sebelumnya
+    // hanya `message` sehingga upload dari channel/group tertentu diam-diam
+    // dibalas BUKAN_PESAN tanpa diproses).
+    const msg = body.message ?? body.channel_post ?? body.edited_message ?? body.edited_channel_post
     if (!msg) return NextResponse.json({ ok: true, aksi: 'BUKAN_PESAN' })
 
     const cfg = await getGatewayConfig()
     const mode = await getInboxMode()
     const chatId = msg.chat.id
+    const threadId = msg.message_thread_id
+    // PENTING: balasan webhook SELALU ke chat asal (group yang upload),
+    // BUKAN ke gateway_tg_chat_id (itu hanya untuk notifikasi outbound).
+    // Sebelumnya `cfg.tgChatId || chatId` membuat balasan nyasar ke chat lain
+    // sehingga group yang upload terlihat "tidak ada respon".
+    const balasKeAsal = (text: string) => cfg.tgToken ? balasTG(cfg.tgToken, chatId, text, threadId) : Promise.resolve()
     const pengirim = msg.from?.username ? `@${msg.from.username}` : (msg.from?.first_name ?? `TG-${chatId}`)
     const caption = (msg.caption ?? msg.text ?? '').trim()
     const fileId = msg.photo?.length
@@ -90,7 +108,7 @@ export async function POST(request: Request) {
         data: { pengirim, chatId: String(chatId), folder: 'SERVICE', caption: caption || null, status: 'PENDING' },
       })
       const pending = await db.inboxItem.count({ where: { status: 'PENDING' } })
-      if (cfg.tgToken) await balasTG(cfg.tgToken, cfg.tgChatId || chatId, `📥 Pesan diterima & masuk PENAMPUNGAN (antrean #${pending}). Menunggu review admin di menu Inbox.`)
+      await balasKeAsal(`📥 Pesan diterima & masuk PENAMPUNGAN (antrean #${pending}). Menunggu review admin di menu Inbox.`)
       await autoGitBackup('GATEWAY', 'inbox_item', 'TEKS_DITAHAN', pengirim)
       return NextResponse.json({ ok: true, aksi: 'TEKS_DITAHAN_DI_INBOX', antrean: pending })
     }
@@ -134,7 +152,7 @@ export async function POST(request: Request) {
         },
       })
       const pending = await db.inboxItem.count({ where: { status: 'PENDING' } })
-      await balasTG(cfg.tgToken, cfg.tgChatId || chatId, kind === 'KUNJUNGAN'
+      await balasKeAsal(kind === 'KUNJUNGAN'
         ? `📥 Barcode toko *${tokoCocok!.namaToko} (${tokoCocok!.kodeToko})* terdeteksi → masuk folder KUNJUNGAN (antrean #${pending}).\nMenunggu konfirmasi admin di menu Inbox.`
         : `📥 Foto diterima → masuk folder SERVICE (antrean #${pending}).\n🔖 Barcode: ${barcode ?? '-'}\n📝 Teks: ${(ocrText || '-').slice(0, 300)}\n\nMenunggu review admin di menu Inbox.`)
       await autoGitBackup('GATEWAY', 'inbox_item', `DITAHAN_${kind}`, pengirim)
@@ -149,7 +167,7 @@ export async function POST(request: Request) {
     await db.inboxItem.create({
       data: { pengirim, chatId: String(chatId), fileName, filePath: filePathRel, folder: kind, caption: caption || null, barcode, barcodeFormat: format, ocrText: ocrText || null, ocrConfidence: conf, status: 'PENDING', hasilRef: tokoCocok ? `TOKO:${tokoCocok.kodeToko}` : null },
     })
-    await balasTG(cfg.tgToken, cfg.tgChatId || chatId,
+    await balasKeAsal(
       `📷 Foto tersimpan.\n🔖 Barcode: ${barcode ?? '-'}\n📝 Teks: ${(ocrText || '-').slice(0, 500)}\n\nTidak ada perintah #LAPOR — item masuk Inbox untuk review.`)
       await autoGitBackup('GATEWAY', 'inbox_item', 'FOTO_TERSIMPAN', pengirim)
       return NextResponse.json({ ok: true, aksi: 'FOTO_TERSIMPAN_TANPA_LAPOR', folder: kind, file: filePathRel, barcode, ocrText })

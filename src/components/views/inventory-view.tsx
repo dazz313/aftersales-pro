@@ -76,7 +76,7 @@ export default function InventoryView() {
   const [restockTarget, setRestockTarget] = useState<Sparepart | null>(null)
   const [restockQty, setRestockQty] = useState('10')
   const [editTarget, setEditTarget] = useState<Sparepart | null>(null)
-  const [editForm, setEditForm] = useState({ namaPart: '', brandKompatibel: '', supplier: '', stokJual: '0', stokGaransi: '0', reorderLimit: '5', hargaKlaim: '0' })
+  const [editForm, setEditForm] = useState({ kodePart: '', namaPart: '', brandKompatibel: '', supplier: '', stokJual: '0', stokGaransi: '0', reorderLimit: '5', hargaKlaim: '0' })
   const [deleteTarget, setDeleteTarget] = useState<Sparepart | null>(null)
   const [roFormOpen, setRoFormOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
@@ -249,6 +249,7 @@ export default function InventoryView() {
   const openEdit = (p: Sparepart) => {
     setEditTarget(p)
     setEditForm({
+      kodePart: p.kodePart,
       namaPart: p.namaPart,
       brandKompatibel: p.brandKompatibel ?? '',
       supplier: p.supplier ?? '',
@@ -262,6 +263,10 @@ export default function InventoryView() {
   const updateMutation = useMutation({
     mutationFn: () =>
       postJson(`/api/sparepart/${editTarget!.id}`, {
+        // Kode hanya dikirim bila berubah (backend menolak bila sudah dipakai tiket PROSES/FINISH)
+        ...(editForm.kodePart.trim().toUpperCase() !== editTarget!.kodePart
+          ? { kodePart: editForm.kodePart.trim().toUpperCase() }
+          : {}),
         namaPart: editForm.namaPart.trim(),
         brandKompatibel: editForm.brandKompatibel.trim(),
         supplier: editForm.supplier.trim(),
@@ -892,10 +897,14 @@ export default function InventoryView() {
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Sparepart {editTarget && <span className="font-mono text-sm text-slate-500">{editTarget.kodePart}</span>}</DialogTitle>
-            <DialogDescription>Kode tidak dapat diubah karena dipakai di tiket &amp; riwayat. Total stok = jual + garansi (otomatis).</DialogDescription>
+            <DialogDescription>Kode boleh dikoreksi selama belum dipakai di tiket PROSES/FINISH. Total stok = jual + garansi (otomatis).</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5">
+              <Label>Kode Sparepart</Label>
+              <Input value={editForm.kodePart} onChange={(e) => setEditForm({ ...editForm, kodePart: e.target.value.toUpperCase() })} placeholder="PRT-XXX-00" className="font-mono" />
+            </div>
+            <div className="space-y-1.5">
               <Label>Nama Sparepart</Label>
               <HistoryInput historyKey="part-nama" value={editForm.namaPart} onChange={(e) => setEditForm({ ...editForm, namaPart: e.target.value })} />
             </div>
@@ -935,7 +944,7 @@ export default function InventoryView() {
             <Button variant="outline" onClick={() => setEditTarget(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!editTarget || !editForm.namaPart.trim() || updateMutation.isPending}
+              disabled={!editTarget || !editForm.namaPart.trim() || !editForm.kodePart.trim() || updateMutation.isPending}
               onClick={() => updateMutation.mutate()}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
@@ -958,7 +967,7 @@ export default function InventoryView() {
           {(deleteTarget?.dipakai ?? 0) > 0 ? (
             <p className="rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-800">
               Terkunci: part ini dipakai di <span className="font-bold">{deleteTarget!.dipakai} tiket service</span> —
-              riwayat tiket harus utuh sehingga tidak dapat dihapus. Hapus/selesaikan tiket terkait dulu bila memang perlu.
+              riwayat tiket harus utuh sehingga tidak dapat dihapus. Bila salah input, hapus baris part-nya dulu dari detail tiket (tombol Hapus), baru hapus dari katalog.
             </p>
           ) : (
             <p className="rounded-md bg-amber-50 p-2.5 text-xs text-amber-800">

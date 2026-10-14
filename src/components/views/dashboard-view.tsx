@@ -78,7 +78,7 @@ export default function DashboardView() {
   const kirimGrup = useMutation({
     mutationFn: () => {
       const list = dash!.belumProses.items.slice(0, 10)
-      const baris = list.map((t, i) => `${i + 1}. ${t.noTiket} — ${t.model} (${t.toko}) — pending ${t.umurJam >= 24 ? `${Math.floor(t.umurJam / 24)} hari` : `${t.umurJam} jam`} — ${t.adaPart ? 'menunggu READY' : 'belum input part'}`)
+      const baris = list.map((t, i) => `${i + 1}. ${t.noTiket} — ${t.model} (${t.toko}) — ${t.isDataLama ? 'DATA LAMA' : `pending ${(t.umurJam ?? 0) >= 24 ? `${Math.floor((t.umurJam ?? 0) / 24)} hari` : `${t.umurJam ?? 0} jam`}`} — ${t.adaPart ? 'menunggu READY' : 'belum input part'}`)
       const pesan =
         `*UNIT PENDING* (${dash!.belumProses.count} unit >24 jam belum ada kode+nama part)\n` +
         baris.join('\n') +
@@ -336,13 +336,19 @@ export default function DashboardView() {
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {dash.belumProses.items.map((t) => (
-                <div key={t.noTiket} className="rounded-lg border border-amber-200 bg-amber-50/60 p-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-mono text-xs font-semibold text-slate-800">{t.noTiket}</p>
-                    <Badge variant="outline" className={cn('text-[9px]', t.umurJam >= 72 ? 'border-rose-300 text-rose-700' : 'border-amber-300 text-amber-700')}>
-                      {t.umurJam >= 24 ? `${Math.floor(t.umurJam / 24)} hari` : `${t.umurJam} jam`}
-                    </Badge>
-                  </div>
+                  <div key={t.noTiket} className="rounded-lg border border-amber-200 bg-amber-50/60 p-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-mono text-xs font-semibold text-slate-800">{t.noTiket}</p>
+                      {t.isDataLama ? (
+                        <Badge variant="outline" className="border-slate-400 text-[9px] text-slate-600" title="Data lama (upload belakangan) — umur dinonaktifkan">
+                          DATA LAMA
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className={cn('text-[9px]', (t.umurJam ?? 0) >= 72 ? 'border-rose-300 text-rose-700' : 'border-amber-300 text-amber-700')}>
+                          {(t.umurJam ?? 0) >= 24 ? `${Math.floor((t.umurJam ?? 0) / 24)} hari` : `${t.umurJam ?? 0} jam`}
+                        </Badge>
+                      )}
+                    </div>
                   <p className="mt-0.5 truncate text-[11px] text-slate-600">{t.model} · {t.serial}</p>
                   <p className="truncate text-[10px] text-slate-400">{t.toko} · {t.adaPart ? 'menunggu part READY' : 'belum input part'}</p>
                 </div>
