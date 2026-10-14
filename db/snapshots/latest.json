@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T14:18:36.812Z",
+  "generatedAt": "2026-10-14T14:19:49.500Z",
   "masterToko": [
     {
       "id": 216,
@@ -338,7 +338,7 @@
       "alamat": "Jl. K.H. Agussalim",
       "kontak": "08124200519",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-07T14:19:00.000Z",
       "barcodeToko": "BC-TOK-031",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -2530,6 +2530,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 48,
+      "tokoId": 246,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-07T14:19:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 45,
       "tokoId": 229,
       "teknisiId": 27,
@@ -3206,6 +3216,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 337,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "48",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko H. Sulaiman (TOK-031) · tgl 7/10/2026, 22.19.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T14:19:49.477Z"
+    },
     {
       "id": 336,
       "aksi": "CREATE_KUNJUNGAN",
