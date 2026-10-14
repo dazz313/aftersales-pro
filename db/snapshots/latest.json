@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T01:19:43.010Z",
+  "generatedAt": "2026-10-14T01:20:05.784Z",
   "masterToko": [
     {
       "id": 216,
@@ -326,7 +326,7 @@
       "namaToko": "Toko Swalayan Jaya Bessi",
       "alamat": "Watampone",
       "kontak": null,
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 5,
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-030",
       "createdAt": "2026-10-14T00:26:39.218Z"
@@ -458,7 +458,7 @@
       "namaToko": "Toko Semeru Ahmad Yani",
       "alamat": "Jl. Ahmad Yani",
       "kontak": null,
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 5,
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-042",
       "createdAt": "2026-10-14T00:26:39.218Z"
@@ -2254,6 +2254,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 294,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-042",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T01:20:05.757Z"
+    },
+    {
+      "id": 293,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-030",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T01:19:52.299Z"
+    },
     {
       "id": 292,
       "aksi": "UPDATE_MASTER_TOKO",
