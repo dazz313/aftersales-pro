@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, authHeaders, formatRupiah, type DashboardData, type AlertsResponse } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore, type NavIntent, type ViewKey } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -16,7 +18,7 @@ import {
 } from 'recharts'
 import {
   FileClock, Loader, CheckCircle2, Wallet, PackageX, MapPinOff, AlertTriangle,
-  RefreshCw, TrendingUp, Store, ClipboardList, ChevronRight, Hourglass,
+  RefreshCw, TrendingUp, Store, ClipboardList, ChevronRight, ChevronDown, Hourglass,
   FileDown, FileSpreadsheet, Send, QrCode,
 } from 'lucide-react'
 import { KpiGrid, type KpiDef } from '@/components/kpi-card'
@@ -46,6 +48,8 @@ export default function DashboardView() {
   const { navigateTo } = useAppStore()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  // Alert Engine berupa dropdown — diklik baru muncul
+  const [alertOpen, setAlertOpen] = useState(false)
 
   const unduhPending = async (format: 'pdf' | 'xlsx') => {
     try {
@@ -275,27 +279,39 @@ export default function DashboardView() {
         </CardContent>
       </Card>
 
-      {/* Alert Engine */}
-      <Card>
-        <CardHeader className="flex-row items-start justify-between space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              System Alert Engine
-              {alerts && alerts.total > 0 && (
-                <Badge variant="destructive" className="ml-1">{alerts.total} aktif</Badge>
-              )}
-            </CardTitle>
-            <CardDescription>
-              Aturan otomatis ALT-01 s/d ALT-05 · {alerts ? `evaluasi terakhir ${new Date(alerts.generatedAt).toLocaleTimeString('id-ID')}` : 'memuat…'}
-            </CardDescription>
-          </div>
-          <Button variant="outline" size="sm" onClick={refreshAll} disabled={isRefetching || alertRefetching}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${(isRefetching || alertRefetching) ? 'animate-spin' : ''}`} />
-            Jalankan Cron
-          </Button>
-        </CardHeader>
-        <CardContent>
+      {/* Alert Engine — dropdown, diklik baru muncul */}
+      <Collapsible open={alertOpen} onOpenChange={setAlertOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <div className="cursor-pointer select-none" role="button" tabIndex={0} aria-expanded={alertOpen}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setAlertOpen(!alertOpen) } }}>
+              <CardHeader className="flex-row items-start justify-between space-y-0">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    System Alert Engine
+                    {alerts && alerts.total > 0 && (
+                      <Badge variant="destructive" className="ml-1">{alerts.total} aktif</Badge>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    Aturan otomatis ALT-01 s/d ALT-05 · {alerts ? `evaluasi terakhir ${new Date(alerts.generatedAt).toLocaleTimeString('id-ID')}` : 'memuat…'}
+                  </CardDescription>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span onClick={(e) => e.stopPropagation()}>
+                    <Button variant="outline" size="sm" onClick={refreshAll} disabled={isRefetching || alertRefetching}>
+                      <RefreshCw className={`mr-2 h-4 w-4 ${(isRefetching || alertRefetching) ? 'animate-spin' : ''}`} />
+                      Jalankan Cron
+                    </Button>
+                  </span>
+                  <ChevronDown className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', alertOpen && 'rotate-180')} />
+                </div>
+              </CardHeader>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
           {alertsLoading || !alerts ? (
             <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
           ) : alerts.alerts.length === 0 ? (
@@ -348,8 +364,10 @@ export default function DashboardView() {
               </div>
             </ScrollArea>
           )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     </div>
   )
 }

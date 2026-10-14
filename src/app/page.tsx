@@ -139,12 +139,19 @@ export default function Home() {
   const [loggingOut, setLoggingOut] = useState(false)
   const { view, role, user, authReady, setUser, setAuthReady } = useAppStore()
   const current = NAV_ITEMS.find((n) => n.key === view)
+  // Gagal verifikasi karena jaringan/timeout (bukan 401) → tampilkan panel error + retry
+  const [sesiError, setSesiError] = useState<'timeout' | 'network' | null>(null)
+  const [percobaan, setPercobaan] = useState(0)
 
   // Verifikasi sesi saat aplikasi dibuka — pakai cookie ATAU fallback Bearer
   // (localStorage); tanpa sesi valid, client gate me-redirect ke /login.
+  // Fetch dibatasi 15 detik agar tidak loading selamanya bila server/
+  // jaringan macet (mis. akses dari komputer lain di LAN).
   useEffect(() => {
     let cancelled = false
-    fetch('/api/auth/me', { headers: authHeaders() })
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 15000)
+    fetch('/api/auth/me', { headers: authHeaders(), signal: ctrl.signal })
       .then((r) => {
         if (!r.ok) throw new Error('unauthenticated')
         return r.json()
@@ -154,16 +161,27 @@ export default function Home() {
         setUser(u)
         setAuthReady(true)
       })
-      .catch(() => {
-        if (!cancelled) {
+      .catch((e: unknown) => {
+        if (cancelled) return
+        const nama = typeof e === 'object' && e !== null && 'name' in e ? (e as { name?: string }).name : null
+        if (nama === 'AbortError') {
+          // Server tidak menjawab dalam 15 detik — tampilkan panel retry
+          setSesiError('timeout')
+        } else if (e instanceof TypeError) {
+          // Jaringan terputus / server tak terjangkau — tampilkan panel retry
+          setSesiError('network')
+        } else {
           clearSessionToken()
           window.location.replace('/login')
         }
       })
+      .finally(() => clearTimeout(timer))
     return () => {
       cancelled = true
+      clearTimeout(timer)
+      ctrl.abort()
     }
-  }, [setUser, setAuthReady])
+  }, [setUser, setAuthReady, percobaan])
 
   async function handleLogout() {
     if (loggingOut) return
@@ -179,6 +197,37 @@ export default function Home() {
 
   // Gate: tampilkan layar loading sampai sesi terverifikasi
   if (!authReady) {
+    if (sesiError) {
+      return (
+        <div className="flex min-h-screen w-full flex-col items-center justify-center gap-3 bg-slate-900 p-6 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-white">
+            <WrenchIcon className="h-6 w-6" />
+          </div>
+          <p className="text-base font-semibold text-white">Tidak dapat memverifikasi sesi</p>
+          <p className="max-w-sm text-sm text-slate-400">
+            {sesiError === 'timeout'
+              ? 'Server tidak merespons dalam 15 detik. Kemungkinan server sibuk (impor massal / unduhan besar) atau jaringan LAN lambat.'
+              : 'Server tidak dapat dihubungi. Pastikan komputer ini satu jaringan (LAN/WiFi) dengan komputer server, alamat benar (mis. http://192.168.1.10:3000), dan aplikasi sedang berjalan.'}
+          </p>
+          <div className="mt-1 flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setSesiError(null); setPercobaan((n) => n + 1) }}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              Coba Lagi
+            </button>
+            <button
+              type="button"
+              onClick={() => window.location.replace('/login')}
+              className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800"
+            >
+              Ke Halaman Login
+            </button>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center gap-3 bg-slate-900">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white">
