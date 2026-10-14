@@ -20,11 +20,13 @@ import {
   LogOut,
   ChevronDown,
   Loader2,
+  Sparkles,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { authHeaders, clearSessionToken, fetcher } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 import DashboardView from '@/components/views/dashboard-view'
+import AnalisaAiView from '@/components/views/analisa-ai-view'
 import InboxView from '@/components/views/inbox-view'
 import ServiceView from '@/components/views/service-view'
 import GatewayView from '@/components/views/gateway-view'
@@ -48,6 +50,7 @@ import {
 
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
+  { key: 'ai', label: 'Analisa AI', icon: Sparkles, desc: 'Ringkasan, jadwal & part via AI' },
   { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
   { key: 'inbox', label: 'Inbox', icon: Inbox, desc: 'Penampungan data Telegram' },
   { key: 'gateway', label: 'Gateway', icon: Radio, desc: 'Bot WhatsApp & Telegram' },
@@ -56,7 +59,7 @@ const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ clas
   { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
   { key: 'lacak', label: 'Lacak Sparepart', icon: SearchCheck, desc: 'Cari part dari riwayat kerusakan' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
-  { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, Backup & audit log' },
+  { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, AI, Backup & audit log' },
 ]
 
 const ROLE_COLORS: Record<RoleKey, string> = {
@@ -339,6 +342,7 @@ export default function Home() {
               <DashboardView />
             </div>
           )}
+          {view === 'ai' && <AnalisaAiView />}
           {view === 'inbox' && <InboxView />}
           {view === 'service' && <ServiceView />}
           {view === 'gateway' && <GatewayView />}

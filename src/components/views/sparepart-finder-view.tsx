@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { fetcher } from '@/lib/api'
+import { useMutation } from '@tanstack/react-query'
+import { fetcher, postJson } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import HistoryInput from '@/components/history-input'
 import { useToast } from '@/hooks/use-toast'
-import { SearchCheck, PackageX, Database } from 'lucide-react'
+import { SearchCheck, PackageX, Database, Sparkles, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface HasilCari {
@@ -46,12 +47,39 @@ export default function SparepartFinderView() {
   const [mencari, setMencari] = useState(false)
   const [hasil, setHasil] = useState<CariResponse | null>(null)
 
+  // ===== Analisa AI via 9router — ranking kandidat + alasan (kode tetap dari data) =====
+  interface AiRekomendasi {
+    rekomendasi: { kode: string; alasan: string }[]
+    catatan: string
+    model: string
+  }
+  const [aiHasil, setAiHasil] = useState<AiRekomendasi | null>(null)
+  const aiMut = useMutation({
+    mutationFn: () => postJson<AiRekomendasi>('/api/ai/rekomendasi-part', {
+      model: model.trim(),
+      rusak: rusak.trim(),
+      kandidat: (hasil?.hasil ?? []).slice(0, 10).map((h) => ({
+        kode: h.kodePart,
+        nama: h.namaPart,
+        brand: h.brandKompatibel ?? '',
+        stok: h.stokInventory,
+        frekuensi: h.frekuensi,
+      })),
+    }),
+    onSuccess: (r) => {
+      setAiHasil(r)
+      toast({ title: 'Analisa AI diterima', description: `${r.rekomendasi.length} part direkomendasikan (${r.model}).` })
+    },
+    onError: (e: Error) => toast({ title: 'Analisa AI gagal', description: e.message, variant: 'destructive' }),
+  })
+
   const cari = async () => {
     if (!model.trim() && !rusak.trim()) {
       toast({ title: 'Belum bisa melacak', description: 'Isi model unit dan/atau jenis kerusakan dulu.', variant: 'destructive' })
       return
     }
     setMencari(true)
+    setAiHasil(null)
     try {
       const res = await fetcher<CariResponse>(
         `/api/sparepart/cari?model=${encodeURIComponent(model.trim())}&rusak=${encodeURIComponent(rusak.trim())}`
@@ -110,15 +138,57 @@ export default function SparepartFinderView() {
         <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
       ) : hasil ? (
         <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
             <div>
               <CardTitle className="text-base">Hasil Pelacakan ({hasil.totalCocok})</CardTitle>
               <CardDescription className="flex items-center gap-1">
                 <Database className="h-3 w-3" /> Dipindai {hasil.totalTiketDipindai} tiket · peringkat = kecocokan kata + frekuensi pemakaian
               </CardDescription>
             </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 shrink-0 border-violet-300 px-2 text-[11px] text-violet-700 hover:bg-violet-50"
+              disabled={aiMut.isPending || hasil.hasil.length === 0}
+              onClick={() => aiMut.mutate()}
+              title="Minta AI (9router) meranking kandidat + alasan"
+            >
+              {aiMut.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Sparkles className="mr-1 h-3 w-3" />}
+              {aiMut.isPending ? 'Menganalisa…' : 'Analisa AI'}
+            </Button>
           </CardHeader>
           <CardContent>
+            {aiHasil && (
+              <div className="mb-3 rounded-xl border border-violet-300 bg-violet-50/50 p-2.5">
+                <div className="mb-1.5 flex items-center justify-between gap-2">
+                  <p className="flex min-w-0 items-center gap-1.5 text-xs font-bold text-violet-800">
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Rekomendasi AI · {aiHasil.model}</span>
+                  </p>
+                  <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:text-slate-700" onClick={() => setAiHasil(null)} aria-label="Tutup analisa AI">
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  {aiHasil.rekomendasi.map((r, i) => {
+                    const ref = hasil.hasil.find((h) => h.kodePart.toUpperCase() === r.kode.toUpperCase())
+                    return (
+                      <div key={r.kode} className="flex items-start gap-2 rounded-lg border border-violet-200 bg-white px-2.5 py-1.5">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">{i + 1}</span>
+                        <div className="min-w-0">
+                          <p className="font-mono text-[11px] font-bold text-slate-900">
+                            {r.kode} <span className="font-sans font-medium text-slate-600">· {ref?.namaPart ?? ''}</span>
+                            {ref && ref.stokInventory === 0 && <span className="ml-1 rounded bg-rose-100 px-1 font-sans text-[9px] font-semibold text-rose-700">KOSONG</span>}
+                          </p>
+                          {r.alasan && <p className="mt-0.5 text-[11px] italic leading-snug text-violet-800">{r.alasan}</p>}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                {aiHasil.catatan && <p className="mt-1.5 text-[11px] text-violet-800">{aiHasil.catatan}</p>}
+              </div>
+            )}
             {hasil.hasil.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-10 text-center">
                 <PackageX className="h-8 w-8 text-slate-300" />

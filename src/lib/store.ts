@@ -4,6 +4,7 @@ import { create } from 'zustand'
 
 export type ViewKey =
   | 'dashboard'
+  | 'ai'
   | 'inbox'
   | 'service'
   | 'gateway'
