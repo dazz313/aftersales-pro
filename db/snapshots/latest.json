@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T13:46:39.284Z",
+  "generatedAt": "2026-10-14T14:18:36.812Z",
   "masterToko": [
     {
       "id": 216,
@@ -459,7 +459,7 @@
       "alamat": "Jl. Ahmad Yani",
       "kontak": null,
       "frekuensiVisit": 5,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-12T14:18:00.000Z",
       "barcodeToko": "BC-TOK-042",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -2450,6 +2450,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 47,
+      "tokoId": 257,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-12T14:18:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 42,
       "tokoId": 245,
       "teknisiId": 27,
@@ -3165,6 +3175,11 @@
       "nilai": "eracoolteknik@gmail.com"
     },
     {
+      "id": 73,
+      "kunci": "gateway_tg_aktif",
+      "nilai": "true"
+    },
+    {
       "id": 65,
       "kunci": "gateway_tg_chat_id",
       "nilai": "-5357204374"
@@ -3191,6 +3206,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 336,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "47",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Semeru Ahmad Yani (TOK-042) · tgl 12/10/2026, 22.18.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T14:18:36.767Z"
+    },
+    {
+      "id": 335,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, gateway_tg_aktif",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T13:46:46.732Z"
+    },
     {
       "id": 334,
       "aksi": "UPDATE_PENGATURAN",
