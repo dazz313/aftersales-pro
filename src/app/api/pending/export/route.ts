@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { umurTiketJam, isDataLama } from '@/lib/umur'
 import { requireActiveSession } from '@/lib/auth-server'
 import * as XLSX from 'xlsx'
 import QRCode from 'qrcode'
@@ -45,18 +46,20 @@ export async function GET(request: Request) {
         unitAsset: { include: { toko: { select: { kodeToko: true, namaToko: true } } } },
         parts: { select: { id: true, statusPart: true } },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { tglTiket: 'asc' },
     })
+    // Basis = tglTiket; data lama dikecualikan dari pengingat (umurnya nonaktif).
     const pending = tickets.filter(
       (t) =>
         !t.parts.some((p) => p.statusPart === 'READY') &&
-        now - new Date(t.createdAt).getTime() > BATAS_JAM * 3600 * 1000
+        !isDataLama(t) &&
+        (umurTiketJam(t, now) ?? 0) > BATAS_JAM
     )
     const rows: PendingRow[] = pending.map((t) => {
-      const jam = Math.floor((now - new Date(t.createdAt).getTime()) / 3600000)
+      const jam = umurTiketJam(t, now) ?? 0
       return {
         noTiket: t.noTiket,
-        tglLapor: new Date(t.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+        tglLapor: new Date(t.tglTiket).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
         serial: t.unitAsset.serialNumber,
         model: t.unitAsset.modelUnit,
         merk: t.unitAsset.merk || '-',

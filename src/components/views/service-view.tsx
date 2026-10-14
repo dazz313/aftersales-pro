@@ -23,7 +23,7 @@ import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -579,8 +579,19 @@ export default function ServiceView() {
                           </TableCell>
                         )}
                         <TableCell className="hidden sm:table-cell">
-                          <p className="text-xs text-slate-500">{t.umurTiketJam ?? 0} jam</p>
-                          <p className="text-[10px] text-slate-400">{formatWaktu(t.createdAt)}</p>
+                          {t.isDataLama ? (
+                            <>
+                              <Badge variant="outline" className="border-slate-400 text-[10px] text-slate-600" title={`Data lama: tgl kejadian ${formatWaktu(t.tglTiket)}, diupload ${formatWaktu(t.createdAt)} — umur dinonaktifkan`}>
+                                DATA LAMA
+                              </Badge>
+                              <p className="mt-0.5 text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs text-slate-500">{t.umurTiketJam ?? 0} jam</p>
+                              <p className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
+                            </>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex flex-wrap items-center justify-end gap-1.5">
@@ -649,7 +660,10 @@ export default function ServiceView() {
                   <Badge variant="outline" className={STATUS_STYLES[detail.status].cls}>{STATUS_STYLES[detail.status].label}</Badge>
                   {detail.slaFlag && <Badge variant="destructive">SLA TERLAMBAT</Badge>}
                 </DialogTitle>
-                <DialogDescription>Dibuat {formatWaktu(detail.createdAt)} · Klaim {detail.statusKlaimProdusen}</DialogDescription>
+                <DialogDescription>
+                  Tgl kejadian {formatWaktu(detail.tglTiket)} · Diupload {formatWaktu(detail.createdAt)} · Klaim {detail.statusKlaimProdusen}
+                  {detail.isDataLama && ' · DATA LAMA (umur nonaktif)'}
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 text-sm">
                 <ServiceFlowStepper ticket={detail} />
@@ -710,8 +724,8 @@ export default function ServiceView() {
                   ) : (
                     <div className="space-y-1.5">
                       {detail.parts.map((p) => (
-                        <div key={p.id} className="flex items-center justify-between rounded-md border px-3 py-2">
-                          <div>
+                        <div key={p.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
+                          <div className="min-w-0">
                             <p className="text-xs font-medium text-slate-800">{p.sparepart?.namaPart}</p>
                             <p className="font-mono text-[10px] text-slate-400">{p.sparepart?.kodePart} · qty {p.qty}</p>
                             {((p.sparepart?.brandKompatibel?.trim() || p.sparepart?.supplier?.trim())) && (
@@ -733,6 +747,34 @@ export default function ServiceView() {
                               <Badge variant="outline" className={cn('text-[9px]', p.statusKonfirmasi === 'READY' ? 'border-teal-300 text-teal-700' : 'border-rose-300 text-rose-700')}>
                                 Produsen: {p.statusKonfirmasi === 'READY' ? 'READY' : 'TIDAK READY'}
                               </Badge>
+                            )}
+                            {detail.status !== 'FINISH' && (
+                              <div className="mt-0.5 flex items-center gap-1">
+                                <Button
+                                  size="sm" variant="outline" className="h-6 w-6 p-0" title="Kurangi qty 1"
+                                  disabled={flowMutation.isPending || p.qty <= 1}
+                                  onClick={() => flowMutation.mutate({ id: detail.id, body: { aksi: 'UBAH_QTY_PART', partId: p.id, qty: p.qty - 1 } })}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm" variant="outline" className="h-6 w-6 p-0" title="Tambah qty 1 (cek stok bila READY)"
+                                  disabled={flowMutation.isPending}
+                                  onClick={() => flowMutation.mutate({ id: detail.id, body: { aksi: 'UBAH_QTY_PART', partId: p.id, qty: p.qty + 1 } })}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm" variant="outline" className="h-6 w-6 p-0 text-rose-600 hover:bg-rose-50" title="Hapus baris part ini (koreksi salah input — stok dikembalikan)"
+                                  disabled={flowMutation.isPending}
+                                  onClick={() => {
+                                    if (!window.confirm(`Hapus ${p.sparepart?.kodePart} ×${p.qty} dari tiket ${detail.noTiket}? Stok yang direserve akan dikembalikan.`)) return
+                                    flowMutation.mutate({ id: detail.id, body: { aksi: 'HAPUS_PART', partId: p.id } })
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { umurTiketJam, isDataLama } from '@/lib/umur'
 
 /**
  * API Dashboard KPI (Modul 5.1 PRD)
@@ -120,7 +121,9 @@ export async function GET() {
       const next = new Date(d)
       next.setDate(next.getDate() + 1)
       const jumlah = serviceRequests.filter(
-        (t) => new Date(t.createdAt) >= d && new Date(t.createdAt) < next
+        // Tren mengikuti tanggal kejadian (tglTiket) agar upload data lama
+        // tidak melonjakkan grafik di hari upload.
+        (t) => new Date(t.tglTiket) >= d && new Date(t.tglTiket) < next
       ).length
       tren14hari.push({
         tanggal: d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }),
@@ -132,7 +135,7 @@ export async function GET() {
     // Diurut tertua dulu agar tidak dilupakan karena lama pending.
     const belumProsesSemua = serviceRequests
       .filter((t) => t.status === 'REQUEST' && !t.parts.some((p) => p.statusPart === 'READY'))
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .sort((a, b) => new Date(a.tglTiket).getTime() - new Date(b.tglTiket).getTime())
     const belumProses = {
       count: belumProsesSemua.length,
       items: belumProsesSemua.slice(0, 8).map((t) => ({
@@ -140,8 +143,10 @@ export async function GET() {
         serial: t.unitAsset?.serialNumber ?? '-',
         model: t.unitAsset?.modelUnit ?? '-',
         toko: t.unitAsset?.toko ? `${t.unitAsset.toko.kodeToko} — ${t.unitAsset.toko.namaToko}` : '-',
-        umurJam: Math.floor((now - new Date(t.createdAt).getTime()) / 3600000),
+        // Umur dari tanggal kejadian; null + flag bila data lama (umur dinonaktifkan).
+        umurJam: isDataLama(t) ? null : (umurTiketJam(t, now) ?? 0),
         adaPart: t.parts.length > 0,
+        isDataLama: isDataLama(t),
       })),
     }
 

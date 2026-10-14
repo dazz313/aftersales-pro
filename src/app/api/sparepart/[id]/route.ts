@@ -19,6 +19,32 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const data: Record<string, unknown> = {}
     if (body.namaPart !== undefined) data.namaPart = body.namaPart
+    // Koreksi kode: diizinkan selama belum dipakai di tiket PROSES/FINISH
+    // (riwayat yang sudah berjalan tidak boleh berubah). Bila hanya dipakai
+    // di tiket REQUEST / belum dipakai sama sekali → boleh dikoreksi.
+    if (body.kodePart !== undefined) {
+      const kode = String(body.kodePart ?? '').trim().toUpperCase()
+      if (!kode) {
+        return NextResponse.json({ error: 'Kode sparepart tidak boleh kosong' }, { status: 400 })
+      }
+      if (kode !== existing.kodePart) {
+        const dupe = await db.masterSparepart.findUnique({ where: { kodePart: kode } })
+        if (dupe) {
+          return NextResponse.json({ error: `Kode ${kode} sudah dipakai oleh ${dupe.namaPart}` }, { status: 409 })
+        }
+        const terkunci = await db.serviceRequestPart.findFirst({
+          where: { sparepartId: existing.id, serviceRequest: { status: { in: ['PROSES', 'FINISH'] } } },
+          select: { id: true },
+        })
+        if (terkunci) {
+          return NextResponse.json(
+            { error: 'Kode terkunci: part ini sudah dipakai di tiket PROSES/FINISH. Hapus baris part yang salah di tiketnya dulu (detail tiket → Hapus), atau biarkan kode lama sebagai arsip.' },
+            { status: 409 }
+          )
+        }
+        data.kodePart = kode
+      }
+    }
     if (body.brandKompatibel !== undefined) data.brandKompatibel = String(body.brandKompatibel ?? '').trim()
     if (body.supplier !== undefined) data.supplier = String(body.supplier ?? '').trim()
     if (body.reorderLimit !== undefined) data.reorderLimit = Number(body.reorderLimit)
@@ -59,9 +85,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       aksi: isRestock ? 'RESTOCK_SPAREPART' : 'UPDATE_MASTER_SPAREPART',
       entitas: 'master_sparepart',
       entitasId: part.kodePart,
-      deskripsi: isRestock
-        ? `Restock +${Number(body.tambahStok) || 0} jual / +${Number(body.tambahStokGaransi) || 0} garansi ${part.namaPart} (jual ${part.stokJual}, garansi ${part.stokGaransi}, total ${part.stokInventory})`
-        : `Data sparepart diperbarui: ${Object.keys(data).join(', ')}`,
+        deskripsi: isRestock
+          ? `Restock +${Number(body.tambahStok) || 0} jual / +${Number(body.tambahStokGaransi) || 0} garansi ${part.namaPart} (jual ${part.stokJual}, garansi ${part.stokGaransi}, total ${part.stokInventory})`
+          : `Data sparepart diperbarui: ${Object.keys(data).join(', ')}${data.kodePart ? ` (${existing.kodePart} → ${data.kodePart})` : ''}`,
       aktor: body.aktor,
     })
     await backupSparepartToGit(isRestock ? 'RESTOCK' : 'UPDATE', part.kodePart, body.aktor)
@@ -89,7 +115,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       const total = await db.serviceRequestPart.count({ where: { sparepartId: Number(id) } })
       const daftar = used.map((u) => `${u.serviceRequest.noTiket} (${u.serviceRequest.status})`).join(', ')
       return NextResponse.json(
-        { error: `Tidak dapat menghapus: dipakai di ${total} tiket (${daftar}${total > used.length ? ', …' : ''}). Hapus/selesaikan tiket terkait dulu, atau biarkan sebagai arsip katalog.` },
+        { error: `Tidak dapat menghapus: dipakai di ${total} tiket (${daftar}${total > used.length ? ', …' : ''}). Hapus baris part yang salah di tiketnya dulu (detail tiket → Hapus), atau biarkan sebagai arsip katalog.` },
         { status: 409 }
       )
     }

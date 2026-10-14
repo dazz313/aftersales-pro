@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket } from '@/lib/audit'
+import { umurTiketJam, isDataLama } from '@/lib/umur'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 
@@ -22,7 +23,10 @@ export async function GET() {
     const now = Date.now()
     const result = tickets.map((t) => ({
       ...t,
-      umurTiketJam: Math.floor((now - new Date(t.createdAt).getTime()) / 3600000),
+      // Basis umur = tglTiket (tanggal kejadian), bukan createdAt (hari upload) —
+      // agar data lama/backfill tidak tercatat berumur 0 jam.
+      umurTiketJam: umurTiketJam(t, now) ?? 0,
+      isDataLama: isDataLama(t),
       hariSejakFinish: t.tglFinish
         ? Math.floor((now - new Date(t.tglFinish).getTime()) / (24 * 3600 * 1000))
         : null,

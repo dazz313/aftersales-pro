@@ -158,6 +158,8 @@ export interface ServiceTicket {
   }
   parts: ServicePart[]
   umurTiketJam?: number
+  /** True bila selisih upload vs tgl kejadian > batas (umur dinonaktifkan di UI). */
+  isDataLama?: boolean
   hariSejakFinish?: number | null
   nilaiKlaim?: number
 }
@@ -297,7 +299,7 @@ export interface DashboardData {
   tiket: { request: number; proses: number; finish: number; slaTerlambat: number; total: number }
   belumProses: {
     count: number
-    items: { noTiket: string; serial: string; model: string; toko: string; umurJam: number; adaPart: boolean }[]
+    items: { noTiket: string; serial: string; model: string; toko: string; umurJam: number | null; adaPart: boolean; isDataLama: boolean }[]
   }
   /** Unit terdaftar yang belum pernah punya tiket service sama sekali. */
   unitBelumDiproses: { count: number; total: number }

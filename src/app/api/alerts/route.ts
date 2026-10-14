@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { umurTiketJam, isDataLama } from '@/lib/umur'
 
 /**
  * API System Alert Engine (Modul 5.2 + Section 7 PRD)
@@ -48,9 +49,11 @@ export async function GET() {
       }))
 
     // ===== ALT-02: SLA Sparepart Pending (REQUEST > 24 jam) =====
+    // Basis = tglTiket (tanggal kejadian); data lama dikecualikan agar
+    // upload historis tidak memicu flag merah & reminder palsu.
     const SLA_JAM = 24
     const slaTerlambat = tiketRequest.filter(
-      (t) => (now - new Date(t.createdAt).getTime()) > SLA_JAM * 3600 * 1000
+      (t) => !isDataLama(t) && (umurTiketJam(t, now) ?? 0) > SLA_JAM
     )
 
     // Persist flag merah (aksi otomatis sistem)
@@ -68,7 +71,7 @@ export async function GET() {
     }
 
     const alerts2 = slaTerlambat.map((t) => {
-      const jamBerlalu = Math.floor((now - new Date(t.createdAt).getTime()) / 3600000)
+      const jamBerlalu = umurTiketJam(t, now) ?? 0
       return {
         kode: 'ALT-02',
         nama: 'SLA Sparepart Pending',
@@ -117,10 +120,12 @@ export async function GET() {
     })
 
     // ===== ALT-05: Unit Belum Terproses (peringatan berkala agar tak dilupakan) =====
+    // Data lama dikecualikan (umurnya dinonaktifkan) — sama seperti ALT-02.
     const alerts5 = tiketRequest
       .filter((t) => !t.parts.some((p) => p.statusPart === 'READY'))
+      .filter((t) => !isDataLama(t))
       .map((t) => {
-        const jamBerlalu = Math.floor((now - new Date(t.createdAt).getTime()) / 3600000)
+        const jamBerlalu = umurTiketJam(t, now) ?? 0
         const kritis = jamBerlalu > 72
         return {
           kode: 'ALT-05',

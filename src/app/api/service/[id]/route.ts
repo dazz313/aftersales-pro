@@ -35,7 +35,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
- *   | TAMBAH_PART | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
+ *   | TAMBAH_PART | HAPUS_PART | UBAH_QTY_PART | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
  * → TIDAK_READY: terdaftar & simpan di toko | READY: kerjakan di toko / tarik workshop+STTB
@@ -586,6 +586,118 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           aktor,
         })
       }
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi koreksi: hapus baris part yang salah input (kode/qty keliru).
+    // Hanya untuk tiket non-FINISH. Stok yang pernah direserve dikembalikan:
+    // READY + konfirmasi READY = stok katalog direserve → kembalikan ke stok;
+    // READY via penerimaan order (konfirmasi masih MENUNGGU) = stok brand tak
+    // tersentuh → hanya kurangi hitungan terpakai; ORDER = hapus baris saja.
+    if (aksi === 'HAPUS_PART') {
+      if (existing.status === 'FINISH') {
+        return NextResponse.json({ error: 'Tiket FINISH tidak dapat dihapus part-nya (riwayat terkunci)' }, { status: 409 })
+      }
+      const partId = Number(body.partId)
+      if (!partId) {
+        return NextResponse.json({ error: 'Baris part wajib dipilih' }, { status: 400 })
+      }
+      const baris = existing.parts.find((p) => p.id === partId)
+      if (!baris) {
+        return NextResponse.json({ error: 'Part tidak ditemukan di tiket ini' }, { status: 404 })
+      }
+      const direserve = baris.statusPart === 'READY' && baris.statusKonfirmasi === 'READY'
+      if (baris.statusPart === 'READY') {
+        const kembaliStok = direserve ? baris.qty : 0
+        await db.masterSparepart.update({
+          where: { id: baris.sparepartId },
+          data: {
+            ...(kembaliStok > 0 ? { stokJual: { increment: kembaliStok }, stokInventory: { increment: kembaliStok } } : {}),
+            totalTerpakai: Math.max(0, (baris.sparepart.totalTerpakai ?? 0) - baris.qty),
+          },
+        })
+        if (kembaliStok > 0) await backupSparepartToGit('RETURN', baris.sparepart.kodePart, aktor)
+      }
+      await db.serviceRequestPart.delete({ where: { id: baris.id } })
+      await logAudit({
+        aksi: 'HAPUS_PART_SERVICE',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Koreksi salah input: baris ${baris.sparepart.kodePart} ×${baris.qty} (${baris.statusPart}) dihapus dari tiket${direserve ? ` — stok dikembalikan +${baris.qty}` : ''}`,
+        aktor,
+      })
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi koreksi: ubah qty baris part (kelebihan/kekurangan input).
+    // Naik → reserve tambahan (stok harus cukup bila READY); turun → stok dikembalikan.
+    if (aksi === 'UBAH_QTY_PART') {
+      if (existing.status === 'FINISH') {
+        return NextResponse.json({ error: 'Tiket FINISH tidak dapat diubah part-nya (riwayat terkunci)' }, { status: 409 })
+      }
+      const partId = Number(body.partId)
+      const qtyBaru = Math.trunc(Number(body.qty) || 0)
+      if (!partId || qtyBaru < 1) {
+        return NextResponse.json({ error: 'Baris part dan qty baru (≥1) wajib diisi' }, { status: 400 })
+      }
+      const baris = existing.parts.find((p) => p.id === partId)
+      if (!baris) {
+        return NextResponse.json({ error: 'Part tidak ditemukan di tiket ini' }, { status: 404 })
+      }
+      const selisih = qtyBaru - baris.qty
+      if (selisih !== 0 && baris.statusPart === 'READY') {
+        const sp = await db.masterSparepart.findUnique({ where: { id: baris.sparepartId } })
+        if (!sp) {
+          return NextResponse.json({ error: 'Sparepart tidak ditemukan' }, { status: 404 })
+        }
+        if (selisih > 0) {
+          if (sp.stokInventory < selisih) {
+            return NextResponse.json(
+              { error: `Stok tidak cukup untuk tambah +${selisih} ${sp.kodePart} (sisa ${sp.stokInventory}). Restock dulu atau kurangi qty.` },
+              { status: 409 }
+            )
+          }
+          const ambilJual = Math.min(sp.stokJual, selisih)
+          await db.masterSparepart.update({
+            where: { id: sp.id },
+            data: {
+              stokJual: { decrement: ambilJual },
+              stokGaransi: { decrement: selisih - ambilJual },
+              stokInventory: { decrement: selisih },
+              totalTerpakai: { increment: selisih },
+            },
+          })
+        } else {
+          const kembali = -selisih
+          await db.masterSparepart.update({
+            where: { id: sp.id },
+            data: {
+              stokJual: { increment: kembali },
+              stokInventory: { increment: kembali },
+              totalTerpakai: Math.max(0, (sp.totalTerpakai ?? 0) - kembali),
+            },
+          })
+          await backupSparepartToGit('RETURN', sp.kodePart, aktor)
+        }
+      }
+      await db.serviceRequestPart.update({ where: { id: baris.id }, data: { qty: qtyBaru } })
+      await logAudit({
+        aksi: 'UBAH_QTY_PART_SERVICE',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Koreksi qty: ${baris.sparepart.kodePart} ${baris.qty} → ${qtyBaru}${selisih !== 0 && baris.statusPart === 'READY' ? (selisih > 0 ? ` (reserve tambahan +${selisih})` : ` (stok dikembalikan +${-selisih})`) : ''}`,
+        aktor,
+      })
       const updated = await db.serviceRequest.findUnique({
         where: { id: ticketId },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
