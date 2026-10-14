@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T01:22:13.493Z",
+  "generatedAt": "2026-10-14T13:46:39.284Z",
   "masterToko": [
     {
       "id": 216,
@@ -52,7 +52,7 @@
       "alamat": "Jl. Beringin, Jagong, Pankajene, Kec. Tanete Riattang, Bone",
       "kontak": "081395849375",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-14T04:21:00.000Z",
       "barcodeToko": "BC-TOK-005",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -85,7 +85,7 @@
       "alamat": "Jl. Letjen Sukawati, Depan Toyota, Watampone",
       "kontak": "085343528401",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-12T04:23:00.000Z",
       "barcodeToko": "BC-TOK-008",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -151,7 +151,7 @@
       "alamat": "Jl. Aiptu KS. Tubun, Kec. Tanete Riattang, Watampone",
       "kontak": "085222581188",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-06T11:07:00.000Z",
       "barcodeToko": "BC-TOK-014",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -161,8 +161,8 @@
       "namaToko": "Toko Volta",
       "alamat": "Jl. Letjen. Sukawati",
       "kontak": "08124205201",
-      "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "frekuensiVisit": 5,
+      "tglVisitTerakhir": "2026-10-13T04:22:00.000Z",
       "barcodeToko": "BC-TOK-015",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -184,7 +184,7 @@
       "alamat": "Jl. Letjen. Sukawati, Watampone",
       "kontak": "085399393342",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-14T03:44:00.000Z",
       "barcodeToko": "BC-TOK-017",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -217,7 +217,7 @@
       "alamat": "Jl. Mesjid, Watampone",
       "kontak": "082168878487",
       "frekuensiVisit": 7,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-11T11:05:00.000Z",
       "barcodeToko": "BC-TOK-020",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -239,7 +239,7 @@
       "alamat": "Jl. Ahmad Yani, Watampone",
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-10T11:08:00.000Z",
       "barcodeToko": "BC-TOK-022",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -283,7 +283,7 @@
       "alamat": "Jl. Agus Salim, Watampone",
       "kontak": "081341627953",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-12T11:05:00.000Z",
       "barcodeToko": "BC-TOK-026",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -305,7 +305,7 @@
       "alamat": "Jl. Lapatau No. 1",
       "kontak": "0811421389",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-12T11:06:00.000Z",
       "barcodeToko": "BC-TOK-028",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -327,7 +327,7 @@
       "alamat": "Watampone",
       "kontak": null,
       "frekuensiVisit": 5,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-12T11:06:00.000Z",
       "barcodeToko": "BC-TOK-030",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -470,7 +470,7 @@
       "alamat": "Komp. Pasar Palakka",
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-08T11:07:00.000Z",
       "barcodeToko": "BC-TOK-043",
       "createdAt": "2026-10-14T00:26:39.218Z"
     },
@@ -982,6 +982,48 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 291,
+      "kodePart": "EXXX-AX506-TP-KGX",
+      "namaPart": "THERMOSTAT ASSY 83'N",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:12:35.098Z"
+    },
+    {
+      "id": 287,
+      "kodePart": "MCMX-207-2-2-1-PR",
+      "namaPart": "FRONT PANEL ASSY 712 T",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T04:46:04.875Z"
+    },
+    {
+      "id": 292,
+      "kodePart": "MCMX-AX027-XX-KGX",
+      "namaPart": "TOTAL SIDE ELEMEN (BAWAH)",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:13:45.746Z"
+    },
+    {
       "id": 220,
       "kodePart": "MCMX-AX047-XX-KGX",
       "namaPart": "TOTAL SIDE ELEMENT ASSY MCM (396.5 OHM)",
@@ -1022,6 +1064,76 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 286,
+      "kodePart": "MCMX-PX562-WH-KGX",
+      "namaPart": "OUT CASE ASSY 602",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T04:45:01.732Z"
+    },
+    {
+      "id": 295,
+      "kodePart": "RI-602-132-26X03-PR",
+      "namaPart": "FRONT PANEL 602 BGX",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:17:49.437Z"
+    },
+    {
+      "id": 282,
+      "kodePart": "RI-602-142-10-I-P",
+      "namaPart": "SIDE PANEL CHS (KIRI) 602",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T04:25:03.963Z"
+    },
+    {
+      "id": 289,
+      "kodePart": "RI52-201-1-1X01-PR",
+      "namaPart": "TOP PLATE RI- 522 A",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:09:59.953Z"
+    },
+    {
+      "id": 288,
+      "kodePart": "RI52-201-1-2X01-PR",
+      "namaPart": "TOP PLATE 522 E",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:09:01.181Z"
     },
     {
       "id": 278,
@@ -1122,6 +1234,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 294,
+      "kodePart": "SFMX-AX298-XX-KGX",
+      "namaPart": "CONTROLLER ASSY 1607",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:15:49.710Z"
+    },
+    {
       "id": 225,
       "kodePart": "SFMX-EA200-XX-KGX",
       "namaPart": "TEJARI PCB ASSY (B)",
@@ -1190,6 +1316,34 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 293,
+      "kodePart": "SFMX-EA434-XX-KGX",
+      "namaPart": "MOTOR ASSY 1606\\1607",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:14:59.002Z"
+    },
+    {
+      "id": 290,
+      "kodePart": "SFMX-EA434-XXKGX",
+      "namaPart": "MOTOR KAS 1607 GB",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:11:24.322Z"
     },
     {
       "id": 230,
@@ -1365,10 +1519,10 @@
       "namaPart": "MOTOR MIXER ASSY 610 WHITE SOCKET",
       "brandKompatibel": "Miyako",
       "supplier": "PT BHAKTI IDOLA TAMA",
-      "stokJual": 1,
+      "stokJual": 0,
       "stokGaransi": 0,
-      "stokInventory": 1,
-      "totalTerpakai": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
@@ -1556,6 +1710,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 296,
+      "kodePart": "WDXX-MX196-PN-KGX",
+      "namaPart": "SIDE COVER RIGHT WDP300",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T05:20:38.647Z"
+    },
+    {
       "id": 253,
       "kodePart": "WDXX-PX331-XX-KGX",
       "namaPart": "HINGE DOOR WD",
@@ -1568,6 +1736,48 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 283,
+      "kodePart": "ZL009032",
+      "namaPart": "NN",
+      "brandKompatibel": "Shimizu",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T04:27:49.349Z"
+    },
+    {
+      "id": 285,
+      "kodePart": "ZX386683",
+      "namaPart": "NN",
+      "brandKompatibel": "Shimizu",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T04:29:50.989Z"
+    },
+    {
+      "id": 284,
+      "kodePart": "ZX389116",
+      "namaPart": "NN",
+      "brandKompatibel": "Shimizu",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-14T04:28:45.519Z"
     }
   ],
   "unitAsset": [
@@ -2208,8 +2418,712 @@
       "createdAt": "2026-08-06T16:00:00.000Z"
     }
   ],
-  "kunjungan": [],
-  "serviceRequest": [],
+  "kunjungan": [
+    {
+      "id": 37,
+      "tokoId": 220,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-14T04:21:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 36,
+      "tokoId": 232,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-14T03:44:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": "ada kipas rusak"
+    },
+    {
+      "id": 38,
+      "tokoId": 230,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-13T04:22:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 42,
+      "tokoId": 245,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-12T11:06:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 43,
+      "tokoId": 243,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-12T11:06:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 41,
+      "tokoId": 241,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-12T11:05:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 39,
+      "tokoId": 223,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-12T04:23:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 40,
+      "tokoId": 235,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-11T11:05:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 46,
+      "tokoId": 237,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-10T11:08:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 44,
+      "tokoId": 258,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-08T11:07:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 45,
+      "tokoId": 229,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-06T11:07:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    }
+  ],
+  "serviceRequest": [
+    {
+      "id": 20,
+      "noTiket": "SV-20261014-0016",
+      "unitAssetId": 141,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:20:38.638Z",
+      "createdAt": "2026-10-14T05:20:38.660Z",
+      "updatedAt": "2026-10-14T05:20:38.660Z",
+      "parts": [
+        {
+          "id": 28,
+          "serviceRequestId": 20,
+          "sparepartId": 296,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "noTiket": "SV-20261014-0015",
+      "unitAssetId": 140,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "motor macet",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:19:03.719Z",
+      "createdAt": "2026-10-14T05:19:03.736Z",
+      "updatedAt": "2026-10-14T05:19:03.736Z",
+      "parts": [
+        {
+          "id": 27,
+          "serviceRequestId": 19,
+          "sparepartId": 240,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "READY",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "noTiket": "SV-20261014-0014",
+      "unitAssetId": 139,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:17:49.433Z",
+      "createdAt": "2026-10-14T05:17:49.449Z",
+      "updatedAt": "2026-10-14T05:17:49.449Z",
+      "parts": [
+        {
+          "id": 26,
+          "serviceRequestId": 18,
+          "sparepartId": 295,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "noTiket": "SV-20261014-0013",
+      "unitAssetId": 138,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "nn",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:15:49.705Z",
+      "createdAt": "2026-10-14T05:15:49.722Z",
+      "updatedAt": "2026-10-14T05:15:49.722Z",
+      "parts": [
+        {
+          "id": 25,
+          "serviceRequestId": 17,
+          "sparepartId": 294,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "noTiket": "SV-20261014-0012",
+      "unitAssetId": 137,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "nn",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:14:58.997Z",
+      "createdAt": "2026-10-14T05:14:59.014Z",
+      "updatedAt": "2026-10-14T05:14:59.014Z",
+      "parts": [
+        {
+          "id": 24,
+          "serviceRequestId": 16,
+          "sparepartId": 293,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "noTiket": "SV-20261014-0011",
+      "unitAssetId": 136,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "tidak bisa memasak",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:13:45.740Z",
+      "createdAt": "2026-10-14T05:13:45.757Z",
+      "updatedAt": "2026-10-14T05:13:45.757Z",
+      "parts": [
+        {
+          "id": 23,
+          "serviceRequestId": 15,
+          "sparepartId": 292,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "noTiket": "SV-20261014-0010",
+      "unitAssetId": 134,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "nasi basi",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:12:35.093Z",
+      "createdAt": "2026-10-14T05:12:35.109Z",
+      "updatedAt": "2026-10-14T05:12:35.109Z",
+      "parts": [
+        {
+          "id": 22,
+          "serviceRequestId": 14,
+          "sparepartId": 291,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "noTiket": "SV-20261014-0009",
+      "unitAssetId": 133,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "motor rusak",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:11:24.317Z",
+      "createdAt": "2026-10-14T05:11:24.334Z",
+      "updatedAt": "2026-10-14T05:11:24.334Z",
+      "parts": [
+        {
+          "id": 21,
+          "serviceRequestId": 13,
+          "sparepartId": 290,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "noTiket": "SV-20261014-0008",
+      "unitAssetId": 132,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:09:59.922Z",
+      "createdAt": "2026-10-14T05:09:59.965Z",
+      "updatedAt": "2026-10-14T05:09:59.965Z",
+      "parts": [
+        {
+          "id": 20,
+          "serviceRequestId": 12,
+          "sparepartId": 289,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "noTiket": "SV-20261014-0007",
+      "unitAssetId": 131,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T05:09:01.176Z",
+      "createdAt": "2026-10-14T05:09:01.193Z",
+      "updatedAt": "2026-10-14T05:09:01.193Z",
+      "parts": [
+        {
+          "id": 19,
+          "serviceRequestId": 11,
+          "sparepartId": 288,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "noTiket": "SV-20261014-0006",
+      "unitAssetId": 128,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T04:46:04.860Z",
+      "createdAt": "2026-10-14T04:46:04.887Z",
+      "updatedAt": "2026-10-14T04:46:04.887Z",
+      "parts": [
+        {
+          "id": 18,
+          "serviceRequestId": 10,
+          "sparepartId": 287,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "noTiket": "SV-20261014-0005",
+      "unitAssetId": 127,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T04:45:01.727Z",
+      "createdAt": "2026-10-14T04:45:01.744Z",
+      "updatedAt": "2026-10-14T04:45:01.744Z",
+      "parts": [
+        {
+          "id": 17,
+          "serviceRequestId": 9,
+          "sparepartId": 286,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "noTiket": "SV-20261014-0004",
+      "unitAssetId": 125,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": "SJ-20261014-0001",
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "SUARA KASAR",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T04:29:50.983Z",
+      "createdAt": "2026-10-14T04:29:51.001Z",
+      "updatedAt": "2026-10-14T04:40:28.038Z",
+      "parts": [
+        {
+          "id": 16,
+          "serviceRequestId": 8,
+          "sparepartId": 285,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "noTiket": "SV-20261014-0003",
+      "unitAssetId": 124,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": "SJ-20261014-0001",
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "TIDAK MENGISAP",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T04:28:45.514Z",
+      "createdAt": "2026-10-14T04:28:45.532Z",
+      "updatedAt": "2026-10-14T04:40:28.038Z",
+      "parts": [
+        {
+          "id": 15,
+          "serviceRequestId": 7,
+          "sparepartId": 284,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "noTiket": "SV-20261014-0002",
+      "unitAssetId": 123,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": "SJ-20261014-0001",
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "SUARA BERISIK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T04:27:49.344Z",
+      "createdAt": "2026-10-14T04:27:50.190Z",
+      "updatedAt": "2026-10-14T04:40:28.038Z",
+      "parts": [
+        {
+          "id": 14,
+          "serviceRequestId": 6,
+          "sparepartId": 283,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "noTiket": "SV-20261014-0001",
+      "unitAssetId": 122,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": "SJ-20261014-0001",
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-14T04:25:03.957Z",
+      "createdAt": "2026-10-14T04:25:03.982Z",
+      "updatedAt": "2026-10-14T04:40:28.038Z",
+      "parts": [
+        {
+          "id": 13,
+          "serviceRequestId": 5,
+          "sparepartId": 282,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN"
+        }
+      ]
+    }
+  ],
   "permintaanOrder": [],
   "pengguna": [
     {
@@ -2224,6 +3138,19 @@
       "wilayahKerja": null,
       "aktif": true,
       "createdAt": "2026-10-13T14:53:23.990Z"
+    },
+    {
+      "id": 27,
+      "nama": "SYAFRIL ARFFANDI",
+      "email": "syafril01@gmail.com",
+      "username": "syafril",
+      "kodeTeknisi": "ETS-20260504",
+      "passwordHash": "***",
+      "role": "TEKNISI",
+      "noWa": "085635506278",
+      "wilayahKerja": "BONE",
+      "aktif": true,
+      "createdAt": "2026-10-14T03:41:36.776Z"
     }
   ],
   "pengaturan": [
@@ -2236,6 +3163,16 @@
       "id": 57,
       "kunci": "email_perusahaan",
       "nilai": "eracoolteknik@gmail.com"
+    },
+    {
+      "id": 65,
+      "kunci": "gateway_tg_chat_id",
+      "nilai": "-5357204374"
+    },
+    {
+      "id": 64,
+      "kunci": "gateway_tg_token",
+      "nilai": "***"
     },
     {
       "id": 54,
@@ -2254,6 +3191,357 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 334,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, logo_perusahaan, nama_perusahaan, partner_produsen, gateway_tg_token, gateway_tg_chat_id",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T13:46:39.252Z"
+    },
+    {
+      "id": 333,
+      "aksi": "KIRIM_GATEWAY",
+      "entitas": "gateway_message",
+      "entitasId": "WHATSAPP",
+      "deskripsi": "Pesan dikirim ke grup WHATSAPP (SIMULASI): *UNIT PENDING* (15 unit >24 jam belum ada kode+nama part)\n1. SV-20261014-0001 — RI-602 E (W) (TOK-042 — Toko Semeru Ahma",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-14T11:11:20.912Z"
+    },
+    {
+      "id": 332,
+      "aksi": "KIRIM_GATEWAY",
+      "entitas": "gateway_message",
+      "entitasId": "WHATSAPP",
+      "deskripsi": "Pesan dikirim ke grup WHATSAPP (SIMULASI): *UNIT PENDING* (15 unit >24 jam belum ada kode+nama part)\n1. SV-20261014-0001 — RI-602 E (W) (TOK-042 — Toko Semeru Ahma",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-14T11:10:52.352Z"
+    },
+    {
+      "id": 331,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "46",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Surya Indah (TOK-022) · tgl 10/10/2026, 19.08.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:08:15.283Z"
+    },
+    {
+      "id": 330,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "45",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Delta Elektronik (TOK-014) · tgl 6/10/2026, 19.07.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:07:38.103Z"
+    },
+    {
+      "id": 329,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "44",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Ria (TOK-043) · tgl 8/10/2026, 19.07.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:07:09.462Z"
+    },
+    {
+      "id": 328,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "43",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Anta Jaya (TOK-028) · tgl 12/10/2026, 19.06.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:06:56.427Z"
+    },
+    {
+      "id": 327,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "42",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Swalayan Jaya Bessi (TOK-030) · tgl 12/10/2026, 19.06.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:06:23.139Z"
+    },
+    {
+      "id": 326,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "41",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Varia Makmur (TOK-026) · tgl 12/10/2026, 19.05.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:06:01.288Z"
+    },
+    {
+      "id": 325,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "40",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Varia Maju (TOK-020) · tgl 11/10/2026, 19.05.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T11:05:38.570Z"
+    },
+    {
+      "id": 324,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0016",
+      "deskripsi": "Tiket manual dibuat untuk unit 43050018006 (WDP-300, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:20:38.673Z"
+    },
+    {
+      "id": 323,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0015",
+      "deskripsi": "Tiket manual dibuat untuk unit 908029173 (SM-625, stok toko → GARANSI otomatis) — part READY → otomatis PROSES",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:19:03.750Z"
+    },
+    {
+      "id": 322,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0014",
+      "deskripsi": "Tiket manual dibuat untuk unit 2601407532 (RI-602-BGX, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:17:49.462Z"
+    },
+    {
+      "id": 321,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0013",
+      "deskripsi": "Tiket manual dibuat untuk unit 03050071936 (KAS-1607 PL, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:15:49.734Z"
+    },
+    {
+      "id": 320,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0012",
+      "deskripsi": "Tiket manual dibuat untuk unit 03030022250 (KAS-1607 GB, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:14:59.027Z"
+    },
+    {
+      "id": 319,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0011",
+      "deskripsi": "Tiket manual dibuat untuk unit 02100010647 (MCM-606-A, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:13:45.770Z"
+    },
+    {
+      "id": 318,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0010",
+      "deskripsi": "Tiket manual dibuat untuk unit 44030035188 (MCM-559 SBC, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:12:35.122Z"
+    },
+    {
+      "id": 317,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0009",
+      "deskripsi": "Tiket manual dibuat untuk unit 03050030726 (KAS-1607 GB, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:11:24.346Z"
+    },
+    {
+      "id": 316,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0008",
+      "deskripsi": "Tiket manual dibuat untuk unit 2511700906 (RI-522 A, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:09:59.977Z"
+    },
+    {
+      "id": 315,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0007",
+      "deskripsi": "Tiket manual dibuat untuk unit 2602651578 (RI-522 E, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T05:09:01.206Z"
+    },
+    {
+      "id": 314,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0006",
+      "deskripsi": "Tiket manual dibuat untuk unit 2605388515 (RI-712 T, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T04:46:04.901Z"
+    },
+    {
+      "id": 313,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0005",
+      "deskripsi": "Tiket manual dibuat untuk unit 43100173715 (MCM-609, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T04:45:01.757Z"
+    },
+    {
+      "id": 312,
+      "aksi": "CETAK_SURAT_JALAN",
+      "entitas": "surat_jalan",
+      "entitasId": "SJ-20261014-0001",
+      "deskripsi": "Cetak Surat Jalan SJ-20261014-0001 (PDF): 4 tiket, 4 item part, 4 pcs — untuk PT. BHAKTI IDOLA TAMA",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-14T04:40:28.026Z"
+    },
+    {
+      "id": 311,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0004",
+      "deskripsi": "Tiket manual dibuat untuk unit ZX386683 (PS-130 BIT, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T04:29:51.013Z"
+    },
+    {
+      "id": 310,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0003",
+      "deskripsi": "Tiket manual dibuat untuk unit ZX389116 (PS-130 BIT, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T04:28:45.544Z"
+    },
+    {
+      "id": 309,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0002",
+      "deskripsi": "Tiket manual dibuat untuk unit ZL009032 (PS-135 E, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T04:27:50.402Z"
+    },
+    {
+      "id": 308,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261014-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 2602316915 (RI-602 E (W), stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T04:25:04.007Z"
+    },
+    {
+      "id": 307,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "39",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Sentral Elektric (TOK-008) · tgl 12/10/2026, 12.23.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T04:23:27.648Z"
+    },
+    {
+      "id": 306,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "38",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Volta (TOK-015) · tgl 13/10/2026, 12.22.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T04:22:57.929Z"
+    },
+    {
+      "id": 305,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "37",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Pelita Elektronik (TOK-005) · tgl 14/10/2026, 12.21.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T04:22:01.289Z"
+    },
+    {
+      "id": 304,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-015",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-14T03:48:34.816Z"
+    },
+    {
+      "id": 303,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "36",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Smart Home (TOK-017) · tgl 14/10/2026, 11.44.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-14T03:45:15.419Z"
+    },
+    {
+      "id": 302,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "syafril01@gmail.com",
+      "deskripsi": "Login berhasil: SYAFRIL ARFFANDI (TEKNISI)",
+      "aktor": "syafril01@gmail.com",
+      "createdAt": "2026-10-14T03:43:12.722Z"
+    },
+    {
+      "id": 301,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "syafril@gmail.com",
+      "deskripsi": "Percobaan login gagal untuk \"syafril@gmail.com\"",
+      "aktor": "syafril@gmail.com",
+      "createdAt": "2026-10-14T03:42:55.287Z"
+    },
+    {
+      "id": 300,
+      "aksi": "LOGOUT",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Logout: DAZZ (ADMIN_WORKSHOP)",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-14T03:42:36.180Z"
+    },
+    {
+      "id": 299,
+      "aksi": "RESET_PASSWORD_PENGGUNA",
+      "entitas": "pengguna",
+      "entitasId": "syafril01@gmail.com",
+      "deskripsi": "Reset password akun SYAFRIL ARFFANDI (syafril01@gmail.com)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T03:42:29.864Z"
+    },
+    {
+      "id": 298,
+      "aksi": "CREATE_PENGGUNA",
+      "entitas": "pengguna",
+      "entitasId": "syafril01@gmail.com",
+      "deskripsi": "Karyawan baru: SYAFRIL ARFFANDI (TEKNISI) — login password default",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T03:41:36.789Z"
+    },
+    {
+      "id": 297,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP)",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-14T03:39:24.861Z"
+    },
+    {
+      "id": 296,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP)",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-14T02:01:47.019Z"
+    },
     {
       "id": 295,
       "aksi": "UPDATE_MASTER_TOKO",
