@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T14:23:27.931Z",
+  "generatedAt": "2026-10-14T15:29:48.589Z",
   "masterToko": [
     {
       "id": 216,
@@ -528,6 +528,17 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-048",
       "createdAt": "2026-10-14T00:26:39.218Z"
+    },
+    {
+      "id": 264,
+      "kodeToko": "TOK-049",
+      "namaToko": "Toko Uji MCP 788536",
+      "alamat": null,
+      "kontak": "0812",
+      "frekuensiVisit": 14,
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-049",
+      "createdAt": "2026-10-14T15:29:48.539Z"
     }
   ],
   "masterCustomer": [
@@ -3236,6 +3247,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 340,
+      "aksi": "CREATE",
+      "entitas": "master_toko",
+      "entitasId": "TOK-049",
+      "deskripsi": "Toko baru ditambahkan via MCP AI: Toko Uji MCP 788536 — barcode kunjungan BC-TOK-049",
+      "aktor": "MCP AI",
+      "createdAt": "2026-10-14T15:29:48.552Z"
+    },
     {
       "id": 339,
       "aksi": "CREATE_KUNJUNGAN",
