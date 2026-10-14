@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T01:19:22.686Z",
+  "generatedAt": "2026-10-14T01:19:43.010Z",
   "masterToko": [
     {
       "id": 216,
@@ -216,7 +216,7 @@
       "namaToko": "Toko Varia Maju",
       "alamat": "Jl. Mesjid, Watampone",
       "kontak": "082168878487",
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 7,
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-020",
       "createdAt": "2026-10-14T00:26:39.218Z"
@@ -2254,6 +2254,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 292,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-020",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T01:19:42.992Z"
+    },
     {
       "id": 291,
       "aksi": "UPDATE_MASTER_TOKO",
