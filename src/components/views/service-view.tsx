@@ -48,6 +48,7 @@ export default function ServiceView() {
   const [garansiFilter, setGaransiFilter] = useState<'SEMUA' | 'GARANSI' | 'NON_GARANSI'>('SEMUA')
   const [modelFilter, setModelFilter] = useState<string | null>(null)
   const [tokoFilter, setTokoFilter] = useState<string | null>(null)
+  const [brandFilter, setBrandFilter] = useState<string | null>(null)
   const [cariTiket, setCariTiket] = useState('')
   // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -69,6 +70,7 @@ export default function ServiceView() {
       if (navIntent.serviceGaransi) setGaransiFilter(navIntent.serviceGaransi)
       if (navIntent.serviceModel) setModelFilter(navIntent.serviceModel)
       if (navIntent.serviceToko) setTokoFilter(navIntent.serviceToko)
+      if (navIntent.serviceBrand) setBrandFilter(navIntent.serviceBrand)
       clearNavIntent()
     }, 0)
     return () => clearTimeout(t)
@@ -129,6 +131,7 @@ export default function ServiceView() {
     if (garansiFilter !== 'SEMUA') list = list.filter((t) => garansiFilter === 'GARANSI' ? t.unitAsset.statusGaransi !== 'NON_GARANSI' : t.unitAsset.statusGaransi === 'NON_GARANSI')
     if (modelFilter) list = list.filter((t) => t.unitAsset.modelUnit === modelFilter)
     if (tokoFilter) list = list.filter((t) => t.unitAsset.toko?.kodeToko === tokoFilter)
+    if (brandFilter) list = list.filter((t) => (t.unitAsset.merk?.trim() || '').toLowerCase() === brandFilter.toLowerCase())
     if (cariTiket.trim()) {
       list = list.filter((t) => matchQuery([
         t.noTiket,
@@ -146,7 +149,7 @@ export default function ServiceView() {
     return list
   }, [tickets, tab, garansiFilter, modelFilter, cariTiket])
 
-  const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null || tokoFilter !== null
+  const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null || tokoFilter !== null || brandFilter !== null
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -439,6 +442,19 @@ export default function ServiceView() {
                     aria-label="Hapus filter toko"
                     onClick={() => setTokoFilter(null)}
                     className="ml-0.5 rounded-full p-0.5 hover:bg-emerald-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {brandFilter && (
+                <Badge variant="outline" className="max-w-64 gap-1 border-sky-300 bg-sky-50 text-sky-700">
+                  <span className="truncate">Brand: {brandFilter}</span>
+                  <button
+                    type="button"
+                    aria-label="Hapus filter brand"
+                    onClick={() => setBrandFilter(null)}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-sky-100"
                   >
                     <X className="h-3 w-3" />
                   </button>

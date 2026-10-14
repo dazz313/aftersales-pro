@@ -76,6 +76,20 @@ export async function GET() {
       .sort((a, b) => b.jumlah - a.jumlah)
       .slice(0, 8)
 
+    // Top 3 brand dengan unit rusak terbanyak (tanpa merk diabaikan, case-insensitive)
+    const rusakPerBrandMap = new Map<string, { brand: string; jumlah: number }>()
+    for (const t of serviceRequests) {
+      const merk = t.unitAsset?.merk?.trim()
+      if (!merk) continue
+      const key = merk.toLowerCase()
+      const e = rusakPerBrandMap.get(key) ?? { brand: merk, jumlah: 0 }
+      e.jumlah++
+      rusakPerBrandMap.set(key, e)
+    }
+    const rusakPerBrand = [...rusakPerBrandMap.values()]
+      .sort((a, b) => b.jumlah - a.jumlah)
+      .slice(0, 3)
+
     // Distribusi garansi unit yang diservis (STOK_TOKO dihitung garansi)
     const garansiCount = { GARANSI: 0, NON_GARANSI: 0 }
     for (const t of serviceRequests) {
@@ -159,6 +173,7 @@ export async function GET() {
       },
       trenKerusakan,
       rusakPerToko,
+      rusakPerBrand,
       garansiCount,
       tren14hari,
     })

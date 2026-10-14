@@ -13,8 +13,9 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
 import fs from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SERVER = path.join(ROOT, 'mcp', 'server.mjs')
 // DB lokal Windows (fallback bila env tidak di-set) — path absolut anti-backslash untuk Prisma
 const LOCAL_DB_URL = `file:${path.join(ROOT, 'db', 'custom.db').replace(/\\/g, '/')}`

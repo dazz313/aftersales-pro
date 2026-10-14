@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, X, Pencil, CalendarDays } from 'lucide-react'
+import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, X, Pencil, CalendarDays, Sparkles, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
 import ScanToko from '@/components/scan-toko'
@@ -80,6 +80,65 @@ export default function FieldOpsView() {
     () => (kunjunganList ?? []).filter((k) => matchQuery([k.toko.kodeToko, k.toko.namaToko, k.teknisi.nama, k.teknisi.wilayahKerja, k.catatanStokRusak, k.barcodeTerscan, k.metodeCheckin], cariKunjungan)),
     [kunjunganList, cariKunjungan]
   )
+
+  // ===== Saran jadwal kunjungan 6 hari kerja (analisa data toko) =====
+  // Skor: terlambat dulu (makin lama makin atas, tie-break unit terbanyak),
+  // lalu bagi rata ke 6 hari kerja ke depan (lewati Minggu). Teknisi tinggal mengikuti.
+  const skorToko = (t: Toko) => (t.visitTerlambat ? 1000 + (t.hariSejakVisit ?? t.frekuensiVisit) : 0) * 100 + t.jumlahUnit
+  const isoLokal = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const saranJadwal = useMemo(() => {
+    const urut = [...(tokoList ?? [])].sort((a, b) => skorToko(b) - skorToko(a))
+    const hari: Date[] = []
+    const d = new Date()
+    while (hari.length < 6) {
+      if (d.getDay() !== 0) hari.push(new Date(d))
+      d.setDate(d.getDate() + 1)
+    }
+    const dasar = Math.floor(urut.length / 6)
+    let sisa = urut.length % 6
+    const rencana: { iso: string; tanggal: Date; toko: Toko[] }[] = []
+    let idx = 0
+    for (const tanggal of hari) {
+      const jml = dasar + (sisa > 0 ? 1 : 0)
+      if (sisa > 0) sisa--
+      rencana.push({ iso: isoLokal(tanggal), tanggal, toko: urut.slice(idx, idx + jml) })
+      idx += jml
+    }
+    return rencana
+  }, [tokoList])
+  const totalTerlambat = useMemo(() => (tokoList ?? []).filter((t) => t.visitTerlambat).length, [tokoList])
+  const isoKeTanggal = useMemo(() => new Map(saranJadwal.map((h) => [h.iso, h.tanggal])), [saranJadwal])
+  const namaTokoMap = useMemo(() => new Map((tokoList ?? []).map((t) => [t.kodeToko.toUpperCase(), t.namaToko])), [tokoList])
+
+  // ===== Saran AI via 9router (jadwal versi AI + alasan per hari) =====
+  interface AiRencana {
+    rencana: { hari: string; kode: string[]; alasan: string }[]
+    catatan: string
+    model: string
+    takTerjadwal: string[]
+  }
+  const [aiSaran, setAiSaran] = useState<AiRencana | null>(null)
+  const aiMut = useMutation({
+    mutationFn: () => {
+      const prioritas = [...(tokoList ?? [])].sort((a, b) => skorToko(b) - skorToko(a)).slice(0, 30)
+      return postJson<AiRencana>('/api/ai/suggest', {
+        stores: prioritas.map((t) => ({
+          kode: t.kodeToko,
+          nama: t.namaToko,
+          siklus: t.frekuensiVisit,
+          sejakHari: t.hariSejakVisit,
+          unit: t.jumlahUnit,
+          terlambat: t.visitTerlambat,
+        })),
+        hari: saranJadwal.map((h) => h.iso),
+      })
+    },
+    onSuccess: (r) => {
+      setAiSaran(r)
+      toast({ title: 'Saran AI diterima', description: `${r.rencana.length} hari disusun (${r.model}). Jadwal otomatis tetap ada di bawah sebagai cadangan.` })
+    },
+    onError: (e: Error) => toast({ title: 'Saran AI gagal', description: e.message, variant: 'destructive' }),
+  })
 
   const invalidateAll = () => {
     queryClient.invalidateQueries({ queryKey: ['kunjungan'] })
@@ -148,6 +207,115 @@ export default function FieldOpsView() {
         {/* Pembaca foto & barcode — berdampingan sejajar dengan scan */}
         <VisionScanner channel="TELEGRAM" pengirimDefault="FIELD-OPS" compact thin />
       </div>
+
+      {/* ===== Saran jadwal kunjungan 6 hari kerja — teknisi tinggal mengikuti ===== */}
+      <Card className="border-teal-200">
+        <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CalendarDays className="h-4 w-4 text-teal-700" /> Saran Jadwal Kunjungan — 6 Hari Kerja
+              {(tokoList ?? []).length > 0 && (
+                <Badge variant="outline" className="border-teal-300 text-[10px] text-teal-700">
+                  {(tokoList ?? []).length} toko · {totalTerlambat} terlambat
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Otomatis dari keterlambatan, siklus, dan unit — mulai hari ini (lewati Minggu). Klik pin untuk check-in langsung.
+            </CardDescription>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 shrink-0 border-violet-300 px-2 text-[11px] text-violet-700 hover:bg-violet-50"
+            disabled={aiMut.isPending || (tokoList ?? []).length === 0}
+            onClick={() => aiMut.mutate()}
+            title="Minta AI (9router) menyusun ulang jadwal + alasan"
+          >
+            {aiMut.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Sparkles className="mr-1 h-3 w-3" />}
+            {aiMut.isPending ? 'Meminta…' : 'Saran AI'}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {aiSaran && (
+            <div className="mb-3 rounded-xl border border-violet-300 bg-violet-50/50 p-2.5">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="flex min-w-0 items-center gap-1.5 text-xs font-bold text-violet-800">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Saran AI · {aiSaran.model}</span>
+                </p>
+                <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:text-slate-700" onClick={() => setAiSaran(null)} aria-label="Tutup saran AI">
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                {aiSaran.rencana.map((r, i) => {
+                  const tgl = isoKeTanggal.get(r.hari)
+                  return (
+                    <div key={i} className="rounded-lg border border-violet-200 bg-white p-2">
+                      <p className="text-[11px] font-bold text-slate-800">
+                        {tgl ? tgl.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }) : r.hari}
+                      </p>
+                      <div className="mt-1 space-y-1">
+                        {r.kode.map((k) => (
+                          <p key={k} className="truncate font-mono text-[10px] text-slate-700" title={`${k} — ${namaTokoMap.get(k.toUpperCase()) ?? ''}`}>
+                            {k} <span className="font-sans text-slate-400">· {namaTokoMap.get(k.toUpperCase()) ?? ''}</span>
+                          </p>
+                        ))}
+                      </div>
+                      {r.alasan && <p className="mt-1.5 border-t border-dashed border-violet-200 pt-1 text-[10px] italic leading-snug text-violet-800">{r.alasan}</p>}
+                    </div>
+                  )
+                })}
+              </div>
+              {(aiSaran.catatan || aiSaran.takTerjadwal.length > 0) && (
+                <p className="mt-2 text-[11px] text-violet-800">
+                  {aiSaran.catatan}
+                  {aiSaran.takTerjadwal.length > 0 && <span className="text-slate-500"> Tak terjadwal: {aiSaran.takTerjadwal.join(', ')}.</span>}
+                </p>
+              )}
+            </div>
+          )}
+          {tokoLoading ? (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40" />)}
+            </div>
+          ) : saranJadwal.every((h) => h.toko.length === 0) ? (
+            <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Belum ada data toko untuk disusun jadwalnya.</p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              {saranJadwal.map((h, i) => (
+                <div key={i} className="rounded-lg border bg-white">
+                  <div className="border-b px-2.5 py-1.5">
+                    <p className="text-xs font-bold text-slate-800">{h.tanggal.toLocaleDateString('id-ID', { weekday: 'long' })}</p>
+                    <p className="text-[10px] text-slate-400">{h.tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {h.toko.length} toko</p>
+                  </div>
+                  <div className="max-h-56 space-y-1 overflow-y-auto p-1.5">
+                    {h.toko.length === 0 ? (
+                      <p className="py-3 text-center text-[10px] text-slate-400">— kosong —</p>
+                    ) : (
+                      h.toko.map((t) => (
+                        <div key={t.id} className="flex items-center gap-1.5 rounded-md bg-slate-50 px-1.5 py-1">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[11px] font-medium text-slate-800" title={t.namaToko}>{t.namaToko}</p>
+                            <p className="font-mono text-[9px] text-slate-400">{t.kodeToko}</p>
+                          </div>
+                          {t.visitTerlambat && (
+                            <Badge variant="outline" className="shrink-0 border-rose-300 px-1 text-[8px] text-rose-700">TERLAMBAT</Badge>
+                          )}
+                          <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:text-emerald-700" onClick={() => bukaCheckin(t)} aria-label={`Check-in ${t.namaToko}`} title="Check-in langsung">
+                            <MapPin className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Peta kepatuhan kunjungan */}
       <Card id="kepatuhan-visit">

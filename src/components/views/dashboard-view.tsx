@@ -116,6 +116,13 @@ export default function DashboardView() {
     { name: 'Non-Garansi', value: dash.garansiCount.NON_GARANSI, color: '#f59e0b' },
   ]
 
+  // Peringkat toko: unit rusak terbanyak → paling kurang (pie)
+  const RANK_COLORS = ['#10b981', '#14b8a6', '#0ea5e9', '#6366f1', '#8b5cf6', '#d946ef', '#f59e0b', '#f97316']
+  const spiralData = dash.rusakPerToko.slice(0, 8).map((d, i) => ({ ...d, name: d.kode, fill: RANK_COLORS[i % RANK_COLORS.length] }))
+  // Top 3 brand unit rusak (batang horizontal)
+  const BRAND_COLORS = ['#f59e0b', '#0ea5e9', '#10b981']
+  const brandData = dash.rusakPerBrand.slice(0, 3).map((d, i) => ({ ...d, fill: BRAND_COLORS[i % BRAND_COLORS.length] }))
+
   // Indikator portable — tambah/pindah/kurangi cukup edit array ini
   const kpiUtama: KpiDef[] = [
     { title: 'Tiket REQUEST', value: String(dash.tiket.request), sub: `${dash.tiket.slaTerlambat} melewati SLA 24 jam`, icon: FileClock, tone: 'bg-amber-400', onClick: () => navigateTo('service', { serviceStatus: 'REQUEST' }) },
@@ -136,7 +143,170 @@ export default function DashboardView() {
       {/* Panel indikator — ringkas 9 kartu dalam 2 baris agar terpantau di halaman pertama */}
       <KpiGrid items={[...kpiUtama, ...kpiSekunder]} compact />
 
-      {/* Unit belum terproses — wajib input kode+nama part agar bisa PROSES */}
+      {/* Grafik: 3 sejajar (Tren + Toko + Garansi) / Tren Model (2) + Brand */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex-row items-start justify-between space-y-0">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <TrendingUp className="h-4 w-4 text-emerald-600" /> Tren Tiket Masuk — 14 Hari Terakhir
+              </CardTitle>
+              <CardDescription>Jumlah laporan kerusakan yang diterima sistem per hari</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="shrink-0 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              onClick={() => navigateTo('service', { serviceStatus: 'SEMUA' })}
+              aria-label="Buka daftar tiket service"
+            >
+              Lihat Tiket <ChevronRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </CardHeader>
+          <CardContent className="h-60">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dash.tren14hari} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="tanggal" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(v) => [`${v} tiket`, 'Tiket masuk']} />
+                <Line type="monotone" dataKey="tiket" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981' }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Peringkat Toko — Unit Rusak</CardTitle>
+            <CardDescription>Terbanyak → paling kurang · klik spiral untuk buka tiket toko</CardDescription>
+          </CardHeader>
+          <CardContent className="h-60">
+            {spiralData.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center">
+                <p className="text-sm text-slate-500">Belum ada tiket dari toko.</p>
+                <p className="text-xs text-slate-400">Unit perorangan (tanpa toko) tidak masuk peringkat ini.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={spiralData} dataKey="jumlah" nameKey="name" cx="50%" cy="42%" innerRadius={45} outerRadius={75} paddingAngle={3}
+                    style={{ cursor: 'pointer' }}
+                    onClick={(entry: { name?: string }) => {
+                      if (entry?.name) navigateTo('service', { serviceToko: entry.name })
+                    }}
+                  >
+                    {spiralData.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                  </Pie>
+                  <Legend
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    wrapperStyle={{ cursor: 'pointer', fontSize: 11 }}
+                    formatter={(v) => <span className="text-xs text-slate-600">{v}</span>}
+                  />
+                  <Tooltip formatter={(v, name) => [`${v} unit rusak`, name]} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Distribusi Garansi Unit</CardTitle>
+            <CardDescription>Klik irisan/legenda untuk membuka tiket per garansi</CardDescription>
+          </CardHeader>
+          <CardContent className="h-60">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData} dataKey="value" nameKey="name" cx="50%" cy="45%" innerRadius={50} outerRadius={80} paddingAngle={4} label
+                  style={{ cursor: 'pointer' }}
+                  onClick={(entry: { name?: string }) => {
+                    if (entry?.name === 'Garansi') navigateTo('service', { serviceGaransi: 'GARANSI' })
+                    else if (entry?.name === 'Non-Garansi') navigateTo('service', { serviceGaransi: 'NON_GARANSI' })
+                  }}
+                >
+                  {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                </Pie>
+                <Legend
+                  verticalAlign="bottom"
+                  iconType="circle"
+                  wrapperStyle={{ cursor: 'pointer' }}
+                  formatter={(v) => <span className="text-xs text-slate-600">{v}</span>}
+                  onClick={(d: unknown) => {
+                    const name = typeof d === 'string' ? d : (d as { value?: string } | null)?.value
+                    if (name === 'Garansi') navigateTo('service', { serviceGaransi: 'GARANSI' })
+                    else if (name === 'Non-Garansi') navigateTo('service', { serviceGaransi: 'NON_GARANSI' })
+                  }}
+                />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">Tren Kerusakan per Model Unit</CardTitle>
+          <CardDescription>Model dengan frekuensi kerusakan tertinggi — klik batang untuk membuka tiket model tersebut</CardDescription>
+        </CardHeader>
+        <CardContent className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dash.trenKerusakan.slice(0, 8).map((d) => ({ ...d, short: MODEL_SHORT(d.model) }))} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="short" width={150} tick={{ fontSize: 10 }} />
+              <Tooltip formatter={(v) => [`${v} tiket`, 'Kerusakan']} />
+              <Bar
+                dataKey="jumlah" fill="#10b981" radius={[0, 6, 6, 0]} barSize={16}
+                style={{ cursor: 'pointer' }}
+                onClick={(entry: { payload?: { model?: string } }) => {
+                  const model = entry?.payload?.model
+                  if (model) navigateTo('service', { serviceModel: model })
+                }}
+              />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Top 3 Brand — Unit Rusak</CardTitle>
+            <CardDescription>Klik batang untuk buka tiket brand</CardDescription>
+          </CardHeader>
+          <CardContent className="h-56">
+            {brandData.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-6 text-center">
+                <p className="text-sm text-slate-500">Belum ada data merk unit.</p>
+                <p className="text-xs text-slate-400">Isi kolom merk saat registrasi unit.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={brandData} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                  <YAxis type="category" dataKey="brand" width={90} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(v) => [`${v} unit rusak`, 'Rusak']} />
+                  <Bar
+                    dataKey="jumlah" radius={[0, 6, 6, 0]} barSize={22}
+                    style={{ cursor: 'pointer' }}
+                    onClick={(entry: { payload?: { brand?: string } }) => {
+                      const brand = entry?.payload?.brand
+                      if (brand) navigateTo('service', { serviceBrand: brand })
+                    }}
+                  >
+                    {brandData.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Unit belum terproses — di bawah grafik */}
       {dash.belumProses.count > 0 && (
         <Card className="border-amber-300">
           <CardHeader className="flex-row items-start justify-between space-y-0">
@@ -184,100 +354,6 @@ export default function DashboardView() {
           </CardContent>
         </Card>
       )}
-
-      {/* Grafik */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex-row items-start justify-between space-y-0">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <TrendingUp className="h-4 w-4 text-emerald-600" /> Tren Tiket Masuk — 14 Hari Terakhir
-              </CardTitle>
-              <CardDescription>Jumlah laporan kerusakan yang diterima sistem per hari</CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-              onClick={() => navigateTo('service', { serviceStatus: 'SEMUA' })}
-              aria-label="Buka daftar tiket service"
-            >
-              Lihat Tiket <ChevronRight className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          </CardHeader>
-          <CardContent className="h-60">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dash.tren14hari} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="tanggal" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v) => [`${v} tiket`, 'Tiket masuk']} />
-                <Line type="monotone" dataKey="tiket" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981' }} activeDot={{ r: 5 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Distribusi Garansi Unit</CardTitle>
-            <CardDescription>Klik irisan/legenda untuk membuka tiket per garansi</CardDescription>
-          </CardHeader>
-          <CardContent className="h-60">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData} dataKey="value" nameKey="name" cx="50%" cy="45%" innerRadius={50} outerRadius={80} paddingAngle={4} label
-                  style={{ cursor: 'pointer' }}
-                  onClick={(entry: { name?: string }) => {
-                    if (entry?.name === 'Garansi') navigateTo('service', { serviceGaransi: 'GARANSI' })
-                    else if (entry?.name === 'Non-Garansi') navigateTo('service', { serviceGaransi: 'NON_GARANSI' })
-                  }}
-                >
-                  {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
-                </Pie>
-                <Legend
-                  verticalAlign="bottom"
-                  iconType="circle"
-                  wrapperStyle={{ cursor: 'pointer' }}
-                  formatter={(v) => <span className="text-xs text-slate-600">{v}</span>}
-                  onClick={(d: unknown) => {
-                    const name = typeof d === 'string' ? d : (d as { value?: string } | null)?.value
-                    if (name === 'Garansi') navigateTo('service', { serviceGaransi: 'GARANSI' })
-                    else if (name === 'Non-Garansi') navigateTo('service', { serviceGaransi: 'NON_GARANSI' })
-                  }}
-                />
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Tren Kerusakan per Model Unit</CardTitle>
-          <CardDescription>Model dengan frekuensi kerusakan tertinggi — klik batang untuk membuka tiket model tersebut</CardDescription>
-        </CardHeader>
-        <CardContent className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dash.trenKerusakan.slice(0, 8).map((d) => ({ ...d, short: MODEL_SHORT(d.model) }))} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="short" width={150} tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v) => [`${v} tiket`, 'Kerusakan']} />
-              <Bar
-                dataKey="jumlah" fill="#10b981" radius={[0, 6, 6, 0]} barSize={16}
-                style={{ cursor: 'pointer' }}
-                onClick={(entry: { payload?: { model?: string } }) => {
-                  const model = entry?.payload?.model
-                  if (model) navigateTo('service', { serviceModel: model })
-                }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
 
       {/* Alert Engine — dropdown, diklik baru muncul */}
       <Collapsible open={alertOpen} onOpenChange={setAlertOpen}>

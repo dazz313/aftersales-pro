@@ -54,7 +54,7 @@ const STATUS_TONE: Record<string, string> = {
   FAILED: 'border-rose-300 bg-rose-50 text-rose-700',
 }
 
-type SecKey = 'profil' | 'merk' | 'gateway' | 'backup' | 'desktop' | 'keamanan'
+type SecKey = 'profil' | 'merk' | 'gateway' | 'ai' | 'backup' | 'desktop' | 'keamanan'
 
 /** Section dropdown — header selalu terlihat, isi bisa dibuka/tutup agar halaman tidak kepanjangan. */
 function SettingSection({
@@ -125,12 +125,14 @@ export default function SettingsView() {
   const [form, setForm] = useState<Record<string, string>>({})
   const [gwForm, setGwForm] = useState<Record<string, string>>({})
   const [gsForm, setGsForm] = useState<Record<string, string>>({})
+  const [aiForm, setAiForm] = useState<Record<string, string>>({})
+  const [aiTest, setAiTest] = useState<{ ok: boolean; info: string } | null>(null)
   // Daftar merk & masa garansi (null = ikut data server, belum diedit user)
   const [brandRows, setBrandRows] = useState<BrandRule[] | null>(null)
   const [brandBaru, setBrandBaru] = useState({ nama: '', garansiBulan: '12' })
   const [desktopInfo, setDesktopInfo] = useState<AsproDesktopInfo | null>(null)
   // Section dropdown — default: profil & gateway terbuka, sisanya tertutup
-  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: true, merk: true, gateway: true, backup: false, desktop: false, keamanan: false })
+  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: true, merk: true, gateway: true, ai: false, backup: false, desktop: false, keamanan: false })
   const toggleSec = (k: SecKey) => setSecOpen((s) => ({ ...s, [k]: !s[k] }))
 
   // Deteksi mode desktop (Electron preload) untuk path MCP yang pasti
@@ -202,6 +204,27 @@ export default function SettingsView() {
       toast({ title: 'Konfigurasi Backup tersimpan', description: 'Backup otomatis Google Spreadsheet mengikuti pengaturan baru.' })
     },
     onError: (e: Error) => toast({ title: 'Gagal menyimpan Backup', description: e.message, variant: 'destructive' }),
+  })
+
+  const ai = (k: string) => aiForm[k] ?? settings?.map[k] ?? ''
+  const saveAi = useMutation({
+    mutationFn: () => postJson('/api/pengaturan', { settings: { ...(settings?.map ?? {}), ...aiForm }, aktor: role }, 'PUT'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pengaturan'] })
+      queryClient.invalidateQueries({ queryKey: ['audit'] })
+      toast({ title: 'Konfigurasi AI tersimpan', description: 'Suggest AI memakai endpoint & model baru.' })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menyimpan AI', description: e.message, variant: 'destructive' }),
+  })
+
+  const testAi = useMutation({
+    mutationFn: () => postJson<{ ok: boolean; model?: string; keySource?: string | null; ms?: number; reply?: string; error?: string }>('/api/ai/test', {}),
+    onSuccess: (res) => {
+      setAiTest(res.ok
+        ? { ok: true, info: `Tersambung (${res.model}, kunci: ${res.keySource === '9router' ? 'otomatis 9router' : 'pengaturan'}, ${res.ms} ms) — balasan: ${res.reply}` }
+        : { ok: false, info: res.error ?? 'Tes gagal' })
+    },
+    onError: (e: Error) => setAiTest({ ok: false, info: e.message }),
   })
 
   const testMutation = useMutation({
@@ -635,6 +658,43 @@ export default function SettingsView() {
             <Button className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={saveGateway.isPending} onClick={() => saveGateway.mutate()}>
               <Save className="mr-1.5 h-4 w-4" /> Simpan Gateway
             </Button>
+        </SettingSection>
+
+        <SettingSection
+          sec="ai"
+          title="AI Suggest — 9router"
+          icon={<Bot className="h-4 w-4 text-violet-600" />}
+          desc="Saran jadwal kunjungan AI via gateway 9router lokal (OpenAI-compatible)."
+          contentClass="space-y-3"
+          secOpen={secOpen}
+          onToggle={toggleSec}
+        >
+            <div className="space-y-1.5">
+              <Label htmlFor="ai-base" className="text-xs">Base URL gateway</Label>
+              <Input id="ai-base" value={ai('ai_base_url') || 'http://localhost:20128/v1'} onChange={(e) => setAiForm({ ...aiForm, ai_base_url: e.target.value })} placeholder="http://localhost:20128/v1" className="font-mono text-xs" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ai-key" className="text-xs">API Key <span className="font-normal text-slate-400">(kosongkan = otomatis dari 9router lokal)</span></Label>
+              <Input id="ai-key" type="password" value={ai('ai_api_key')} onChange={(e) => setAiForm({ ...aiForm, ai_api_key: e.target.value })} placeholder="sk-… (atau kosongkan)" className="font-mono text-xs" autoComplete="off" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="ai-model" className="text-xs">Model</Label>
+              <Input id="ai-model" value={ai('ai_model') || 'kr/claude-haiku-4.5'} onChange={(e) => setAiForm({ ...aiForm, ai_model: e.target.value })} placeholder="kr/claude-haiku-4.5" className="font-mono text-xs" />
+              <p className="text-[11px] text-slate-500">Format <span className="font-mono">provider/model</span> sesuai 9router — cth: <span className="font-mono">kr/claude-haiku-4.5</span>. Lihat daftar di dashboard 9router (http://localhost:20128).</p>
+            </div>
+            {aiTest && (
+              <p className={cn('rounded-md p-2 text-[11px]', aiTest.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-700')}>
+                {aiTest.info}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" disabled={testAi.isPending} onClick={() => testAi.mutate()}>
+                <Send className="mr-1 h-3 w-3" /> {testAi.isPending ? 'Mengetes…' : 'Tes Koneksi'}
+              </Button>
+              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" disabled={saveAi.isPending} onClick={() => saveAi.mutate()}>
+                <Save className="mr-1.5 h-4 w-4" /> Simpan AI
+              </Button>
+            </div>
         </SettingSection>
 
         {/* ===== BACKUP GOOGLE SPREADSHEET ===== */}
