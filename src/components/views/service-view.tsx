@@ -47,6 +47,7 @@ export default function ServiceView() {
   // Filter drill-down dari Dashboard (KPI garansi / klik batang tren model)
   const [garansiFilter, setGaransiFilter] = useState<'SEMUA' | 'GARANSI' | 'NON_GARANSI'>('SEMUA')
   const [modelFilter, setModelFilter] = useState<string | null>(null)
+  const [tokoFilter, setTokoFilter] = useState<string | null>(null)
   const [cariTiket, setCariTiket] = useState('')
   // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -67,6 +68,7 @@ export default function ServiceView() {
       if (navIntent.serviceStatus) setTab(navIntent.serviceStatus)
       if (navIntent.serviceGaransi) setGaransiFilter(navIntent.serviceGaransi)
       if (navIntent.serviceModel) setModelFilter(navIntent.serviceModel)
+      if (navIntent.serviceToko) setTokoFilter(navIntent.serviceToko)
       clearNavIntent()
     }, 0)
     return () => clearTimeout(t)
@@ -126,6 +128,7 @@ export default function ServiceView() {
     let list = tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
     if (garansiFilter !== 'SEMUA') list = list.filter((t) => garansiFilter === 'GARANSI' ? t.unitAsset.statusGaransi !== 'NON_GARANSI' : t.unitAsset.statusGaransi === 'NON_GARANSI')
     if (modelFilter) list = list.filter((t) => t.unitAsset.modelUnit === modelFilter)
+    if (tokoFilter) list = list.filter((t) => t.unitAsset.toko?.kodeToko === tokoFilter)
     if (cariTiket.trim()) {
       list = list.filter((t) => matchQuery([
         t.noTiket,
@@ -143,7 +146,7 @@ export default function ServiceView() {
     return list
   }, [tickets, tab, garansiFilter, modelFilter, cariTiket])
 
-  const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null
+  const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null || tokoFilter !== null
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -423,6 +426,19 @@ export default function ServiceView() {
                     aria-label="Hapus filter model"
                     onClick={() => setModelFilter(null)}
                     className="ml-0.5 rounded-full p-0.5 hover:bg-teal-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              )}
+              {tokoFilter && (
+                <Badge variant="outline" className="max-w-64 gap-1 border-emerald-300 bg-emerald-50 text-emerald-700">
+                  <span className="truncate">Toko: {tokoFilter}</span>
+                  <button
+                    type="button"
+                    aria-label="Hapus filter toko"
+                    onClick={() => setTokoFilter(null)}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-emerald-100"
                   >
                     <X className="h-3 w-3" />
                   </button>

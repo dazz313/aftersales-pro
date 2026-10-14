@@ -63,6 +63,19 @@ export async function GET() {
       .map(([model, jumlah]) => ({ model, jumlah }))
       .sort((a, b) => b.jumlah - a.jumlah)
 
+    // Unit rusak per toko (terbanyak → paling kurang) untuk panel spiral
+    const rusakPerTokoMap = new Map<string, { kode: string; nama: string; jumlah: number }>()
+    for (const t of serviceRequests) {
+      const toko = t.unitAsset?.toko
+      if (!toko) continue
+      const e = rusakPerTokoMap.get(toko.kodeToko) ?? { kode: toko.kodeToko, nama: toko.namaToko, jumlah: 0 }
+      e.jumlah++
+      rusakPerTokoMap.set(toko.kodeToko, e)
+    }
+    const rusakPerToko = [...rusakPerTokoMap.values()]
+      .sort((a, b) => b.jumlah - a.jumlah)
+      .slice(0, 8)
+
     // Distribusi garansi unit yang diservis (STOK_TOKO dihitung garansi)
     const garansiCount = { GARANSI: 0, NON_GARANSI: 0 }
     for (const t of serviceRequests) {
@@ -145,6 +158,7 @@ export async function GET() {
         kunjungan7hari,
       },
       trenKerusakan,
+      rusakPerToko,
       garansiCount,
       tren14hari,
     })

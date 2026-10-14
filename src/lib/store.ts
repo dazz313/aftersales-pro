@@ -25,6 +25,7 @@ export interface NavIntent {
   serviceStatus?: 'REQUEST' | 'PROSES' | 'FINISH' | 'SEMUA'
   serviceGaransi?: 'GARANSI' | 'NON_GARANSI'
   serviceModel?: string
+  serviceToko?: string
   klaimTab?: 'DRAFT' | 'SUBMITTED' | 'PAID'
   inventoryFilter?: 'kritis' | 'kosong'
   fieldOpsFilter?: 'terlambat' | 'kunjungan'

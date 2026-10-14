@@ -305,6 +305,8 @@ export interface DashboardData {
   stok: { totalItem: number; kritis: number; kosong: number; nilaiTotal: number }
   operasional: { totalToko: number; tokoTerlambatVisit: number; kunjungan7hari: number }
   trenKerusakan: { model: string; jumlah: number }[]
+  /** Unit rusak per toko, terbanyak → paling kurang (panel spiral, maks 8). */
+  rusakPerToko: { kode: string; nama: string; jumlah: number }[]
   garansiCount: { GARANSI: number; NON_GARANSI: number }
   tren14hari: { tanggal: string; tiket: number }[]
 }

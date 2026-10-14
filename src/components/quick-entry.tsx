@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import HistoryInput from '@/components/history-input'
-import { Plus, Store, Users, ScanLine, Radio, Zap } from 'lucide-react'
+import { Plus, Store, Users, ScanLine, Radio, Zap, QrCode } from 'lucide-react'
 
 /**
  * Akses cepat di fitur utama (Dashboard):
@@ -112,7 +112,7 @@ export function AddCustomerDialog({ open, onOpenChange }: { open: boolean; onOpe
 export default function QuickActions() {
   const [tokoOpen, setTokoOpen] = useState(false)
   const [custOpen, setCustOpen] = useState(false)
-  const { setView } = useAppStore()
+  const { setView, navigateTo } = useAppStore()
 
   return (
     <>
@@ -128,6 +128,9 @@ export default function QuickActions() {
         </Button>
         <Button size="sm" variant="outline" className="h-7 border-emerald-300 px-2.5 text-[11px] hover:bg-emerald-50" onClick={() => setView('field-ops')} title="Scan Kunjungan" aria-label="Buka Scan Kunjungan">
           <ScanLine className="mr-1 h-3.5 w-3.5 text-emerald-600" /> Scan
+        </Button>
+        <Button size="sm" variant="outline" className="h-7 border-violet-300 px-2.5 text-[11px] hover:bg-violet-50" onClick={() => navigateTo('master', { masterTab: 'unit' })} title="Unit Asset (Master Barcode)" aria-label="Buka Unit Asset">
+          <QrCode className="mr-1 h-3.5 w-3.5 text-violet-600" /> Unit
         </Button>
         <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2.5 text-[11px] hover:bg-teal-50" onClick={() => setView('gateway')} title="Gateway Pesan" aria-label="Buka Gateway">
           <Radio className="mr-1 h-3.5 w-3.5 text-teal-600" /> Gateway

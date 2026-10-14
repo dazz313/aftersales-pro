@@ -17,9 +17,11 @@ interface Props {
   channel: 'WHATSAPP' | 'TELEGRAM'
   pengirimDefault: string
   compact?: boolean
+  /** Varian tipis: header & padding dipadatkan untuk berdampingan rapi. */
+  thin?: boolean
 }
 
-export default function VisionScanner({ channel, pengirimDefault, compact }: Props) {
+export default function VisionScanner({ channel, pengirimDefault, compact, thin }: Props) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [file, setFile] = useState<File | null>(null)
@@ -70,16 +72,16 @@ export default function VisionScanner({ channel, pengirimDefault, compact }: Pro
   }
 
   return (
-    <Card className="border-sky-200">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <ImagePlus className="h-4 w-4 text-sky-600" /> Pembaca Foto &amp; Barcode
+    <Card className="h-full border-sky-200">
+      <CardHeader className={thin ? 'px-3 pb-2 pt-3' : undefined}>
+        <CardTitle className={cn('flex items-center gap-2', thin ? 'text-sm' : 'text-base')}>
+          <ImagePlus className={cn('text-sky-600', thin ? 'h-3.5 w-3.5' : 'h-4 w-4')} /> Pembaca Foto &amp; Barcode
         </CardTitle>
-        <CardDescription>
+        <CardDescription className={thin ? 'text-[11px]' : undefined}>
           Upload foto → tersimpan di folder Telegram ({folder === 'KUNJUNGAN' ? 'kunjungan' : 'service'}) → barcode &amp; tulisan terbaca otomatis → masuk Inbox untuk dikontrol.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className={thin ? 'space-y-2 px-3 pb-3' : 'space-y-3'}>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label className="text-xs">Foto (JPG/PNG/WebP, maks 10 MB)</Label>
@@ -102,16 +104,16 @@ export default function VisionScanner({ channel, pengirimDefault, compact }: Pro
         </div>
 
         {preview && (
-          <img src={preview} alt="Pratinjau upload" className="max-h-56 rounded-lg border object-contain" />
+          <img src={preview} alt="Pratinjau upload" className={cn('rounded-lg border object-contain', thin ? 'max-h-40' : 'max-h-56')} />
         )}
 
-        <Button className="w-full bg-sky-600 hover:bg-sky-700" disabled={!file || upMutation.isPending} onClick={() => upMutation.mutate()}>
+        <Button className={cn('bg-sky-600 hover:bg-sky-700', thin ? 'h-8 w-full text-xs' : 'w-full')} disabled={!file || upMutation.isPending} onClick={() => upMutation.mutate()}>
           {upMutation.isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ScanText className="mr-1.5 h-4 w-4" />}
           Simpan &amp; Baca Foto
         </Button>
 
         {hasil && (
-          <div className="space-y-1.5 rounded-lg border border-emerald-300 bg-emerald-50/50 p-3 text-xs">
+          <div className={cn('space-y-1.5 rounded-lg border border-emerald-300 bg-emerald-50/50 text-xs', thin ? 'p-2.5' : 'p-3')}>
             <p className="flex items-center gap-1 font-semibold text-emerald-800"><CheckCircle2 className="h-3.5 w-3.5" /> Hasil bacaan tersimpan di Inbox</p>
             {hasil.barcode ? (
               <p className="font-mono text-[11px] text-slate-800"><Barcode className="mr-1 inline h-3.5 w-3.5 text-emerald-600" />{hasil.barcode}{hasil.barcodeFormat ? ` (${hasil.barcodeFormat})` : ''}</p>
