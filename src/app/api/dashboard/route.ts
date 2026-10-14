@@ -21,6 +21,8 @@ export async function GET() {
       serviceRequests,
       tokoList,
       kunjungan7hari,
+      unitTanpaTiket,
+      totalUnit,
     ] = await Promise.all([
       db.serviceRequest.count({ where: { status: 'REQUEST' } }),
       db.serviceRequest.count({ where: { status: 'PROSES' } }),
@@ -40,6 +42,9 @@ export async function GET() {
       db.kunjungan.count({
         where: { tglKunjungan: { gte: new Date(Date.now() - 7 * 24 * 3600 * 1000) } },
       }),
+      // Unit terdaftar tapi belum pernah diproses (tanpa tiket service sama sekali)
+      db.unitAsset.count({ where: { serviceRequests: { none: {} } } }),
+      db.unitAsset.count(),
     ])
 
     // Total estimasi dana klaim tertahan (ALT-04): jasa + part
@@ -122,6 +127,7 @@ export async function GET() {
         total: countRequest + countProses + countFinish,
       },
       belumProses,
+      unitBelumDiproses: { count: unitTanpaTiket, total: totalUnit },
       klaim: {
         pendingCount: claimsDraft.length,
         pendingValue: totalKlaimPending,

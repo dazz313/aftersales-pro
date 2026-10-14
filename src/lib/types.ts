@@ -299,6 +299,8 @@ export interface DashboardData {
     count: number
     items: { noTiket: string; serial: string; model: string; toko: string; umurJam: number; adaPart: boolean }[]
   }
+  /** Unit terdaftar yang belum pernah punya tiket service sama sekali. */
+  unitBelumDiproses: { count: number; total: number }
   klaim: { pendingCount: number; pendingValue: number; submitted: number }
   stok: { totalItem: number; kritis: number; kosong: number; nilaiTotal: number }
   operasional: { totalToko: number; tokoTerlambatVisit: number; kunjungan7hari: number }

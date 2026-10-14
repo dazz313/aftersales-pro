@@ -28,6 +28,7 @@ export interface NavIntent {
   klaimTab?: 'DRAFT' | 'SUBMITTED' | 'PAID'
   inventoryFilter?: 'kritis' | 'kosong'
   fieldOpsFilter?: 'terlambat' | 'kunjungan'
+  masterTab?: 'toko' | 'customer' | 'unit' | 'karyawan'
   ts: number
 }
 

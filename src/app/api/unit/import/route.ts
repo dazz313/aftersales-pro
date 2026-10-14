@@ -7,17 +7,18 @@ import { parseBrandRules, detectGaransi } from '@/lib/brand'
 import { parseCsv, validateUnitRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
 
 // GET /api/unit/import — unduh template CSV registrasi massal unit per toko/perorangan
-// Urutan kolom mengikuti layout Master Barcode: toko_customer, merk,
+// Urutan kolom mengikuti layout Master Barcode: tgl_input, toko_customer, merk,
 // model_tipe, nomor_seri, status + tgl_garansi (tgl beli = awal masa garansi,
 // tampil di field Status) + opsional nama_unit & nama_customer.
+// tgl_input = tanggal input real dari dokumen (bila kosong, dicatat waktu impor).
 // Header lama (nama_toko, tanggal, tgl_pembelian, no_seri) tetap dikenali saat impor.
 export async function GET() {
   const csv = buildCsvTemplate(
-    ['toko_customer', 'merk', 'model_tipe', 'nomor_seri', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
+    ['tgl_input', 'toko_customer', 'merk', 'model_tipe', 'nomor_seri', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
     [
-      ['TOK-001', 'Samsung', 'AC Split 1 PK Inverter SE-9000', 'SN-ACSP-2025-10001', 'STOK-TOKO', '', 'AC Ruang Tamu', 'Bpk. Hendra Gunawan'],
-      ['TOK-001', 'LG', 'AC Split 1/2 PK SE-5000', 'SN-ACSP-2025-10002', 'GARANSI', '2025-08-15', '', ''],
-      ['', 'Aqua', 'Chest Freezer 300L CF-30', 'SN-CWAS-2023-10311', 'NON-GARANSI', '15/03/2023', 'Freezer Dapur', 'Warung Makan Bu Tini'],
+      ['2025-07-20', 'TOK-001', 'Samsung', 'AC Split 1 PK Inverter SE-9000', 'SN-ACSP-2025-10001', 'STOK-TOKO', '', 'AC Ruang Tamu', 'Bpk. Hendra Gunawan'],
+      ['2025-08-16', 'TOK-001', 'LG', 'AC Split 1/2 PK SE-5000', 'SN-ACSP-2025-10002', 'GARANSI', '2025-08-15', '', ''],
+      ['2023-03-20', '', 'Aqua', 'Chest Freezer 300L CF-30', 'SN-CWAS-2023-10311', 'NON-GARANSI', '15/03/2023', 'Freezer Dapur', 'Warung Makan Bu Tini'],
     ]
   )
   return new Response(csv, {
@@ -149,6 +150,8 @@ export async function POST(request: Request) {
           : null
       // Status: hormati kolom CSV bila diisi; bila kosong auto-deteksi dari merk+tgl pembelian
       let statusGaransi: 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI' | undefined
+      // Tgl input real dari dokumen (khusus insert → createdAt; update tak menyentuh createdAt)
+      const tglInputEff: Date | null = 'tglInput' in d ? (d as { tglInput: Date | null }).tglInput : null
       if ('statusGaransi' in d && d.statusGaransi && !(d as { statusOtomatis?: boolean }).statusOtomatis) {
         statusGaransi = d.statusGaransi as 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
       } else {
@@ -175,6 +178,8 @@ export async function POST(request: Request) {
         ...('tglPembelian' in d && (d as { tglPembelian?: Date | null }).tglPembelian !== undefined
           ? { tglPembelian: (d as { tglPembelian?: Date | null }).tglPembelian }
           : {}),
+        // Tgl input real dari dokumen → createdAt (hanya saat insert; update tak menyentuhnya)
+        ...(tglInputEff ? { createdAt: tglInputEff } : {}),
       }
     }
 

@@ -154,8 +154,16 @@ const CONFIG: Record<
     templateUrl: '/api/unit/import',
     apiUrl: '/api/unit/import',
     requiredCols: ['nomor_seri', 'model_tipe'],
-    optionalCols: ['toko_customer', 'merk', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
+    optionalCols: ['tgl_input', 'toko_customer', 'merk', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
     columns: [
+      {
+        label: 'Tgl Input',
+        get: (r) => {
+          const d = r.data as { insert?: { tglInput?: Date | null } } | undefined
+          const t = d?.insert?.tglInput
+          return t ? new Date(t).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'otomatis'
+        },
+      },
       {
         label: 'Toko / Customer',
         get: (r) => {

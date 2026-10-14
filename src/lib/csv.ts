@@ -505,6 +505,7 @@ export const UNIT_ALIASES: Record<string, string> = {
   customer: 'customer|nama_customer|namacustomer|nama customer|pemilik|pelanggan|pembeli',
   statusGaransi: 'status|garansi|status_garansi|statusgaransi|status garansi|kondisi_garansi',
   tglPembelian: 'tanggal|tgl|tgl_beli|tglbeli|tanggal_beli|tanggalbeli|tanggal beli|tgl_pembelian|tglpembelian|tgl pembelian|tgl_garansi|tglgaransi|tanggal_garansi|tanggalgaransi|bulan_beli|tahun_beli',
+  tglInput: 'tgl_input|tglinput|tgl input|tanggal_input|tanggalinput|tanggal input|waktu_input|waktuinput|waktu input',
 }
 
 export const UNIT_REQUIRED_LABELS: Record<string, string> = {
@@ -532,6 +533,7 @@ export interface UnitInsertData {
   statusGaransi: 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
   statusOtomatis: boolean // true bila kolom status kosong → API boleh auto-deteksi dari merk+tgl
   tglPembelian: Date | null
+  tglInput: Date | null // tanggal input real dari dokumen → createdAt (kosong = waktu impor)
 }
 
 export interface UnitUpdateData {
@@ -602,6 +604,18 @@ export function validateUnitRows(headers: string[], rows: string[][]): {
       tglPembelian = d
     }
 
+    // Tgl input real dari dokumen (opsional) — bila kosong, createdAt = waktu impor
+    let tglInput: Date | null = null
+    const ti = get('tglInput')
+    if (ti) {
+      const d = parseDateFlexible(ti)
+      if (!d) {
+        acc.push({ row: rowNum, kode: serial, nama: nama || model, status: 'error', message: `Tgl input "${ti}" tidak dikenali (gunakan YYYY-MM-DD atau DD/MM/YYYY)` })
+        return
+      }
+      tglInput = d
+    }
+
     const tokoKey = get('toko')
     const customerNama = get('customer')
 
@@ -611,7 +625,7 @@ export function validateUnitRows(headers: string[], rows: string[][]): {
       nama: nama || model,
       status: 'pending',
       data: {
-        insert: { serialNumber: serial, modelUnit: model, nama, merk, tokoKey, customerNama, statusGaransi, statusOtomatis: !statusRaw, tglPembelian },
+        insert: { serialNumber: serial, modelUnit: model, nama, merk, tokoKey, customerNama, statusGaransi, statusOtomatis: !statusRaw, tglPembelian, tglInput },
         update: {
           modelUnit: model,
           ...(nama ? { nama } : {}),

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatTanggal, type Toko, type Customer, type UnitAsset, type Pengguna } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
@@ -30,7 +31,9 @@ import { cn } from '@/lib/utils'
 export default function MasterDataView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role } = useAppStore()
+  const { role, navIntent, clearNavIntent } = useAppStore()
+  // Tab aktif — bisa dibuka langsung dari Dashboard via intent (mis. indikator unit belum diproses)
+  const [tabAktif, setTabAktif] = useState('toko')
 
   const { data: tokoList, isLoading: tokoLoading } = useQuery<Toko[]>({ queryKey: ['toko'], queryFn: () => fetcher<Toko[]>('/api/toko') })
   const { data: customerList, isLoading: customerLoading } = useQuery<Customer[]>({ queryKey: ['customers'], queryFn: () => fetcher<Customer[]>('/api/customer') })
@@ -71,6 +74,13 @@ export default function MasterDataView() {
   // Edit toko & customer
   const [editToko, setEditToko] = useState<Toko | null>(null)
   const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
+  // Hapus massal toko (khusus Admin/Manager — centang baris lalu hapus sekaligus)
+  const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(new Set())
+  const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
+  const bisaHapusToko = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
+  // Hapus massal unit (centang baris tanpa tiket lalu hapus sekaligus)
+  const [unitDipilih, setUnitDipilih] = useState<Set<number>>(new Set())
+  const [hapusUnitOpen, setHapusUnitOpen] = useState(false)
   const [editCust, setEditCust] = useState<Customer | null>(null)
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
   // Edit unit
@@ -103,6 +113,16 @@ export default function MasterDataView() {
     queryClient.invalidateQueries({ queryKey: ['audit'] })
   }
 
+  // Konsumsi navIntent dari Dashboard → buka tab yang diminta lalu bersihkan
+  useEffect(() => {
+    if (!navIntent?.masterTab) return
+    const t = setTimeout(() => {
+      setTabAktif(navIntent.masterTab as string)
+      clearNavIntent()
+    }, 0)
+    return () => clearTimeout(t)
+  }, [navIntent, clearNavIntent])
+
   const addUnit = useMutation({
     mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, tglPembelian: newUnit.tokoId ? null : newUnit.tglPembelian || null, aktor: role }),
     onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' }); setUnitGaransiAuto(true); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
@@ -122,6 +142,21 @@ export default function MasterDataView() {
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson<Toko>(`/api/toko/${id}`, { ...data, aktor: role }, 'PATCH'),
     onSuccess: (t) => { invalidate(['toko', 'dashboard', 'alerts', 'kunjungan', 'units']); setEditToko(null); toast({ title: 'Toko diperbarui', description: `Data ${t.namaToko} tersimpan.` }) },
     onError: (e: Error) => toast({ title: 'Gagal memperbarui toko', description: e.message, variant: 'destructive' }),
+  })
+  const bulkDeleteToko = useMutation({
+    mutationFn: (ids: number[]) => postJson<{ deleted: number; deletedCodes: string[]; skipped: { id: number; kodeToko: string; namaToko: string; alasan: string }[]; skippedCount: number }>('/api/toko/bulk-delete', { ids, aktor: role }),
+    onSuccess: (r) => {
+      invalidate(['toko', 'dashboard', 'alerts', 'kunjungan', 'units'])
+      setTokoDipilih(new Set())
+      setHapusTokoOpen(false)
+      toast({
+        title: `Hapus massal selesai — ${r.deleted} terhapus`,
+        description: r.skippedCount > 0
+          ? `${r.skippedCount} dilewati: ${r.skipped.slice(0, 5).map((s) => `${s.kodeToko} (${s.alasan})`).join('; ')}${r.skippedCount > 5 ? '…' : ''}`
+          : 'Semua toko terpilih berhasil dihapus.',
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal hapus massal', description: e.message, variant: 'destructive' }),
   })
   const updateCust = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => postJson<Customer>(`/api/customer/${id}`, { ...data, aktor: role }, 'PATCH'),
@@ -227,6 +262,21 @@ export default function MasterDataView() {
     },
     onError: (e: Error) => toast({ title: 'Unit tidak dapat dihapus', description: e.message, variant: 'destructive' }),
   })
+  const bulkDeleteUnit = useMutation({
+    mutationFn: (ids: number[]) => postJson<{ deleted: number; deletedSerials: string[]; skipped: { id: number; serialNumber: string; modelUnit: string; alasan: string }[]; skippedCount: number }>('/api/unit/bulk-delete', { ids, aktor: role }),
+    onSuccess: (r) => {
+      invalidate(['units', 'toko', 'customer', 'dashboard', 'service-tickets', 'alerts'])
+      setUnitDipilih(new Set())
+      setHapusUnitOpen(false)
+      toast({
+        title: `Hapus massal selesai — ${r.deleted} terhapus`,
+        description: r.skippedCount > 0
+          ? `${r.skippedCount} dilewati: ${r.skipped.slice(0, 5).map((s) => `${s.serialNumber} (${s.alasan})`).join('; ')}${r.skippedCount > 5 ? '…' : ''}`
+          : 'Semua unit terpilih berhasil dihapus.',
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal hapus massal', description: e.message, variant: 'destructive' }),
+  })
   const resetPw = useMutation({
     mutationFn: () => postJson(`/api/pengguna/${resetPwUser!.id}`, { password: resetPwValue, aktor: role }, 'PATCH'),
     onSuccess: () => { invalidate(['pengguna']); setResetPwUser(null); setResetPwValue(''); toast({ title: 'Password direset', description: 'Karyawan dapat login dengan password baru.' }) },
@@ -237,6 +287,22 @@ export default function MasterDataView() {
     () => (tokoList ?? []).filter((t) => matchQuery([t.kodeToko, t.namaToko, t.alamat, t.kontak, t.barcodeToko], cariToko)),
     [tokoList, cariToko]
   )
+  const toggleToko = (id: number) =>
+    setTokoDipilih((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleSemuaToko = () =>
+    setTokoDipilih((prev) => {
+      const ids = tokoTampil.map((t) => t.id)
+      const semua = ids.length > 0 && ids.every((id) => prev.has(id))
+      const next = new Set(prev)
+      if (semua) ids.forEach((id) => next.delete(id))
+      else ids.forEach((id) => next.add(id))
+      return next
+    })
   const custTampil = useMemo(
     () => (customerList ?? []).filter((c) => matchQuery([c.nama, c.noWa, c.alamat, ...c.unitAssets.map((u) => u.modelUnit)], cariCust)),
     [customerList, cariCust]
@@ -245,13 +311,31 @@ export default function MasterDataView() {
     () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.merk, u.nama, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi], cariUnit)),
     [unitList, cariUnit]
   )
+  // Unit terkunci (punya tiket) tidak bisa dicentang — server juga melewatinya
+  const unitBisaHapus = (u: UnitAsset) => (u.serviceRequests ?? []).length === 0
+  const toggleUnit = (id: number) =>
+    setUnitDipilih((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleSemuaUnit = () =>
+    setUnitDipilih((prev) => {
+      const ids = unitTampil.filter(unitBisaHapus).map((u) => u.id)
+      const semua = ids.length > 0 && ids.every((id) => prev.has(id))
+      const next = new Set(prev)
+      if (semua) ids.forEach((id) => next.delete(id))
+      else ids.forEach((id) => next.add(id))
+      return next
+    })
   const userTampil = useMemo(
     () => (userList ?? []).filter((u) => matchQuery([u.nama, u.email, u.username, u.kodeTeknisi, u.noWa, u.wilayahKerja, u.role], cariUser)),
     [userList, cariUser]
   )
 
   return (
-    <Tabs defaultValue="toko" className="space-y-4">
+    <Tabs value={tabAktif} onValueChange={setTabAktif} className="space-y-4">
       <TabsList className="flex-wrap">
         <TabsTrigger value="toko"><Store className="mr-1 h-3.5 w-3.5" /> Toko</TabsTrigger>
         <TabsTrigger value="customer"><Users className="mr-1 h-3.5 w-3.5" /> Customer</TabsTrigger>
@@ -275,8 +359,19 @@ export default function MasterDataView() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-3">
-              <QuickSearch value={cariToko} onChange={setCariToko} placeholder="Cari kode / nama / alamat / kontak toko…" className="max-w-xs" resultCount={tokoTampil.length} />
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <QuickSearch value={cariToko} onChange={setCariToko} placeholder="Cari kode / nama / alamat / kontak toko…" className="max-w-xs flex-1" resultCount={tokoTampil.length} />
+              {bisaHapusToko && tokoDipilih.size > 0 && (
+                <>
+                  <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{tokoDipilih.size} dipilih</Badge>
+                  <Button size="sm" variant="destructive" className="h-7 px-2 text-[11px]" onClick={() => setHapusTokoOpen(true)}>
+                    <Trash2 className="mr-1 h-3 w-3" /> Hapus ({tokoDipilih.size})
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500" onClick={() => setTokoDipilih(new Set())} aria-label="Batalkan pilihan toko">
+                    <X className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
             </div>
             {tokoLoading ? (
               <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
@@ -285,6 +380,15 @@ export default function MasterDataView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      {bisaHapusToko && (
+                        <TableHead className="w-9 pr-0">
+                          <Checkbox
+                            aria-label="Pilih semua toko tampil"
+                            checked={tokoTampil.length > 0 && tokoTampil.every((t) => tokoDipilih.has(t.id))}
+                            onCheckedChange={toggleSemuaToko}
+                          />
+                        </TableHead>
+                      )}
                       <TableHead>Kode · Nama</TableHead>
                       <TableHead className="hidden md:table-cell">Alamat</TableHead>
                       <TableHead className="hidden sm:table-cell">Kontak</TableHead>
@@ -296,7 +400,16 @@ export default function MasterDataView() {
                   </TableHeader>
                   <TableBody>
                     {tokoTampil.map((t) => (
-                      <TableRow key={t.id}>
+                      <TableRow key={t.id} className={cn(tokoDipilih.has(t.id) && 'bg-red-50/50')}>
+                        {bisaHapusToko && (
+                          <TableCell className="pr-0">
+                            <Checkbox
+                              aria-label={`Pilih toko ${t.kodeToko}`}
+                              checked={tokoDipilih.has(t.id)}
+                              onCheckedChange={() => toggleToko(t.id)}
+                            />
+                          </TableCell>
+                        )}
                         <TableCell>
                           <p className="text-xs font-semibold text-slate-800">{t.namaToko}</p>
                           <p className="font-mono text-[10px] text-slate-400">{t.kodeToko} · {t.jumlahUnit} unit</p>
@@ -393,8 +506,19 @@ export default function MasterDataView() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-3">
-              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari toko / customer / merk / model / seri / status…" className="max-w-xs" resultCount={unitTampil.length} />
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari toko / customer / merk / model / seri / status…" className="max-w-xs flex-1" resultCount={unitTampil.length} />
+              {unitDipilih.size > 0 && (
+                <>
+                  <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{unitDipilih.size} dipilih</Badge>
+                  <Button size="sm" variant="destructive" className="h-7 px-2 text-[11px]" onClick={() => setHapusUnitOpen(true)}>
+                    <Trash2 className="mr-1 h-3 w-3" /> Hapus ({unitDipilih.size})
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500" onClick={() => setUnitDipilih(new Set())} aria-label="Batalkan pilihan unit">
+                    <X className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
             </div>
             {unitLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
@@ -403,6 +527,13 @@ export default function MasterDataView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-9 pr-0">
+                        <Checkbox
+                          aria-label="Pilih semua unit tampil yang bisa dihapus"
+                          checked={unitTampil.filter(unitBisaHapus).length > 0 && unitTampil.filter(unitBisaHapus).every((u) => unitDipilih.has(u.id))}
+                          onCheckedChange={toggleSemuaUnit}
+                        />
+                      </TableHead>
                       <TableHead>Tanggal Input</TableHead>
                       <TableHead>Toko / Customer</TableHead>
                       <TableHead>Merk</TableHead>
@@ -414,7 +545,16 @@ export default function MasterDataView() {
                   </TableHeader>
                   <TableBody>
                     {unitTampil.map((u) => (
-                      <TableRow key={u.id}>
+                      <TableRow key={u.id} className={cn(unitDipilih.has(u.id) && 'bg-red-50/50')}>
+                        <TableCell className="pr-0">
+                          <Checkbox
+                            aria-label={`Pilih unit ${u.serialNumber}`}
+                            checked={unitDipilih.has(u.id)}
+                            disabled={!unitBisaHapus(u)}
+                            title={!unitBisaHapus(u) ? 'Terkunci: sudah punya tiket service' : `Pilih unit ${u.serialNumber}`}
+                            onCheckedChange={() => toggleUnit(u.id)}
+                          />
+                        </TableCell>
                         <TableCell className="whitespace-nowrap text-xs text-slate-600" title="Tanggal input registrasi unit">
                           {formatTanggal(u.createdAt)}
                         </TableCell>
@@ -733,6 +873,38 @@ export default function MasterDataView() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog konfirmasi hapus massal toko (khusus Admin/Manager) */}
+      <Dialog open={hapusTokoOpen} onOpenChange={setHapusTokoOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hapus {tokoDipilih.size} Toko?</DialogTitle>
+            <DialogDescription>
+              Toko yang masih punya unit terdaftar, riwayat kunjungan, atau order sparepart otomatis dilewati server. Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-56 space-y-1 overflow-y-auto rounded-md border bg-slate-50 p-2.5">
+            {(tokoList ?? []).filter((t) => tokoDipilih.has(t.id)).map((t) => (
+              <p key={t.id} className="text-xs text-slate-700">
+                <span className="font-mono font-semibold">{t.kodeToko}</span> — {t.namaToko} <span className="text-slate-400">({t.jumlahUnit} unit)</span>
+              </p>
+            ))}
+            {tokoDipilih.size === 0 && (
+              <p className="py-4 text-center text-xs text-slate-400">Tidak ada toko terpilih.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHapusTokoOpen(false)}>Batal</Button>
+            <Button
+              variant="destructive"
+              disabled={tokoDipilih.size === 0 || bulkDeleteToko.isPending}
+              onClick={() => bulkDeleteToko.mutate([...tokoDipilih])}
+            >
+              <Trash2 className="mr-1 h-4 w-4" /> {bulkDeleteToko.isPending ? 'Menghapus…' : `Ya, Hapus (${tokoDipilih.size})`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialog edit customer */}
       <Dialog open={!!editCust} onOpenChange={(o) => !o && setEditCust(null)}>
         <DialogContent className="sm:max-w-md">
@@ -842,6 +1014,38 @@ export default function MasterDataView() {
               onClick={() => deleteUnit && deleteUnitMutation.mutate(deleteUnit.id)}
             >
               <Trash2 className="mr-1 h-4 w-4" /> Ya, Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog konfirmasi hapus massal unit (hanya unit tanpa tiket) */}
+      <Dialog open={hapusUnitOpen} onOpenChange={setHapusUnitOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hapus {unitDipilih.size} Unit?</DialogTitle>
+            <DialogDescription>
+              Unit yang sudah punya tiket service otomatis dilewati server agar riwayat &amp; klaim tetap utuh. Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-56 space-y-1 overflow-y-auto rounded-md border bg-slate-50 p-2.5">
+            {(unitList ?? []).filter((u) => unitDipilih.has(u.id)).map((u) => (
+              <p key={u.id} className="text-xs text-slate-700">
+                <span className="font-mono font-semibold">{u.serialNumber}</span> — {u.modelUnit}
+              </p>
+            ))}
+            {unitDipilih.size === 0 && (
+              <p className="py-4 text-center text-xs text-slate-400">Tidak ada unit terpilih.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHapusUnitOpen(false)}>Batal</Button>
+            <Button
+              variant="destructive"
+              disabled={unitDipilih.size === 0 || bulkDeleteUnit.isPending}
+              onClick={() => bulkDeleteUnit.mutate([...unitDipilih])}
+            >
+              <Trash2 className="mr-1 h-4 w-4" /> {bulkDeleteUnit.isPending ? 'Menghapus…' : `Ya, Hapus (${unitDipilih.size})`}
             </Button>
           </DialogFooter>
         </DialogContent>

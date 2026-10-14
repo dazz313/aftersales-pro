@@ -16,9 +16,10 @@ import {
 } from 'recharts'
 import {
   FileClock, Loader, CheckCircle2, Wallet, PackageX, MapPinOff, AlertTriangle,
-  RefreshCw, TrendingUp, Store, ClipboardList, ArrowUpRight, ChevronRight, Hourglass,
-  FileDown, FileSpreadsheet, Send,
+  RefreshCw, TrendingUp, Store, ClipboardList, ChevronRight, Hourglass,
+  FileDown, FileSpreadsheet, Send, QrCode,
 } from 'lucide-react'
+import { KpiGrid, type KpiDef } from '@/components/kpi-card'
 
 const MODEL_SHORT = (m: string) => (m.length > 22 ? m.slice(0, 20) + '…' : m)
 
@@ -29,46 +30,6 @@ const ALERT_DRILLDOWN: Record<string, { view: ViewKey; label: string; intent: Om
   'ALT-03': { view: 'inventory', label: 'Stok Inventory', intent: { inventoryFilter: 'kritis' } },
   'ALT-04': { view: 'claim', label: 'Klaim & Rekap', intent: { klaimTab: 'DRAFT' } },
   'ALT-05': { view: 'service', label: 'Service Tiket', intent: { serviceStatus: 'REQUEST' } },
-}
-
-function KpiCard({
-  title, value, sub, icon: Icon, tone, onClick,
-}: {
-  title: string; value: string; sub?: string; icon: React.ComponentType<{ className?: string }>; tone: string; onClick?: () => void
-}) {
-  const clickable = Boolean(onClick)
-  return (
-    <Card
-      role={clickable ? 'button' : undefined}
-      tabIndex={clickable ? 0 : undefined}
-      aria-label={clickable ? `Buka data sumber: ${title}` : undefined}
-      onClick={clickable ? onClick : undefined}
-      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } } : undefined}
-      className={cn(
-        'group relative overflow-hidden',
-        clickable && 'cursor-pointer transition-all hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500'
-      )}
-    >
-      <div className={`absolute inset-x-0 top-0 h-1 ${tone}`} />
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-slate-500">{title}</CardTitle>
-        <Icon className="h-5 w-5 text-slate-400 transition-colors group-hover:text-emerald-500" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-slate-900">{value}</div>
-        {sub && (
-          <p className="mt-1 text-xs text-slate-500">
-            {sub}
-            {clickable && (
-              <span className="ml-1.5 inline-flex translate-y-px items-center gap-0.5 whitespace-nowrap text-[10px] font-semibold text-emerald-600 transition-colors group-hover:text-emerald-700 group-hover:underline">
-                Lihat sumber <ArrowUpRight className="h-3 w-3" />
-              </span>
-            )}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  )
 }
 
 export default function DashboardView() {
@@ -135,8 +96,8 @@ export default function DashboardView() {
   if (isLoading || !dash) {
     return (
       <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32" />)}
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-5">
+          {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>
         <div className="grid gap-4 lg:grid-cols-3">
           <Skeleton className="h-80 lg:col-span-2" />
@@ -151,23 +112,25 @@ export default function DashboardView() {
     { name: 'Non-Garansi', value: dash.garansiCount.NON_GARANSI, color: '#f59e0b' },
   ]
 
+  // Indikator portable — tambah/pindah/kurangi cukup edit array ini
+  const kpiUtama: KpiDef[] = [
+    { title: 'Tiket REQUEST', value: String(dash.tiket.request), sub: `${dash.tiket.slaTerlambat} melewati SLA 24 jam`, icon: FileClock, tone: 'bg-amber-400', onClick: () => navigateTo('service', { serviceStatus: 'REQUEST' }) },
+    { title: 'Tiket PROSES', value: String(dash.tiket.proses), sub: 'Sedang dikerjakan di workshop', icon: Loader, tone: 'bg-violet-400', onClick: () => navigateTo('service', { serviceStatus: 'PROSES' }) },
+    { title: 'Tiket FINISH', value: String(dash.tiket.finish), sub: 'Siap diklaim ke produsen', icon: CheckCircle2, tone: 'bg-emerald-400', onClick: () => navigateTo('service', { serviceStatus: 'FINISH' }) },
+    { title: 'Klaim Tertahan', value: formatRupiah(dash.klaim.pendingValue), sub: `${dash.klaim.pendingCount} tiket FINISH status DRAFT (ALT-04)`, icon: Wallet, tone: 'bg-rose-400', onClick: () => navigateTo('claim', { klaimTab: 'DRAFT' }) },
+  ]
+  const kpiSekunder: KpiDef[] = [
+    { title: 'Unit Belum Diproses', value: String(dash.unitBelumDiproses.count), sub: `terdaftar tanpa tiket service · dari ${dash.unitBelumDiproses.total} unit`, icon: QrCode, tone: 'bg-sky-400', onClick: () => navigateTo('master', { masterTab: 'unit' }) },
+    { title: 'Stok Kritis (ROP)', value: `${dash.stok.kritis} / ${dash.stok.totalItem}`, sub: `${dash.stok.kosong} part kosong total · nilai stok ${formatRupiah(dash.stok.nilaiTotal)}`, icon: PackageX, tone: 'bg-amber-400', onClick: () => navigateTo('inventory', { inventoryFilter: 'kritis' }) },
+    { title: 'Toko Telat Visit', value: String(dash.operasional.tokoTerlambatVisit), sub: `dari ${dash.operasional.totalToko} toko terdaftar (ALT-01)`, icon: MapPinOff, tone: 'bg-rose-400', onClick: () => navigateTo('field-ops', { fieldOpsFilter: 'terlambat' }) },
+    { title: 'Kunjungan 7 Hari', value: String(dash.operasional.kunjungan7hari), sub: 'Check-in onsite teknisi', icon: Store, tone: 'bg-emerald-400', onClick: () => navigateTo('field-ops', { fieldOpsFilter: 'kunjungan' }) },
+    { title: 'Total Tiket', value: String(dash.tiket.total), sub: `${dash.klaim.submitted} klaim SUBMITTED menunggu pembayaran`, icon: ClipboardList, tone: 'bg-teal-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
+  ]
+
   return (
     <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
-      {/* Baris KPI utama — semuanya bisa diklik menuju data sumber */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard title="Tiket REQUEST" value={String(dash.tiket.request)} sub={`${dash.tiket.slaTerlambat} melewati SLA 24 jam`} icon={FileClock} tone="bg-amber-400" onClick={() => navigateTo('service', { serviceStatus: 'REQUEST' })} />
-        <KpiCard title="Tiket PROSES" value={String(dash.tiket.proses)} sub="Sedang dikerjakan di workshop" icon={Loader} tone="bg-violet-400" onClick={() => navigateTo('service', { serviceStatus: 'PROSES' })} />
-        <KpiCard title="Tiket FINISH" value={String(dash.tiket.finish)} sub="Siap diklaim ke produsen" icon={CheckCircle2} tone="bg-emerald-400" onClick={() => navigateTo('service', { serviceStatus: 'FINISH' })} />
-        <KpiCard title="Klaim Tertahan" value={formatRupiah(dash.klaim.pendingValue)} sub={`${dash.klaim.pendingCount} tiket FINISH status DRAFT (ALT-04)`} icon={Wallet} tone="bg-rose-400" onClick={() => navigateTo('claim', { klaimTab: 'DRAFT' })} />
-      </div>
-
-      {/* KPI sekunder — semuanya bisa diklik menuju data sumber */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard title="Stok Kritis (ROP)" value={`${dash.stok.kritis} / ${dash.stok.totalItem}`} sub={`${dash.stok.kosong} part kosong total · nilai stok ${formatRupiah(dash.stok.nilaiTotal)}`} icon={PackageX} tone="bg-amber-400" onClick={() => navigateTo('inventory', { inventoryFilter: 'kritis' })} />
-        <KpiCard title="Toko Telat Visit" value={String(dash.operasional.tokoTerlambatVisit)} sub={`dari ${dash.operasional.totalToko} toko terdaftar (ALT-01)`} icon={MapPinOff} tone="bg-rose-400" onClick={() => navigateTo('field-ops', { fieldOpsFilter: 'terlambat' })} />
-        <KpiCard title="Kunjungan 7 Hari" value={String(dash.operasional.kunjungan7hari)} sub="Check-in onsite teknisi" icon={Store} tone="bg-emerald-400" onClick={() => navigateTo('field-ops', { fieldOpsFilter: 'kunjungan' })} />
-        <KpiCard title="Total Tiket" value={String(dash.tiket.total)} sub={`${dash.klaim.submitted} klaim SUBMITTED menunggu pembayaran`} icon={ClipboardList} tone="bg-teal-400" onClick={() => navigateTo('service', { serviceStatus: 'SEMUA' })} />
-      </div>
+      {/* Panel indikator — ringkas 9 kartu dalam 2 baris agar terpantau di halaman pertama */}
+      <KpiGrid items={[...kpiUtama, ...kpiSekunder]} compact />
 
       {/* Unit belum terproses — wajib input kode+nama part agar bisa PROSES */}
       {dash.belumProses.count > 0 && (
