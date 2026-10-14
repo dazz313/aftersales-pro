@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { postJson } from '@/lib/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -117,28 +116,23 @@ export default function QuickActions() {
 
   return (
     <>
-      <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Zap className="h-4 w-4 text-emerald-600" /> Akses Cepat
-          </CardTitle>
-          <CardDescription>Tambah data & akses fitur utama tanpa berpindah menu</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setTokoOpen(true)}>
-            <Store className="mr-1.5 h-4 w-4" /> Add Toko
-          </Button>
-          <Button className="bg-teal-600 hover:bg-teal-700" onClick={() => setCustOpen(true)}>
-            <Users className="mr-1.5 h-4 w-4" /> Add Customer
-          </Button>
-          <Button variant="outline" className="border-emerald-300 hover:bg-emerald-50" onClick={() => setView('field-ops')}>
-            <ScanLine className="mr-1.5 h-4 w-4 text-emerald-600" /> Scan Kunjungan
-          </Button>
-          <Button variant="outline" className="border-teal-300 hover:bg-teal-50" onClick={() => setView('gateway')}>
-            <Radio className="mr-1.5 h-4 w-4 text-teal-600" /> Gateway
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-2.5 py-1.5">
+        <span className="mr-0.5 hidden items-center gap-1 text-[11px] font-semibold text-emerald-700 sm:flex">
+          <Zap className="h-3.5 w-3.5" /> Akses Cepat
+        </span>
+        <Button size="sm" className="h-7 bg-emerald-600 px-2.5 text-[11px] hover:bg-emerald-700" onClick={() => setTokoOpen(true)} title="Tambah Toko Mitra" aria-label="Tambah Toko Mitra">
+          <Store className="mr-1 h-3.5 w-3.5" /> Toko
+        </Button>
+        <Button size="sm" className="h-7 bg-teal-600 px-2.5 text-[11px] hover:bg-teal-700" onClick={() => setCustOpen(true)} title="Tambah Customer" aria-label="Tambah Customer">
+          <Users className="mr-1 h-3.5 w-3.5" /> Customer
+        </Button>
+        <Button size="sm" variant="outline" className="h-7 border-emerald-300 px-2.5 text-[11px] hover:bg-emerald-50" onClick={() => setView('field-ops')} title="Scan Kunjungan" aria-label="Buka Scan Kunjungan">
+          <ScanLine className="mr-1 h-3.5 w-3.5 text-emerald-600" /> Scan
+        </Button>
+        <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2.5 text-[11px] hover:bg-teal-50" onClick={() => setView('gateway')} title="Gateway Pesan" aria-label="Buka Gateway">
+          <Radio className="mr-1 h-3.5 w-3.5 text-teal-600" /> Gateway
+        </Button>
+      </div>
 
       <AddTokoDialog open={tokoOpen} onOpenChange={setTokoOpen} />
       <AddCustomerDialog open={custOpen} onOpenChange={setCustOpen} />

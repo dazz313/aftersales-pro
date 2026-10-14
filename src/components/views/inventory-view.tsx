@@ -22,6 +22,53 @@ import HistoryInput from '@/components/history-input'
 import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown, Pencil, Trash2, ClipboardList, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+/**
+ * Pembungkus panel dropdown portable — semua section inventory memakai
+ * header seragam (ikon + judul + badge + chevron) dan isi baru muncul
+ * saat diklik, agar halaman pertama tetap ringkas. Tombol aksi di header
+ * tidak ikut melipat (stopPropagation).
+ */
+function SectionCollapse({ icon, title, badge, desc, open, onOpenChange, actions, cardClass, contentClass, className, children }: {
+  icon: React.ReactNode
+  title: string
+  badge?: React.ReactNode
+  desc?: string
+  open: boolean
+  onOpenChange: (o: boolean) => void
+  actions?: React.ReactNode
+  cardClass?: string
+  contentClass?: string
+  className?: string
+  children: React.ReactNode
+}) {
+  return (
+    <Collapsible open={open} onOpenChange={onOpenChange} className={className}>
+      <Card className={cardClass}>
+        <CollapsibleTrigger asChild>
+          <div className="cursor-pointer select-none" role="button" tabIndex={0} aria-expanded={open}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenChange(!open) } }}>
+            <CardHeader className="flex-row items-center justify-between gap-2 space-y-0">
+              <div className="min-w-0">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  {icon} {title} {badge}
+                </CardTitle>
+                {desc && <CardDescription className="mt-0.5 truncate" title={desc}>{desc}</CardDescription>}
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {actions && <span className="flex gap-2" onClick={(e) => e.stopPropagation()}>{actions}</span>}
+                <ChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform', open && 'rotate-180')} />
+              </div>
+            </CardHeader>
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent className={contentClass}>{children}</CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  )
+}
+
 export default function InventoryView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -38,6 +85,11 @@ export default function InventoryView() {
   const [stokFilter, setStokFilter] = useState<'SEMUA' | 'KRITIS' | 'KOSONG'>('SEMUA')
   const [cari, setCari] = useState('')
   const [restockJenis, setRestockJenis] = useState<'JUAL' | 'GARANSI'>('JUAL')
+  // Semua section berupa dropdown — diklik baru muncul
+  const [secStok, setSecStok] = useState(false)
+  const [secTitipan, setSecTitipan] = useState(false)
+  const [secOrder, setSecOrder] = useState(false)
+  const [secUnit, setSecUnit] = useState(false)
 
   // Konsumsi navIntent dari Dashboard → terapkan filter stok
   // (dijalankan di callback async agar tidak setState sinkron di effect body)
@@ -46,6 +98,7 @@ export default function InventoryView() {
     const t = setTimeout(() => {
       if (navIntent.inventoryFilter === 'kritis') setStokFilter('KRITIS')
       if (navIntent.inventoryFilter === 'kosong') setStokFilter('KOSONG')
+      if (navIntent.inventoryFilter) setSecStok(true)
       clearNavIntent()
     }, 0)
     return () => clearTimeout(t)
@@ -265,69 +318,72 @@ export default function InventoryView() {
     nilai: Math.max(p.reorderLimit * 2 - p.stokInventory, 5) * p.hargaKlaim,
   }))
   // Draft re-order disembunyikan dalam dropdown agar halaman tidak kepanjangan
-  const [roOpen, setRoOpen] = useState(true)
+  const [roOpen, setRoOpen] = useState(false)
 
   return (
     <div className="space-y-4">
-      {/* Summary */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* Summary — tipis agar hemat ruang */}
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-700"><Boxes className="h-5 w-5" /></div>
-            <div>
-              <p className="text-xs text-slate-500">Item Katalog</p>
-              <p className="text-xl font-bold text-slate-900">{parts?.length ?? '—'}</p>
+          <CardContent className="flex items-center gap-2.5 px-3 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700"><Boxes className="h-4 w-4" /></div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] text-slate-500">Item Katalog</p>
+              <p className="text-lg font-bold leading-tight text-slate-900">{parts?.length ?? '—'}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700"><TriangleAlert className="h-5 w-5" /></div>
-            <div>
-              <p className="text-xs text-slate-500">Di Bawah ROP</p>
-              <p className="text-xl font-bold text-amber-700">{kritis.length}</p>
+          <CardContent className="flex items-center gap-2.5 px-3 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700"><TriangleAlert className="h-4 w-4" /></div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] text-slate-500">Di Bawah ROP</p>
+              <p className="text-lg font-bold leading-tight text-amber-700">{kritis.length}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-700"><PackageX className="h-5 w-5" /></div>
-            <div>
-              <p className="text-xs text-slate-500">Stok Kosong</p>
-              <p className="text-xl font-bold text-rose-700">{kosong.length}</p>
+          <CardContent className="flex items-center gap-2.5 px-3 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700"><PackageX className="h-4 w-4" /></div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] text-slate-500">Stok Kosong</p>
+              <p className="text-lg font-bold leading-tight text-rose-700">{kosong.length}</p>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><Package className="h-5 w-5" /></div>
-            <div>
-              <p className="text-xs text-slate-500">Nilai Stok Titipan</p>
-              <p className="text-lg font-bold text-slate-900">{formatRupiah(nilaiTotal)}</p>
+          <CardContent className="flex items-center gap-2.5 px-3 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><Package className="h-4 w-4" /></div>
+            <div className="min-w-0">
+              <p className="truncate text-[11px] text-slate-500">Nilai Stok Titipan</p>
+              <p className="truncate text-lg font-bold leading-tight text-slate-900">{formatRupiah(nilaiTotal)}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Urutan tampil: order customer + stok kosong di atas (portable), tabel scroll terbatas seperti Master Toko */}
-      <div className="flex flex-col gap-4">
+      {/* Urutan tampil: titipan kosong + order customer berdampingan (portable), lalu order per unit, tabel, draft */}
+      <div className="grid items-start gap-4 xl:grid-cols-2">
         {/* Tabel stok */}
-        <Card className="order-3">
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-base">Stok Sparepart Inventory</CardTitle>
-              <CardDescription>2 kelompok kolom terpisah: Stok Brand (jual/garansi — reserve otomatis saat tiket) · Part per Unit (terpakai &amp; dipesan ORDER_PRODUSEN — tidak menambah stok) · {tampilParts.length} item</CardDescription>
-            </div>
-            <div className="flex shrink-0 flex-wrap justify-end gap-2">
-              <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
-                <Upload className="mr-1 h-4 w-4" /> Import CSV
+        <SectionCollapse
+          className="order-3 xl:col-span-2"
+          icon={<Package className="h-4 w-4 text-slate-500" />}
+          title="Stok Sparepart Inventory"
+          badge={<span className="text-xs font-normal text-slate-400">{tampilParts.length} item</span>}
+          desc="Stok Brand (jual/garansi) · Part/Unit (terpakai & ORDER)"
+          open={secStok}
+          onOpenChange={setSecStok}
+          actions={
+            <>
+              <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setImportOpen(true)}>
+                <Upload className="mr-1 h-3.5 w-3.5" /> Import CSV
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setAddOpen(true)}>
-                <Plus className="mr-1 h-4 w-4" /> Item Baru
+              <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setAddOpen(true)}>
+                <Plus className="mr-1 h-3.5 w-3.5" /> Item Baru
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+            </>
+          }
+        >
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <QuickSearch
                 value={cari}
@@ -360,10 +416,8 @@ export default function InventoryView() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Kode Sparepart</TableHead>
-                      <TableHead>Nama Sparepart</TableHead>
-                      <TableHead>Brand Kompatibel</TableHead>
-                      <TableHead>Supplier</TableHead>
+                      <TableHead>Part (Kode · Nama)</TableHead>
+                      <TableHead>Brand / Supplier</TableHead>
                       <TableHead>Stok Brand (Jual/Garansi)</TableHead>
                       <TableHead>Part per Unit</TableHead>
                       <TableHead>Nilai Klaim/unit</TableHead>
@@ -374,7 +428,7 @@ export default function InventoryView() {
                   <TableBody>
                     {tampilParts.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={9} className="py-8 text-center text-sm text-slate-500">
+                        <TableCell colSpan={7} className="py-8 text-center text-sm text-slate-500">
                           Tidak ada item yang cocok dengan filter aktif.
                         </TableCell>
                       </TableRow>
@@ -383,19 +437,14 @@ export default function InventoryView() {
                       return (
                         <TableRow key={p.id} className={cn(p.kosong && 'bg-rose-50/60', p.ropAlert && !p.kosong && 'bg-amber-50/50')}>
                           <TableCell>
-                            <p className="font-mono text-[11px] font-semibold text-slate-800">{p.kodePart}</p>
-                            {(p.dipakai ?? 0) > 0 && (
-                              <p className="text-[10px] text-slate-500" title="Part ini dipakai di tiket — tidak dapat dihapus">Dipakai {p.dipakai} tiket</p>
-                            )}
-                          </TableCell>
-                          <TableCell>
                             <p className="text-xs font-semibold text-slate-800">{p.namaPart}</p>
+                            <p className="font-mono text-[10px] text-slate-400" title={(p.dipakai ?? 0) > 0 ? `${p.kodePart} — dipakai di ${p.dipakai} tiket, tidak dapat dihapus` : p.kodePart}>
+                              {p.kodePart}{(p.dipakai ?? 0) > 0 && <span className="font-sans"> · {p.dipakai} tiket</span>}
+                            </p>
                           </TableCell>
-                          <TableCell className="max-w-36 truncate text-xs text-slate-600" title={p.brandKompatibel || ''}>
-                            {p.brandKompatibel?.trim() || '—'}
-                          </TableCell>
-                          <TableCell className="max-w-36 truncate text-xs text-slate-600" title={p.supplier || ''}>
-                            {p.supplier?.trim() || '—'}
+                          <TableCell className="max-w-40">
+                            <p className="truncate text-xs text-slate-600" title={p.brandKompatibel || ''}>{p.brandKompatibel?.trim() || '—'}</p>
+                            <p className="truncate text-[10px] text-slate-400" title={p.supplier || ''}>{p.supplier?.trim() || '—'}</p>
                           </TableCell>
                           <TableCell className="w-44">
                             <div className="flex items-baseline gap-1">
@@ -445,30 +494,19 @@ export default function InventoryView() {
                 </Table>
               </div>
             )}
-          </CardContent>
-        </Card>
+        </SectionCollapse>
 
-        {/* Draft Re-Order (ALT-03) — selalu terlihat di halaman yang sama */}
-        <Collapsible open={roOpen} onOpenChange={setRoOpen} className="order-4">
-          <Card>
-            <CollapsibleTrigger asChild>
-              <div className="cursor-pointer select-none" role="button" tabIndex={0} aria-expanded={roOpen} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setRoOpen(!roOpen) } }}>
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <ShoppingCart className="h-4 w-4 text-amber-600" /> Draft Re-Order Sparepart
-                      {reorderDraft.length > 0 && <Badge className="bg-amber-500 text-[10px] text-white hover:bg-amber-500">{reorderDraft.length} item</Badge>}
-                    </CardTitle>
-                    <CardDescription>ALT-03 — auto-generated dari item di bawah reorder point · klik untuk buka/tutup</CardDescription>
-                  </div>
-                  <ChevronDown className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', roOpen && 'rotate-180')} />
-                </div>
-              </CardHeader>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent className="space-y-3">
+        {/* Draft Re-Order (ALT-03) */}
+        <SectionCollapse
+          className="order-4 xl:col-span-2"
+          icon={<ShoppingCart className="h-4 w-4 text-amber-600" />}
+          title="Draft Re-Order Sparepart"
+          badge={reorderDraft.length > 0 && <Badge className="bg-amber-500 text-[10px] text-white hover:bg-amber-500">{reorderDraft.length} item</Badge>}
+          desc="ALT-03 — auto-generated dari item di bawah reorder point · klik untuk buka/tutup"
+          open={roOpen}
+          onOpenChange={setRoOpen}
+          contentClass="space-y-3"
+        >
                 {reorderDraft.length === 0 ? (
                   <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Semua stok aman. Tidak ada draft re-order.</p>
                 ) : (
@@ -492,28 +530,24 @@ export default function InventoryView() {
                     </Button>
                   </>
                 )}
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+        </SectionCollapse>
       {/* Stok titipan kosong per brand — calon order customer */}
-      <Card className="order-1 border-rose-200">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <PackageX className="h-4 w-4 text-rose-600" /> Stok Titipan Kosong per Brand
-              {(parts ?? []).filter((p) => p.kosong).length > 0 && (
-                <Badge variant="destructive" className="text-[10px]">{(parts ?? []).filter((p) => p.kosong).length} item</Badge>
-              )}
-            </CardTitle>
-            <CardDescription>Stok konsinyasi yang habis — cepat catat order bila ada customer memesan</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <SectionCollapse
+        className="order-1"
+        cardClass="border-rose-200"
+        icon={<PackageX className="h-4 w-4 text-rose-600" />}
+        title="Stok Titipan Kosong per Brand"
+        badge={(parts ?? []).filter((p) => p.kosong).length > 0 && (
+          <Badge variant="destructive" className="text-[10px]">{(parts ?? []).filter((p) => p.kosong).length} item</Badge>
+        )}
+        desc="Stok konsinyasi yang habis — cepat catat order bila ada customer memesan"
+        open={secTitipan}
+        onOpenChange={setSecTitipan}
+      >
           {kosongPerBrand.length === 0 ? (
             <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Tidak ada stok kosong. Semua titipan tersedia.</p>
           ) : (
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid max-h-[440px] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
               {kosongPerBrand.map(([brand, items]) => (
                 <div key={brand} className="rounded-lg border border-rose-200 bg-rose-50/50 p-3">
                   <p className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-800">
@@ -537,30 +571,27 @@ export default function InventoryView() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+      </SectionCollapse>
 
       {/* Permintaan order customer */}
-      <Card className="order-2">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ClipboardList className="h-4 w-4 text-teal-700" /> Permintaan Order Customer
-              {(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length > 0 && (
-                <Badge className="bg-teal-600 text-[10px] text-white hover:bg-teal-600">
-                  {(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length} aktif
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription>Pesanan sparepart dari toko / perorangan · BARU → diteruskan → datang (stok+) → selesai</CardDescription>
-          </div>
-          <div className="flex shrink-0 gap-2">
-            <Button size="sm" className="bg-teal-700 hover:bg-teal-800" onClick={() => openOrder()}>
-              <Plus className="mr-1 h-4 w-4" /> Catat Order
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <SectionCollapse
+        className="order-2"
+        icon={<ClipboardList className="h-4 w-4 text-teal-700" />}
+        title="Permintaan Order Customer"
+        badge={(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length > 0 && (
+          <Badge className="bg-teal-600 text-[10px] text-white hover:bg-teal-600">
+            {(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length} aktif
+          </Badge>
+        )}
+        desc="Pesanan sparepart dari toko / perorangan · BARU → diteruskan → datang (stok+) → selesai"
+        open={secOrder}
+        onOpenChange={setSecOrder}
+        actions={
+          <Button size="sm" className="h-7 bg-teal-700 px-2 text-[11px] hover:bg-teal-800" onClick={() => openOrder()}>
+            <Plus className="mr-1 h-3.5 w-3.5" /> Catat Order
+          </Button>
+        }
+      >
           <div className="mb-3">
             <QuickSearch value={cariOrder} onChange={setCariOrder} placeholder="Cari no. order / pemesan / part…" className="max-w-xs" resultCount={orderTampil.length} />
           </div>
@@ -569,7 +600,7 @@ export default function InventoryView() {
               {(orders ?? []).length === 0 ? 'Belum ada permintaan order. Catat saat customer memesan part.' : 'Tidak ada order yang cocok dengan pencarian.'}
             </p>
           ) : (
-            <div className="overflow-x-auto rounded-md border">
+            <div className="max-h-[440px] overflow-auto rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -645,25 +676,23 @@ export default function InventoryView() {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </SectionCollapse>
 
       {/* Order Part per Unit — terpisah dari order customer (stok) */}
-      <Card className="order-2 border-rose-200">
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Truck className="h-4 w-4 text-rose-600" /> Order Part per Unit (ORDER_PRODUSEN)
-              {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length > 0 && (
-                <Badge variant="destructive" className="text-[10px]">
-                  {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length} part · {(parts ?? []).reduce((a, p) => a + (p.dipesanPerUnit ?? 0), 0)} pcs
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription>Part yang dipesan khusus dari tiket service — menambah stok brand saat “Terima Part Produsen”, bukan bagian order customer</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <SectionCollapse
+        className="order-2 xl:col-span-2"
+        cardClass="border-rose-200"
+        icon={<Truck className="h-4 w-4 text-rose-600" />}
+        title="Order Part per Unit (ORDER_PRODUSEN)"
+        badge={(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length > 0 && (
+          <Badge variant="destructive" className="text-[10px]">
+            {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length} part · {(parts ?? []).reduce((a, p) => a + (p.dipesanPerUnit ?? 0), 0)} pcs
+          </Badge>
+        )}
+        desc="Part yang dipesan khusus dari tiket service — menambah stok brand saat “Terima Part Produsen”, bukan bagian order customer"
+        open={secUnit}
+        onOpenChange={setSecUnit}
+      >
           {(() => {
             const perUnit = (parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0)
             if (perUnit.length === 0) {
@@ -686,8 +715,7 @@ export default function InventoryView() {
               </div>
             )
           })()}
-        </CardContent>
-      </Card>
+      </SectionCollapse>
       </div>
 
       {/* Dialog catat order customer */}

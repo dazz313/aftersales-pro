@@ -266,135 +266,106 @@ export default function FieldOpsView() {
 
   return (
     <div className="space-y-4">
-      {/* ===== Scan Kunjungan Otomatis (barcode per toko) ===== */}
-      <Card className="border-emerald-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ScanLine className="h-4 w-4 text-emerald-600" /> Scan Kunjungan — Barcode Toko
-          </CardTitle>
-          <CardDescription>
-            Satu barcode per <span className="font-semibold">toko</span> (bukan per unit). Scan stiker barcode di toko saat kunjungan —
-            sistem otomatis mengenali toko dan mencatat check-in seketika.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-2">
-            {/* Kiri: scanner */}
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <Label><Users className="mr-1 inline h-3 w-3" /> Teknisi yang berkunjung</Label>
-                <SearchSelect
-                  value={teknisiScanId}
-                  onChange={setTeknisiScanId}
-                  options={teknisiOnly.map((t) => ({ value: String(t.id), label: t.nama, sub: t.wilayahKerja ?? undefined }))}
-                  placeholder="— Ketik nama teknisi —"
-                  ariaLabel="Pilih teknisi untuk scan"
-                />
-              </div>
+      {/* ===== Scan + Foto berdampingan: barcode toko & pembaca foto ===== */}
+      <div className="grid items-start gap-4 xl:grid-cols-2">
+        {/* Scan Kunjungan Otomatis (barcode per toko) — minimalis */}
+        <Card className="border-emerald-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ScanLine className="h-4 w-4 text-emerald-600" /> Scan Kunjungan — Barcode Toko
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Scan stiker <span className="font-mono">BC-[KODETOKO]</span> — check-in tercatat otomatis.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2.5">
+            <SearchSelect
+              value={teknisiScanId}
+              onChange={setTeknisiScanId}
+              options={teknisiOnly.map((t) => ({ value: String(t.id), label: t.nama, sub: t.wilayahKerja ?? undefined }))}
+              placeholder="— Teknisi berkunjung —"
+              ariaLabel="Pilih teknisi untuk scan"
+            />
 
-              {/* Area kamera */}
-              <div className="overflow-hidden rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/40">
-                <div id="scan-toko-region" className={cn('min-h-[180px]', cameraActive ? '' : 'hidden')} />
-                {!cameraActive && (
-                  <div className="flex flex-col items-center justify-center gap-2 p-6 text-center">
-                    <Camera className="h-8 w-8 text-emerald-400" />
-                    <p className="text-xs text-slate-500">Kamera scanner barcode toko — arahkan ke stiker <span className="font-mono">BC-[KODETOKO]</span></p>
-                  </div>
-                )}
-                <div className="flex gap-2 border-t bg-white p-3">
-                  {!cameraActive ? (
-                    <Button size="sm" className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={startCamera}>
-                      <Video className="mr-1.5 h-4 w-4" /> Buka Kamera Scanner
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" className="flex-1 border-rose-300 text-rose-600 hover:bg-rose-50" onClick={stopCamera}>
-                      <VideoOff className="mr-1.5 h-4 w-4" /> Tutup Kamera
-                    </Button>
-                  )}
+            {/* Area kamera */}
+            <div className="overflow-hidden rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50/40">
+              <div id="scan-toko-region" className={cn('min-h-[140px]', cameraActive ? '' : 'hidden')} />
+              {!cameraActive && (
+                <div className="flex items-center justify-center gap-2 p-4 text-center">
+                  <Camera className="h-5 w-5 shrink-0 text-emerald-400" />
+                  <p className="text-xs text-slate-500">Arahkan ke stiker barcode toko</p>
                 </div>
-              </div>
-
-              {/* Input manual fallback */}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Ketik barcode manual (jika kamera tidak tersedia)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={manualBarcode}
-                    onChange={(e) => setManualBarcode(e.target.value.toUpperCase())}
-                    onKeyDown={(e) => e.key === 'Enter' && prosesBarcode(manualBarcode)}
-                    placeholder="BC-TOK-001"
-                    className="bg-white font-mono text-xs"
-                    aria-label="Input barcode toko manual"
-                  />
-                  <Button size="sm" variant="outline" disabled={!manualBarcode.trim()} onClick={() => prosesBarcode(manualBarcode)}>
-                    <Barcode className="mr-1 h-3.5 w-3.5" /> Proses
+              )}
+              <div className="flex gap-2 border-t bg-white p-2">
+                {!cameraActive ? (
+                  <Button size="sm" className="h-8 flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={startCamera}>
+                    <Video className="mr-1.5 h-4 w-4" /> Buka Kamera
                   </Button>
-                </div>
-                <p className="text-[10px] text-slate-400">Nilai barcode dapat berupa BC-TOK-001 (stiker) atau langsung kode toko TOK-001.</p>
+                ) : (
+                  <Button size="sm" variant="outline" className="h-8 flex-1 border-rose-300 text-rose-600 hover:bg-rose-50" onClick={stopCamera}>
+                    <VideoOff className="mr-1.5 h-4 w-4" /> Tutup Kamera
+                  </Button>
+                )}
               </div>
             </div>
 
-            {/* Kanan: hasil scan */}
+            {/* Input manual fallback */}
+            <div className="flex gap-2">
+              <Input
+                value={manualBarcode}
+                onChange={(e) => setManualBarcode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === 'Enter' && prosesBarcode(manualBarcode)}
+                placeholder="BC-TOK-001 / TOK-001"
+                className="h-8 bg-white font-mono text-xs"
+                aria-label="Input barcode toko manual"
+              />
+              <Button size="sm" variant="outline" className="h-8 shrink-0" disabled={!manualBarcode.trim()} onClick={() => prosesBarcode(manualBarcode)}>
+                <Barcode className="mr-1 h-3.5 w-3.5" /> Proses
+              </Button>
+            </div>
+
+            {/* Hasil scan */}
             <div ref={lastScanRef}>
               {!scanResult ? (
-                <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-center">
-                  <QrCode className="h-8 w-8 text-slate-300" />
-                  <p className="text-sm font-medium text-slate-500">Belum ada scan</p>
-                  <p className="max-w-xs text-xs text-slate-400">
-                    Hasil scan akan muncul di sini: identitas toko, status kepatuhan visit, dan bukti check-in otomatis.
-                  </p>
+                <div className="flex min-h-[80px] items-center justify-center gap-2 rounded-lg border border-dashed p-3 text-center">
+                  <QrCode className="h-5 w-5 shrink-0 text-slate-300" />
+                  <p className="text-xs text-slate-400">Hasil scan muncul di sini — identitas toko + bukti check-in.</p>
                 </div>
               ) : scanResult.ok && scanResult.lookup ? (
-                <div className="flex h-full min-h-[220px] flex-col gap-3 rounded-xl border-2 border-emerald-300 bg-emerald-50/50 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900">{scanResult.lookup.toko.namaToko}</p>
-                      <p className="font-mono text-[10px] text-slate-500">{scanResult.lookup.toko.kodeToko} · {scanResult.barcode}</p>
-                    </div>
-                    <Badge className="gap-1 bg-emerald-600 text-white"><CheckCircle2 className="h-3 w-3" /> TERCATAT</Badge>
+                <div className="space-y-1.5 rounded-lg border border-emerald-300 bg-emerald-50/50 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-xs font-bold text-slate-900">{scanResult.lookup.toko.namaToko}</p>
+                    <Badge className="shrink-0 gap-1 bg-emerald-600 text-[10px] text-white"><CheckCircle2 className="h-3 w-3" /> TERCATAT</Badge>
                   </div>
-                  <p className="line-clamp-2 text-xs text-slate-600">{scanResult.lookup.toko.alamat}</p>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-md bg-white p-2">
-                      <p className="text-[10px] text-slate-500">Unit</p>
-                      <p className="text-xs font-bold text-slate-800">{scanResult.lookup.jumlahUnit}</p>
-                    </div>
-                    <div className="rounded-md bg-white p-2">
-                      <p className="text-[10px] text-slate-500">Sejak visit</p>
-                      <p className={cn('text-xs font-bold', scanResult.lookup.visitTerlambat ? 'text-rose-600' : 'text-slate-800')}>{scanResult.lookup.hariSejakVisit ?? '∞'}h</p>
-                    </div>
-                    <div className="rounded-md bg-white p-2">
-                      <p className="text-[10px] text-slate-500">Total visit</p>
-                      <p className="text-xs font-bold text-slate-800">{scanResult.lookup.totalKunjungan}</p>
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-white p-3 text-xs">
-                    <p className="flex items-center gap-1.5 font-semibold text-emerald-700">
-                      <Zap className="h-3.5 w-3.5" /> Check-in otomatis tercatat {formatWaktu(new Date().toISOString())}
-                    </p>
+                  <p className="truncate font-mono text-[10px] text-slate-500">
+                    {scanResult.lookup.toko.kodeToko} · {scanResult.lookup.jumlahUnit}u · sejak {scanResult.lookup.hariSejakVisit ?? '∞'}h · {scanResult.lookup.totalKunjungan} visit
+                  </p>
+                  <p className="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+                    <Zap className="h-3 w-3 shrink-0" /> Tercatat {formatWaktu(new Date().toISOString())}
                     {scanResult.lookup.kunjunganTerakhir && (
-                      <p className="mt-1 text-slate-500">Visit sebelumnya: {formatWaktu(scanResult.lookup.kunjunganTerakhir.waktu)} oleh {scanResult.lookup.kunjunganTerakhir.teknisi}</p>
+                      <span className="truncate font-normal text-slate-500"> · sblm: {scanResult.lookup.kunjunganTerakhir.teknisi}</span>
                     )}
-                  </div>
-                  <Button size="sm" variant="outline" className="border-emerald-400 hover:bg-emerald-100" onClick={bukaCatatan}>
-                    + Tambah Catatan Stok Rusak
+                  </p>
+                  <Button size="sm" variant="outline" className="h-7 border-emerald-400 text-[11px] hover:bg-emerald-100" onClick={bukaCatatan}>
+                    + Catatan Stok Rusak
                   </Button>
                 </div>
               ) : (
-                <div className="flex h-full min-h-[220px] flex-col items-center justify-center gap-2 rounded-xl border-2 border-rose-300 bg-rose-50/50 p-6 text-center">
-                  <XCircle className="h-8 w-8 text-rose-500" />
-                  <p className="text-sm font-semibold text-rose-700">Barcode tidak dikenali</p>
-                  <p className="break-all font-mono text-xs text-slate-500">{scanResult.barcode}</p>
-                  <p className="max-w-xs text-xs text-slate-500">{scanResult.error}</p>
+                <div className="flex items-center justify-center gap-2 rounded-lg border border-rose-300 bg-rose-50/50 p-3 text-center">
+                  <XCircle className="h-5 w-5 shrink-0 text-rose-500" />
+                  <div className="min-w-0 text-left">
+                    <p className="text-xs font-semibold text-rose-700">Barcode tidak dikenali</p>
+                    <p className="truncate font-mono text-[10px] text-slate-500" title={scanResult.error}>{scanResult.barcode}{scanResult.error ? ` · ${scanResult.error}` : ''}</p>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Baca barcode dari file foto (pelengkap kamera + ketik manual) */}
-      <VisionScanner channel="TELEGRAM" pengirimDefault="FIELD-OPS" compact />
+        {/* Pembaca foto & barcode — berdampingan dengan scan */}
+        <VisionScanner channel="TELEGRAM" pengirimDefault="FIELD-OPS" compact />
+      </div>
 
       {/* Dialog catatan pasca-scan */}
       <Dialog open={catatanOpen} onOpenChange={setCatatanOpen}>
@@ -446,8 +417,8 @@ export default function FieldOpsView() {
         </CardHeader>
         <CardContent>
           {tokoLoading ? (
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-36" />)}
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}
             </div>
           ) : tokoTampil.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
@@ -456,37 +427,22 @@ export default function FieldOpsView() {
               <p className="text-xs text-slate-500">{onlyLate ? 'Semua toko ON TRACK — hapus filter untuk melihat seluruh toko.' : 'Belum ada data toko terdaftar.'}</p>
             </div>
           ) : (
-            <div className="grid max-h-[560px] gap-3 overflow-y-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid max-h-[560px] gap-2 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {tokoTampil.map((t) => {
                 const late = t.visitTerlambat
                 return (
-                  <div key={t.id} className={cn('rounded-xl border p-4 transition hover:shadow-sm', late ? 'border-rose-200 bg-rose-50/50' : 'bg-white')}>
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-800">{t.namaToko}</p>
-                        <p className="font-mono text-[10px] text-slate-400">{t.kodeToko} · {t.barcodeToko}</p>
-                      </div>
-                      <Badge variant="outline" className={cn('shrink-0 text-[10px]', late ? 'border-rose-300 bg-rose-100 text-rose-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700')}>
-                        {late ? 'TERLAMBAT' : 'ON TRACK'}
-                      </Badge>
+                  <div key={t.id} className={cn('flex items-center gap-2 rounded-lg border px-2.5 py-2 transition hover:shadow-sm', late ? 'border-rose-200 bg-rose-50/50' : 'bg-white')}>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-slate-800" title={t.alamat ? `${t.namaToko} — ${t.alamat}` : t.namaToko}>{t.namaToko}</p>
+                      <p className="truncate font-mono text-[10px] text-slate-400" title={`${t.kodeToko} · ${t.barcodeToko}`}>
+                        {t.kodeToko} · siklus {t.frekuensiVisit}h · sejak {t.hariSejakVisit ?? '∞'}h · {t.jumlahUnit}u
+                      </p>
                     </div>
-                    <p className="mb-2 line-clamp-2 text-xs text-slate-500">{t.alamat}</p>
-                    <div className="mb-3 grid grid-cols-3 gap-2 text-center">
-                      <div className="rounded-md bg-slate-50 py-1.5">
-                        <p className="text-[10px] text-slate-500">Siklus</p>
-                        <p className="text-xs font-bold text-slate-800">{t.frekuensiVisit}h</p>
-                      </div>
-                      <div className="rounded-md bg-slate-50 py-1.5">
-                        <p className="text-[10px] text-slate-500">Sejak visit</p>
-                        <p className={cn('text-xs font-bold', late ? 'text-rose-600' : 'text-slate-800')}>{t.hariSejakVisit ?? '∞'}h</p>
-                      </div>
-                      <div className="rounded-md bg-slate-50 py-1.5">
-                        <p className="text-[10px] text-slate-500">Unit</p>
-                        <p className="text-xs font-bold text-slate-800">{t.jumlahUnit}</p>
-                      </div>
-                    </div>
-                    <Button size="sm" className={cn('w-full', late ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700')} onClick={() => bukaCheckin(t)}>
-                      <MapPin className="mr-1.5 h-3.5 w-3.5" /> Check-in Manual
+                    <Badge variant="outline" className={cn('shrink-0 text-[9px]', late ? 'border-rose-300 bg-rose-100 text-rose-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700')}>
+                      {late ? 'TERLAMBAT' : 'ON TRACK'}
+                    </Badge>
+                    <Button size="sm" className={cn('h-7 w-7 shrink-0 p-0', late ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700')} onClick={() => bukaCheckin(t)} aria-label={`Check-in manual ${t.namaToko}`} title="Check-in Manual">
+                      <MapPin className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 )
