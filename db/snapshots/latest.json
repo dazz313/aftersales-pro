@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-14T01:20:05.784Z",
+  "generatedAt": "2026-10-14T01:22:13.493Z",
   "masterToko": [
     {
       "id": 216,
@@ -18,7 +18,7 @@
       "namaToko": "Toko Laris Jaya",
       "alamat": "Jl. Beringin, Watampone",
       "kontak": "08124257733",
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 7,
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-002",
       "createdAt": "2026-10-14T00:26:39.218Z"
@@ -2254,6 +2254,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 295,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-002",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-14T01:22:13.474Z"
+    },
     {
       "id": 294,
       "aksi": "UPDATE_MASTER_TOKO",
