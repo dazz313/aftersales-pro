@@ -517,19 +517,51 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     // Aksi khusus: tambah sparepart saat pengerjaan (PROSES/REQUEST).
+    // Dua cara: pilih dari katalog (sparepartId) ATAU tulis kode+nama baru
+    // (kodePart+namaPart — otomatis didaftarkan bila belum ada, agar part
+    // tambahan selalu bisa dimasukkan walau belum ada di katalog).
     // Stok cukup → READY (direserve); stok kurang → ORDER_PRODUSEN + menunggu konfirmasi.
     if (aksi === 'TAMBAH_PART') {
       if (existing.status === 'FINISH') {
         return NextResponse.json({ error: 'Tiket FINISH tidak dapat ditambah part' }, { status: 409 })
       }
-      const sparepartId = Number(body.sparepartId)
       const qty = Math.max(1, Math.trunc(Number(body.qty) || 1))
-      if (!sparepartId) {
-        return NextResponse.json({ error: 'Sparepart wajib dipilih' }, { status: 400 })
-      }
-      const sp = await db.masterSparepart.findUnique({ where: { id: sparepartId } })
-      if (!sp) {
-        return NextResponse.json({ error: 'Sparepart tidak ditemukan' }, { status: 404 })
+      let sp = null as null | { id: number; kodePart: string; namaPart: string; stokJual: number; stokGaransi: number; stokInventory: number }
+      if (Number(body.sparepartId) > 0) {
+        sp = await db.masterSparepart.findUnique({ where: { id: Number(body.sparepartId) } })
+        if (!sp) {
+          return NextResponse.json({ error: 'Sparepart tidak ditemukan' }, { status: 404 })
+        }
+      } else {
+        const kodePart = String(body.kodePart ?? '').trim().toUpperCase()
+        const namaPart = String(body.namaPart ?? '').trim()
+        if (!kodePart || !namaPart) {
+          return NextResponse.json({ error: 'Pilih part dari katalog ATAU isi kode + nama part tambahan' }, { status: 400 })
+        }
+        sp = await db.masterSparepart.findUnique({ where: { kodePart } })
+        if (!sp) {
+          const unitFull = await db.unitAsset.findUnique({ where: { id: existing.unitAssetId } })
+          sp = await db.masterSparepart.create({
+            data: {
+              kodePart,
+              namaPart,
+              brandKompatibel: unitFull?.merk ?? '',
+              supplier: '',
+              stokJual: 0,
+              stokGaransi: 0,
+              stokInventory: 0,
+              reorderLimit: 5,
+              hargaKlaim: 0,
+            },
+          })
+          await logAudit({
+            aksi: 'CREATE_MASTER_SPAREPART',
+            entitas: 'master_sparepart',
+            entitasId: sp.kodePart,
+            deskripsi: `Part tambahan dari workshop otomatis masuk katalog: ${sp.namaPart}`,
+            aktor,
+          })
+        }
       }
       let statusPart = 'ORDER_PRODUSEN'
       let statusKonfirmasi = 'MENUNGGU'

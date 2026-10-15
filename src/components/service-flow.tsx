@@ -194,16 +194,17 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
   type BalasRow = { key: number; kode: string; nama: string; qty: string }
   const [balasRows, setBalasRows] = useState<BalasRow[]>([{ key: 0, kode: '', nama: '', qty: '1' }])
   const balasKey = useRef(1)
-  // Baris dinamis tambah sparepart katalog — perilaku auto-tambah yang sama.
-  type TambahRow = { key: number; sparepartId: string; qty: string }
-  const [tambahRows, setTambahRows] = useState<TambahRow[]>([{ key: 0, sparepartId: '', qty: '1' }])
+  // Baris dinamis tambah sparepart — dua mode per baris: KATALOG (pilih)
+  // atau MANUAL (tulis kode+nama baru, otomatis masuk katalog).
+  type TambahRow = { key: number; mode: 'katalog' | 'manual'; sparepartId: string; kode: string; nama: string; qty: string }
+  const [tambahRows, setTambahRows] = useState<TambahRow[]>([{ key: 0, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
   const tambahKey = useRef(1)
   // Kerusakan quick-edit (REQUEST/PROSES) — tersimpan via UPDATE_JASA.
   const [rusak, setRusak] = useState(ticket.deskripsiKerusakan ?? '')
   // Ganti tiket → ulangi form dari awal
   useEffect(() => {
     setBalasRows([{ key: balasKey.current++, kode: '', nama: '', qty: '1' }])
-    setTambahRows([{ key: tambahKey.current++, sparepartId: '', qty: '1' }])
+    setTambahRows([{ key: tambahKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
     setRusak(ticket.deskripsiKerusakan ?? '')
     setSj('')
   }, [ticket.id])
@@ -219,8 +220,9 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
   useEffect(() => {
     setTambahRows((rows) => {
       const last = rows[rows.length - 1]
-      if (last && last.sparepartId) {
-        return [...rows, { key: tambahKey.current++, sparepartId: '', qty: '1' }]
+      const lengkap = last && (last.mode === 'katalog' ? !!last.sparepartId : !!(last.kode.trim() && last.nama.trim()))
+      if (lengkap) {
+        return [...rows, { key: tambahKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }]
       }
       return rows
     })
@@ -378,55 +380,86 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
         </Button>
       )}
 
-      {(ticket.status === 'PROSES' || ticket.status === 'REQUEST') && (spareparts ?? []).length > 0 && (
+      {(ticket.status === 'PROSES' || ticket.status === 'REQUEST') && (
         <div className="space-y-1.5">
-          <Label className="text-xs">Tambah sparepart saat pengerjaan</Label>
-          {tambahRows.map((row, i) => (
-            <div key={row.key} className="flex gap-1.5">
-              <div className="min-w-0 flex-1">
-                <SearchSelect
-                  value={row.sparepartId}
-                  onChange={(v) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, sparepartId: v } : r)))}
-                  options={(spareparts ?? []).map((p) => ({
-                    value: String(p.id),
-                    label: `${p.kodePart} · ${p.namaPart}`,
-                    sub: `jual ${p.stokJual}/garansi ${p.stokGaransi}`,
-                  }))}
-                  placeholder="— Ketik part —"
-                  ariaLabel={`Pilih sparepart tambahan baris ${i + 1}`}
-                  className="h-7 text-[11px]"
-                />
+          <Label className="text-xs">Tambah sparepart — dari katalog atau tulis kode baru</Label>
+          {tambahRows.map((row, i) => {
+            const lengkap = row.mode === 'katalog' ? !!row.sparepartId : !!(row.kode.trim() && row.nama.trim())
+            return (
+              <div key={row.key} className="space-y-1.5">
+                <div className="flex gap-1">
+                  <Button
+                    type="button" size="sm" variant={row.mode === 'katalog' ? 'default' : 'outline'}
+                    className="h-7 shrink-0 px-2 text-[10px]"
+                    onClick={() => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, mode: 'katalog' as const } : r)))}
+                  >
+                    Katalog
+                  </Button>
+                  <Button
+                    type="button" size="sm" variant={row.mode === 'manual' ? 'default' : 'outline'}
+                    className="h-7 shrink-0 px-2 text-[10px]"
+                    onClick={() => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, mode: 'manual' as const } : r)))}
+                  >
+                    Kode Baru
+                  </Button>
+                </div>
+                <div className="flex gap-1.5">
+                  {row.mode === 'katalog' ? (
+                    <div className="min-w-0 flex-1">
+                      <SearchSelect
+                        value={row.sparepartId}
+                        onChange={(v) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, sparepartId: v } : r)))}
+                        options={(spareparts ?? []).map((p) => ({
+                          value: String(p.id),
+                          label: `${p.kodePart} · ${p.namaPart}`,
+                          sub: `jual ${p.stokJual}/garansi ${p.stokGaransi}`,
+                        }))}
+                        placeholder="— Ketik part —"
+                        ariaLabel={`Pilih sparepart tambahan baris ${i + 1}`}
+                        className="h-7 text-[11px]"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <Input value={row.kode} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, kode: e.target.value.toUpperCase() } : r)))} placeholder="Kode part baru" className="h-7 min-w-0 flex-1 font-mono text-[11px]" aria-label={`Kode part tambahan baris ${i + 1}`} />
+                      <Input value={row.nama} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, nama: e.target.value } : r)))} placeholder="Nama part" className="h-7 min-w-0 flex-1 text-[11px]" aria-label={`Nama part tambahan baris ${i + 1}`} />
+                    </>
+                  )}
+                  <Input type="number" min="1" value={row.qty} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, qty: e.target.value } : r)))} className="h-7 w-16 shrink-0 text-[11px]" aria-label={`Jumlah baris ${i + 1}`} />
+                  <Button
+                    size="sm"
+                    className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
+                    disabled={pending || !lengkap || Number(row.qty) < 1}
+                    title={lengkap ? 'Tambah part ini ke tiket' : 'Pilih part / isi kode + nama dulu'}
+                    onClick={() => {
+                      onAction(row.mode === 'katalog'
+                        ? { aksi: 'TAMBAH_PART', sparepartId: Number(row.sparepartId), qty: Number(row.qty) }
+                        : { aksi: 'TAMBAH_PART', kodePart: row.kode.trim(), namaPart: row.nama.trim(), qty: Number(row.qty) })
+                      setTambahRows((rows) => {
+                        const next = rows.filter((r) => r.key !== row.key)
+                        return next.length ? next : [{ key: tambahKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }]
+                      })
+                    }}
+                  >
+                    Tambah
+                  </Button>
+                  {tambahRows.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0 text-slate-400 hover:text-red-600"
+                      onClick={() => hapusTambahRow(row.key)}
+                      aria-label={`Hapus baris ${i + 1}`}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
               </div>
-              <Input type="number" min="1" value={row.qty} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, qty: e.target.value } : r)))} className="h-7 w-16 shrink-0 text-[11px]" aria-label={`Jumlah baris ${i + 1}`} />
-              <Button
-                size="sm"
-                className="h-7 shrink-0 bg-teal-600 text-[11px] hover:bg-teal-700"
-                disabled={pending || !row.sparepartId || Number(row.qty) < 1}
-                onClick={() => {
-                  onAction({ aksi: 'TAMBAH_PART', sparepartId: Number(row.sparepartId), qty: Number(row.qty) })
-                  setTambahRows((rows) => {
-                    const next = rows.filter((r) => r.key !== row.key)
-                    return next.length ? next : [{ key: tambahKey.current++, sparepartId: '', qty: '1' }]
-                  })
-                }}
-              >
-                Tambah
-              </Button>
-              {tambahRows.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0 text-slate-400 hover:text-red-600"
-                  onClick={() => hapusTambahRow(row.key)}
-                  aria-label={`Hapus baris ${i + 1}`}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              )}
-            </div>
-          ))}
-          <p className="text-[10px] text-slate-400">Baris kosong otomatis bertambah saat part dipilih. Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen.</p>
+            )
+          })}
+          <p className="text-[10px] text-slate-400">Kode baru otomatis masuk katalog. Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen.</p>
         </div>
       )}
 
