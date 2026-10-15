@@ -84,10 +84,10 @@ export default function SuratJalanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-slate-900">
-            <Truck className="h-5 w-5 text-teal-700" /> Cetak Surat Jalan Kolektif
+          <DialogTitle className="flex items-center gap-2 pr-8 text-slate-900">
+            <Truck className="h-5 w-5 shrink-0 text-teal-700" /> Cetak Surat Jalan Kolektif
           </DialogTitle>
           <DialogDescription>
             Rincian kolektif unit dengan part rusak yang dikirim ke produsen — siap dicetak sebagai PDF maupun Excel.
@@ -95,22 +95,22 @@ export default function SuratJalanDialog({
         </DialogHeader>
 
         {/* Ringkasan */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4">
           {[
             { label: 'Tiket', value: tickets.length },
             { label: 'Item Part', value: items.length },
             { label: 'Total Qty', value: `${totalQty} pcs` },
             { label: 'Nilai Klaim', value: formatRupiah(totalNilai) },
           ].map((s) => (
-            <div key={s.label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+            <div key={s.label} className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
               <p className="text-[10px] uppercase tracking-wide text-slate-400">{s.label}</p>
-              <p className="text-sm font-bold text-slate-800">{s.value}</p>
+              <p className="truncate text-sm font-bold text-slate-800" title={String(s.value)}>{s.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Pratinjau item */}
-        <ScrollArea className="h-56 rounded-lg border border-slate-200">
+        {/* Pratinjau item — scroll dua arah agar tabel panjang tidak meluber keluar dialog */}
+        <ScrollArea className="h-56 min-w-0 rounded-lg border border-slate-200">
           {items.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <PackageOpen className="h-8 w-8 text-slate-300" />
@@ -119,42 +119,45 @@ export default function SuratJalanDialog({
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-8">No</TableHead>
-                  <TableHead>No. Tiket</TableHead>
-                  <TableHead>Sparepart</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="hidden sm:table-cell">Toko Asal</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((it, i) => (
-                  <TableRow key={`${it.noTiket}-${it.kodePart}-${i}`}>
-                    <TableCell className="text-xs text-slate-400">{i + 1}</TableCell>
-                    <TableCell className="font-mono text-xs">{it.noTiket}</TableCell>
-                    <TableCell className="text-xs">
-                      <span className="font-semibold text-slate-700">{it.kodePart}</span> · {it.namaPart}
-                      <p className="font-mono text-[10px] text-slate-400">{it.sn}</p>
-                    </TableCell>
-                    <TableCell className="text-right text-xs font-bold">{it.qty}</TableCell>
-                    <TableCell className="hidden text-xs text-slate-500 sm:table-cell">{it.toko}</TableCell>
+            <div className="overflow-x-auto">
+              <Table className="w-full min-w-[520px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">No</TableHead>
+                    <TableHead className="w-32">No. Tiket</TableHead>
+                    <TableHead>Sparepart</TableHead>
+                    <TableHead className="w-14 text-right">Qty</TableHead>
+                    <TableHead className="hidden w-32 sm:table-cell">Toko Asal</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {items.map((it, i) => (
+                    <TableRow key={`${it.noTiket}-${it.kodePart}-${i}`}>
+                      <TableCell className="text-xs text-slate-400">{i + 1}</TableCell>
+                      <TableCell className="truncate font-mono text-xs" title={it.noTiket}>{it.noTiket}</TableCell>
+                      <TableCell className="max-w-56 text-xs">
+                        <span className="font-semibold break-words text-slate-700">{it.kodePart}</span>
+                        <span className="break-words"> · {it.namaPart}</span>
+                        <p className="truncate font-mono text-[10px] text-slate-400" title={it.sn}>{it.sn}</p>
+                      </TableCell>
+                      <TableCell className="text-right text-xs font-bold">{it.qty}</TableCell>
+                      <TableCell className="hidden max-w-32 truncate text-xs text-slate-500 sm:table-cell" title={it.toko}>{it.toko}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </ScrollArea>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <Badge variant="outline" className="border-teal-300 text-[10px] text-teal-700">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-slate-500">
+          <Badge variant="outline" className="shrink-0 border-teal-300 text-[10px] text-teal-700">
             {tickets.length} tiket terpilih
           </Badge>
-          <span>No. surat jalan otomatis berurutan harian (SJ-YYYYMMDD-0001) + QR verifikasi.</span>
+          <span className="min-w-0">No. surat jalan otomatis berurutan harian (SJ-YYYYMMDD-0001) + QR verifikasi.</span>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy !== null}>
             Tutup
           </Button>

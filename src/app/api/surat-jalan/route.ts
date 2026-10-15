@@ -78,6 +78,10 @@ export async function POST(request: Request) {
     for (const row of settings) s[row.kunci] = row.nilai
     const namaPengirim = s['nama_perusahaan'] ?? 'CV. Teknik Jaya Abadi Workshop'
     const alamatPengirim = s['alamat_perusahaan'] ?? '-'
+    const emailPengirim = (s['email_perusahaan'] ?? '').trim()
+    const telpPengirim = (s['telepon_perusahaan'] ?? '').trim()
+    // Kop: email (+ telepon bila ada) satu baris di bawah alamat
+    const kontakPengirim = [emailPengirim, telpPengirim].filter(Boolean).join(' • ')
     const penerima = s['partner_produsen'] ?? 'PT. Sinar Elektronik Mandiri (Produsen)'
 
     // Nomor surat jalan berurutan per hari: SJ-YYYYMMDD-0001
@@ -129,7 +133,7 @@ export async function POST(request: Request) {
       const headerInfo: (string | number)[][] = [
         ['SURAT JALAN — PENGIRIMAN SPAREPART RUSAK'],
         [`No. Surat Jalan: ${noSJ}`, '', '', '', '', '', `Tanggal: ${tglCetak}`],
-        [`Pengirim: ${namaPengirim}`, '', '', '', '', '', `Kepada: ${penerimaBersih}`],
+        [`Pengirim: ${namaPengirim}${kontakPengirim ? ` (${kontakPengirim})` : ''}`, '', '', '', '', '', `Kepada: ${penerimaBersih}`],
         [`Alamat: ${alamatPengirim}`, '', '', '', '', '', `QR verifikasi: ${qrPayload}`],
         [],
       ]
@@ -232,6 +236,7 @@ export async function POST(request: Request) {
       doc.setFontSize(8)
       doc.text(namaPengirim, pageW - M, 9, { align: 'right' })
       doc.text(alamatPengirim, pageW - M, 14, { align: 'right', maxWidth: 90 })
+      if (kontakPengirim) doc.text(kontakPengirim, pageW - M, 19, { align: 'right', maxWidth: 110 })
       doc.setTextColor(30, 41, 59)
       y = 32
     }
@@ -277,15 +282,17 @@ export async function POST(request: Request) {
       return out
     }
 
-    // Tabel item — kolom Kondisi dihapus; lebar dialihkan agar kode & toko muat penuh
+    // Tabel item — presisi: No. STTB ikut tercetak (sebelumnya hanya ada di
+    // Excel). Lebar total tetap 261mm (margin 12 kiri-kanan A4 landscape).
     const cols: { title: string; x: number; w: number; wrap?: boolean }[] = [
       { title: 'No', x: M, w: 8 },
-      { title: 'No. Tiket', x: M + 8, w: 26 },
-      { title: 'Serial Number', x: M + 34, w: 30 },
-      { title: 'Model Unit', x: M + 64, w: 34 },
-      { title: 'Toko Asal', x: M + 98, w: 44, wrap: true },
-      { title: 'Kode Part', x: M + 142, w: 26, wrap: true },
-      { title: 'Nama Sparepart', x: M + 168, w: 61, wrap: true },
+      { title: 'No. Tiket', x: M + 8, w: 24 },
+      { title: 'No. STTB', x: M + 32, w: 20 },
+      { title: 'Serial Number', x: M + 52, w: 26 },
+      { title: 'Model Unit', x: M + 78, w: 30 },
+      { title: 'Toko Asal', x: M + 108, w: 40, wrap: true },
+      { title: 'Kode Part', x: M + 148, w: 24, wrap: true },
+      { title: 'Nama Sparepart', x: M + 172, w: 57, wrap: true },
       { title: 'Qty', x: M + 229, w: 8 },
       { title: 'Garansi', x: M + 237, w: 24 },
     ]
@@ -301,19 +308,31 @@ export async function POST(request: Request) {
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(8)
       for (const c of cols) doc.text(c.title, c.x + 1.5, y)
+      // Grid header: bingkai + pemisah tiap kolom
+      doc.setDrawColor(100, 116, 139)
+      doc.rect(M, y - 4.5, tableRight - M, 7)
+      for (const c of cols) doc.line(c.x, y - 4.5, c.x, y + 2.5)
+      doc.line(tableRight, y - 4.5, tableRight, y + 2.5)
       y += 7
       doc.setFont('helvetica', 'normal')
     }
     drawTableHeader()
 
+    // Garis vertikal pemisah kolom untuk satu baris setinggi rowH
+    const garisKolom = (yAtas: number, h: number) => {
+      doc.setDrawColor(148, 163, 184)
+      for (const c of cols) doc.line(c.x, yAtas, c.x, yAtas + h)
+      doc.line(tableRight, yAtas, tableRight, yAtas + h)
+    }
+
     doc.setFontSize(8)
     let no = 1
     for (const it of items) {
       // Sel dengan wrap (toko, kode, nama) boleh 2 baris agar tampil lengkap
-      const c4 = wrap2(it.tokoAsal, cols[4].w - 2)
-      const c5 = wrap2(it.kodePart, cols[5].w - 2)
-      const c6 = wrap2(it.namaPart, cols[6].w - 2)
-      const baris = Math.max(c4.length, c5.length, c6.length)
+      const cToko = wrap2(it.tokoAsal, cols[5].w - 2)
+      const cKode = wrap2(it.kodePart, cols[6].w - 2)
+      const cNama = wrap2(it.namaPart, cols[7].w - 2)
+      const baris = Math.max(cToko.length, cKode.length, cNama.length)
       const rowH = baris > 1 ? 11 : 6
       if (y + rowH > pageH - 45) {
         doc.addPage()
@@ -327,16 +346,21 @@ export async function POST(request: Request) {
         doc.setFillColor(248, 250, 252)
         doc.rect(M, y - 4, tableRight - M, rowH - 1, 'F')
       }
+      // Grid baris: pemisah kolom + garis bawah tiap baris agar angka tidak menyatu
+      garisKolom(y - 4, rowH - 1)
+      doc.setDrawColor(148, 163, 184)
+      doc.line(M, y + rowH - 5, tableRight, y + rowH - 5)
       const yy = (i: number) => y + i * 4.5
       doc.text(String(no++), cols[0].x + 1.5, y)
       doc.text(fit(it.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
-      doc.text(fit(it.serialNumber, cols[2].w - 2), cols[2].x + 1.5, y)
-      doc.text(fit(it.modelUnit, cols[3].w - 2), cols[3].x + 1.5, y)
-      c4.forEach((ln, i) => doc.text(ln, cols[4].x + 1.5, yy(i)))
-      c5.forEach((ln, i) => doc.text(ln, cols[5].x + 1.5, yy(i)))
-      c6.forEach((ln, i) => doc.text(ln, cols[6].x + 1.5, yy(i)))
-      doc.text(String(it.qty), cols[7].x + 1.5, y)
-      doc.text(fit(it.garansi, cols[8].w - 2), cols[8].x + 1.5, y)
+      doc.text(fit(it.noSttb, cols[2].w - 2), cols[2].x + 1.5, y)
+      doc.text(fit(it.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
+      doc.text(fit(it.modelUnit, cols[4].w - 2), cols[4].x + 1.5, y)
+      cToko.forEach((ln, i) => doc.text(ln, cols[5].x + 1.5, yy(i)))
+      cKode.forEach((ln, i) => doc.text(ln, cols[6].x + 1.5, yy(i)))
+      cNama.forEach((ln, i) => doc.text(ln, cols[7].x + 1.5, yy(i)))
+      doc.text(String(it.qty), cols[8].x + 1.5, y)
+      doc.text(fit(it.garansi, cols[9].w - 2), cols[9].x + 1.5, y)
       y += rowH
     }
 
@@ -348,11 +372,15 @@ export async function POST(request: Request) {
     }
     doc.setFillColor(204, 251, 241) // emerald-100
     doc.rect(M, y - 4, tableRight - M, 7, 'F')
+    // Baris total SENGAJA bersih: hanya bingkai luar, tanpa sekat kolom dalam
+    // agar teks total tidak tertembus garis.
+    doc.setDrawColor(100, 116, 139)
+    doc.rect(M, y - 4, tableRight - M, 7)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(8.5)
     doc.text(`TOTAL — ${tickets.length} tiket / ${items.length} item part`, cols[1].x + 1.5, y)
-    doc.text(`${totalQty} pcs`, cols[7].x + 1.5, y)
-    doc.text(fit(`Rp ${totalNilai.toLocaleString('id-ID')}`, cols[8].w - 2), cols[8].x + 1.5, y)
+    doc.text(`${totalQty} pcs`, cols[8].x + 1.5, y)
+    doc.text(fit(`Rp ${totalNilai.toLocaleString('id-ID')}`, cols[9].w - 2), cols[9].x + 1.5, y)
     y += 14
     doc.setFont('helvetica', 'normal')
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, formatRupiah, formatTanggal, formatWaktu, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,7 @@ import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
   Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -173,6 +173,47 @@ export default function ServiceView() {
   }
 
   const sjTickets = useMemo(() => (tickets ?? []).filter((t) => selectedIds.has(t.id)), [tickets, selectedIds])
+
+  // STTB kolektif per toko (pick up): wajib 1 toko yang sama
+  const [sttbBusy, setSttbBusy] = useState(false)
+  async function unduhSttbKolektif() {
+    const list = sjTickets
+    if (list.length === 0 || sttbBusy) return
+    const tokoSet = new Set(list.map((t) => t.unitAsset.toko?.kodeToko ?? '-'))
+    if (tokoSet.size !== 1) {
+      toast({ title: 'Pilih 1 toko', description: 'STTB kolektif merangkum 1 toko — centang tiket dari toko yang sama.', variant: 'destructive' })
+      return
+    }
+    setSttbBusy(true)
+    try {
+      const res = await fetch('/api/sttb/kolektif', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ noTiket: list.map((t) => t.noTiket) }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal membuat STTB kolektif (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `STTB-Kolektif-${new Date().toISOString().slice(0, 10)}.pdf`
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast({ title: 'STTB kolektif terunduh', description: `${filename} · ${list.length} unit siap pick up.` })
+    } catch (e) {
+      toast({ title: 'Gagal mencetak STTB kolektif', description: e instanceof Error ? e.message : 'Coba lagi', variant: 'destructive' })
+    } finally {
+      setSttbBusy(false)
+    }
+  }
 
   const counts = useMemo(() => {
     const c = { SEMUA: 0, REQUEST: 0, PROSES: 0, FINISH: 0 }
@@ -403,6 +444,17 @@ export default function ServiceView() {
             >
               <Truck className="mr-1 h-3.5 w-3.5" />
               Surat Jalan{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-slate-700 text-slate-700 hover:bg-slate-50"
+              onClick={() => void unduhSttbKolektif()}
+              disabled={selectedIds.size === 0 || sttbBusy}
+              title="Cetak STTB kolektif — daftar unit siap pick up dari 1 toko (wajib centang 1 toko yang sama)"
+            >
+              {sttbBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="mr-1 h-3.5 w-3.5" />}
+              STTB Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
             </Button>
           </div>
           {hasDrilldown && (

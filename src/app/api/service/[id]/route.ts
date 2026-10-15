@@ -160,7 +160,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       }
       const updated = await db.serviceRequest.update({
         where: { id: ticketId },
-        data: { status: 'PROSES', penanganan: 'DI_TOKO', lokasiUnit: 'TOKO', slaFlag: false },
+        // Kode+nama READY → STTB otomatis terbit (dibawa saat pick up ke toko)
+        data: { status: 'PROSES', penanganan: 'DI_TOKO', lokasiUnit: 'TOKO', slaFlag: false, ...(existing.noSttb ? {} : { noSttb: generateNoSttb(existing.noTiket) }) },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
       await logAudit({
@@ -488,14 +489,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           aktor,
         })
       }
-      // Aturan inti: kode+nama terinput & READY → otomatis PROSES
+      // Aturan inti: kode+nama terinput & READY → otomatis PROSES + STTB terbit
       if (existing.status === 'REQUEST' && statusPart === 'READY') {
-        await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES' } })
+        const noSttbAuto = existing.noSttb ?? generateNoSttb(existing.noTiket)
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES', noSttb: noSttbAuto } })
         await logAudit({
           aksi: 'AUTO_PROSES',
           entitas: 'service_request',
           entitasId: existing.noTiket,
-          deskripsi: 'Kode & nama part terinput dan READY → status otomatis REQUEST → PROSES',
+          deskripsi: `Kode & nama part terinput dan READY → status otomatis REQUEST → PROSES + STTB ${noSttbAuto} terbit (dibawa saat pick up)`,
           aktor,
         })
       }
@@ -575,14 +577,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (statusPart === 'READY') {
         await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
       }
-      // Aturan inti: kode+nama terinput & READY → otomatis PROSES
+      // Aturan inti: kode+nama terinput & READY → otomatis PROSES + STTB terbit
       if (existing.status === 'REQUEST' && statusPart === 'READY') {
-        await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES' } })
+        const noSttbAuto = existing.noSttb ?? generateNoSttb(existing.noTiket)
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { status: 'PROSES', noSttb: noSttbAuto } })
         await logAudit({
           aksi: 'AUTO_PROSES',
           entitas: 'service_request',
           entitasId: existing.noTiket,
-          deskripsi: 'Kode & nama part terinput dan READY → status otomatis REQUEST → PROSES',
+          deskripsi: `Kode & nama part terinput dan READY → status otomatis REQUEST → PROSES + STTB ${noSttbAuto} terbit (dibawa saat pick up)`,
           aktor,
         })
       }

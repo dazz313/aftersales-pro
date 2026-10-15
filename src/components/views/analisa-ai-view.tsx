@@ -28,19 +28,35 @@ interface AiRekomendasi {
   model: string
 }
 
+interface PendingLama {
+  noTiket: string
+  umurHari: number
+  serial: string
+  model: string
+  toko: string
+  adaPart: boolean
+}
+
+interface RingkasanHasil {
+  teks: string
+  model: string
+  pendingLama: PendingLama[]
+  pendingLamaTotal: number
+}
+
 /**
  * Fitur utama Analisa AI (via 9router): ringkasan operasional, saran jadwal
  * kunjungan, dan rekomendasi sparepart — semua dengan penjelasan Bahasa Indonesia.
  */
 export default function AnalisaAiView() {
   const { toast } = useToast()
-  const { setView } = useAppStore()
+  const { setView, navigateTo } = useAppStore()
 
   // ===== 1. Ringkasan operasional =====
-  const [ringkasan, setRingkasan] = useState<{ teks: string; model: string } | null>(null)
+  const [ringkasan, setRingkasan] = useState<RingkasanHasil | null>(null)
   const ringkasMut = useMutation({
-    mutationFn: () => postJson<{ ringkasan: string; model: string }>('/api/ai/ringkasan', {}),
-    onSuccess: (r) => setRingkasan({ teks: r.ringkasan, model: r.model }),
+    mutationFn: () => postJson<{ ringkasan: string; model: string; pendingLama: PendingLama[]; pendingLamaTotal: number }>('/api/ai/ringkasan', {}),
+    onSuccess: (r) => setRingkasan({ teks: r.ringkasan, model: r.model, pendingLama: r.pendingLama ?? [], pendingLamaTotal: r.pendingLamaTotal ?? 0 }),
     onError: (e: Error) => toast({ title: 'Ringkasan AI gagal', description: e.message, variant: 'destructive' }),
   })
 
@@ -138,6 +154,42 @@ export default function AnalisaAiView() {
                 </Button>
               </div>
               <p className="whitespace-pre-wrap text-xs leading-relaxed text-slate-700">{ringkasan.teks}</p>
+              {/* Unit pending >5 hari tanpa kode+nama — dianalisa & ditampilkan AI */}
+              <div className="mt-3 border-t border-dashed border-violet-200 pt-2.5">
+                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[11px] font-bold text-slate-800">
+                    Unit pending &gt;5 hari tanpa kode+nama part ({ringkasan.pendingLamaTotal})
+                  </p>
+                  {ringkasan.pendingLamaTotal > 0 && (
+                    <Button
+                      size="sm" variant="outline" className="h-6 border-violet-300 px-2 text-[10px] text-violet-700 hover:bg-violet-50"
+                      onClick={() => navigateTo('service', { serviceStatus: 'REQUEST' })}
+                    >
+                      Buka di Service
+                    </Button>
+                  )}
+                </div>
+                {ringkasan.pendingLamaTotal === 0 ? (
+                  <p className="text-[11px] text-emerald-700">Bersih — tidak ada unit yang tertahan lebih dari 5 hari tanpa kode+nama part.</p>
+                ) : (
+                  <div className="max-h-56 space-y-1.5 overflow-y-auto pr-0.5">
+                    {ringkasan.pendingLama.map((p) => (
+                      <div key={p.noTiket} className="flex items-center justify-between gap-2 rounded-lg border border-amber-200 bg-amber-50/70 px-2.5 py-1.5">
+                        <div className="min-w-0">
+                          <p className="truncate font-mono text-[11px] font-bold text-slate-800" title={`${p.noTiket} · SN ${p.serial}`}>{p.noTiket}</p>
+                          <p className="truncate text-[10px] text-slate-500" title={`${p.model} · ${p.toko}`}>{p.model} · {p.toko} · {p.adaPart ? 'menunggu READY' : 'belum input part'}</p>
+                        </div>
+                        <Badge variant="outline" className={cn('shrink-0 text-[10px]', p.umurHari >= 10 ? 'border-rose-300 text-rose-700' : 'border-amber-300 text-amber-700')}>
+                          {p.umurHari} hari
+                        </Badge>
+                      </div>
+                    ))}
+                    {ringkasan.pendingLamaTotal > ringkasan.pendingLama.length && (
+                      <p className="text-[10px] text-slate-500">+ {ringkasan.pendingLamaTotal - ringkasan.pendingLama.length} lainnya — buka di Service untuk daftar penuh.</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-400">Klik “Buat Ringkasan” — AI membaca tiket, stok, toko, dan klaim lalu menulis intisarinya.</p>

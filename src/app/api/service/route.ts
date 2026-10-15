@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { logAudit, generateNoTiket } from '@/lib/audit'
+import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
 import { umurTiketJam, isDataLama } from '@/lib/umur'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
@@ -222,14 +222,17 @@ export async function POST(request: Request) {
       await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'NON_GARANSI' } })
       unit.statusGaransi = 'NON_GARANSI'
     }
-    // Aturan inti: kode+nama part terinput & READY → otomatis PROSES.
+    // Aturan inti: kode+nama part terinput & READY → otomatis PROSES + STTB
+    // langsung terbit (dibawa ke toko saat pick up, tanpa menunggu part datang).
     // Tanpa part READY → tetap REQUEST (dipantau panel Belum Terproses).
     const autoProses = hasReadyPart
+    const noSttbOtomatis = autoProses ? generateNoSttb(noTiket) : null
     const ticket = await db.serviceRequest.create({
       data: {
         noTiket,
         unitAssetId: Number(body.unitAssetId),
         status: autoProses ? 'PROSES' : 'REQUEST',
+        ...(noSttbOtomatis ? { noSttb: noSttbOtomatis } : {}),
         sumberLaporan,
         tipeCustomer,
         lokasiUnit: 'TOKO',
@@ -246,7 +249,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${autoProses ? ` — part READY → otomatis PROSES + STTB ${noSttbOtomatis} terbit` : ''}`,
       aktor: body.aktor,
     })
     if (partResults.some((r) => r.status === 'READY')) {
