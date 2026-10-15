@@ -8,8 +8,8 @@ import QRCode from 'qrcode'
 /**
  * API STTB Kolektif per Toko (pick up unit).
  * Satu dokumen merangkum SEMUA tiket siap pick up dari 1 toko yang sama:
- * tiket PROSES + masih di toko + penanganan BELUM + sudah ber-STTB
- * (STTB otomatis terbit saat kode+nama part READY).
+ * tiket REQUEST/PROSES + masih di toko + sudah ber-STTB
+ * (STTB otomatis terbit sejak request part).
  *
  * POST /api/sttb/kolektif
  * Body: { noTiket: string[] }
@@ -38,7 +38,6 @@ export async function POST(request: Request) {
       where: { noTiket: { in: noTiketList } },
       include: {
         unitAsset: { include: { toko: true } },
-        parts: { include: { sparepart: true } },
       },
       orderBy: { noTiket: 'asc' },
     })
@@ -58,14 +57,16 @@ export async function POST(request: Request) {
     }
     const toko = tickets[0].unitAsset.toko!
 
-    // Wajib siap pick up: PROSES + masih di toko + penanganan BELUM + sudah ber-STTB
+    // Syarat pick up: unit masih di toko + sudah ber-STTB (STTB terbit sejak
+    // request part, tidak menunggu part datang). Status REQUEST (menunggu
+    // part) maupun PROSES boleh ikut — yang penting belum ditarik/selesai.
     const takSiap = tickets.filter(
-      (t) => t.status !== 'PROSES' || t.lokasiUnit !== 'TOKO' || t.penanganan !== 'BELUM' || !t.noSttb
+      (t) => (t.status !== 'REQUEST' && t.status !== 'PROSES') || t.lokasiUnit !== 'TOKO' || !t.noSttb
     )
     if (takSiap.length > 0) {
       return NextResponse.json(
         {
-          error: `Belum siap pick up: ${takSiap.map((t) => `${t.noTiket} (${t.status}${!t.noSttb ? ', tanpa STTB' : ''})`).join(', ')}. STTB kolektif hanya untuk tiket PROSES ber-STTB yang unitnya masih di toko.`,
+          error: `Belum siap pick up: ${takSiap.map((t) => `${t.noTiket} (${t.status}${!t.noSttb ? ', tanpa STTB — input part dulu' : ''}${t.lokasiUnit !== 'TOKO' ? ', unit tidak di toko' : ''})`).join(', ')}. STTB kolektif hanya untuk tiket REQUEST/PROSES ber-STTB yang unitnya masih di toko.`,
         },
         { status: 409 }
       )
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
     for (const row of settings) s[row.kunci] = row.nilai
     const namaWorkshop = s['nama_perusahaan'] ?? 'Workshop'
     const alamatWorkshop = s['alamat_perusahaan'] ?? '-'
-    const kontakWorkshop = [(s['email_perusahaan'] ?? '').trim(), (s['telepon_perusahaan'] ?? '').trim()].filter(Boolean).join(' • ')
+    const emailWorkshop = (s['email_perusahaan'] ?? '').trim()
 
     const today = new Date()
     const ymd = today.toISOString().slice(0, 10).replace(/-/g, '')
@@ -88,8 +89,8 @@ export async function POST(request: Request) {
     const noKolektif = `STTBK-${ymd}-${String(usedToday + 1).padStart(4, '0')}`
     const tglCetak = today.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
 
-    const totalQty = tickets.reduce((a, t) => a + t.parts.reduce((x, p) => x + p.qty, 0), 0)
-    const qrPayload = `STTBK:${noKolektif}|TOKO:${toko.kodeToko}|TIKET:${tickets.length}|QTY:${totalQty}|TGL:${ymd}`
+    const totalUnit = tickets.length
+    const qrPayload = `STTBK:${noKolektif}|TOKO:${toko.kodeToko}|UNIT:${totalUnit}|TGL:${ymd}`
     const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1 })
 
     // ============ PDF (A4 portrait + grid penuh) ============
@@ -103,30 +104,38 @@ export async function POST(request: Request) {
     let y = 0
 
     const drawPageHeader = () => {
-      doc.setFillColor(30, 41, 59)
-      doc.rect(0, 0, pageW, 34, 'F')
-      doc.setTextColor(255, 255, 255)
+      // Kop TANPA arsir (hemat tinta): teks gelap + garis pemisah ke isi surat.
+      // Margin atas 2cm (20mm) dari tepi kertas agar tidak terpotong printer.
+      const T = 20
+      doc.setTextColor(30, 41, 59)
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(15)
-      doc.text('STTB KOLEKTIF — PICK UP UNIT', pageW / 2, 12, { align: 'center' })
+      doc.setFontSize(14)
+      // Kiri: judul + No. dokumen. Kanan: nama + alamat + email perusahaan.
+      doc.text('SURAT TANDA TERIMA BARANG', M, T + 12)
       doc.setFontSize(9)
       doc.setFont('helvetica', 'normal')
-      doc.text(namaWorkshop, pageW / 2, 19, { align: 'center' })
+      doc.text(`No. ${noKolektif}`, M, T + 20)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.text(namaWorkshop, pageW - M, T + 11, { align: 'right' })
+      doc.setFont('helvetica', 'normal')
       doc.setFontSize(8)
-      doc.text(alamatWorkshop, pageW / 2, 24, { align: 'center', maxWidth: 150 })
-      if (kontakWorkshop) doc.text(kontakWorkshop, pageW / 2, 29, { align: 'center', maxWidth: 150 })
-      doc.setTextColor(30, 41, 59)
-      y = 42
+      doc.text(alamatWorkshop, pageW - M, T + 17, { align: 'right', maxWidth: 100 })
+      if (emailWorkshop) doc.text(emailWorkshop, pageW - M, T + 22, { align: 'right', maxWidth: 110 })
+      // Garis pemisah kop — isi surat
+      doc.setDrawColor(30, 41, 59)
+      doc.setLineWidth(0.8)
+      doc.line(M, T + 28, pageW - M, T + 28)
+      doc.setLineWidth(0.2)
+      y = T + 36
     }
     drawPageHeader()
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(12)
-    doc.text(`No. Dokumen : ${noKolektif}`, M, y)
     doc.addImage(qrDataUrl, 'PNG', pageW - M - 24, y - 7, 24, 24)
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
-    y += 6
     doc.text(`Tanggal       : ${tglCetak}`, M, y)
     y += 5
     doc.setFont('helvetica', 'bold')
@@ -157,13 +166,14 @@ export async function POST(request: Request) {
       return out
     }
 
+    // Satu baris per UNIT. Kolom No. STTB dihapus (nomor sudah satu per
+    // dokumen di kop). Bahasa manusia: deskripsi kerusakan, bukan kode part.
     const cols: { title: string; x: number; w: number }[] = [
       { title: 'No', x: M, w: 8 },
-      { title: 'No. Tiket', x: M + 8, w: 30 },
-      { title: 'No. STTB', x: M + 38, w: 30 },
-      { title: 'Serial Number', x: M + 68, w: 26 },
-      { title: 'Model Unit', x: M + 94, w: 34 },
-      { title: 'Kode + Nama Part', x: M + 128, w: 52 },
+      { title: 'No. Tiket', x: M + 8, w: 32 },
+      { title: 'Serial Number', x: M + 40, w: 28 },
+      { title: 'Model Unit', x: M + 68, w: 36 },
+      { title: 'Deskripsi Kerusakan', x: M + 104, w: 76 },
     ]
 
     const drawTableHeader = () => {
@@ -190,12 +200,9 @@ export async function POST(request: Request) {
     doc.setFontSize(8)
     let no = 1
     for (const t of tickets) {
-      const partText = t.parts.length === 0
-        ? '-'
-        : t.parts.map((p) => `${p.sparepart.kodePart} · ${p.sparepart.namaPart} ×${p.qty}`).join(' ; ')
-      const cModel = wrap2(t.unitAsset.modelUnit, cols[4].w - 2)
-      const cPart = wrap2(partText, cols[5].w - 2)
-      const rowH = Math.max(cModel.length, cPart.length) > 1 ? 11 : 6
+      const cModel = wrap2(t.unitAsset.modelUnit, cols[3].w - 2)
+      const cRusak = wrap2(t.deskripsiKerusakan?.trim() || '-', cols[4].w - 2)
+      const rowH = Math.max(cModel.length, cRusak.length) > 1 ? 11 : 6
       if (y + rowH > pageH - 60) {
         doc.addPage()
         drawPageHeader()
@@ -213,10 +220,9 @@ export async function POST(request: Request) {
       const yy = (i: number) => y + i * 4.5
       doc.text(String(no++), cols[0].x + 1.5, y)
       doc.text(fit(t.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
-      doc.text(fit(t.noSttb ?? '-', cols[2].w - 2), cols[2].x + 1.5, y)
-      doc.text(fit(t.unitAsset.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
-      cModel.forEach((ln, i) => doc.text(ln, cols[4].x + 1.5, yy(i)))
-      cPart.forEach((ln, i) => doc.text(ln, cols[5].x + 1.5, yy(i)))
+      doc.text(fit(t.unitAsset.serialNumber, cols[2].w - 2), cols[2].x + 1.5, y)
+      cModel.forEach((ln, i) => doc.text(ln, cols[3].x + 1.5, yy(i)))
+      cRusak.forEach((ln, i) => doc.text(ln, cols[4].x + 1.5, yy(i)))
       y += rowH
     }
 
@@ -232,11 +238,17 @@ export async function POST(request: Request) {
     doc.rect(M, y - 4, tableRight - M, 7)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(8.5)
-    doc.text(`TOTAL — ${tickets.length} unit siap pick up / ${totalQty} pcs part`, cols[1].x + 1.5, y)
+    doc.text(`TOTAL — ${totalUnit} unit siap pick up`, cols[1].x + 1.5, y)
     y += 14
     doc.setFont('helvetica', 'normal')
 
     // Tanda tangan: penyerah (toko) & pengambil (workshop)
+    // Pindah halaman bila sisa ruang tidak cukup untuk blok TTD + tanggal kembali
+    if (y > pageH - 70) {
+      doc.addPage()
+      drawPageHeader()
+      y += 2
+    }
     const colW = (pageW - 2 * M) / 2
     doc.setTextColor(30, 41, 59)
     doc.setFontSize(10)
@@ -251,6 +263,15 @@ export async function POST(request: Request) {
     doc.setTextColor(100, 116, 139)
     doc.text(`${toko.kodeToko} — ${toko.namaToko}`, M + colW / 2, y, { align: 'center' })
     doc.text('Nama & TTD', M + colW + colW / 2, y, { align: 'center' })
+    // Tanggal dikembalikan ke toko — ditulis di dokumen agar tak perlu tulis tangan
+    y += 12
+    doc.setFontSize(10)
+    doc.setTextColor(30, 41, 59)
+    doc.text('Tanggal dikembalikan :', M, y)
+    doc.setDrawColor(100, 116, 139)
+    doc.line(M + 52, y, M + 102, y)
+    doc.text('Paraf :', M + 112, y)
+    doc.line(M + 130, y, M + 165, y)
 
     const nPages = doc.getNumberOfPages()
     for (let i = 1; i <= nPages; i++) {
@@ -280,7 +301,7 @@ export async function POST(request: Request) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="STTB-Kolektif-${noKolektif}.pdf"`,
+        'Content-Disposition': `attachment; filename="Surat-Tanda-Terima-${noKolektif}.pdf"`,
         'Cache-Control': 'no-store',
         'X-Sttb-Kolektif-No': noKolektif,
       },

@@ -22,7 +22,7 @@ import QuickSearch, { matchQuery } from '@/components/quick-search'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
-  Plus, FileDown, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
+  Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -679,13 +679,6 @@ export default function ServiceView() {
                                 <DollarSign className="mr-1 h-3 w-3" /> Tandai Lunas
                               </Button>
                             )}
-                            {t.noSttb && (
-                              <a href={`/api/sttb/${t.noTiket}`} target="_blank" rel="noreferrer">
-                                <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]">
-                                  <FileDown className="mr-1 h-3 w-3" /> STTB
-                                </Button>
-                              </a>
-                            )}
                             <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={() => openDetail(t)}>
                               <Eye className="h-3 w-3" />
                             </Button>
@@ -853,11 +846,10 @@ export default function ServiceView() {
                   </div>
                 </div>
                 {detail.noSttb && (
-                  <a href={`/api/sttb/${detail.noTiket}`} target="_blank" rel="noreferrer" className="block">
-                    <Button variant="outline" className="w-full">
-                      <FileDown className="mr-2 h-4 w-4" /> Buka Dokumen STTB PDF (QR Code)
-                    </Button>
-                  </a>
+                  <p className="rounded-md bg-slate-50 p-2 text-[11px] text-slate-600">
+                    No. STTB <span className="font-mono font-semibold text-slate-800">{detail.noSttb}</span>
+                    {' '}— cetak via tombol <span className="font-semibold">STTB Toko</span> di daftar Service (centang tiket 1 toko yang sama).
+                  </p>
                 )}
               </div>
             </>

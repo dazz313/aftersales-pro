@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Printer, Truck, X } from 'lucide-react'
+import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Truck, X } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
@@ -222,11 +222,6 @@ export default function ClaimView() {
                         onClick={() => aksiMutation.mutate({ id: t.id, aksi: 'MARK_PAID' })}>
                         <DollarSign className="mr-1 h-3 w-3" /> Lunas
                       </Button>
-                    )}
-                    {t.noSttb && (
-                      <a href={`/api/sttb/${t.noTiket}`} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]"><Printer className="mr-1 h-3 w-3" /> STTB</Button>
-                      </a>
                     )}
                   </div>
                 </TableCell>

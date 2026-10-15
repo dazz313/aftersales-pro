@@ -222,11 +222,12 @@ export async function POST(request: Request) {
       await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'NON_GARANSI' } })
       unit.statusGaransi = 'NON_GARANSI'
     }
-    // Aturan inti: kode+nama part terinput & READY → otomatis PROSES + STTB
-    // langsung terbit (dibawa ke toko saat pick up, tanpa menunggu part datang).
-    // Tanpa part READY → tetap REQUEST (dipantau panel Belum Terproses).
+    // Aturan inti: STTB terbit SEJAK REQUEST PART — begitu tiket punya part
+    // (kode+nama diminta, READY ataupun ORDER), nomor STTB langsung ada untuk
+    // dibawa saat pick up. Tidak menunggu part datang. Part READY → otomatis
+    // PROSES sekalian. Tanpa part → tetap REQUEST tanpa STTB.
     const autoProses = hasReadyPart
-    const noSttbOtomatis = autoProses ? generateNoSttb(noTiket) : null
+    const noSttbOtomatis = resolvedParts.length > 0 ? generateNoSttb(noTiket) : null
     const ticket = await db.serviceRequest.create({
       data: {
         noTiket,
@@ -249,7 +250,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${autoProses ? ` — part READY → otomatis PROSES + STTB ${noSttbOtomatis} terbit` : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}`,
       aktor: body.aktor,
     })
     if (partResults.some((r) => r.status === 'READY')) {
