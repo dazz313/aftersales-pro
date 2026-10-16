@@ -11,8 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Truck, X, Wand2 } from 'lucide-react'
-import { Checkbox } from '@/components/ui/checkbox'
+import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Wand2 } from 'lucide-react'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import { cn } from '@/lib/utils'
@@ -30,7 +29,8 @@ export default function ClaimView() {
   const queryClient = useQueryClient()
   const { role, navIntent, clearNavIntent } = useAppStore()
   const [exporting, setExporting] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  // Draft surat jalan terisi otomatis (unit berkode+nama part) — tanpa centang manual
+  const [sjTickets, setSjTickets] = useState<ServiceTicket[]>([])
   const [sjOpen, setSjOpen] = useState(false)
   // Tab klaim dikontrol agar bisa diarahkan dari Dashboard (KPI "Klaim Tertahan")
   const [klaimTab, setKlaimTab] = useState<'DRAFT' | 'SUBMITTED' | 'PAID'>('DRAFT')
@@ -109,32 +109,6 @@ export default function ClaimView() {
     toast({ title: 'Export Excel dimulai', description: 'File .xlsx rekap klaim sesuai templat produsen sedang diunduh.' })
   }
 
-  const toggleSelect = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  const toggleAll = (list: ServiceTicket[]) => {
-    const allSelected = list.length > 0 && list.every((t) => selectedIds.has(t.id))
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      for (const t of list) {
-        if (allSelected) next.delete(t.id)
-        else next.add(t.id)
-      }
-      return next
-    })
-  }
-
-  const selectedTickets = useMemo(
-    () => finishTickets.filter((t) => selectedIds.has(t.id)),
-    [finishTickets, selectedIds]
-  )
-
   // ===== Draft otomatis: unit yang sudah input kode+nama part & belum terkirim =====
   // langsung terlist di draft surat jalan — tanpa centang satu per satu.
   const adaKodeNama = (t: ServiceTicket) => t.parts.some((p) => p.sparepart?.kodePart && p.sparepart?.namaPart)
@@ -149,11 +123,11 @@ export default function ClaimView() {
         title: 'Tidak ada draft baru',
         description: tanpaPart > 0
           ? `${tanpaPart} tiket belum ada kode+nama part; sisanya sudah pernah dikirim.`
-          : 'Semua tiket berpart sudah pernah dikirim — centang manual bila ingin cetak ulang.',
+          : 'Semua tiket berpart sudah pernah dikirim.',
       })
       return
     }
-    setSelectedIds(new Set(draftSiap.map((t) => t.id)))
+    setSjTickets(draftSiap)
     setSjOpen(true)
     toast({
       title: 'Draft otomatis terisi',
@@ -178,13 +152,6 @@ export default function ClaimView() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-9 pr-0">
-                <Checkbox
-                  aria-label={`Pilih semua tiket status ${tab}`}
-                  checked={list.length > 0 && list.every((t) => selectedIds.has(t.id))}
-                  onCheckedChange={() => toggleAll(list)}
-                />
-              </TableHead>
               <TableHead>No. Tiket</TableHead>
               <TableHead className="hidden md:table-cell">Toko</TableHead>
               <TableHead>Unit</TableHead>
@@ -196,14 +163,7 @@ export default function ClaimView() {
           </TableHeader>
           <TableBody>
             {list.map((t) => (
-              <TableRow key={t.id} className={cn(selectedIds.has(t.id) && 'bg-teal-50/60')}>
-                <TableCell className="pr-0">
-                  <Checkbox
-                    aria-label={`Pilih tiket ${t.noTiket} untuk surat jalan`}
-                    checked={selectedIds.has(t.id)}
-                    onCheckedChange={() => toggleSelect(t.id)}
-                  />
-                </TableCell>
+              <TableRow key={t.id}>
                 <TableCell>
                   <p className="font-mono text-xs font-semibold text-slate-800">{t.noTiket}</p>
                   <p className="text-[10px] text-slate-400">Selesai {formatTanggal(t.tglFinish)}</p>
@@ -299,20 +259,10 @@ export default function ClaimView() {
             <CardTitle className="text-base">Rekap Klaim Bulanan — Produsen</CardTitle>
             <CardDescription>
               Modul 4 PRD: verifikasi tiket FINISH berbukti stempel, lalu ekspor batch ke Excel (.xlsx) sesuai templat produsen.
-              Centang tiket untuk mencetak Surat Jalan kolektif pengiriman part ke produsen (PDF & Excel).
+              Draft surat jalan terisi otomatis dari unit yang kode+nama part-nya sudah lengkap.
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            {selectedIds.size > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-slate-500 hover:text-slate-700"
-                onClick={() => setSelectedIds(new Set())}
-              >
-                <X className="mr-1 h-3.5 w-3.5" /> Reset pilihan ({selectedIds.size})
-              </Button>
-            )}
             <Button
               variant="outline"
               className="border-violet-600 text-violet-700 hover:bg-violet-50"
@@ -321,16 +271,7 @@ export default function ClaimView() {
               title="Otomatis: tiket yang kode+nama part-nya sudah lengkap & belum terkirim langsung masuk draft"
             >
               <Wand2 className="mr-2 h-4 w-4" />
-              Draft Otomatis ({draftSiap.length})
-            </Button>
-            <Button
-              variant="outline"
-              className="border-teal-700 text-teal-700 hover:bg-teal-50"
-              onClick={() => setSjOpen(true)}
-              disabled={selectedIds.size === 0}
-            >
-              <Truck className="mr-2 h-4 w-4" />
-              Surat Jalan Kolektif{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+              Draft Surat Jalan ({draftSiap.length})
             </Button>
             <Button className="bg-emerald-700 hover:bg-emerald-800" onClick={exportExcel} disabled={exporting}>
               <FileSpreadsheet className="mr-2 h-4 w-4" />
@@ -371,7 +312,7 @@ export default function ClaimView() {
         </CardContent>
       </Card>
 
-      <SuratJalanDialog open={sjOpen} onOpenChange={setSjOpen} tickets={selectedTickets} />
+      <SuratJalanDialog open={sjOpen} onOpenChange={setSjOpen} tickets={sjTickets} />
     </div>
   )
 }
