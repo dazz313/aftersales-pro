@@ -4,6 +4,7 @@ import { logAudit } from '@/lib/audit'
 import { backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 import { parseCsv, validateSparepartRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
+import { catatBankKode } from '@/lib/bank-kode'
 
 // GET /api/sparepart/import — unduh template CSV import sparepart
 export async function GET() {
@@ -122,6 +123,18 @@ export async function POST(request: Request) {
         aktor,
       })
       await backupSparepartToGit('IMPORT', `${inserted}+${updated}`, aktor)
+      // Setiap kode yang masuk ikut tercatat di Bank Kode
+      for (const a of [...toInsert, ...toUpdate]) {
+        const d = a.data?.insert
+        if (!d) continue
+        await catatBankKode({
+          kode: d.kodePart,
+          namaPart: d.namaPart,
+          brandKompatibel: d.brandKompatibel,
+          produsen: d.supplier,
+          sumber: 'KATALOG',
+        })
+      }
     }
 
     const toDetail = ({ row, kode, nama, message }: { row: number; kode: string; nama: string; message?: string }) => ({ row, kode, nama, message: message ?? '' })

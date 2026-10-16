@@ -37,6 +37,7 @@ model MasterToko {
   frekuensiVisit   Int         @default(14) // siklus kunjungan dalam hari
   tglVisitTerakhir DateTime?
   barcodeToko      String      @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
+  jarakKm          Float? // jarak toko dari workshop (km) — diisi manual; otomatis setelah maps terintegrasi
   createdAt        DateTime    @default(now())
   unitAssets       UnitAsset[]
   kunjungan        Kunjungan[]
@@ -260,6 +261,25 @@ model Pengaturan {
   id    Int    @id @default(autoincrement())
   kunci String @unique
   nilai String
+}
+
+// ==========================================
+// Bank Kode Sparepart — registry semua kode part yang pernah masuk aplikasi
+// (katalog inventory, balasan produsen via tiket, order customer, CSV).
+// Produsen memakai kode rumit → bank ini jadi acuan cepat + bahan AI.
+// sumber: KATALOG | PRODUSEN | WORKSHOP | CSV | MANUAL | SINKRON
+// ==========================================
+model BankKode {
+  id              Int      @id @default(autoincrement())
+  kode            String   @unique // uppercase, mis. "PRT-KMP-075" / kode rumit produsen
+  namaPart        String   @default("")
+  brandKompatibel String   @default("")
+  modelTipe       String   @default("") // model/tipe unit yang cocok — indikator pelacakan cepat
+  produsen        String   @default("") // produsen/supplier penerbit kode
+  sumber          String   @default("KATALOG")
+  catatan         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // ==========================================

@@ -17,6 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.alamat !== undefined) data.alamat = body.alamat
     if (body.kontak !== undefined) data.kontak = body.kontak
     if (body.frekuensiVisit !== undefined) data.frekuensiVisit = Number(body.frekuensiVisit)
+    if (body.jarakKm !== undefined) data.jarakKm = body.jarakKm === null || body.jarakKm === '' ? null : Math.max(0, Number(body.jarakKm) || 0)
     if (body.tglVisitTerakhir !== undefined) data.tglVisitTerakhir = new Date(body.tglVisitTerakhir)
 
     const toko = await db.masterToko.update({ where: { id: Number(id) }, data })

@@ -162,6 +162,6 @@ export function inboxFileUrl(item: InboxItem): string | null {
 export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewayStatus, GatewayTestResult, BackupStatus, BackupLogItem, BackupOutcome, VisionScan, InboxItem } from '@/lib/types'
 export type {
   Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
-  Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus,
+  Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus, BankKode,
 } from '@/lib/types'
 

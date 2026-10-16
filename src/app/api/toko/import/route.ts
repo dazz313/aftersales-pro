@@ -8,11 +8,11 @@ import { parseCsv, validateTokoRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/li
 // GET /api/toko/import — unduh template CSV import toko
 export async function GET() {
   const csv = buildCsvTemplate(
-    ['kode_toko', 'nama_toko', 'alamat', 'kontak', 'frekuensi_visit', 'barcode_toko'],
+    ['kode_toko', 'nama_toko', 'alamat', 'kontak', 'frekuensi_visit', 'barcode_toko', 'jarak_km'],
     [
-      ['TOK-101', 'Toko Elektronik Makmur', 'Jl. Sudirman No. 12, Jakarta Pusat', '021-5551234', '14', 'BC-TOK-101'],
-      ['TOK-102', 'CV Sumber Rejeki Abadi', 'Jl. Merdeka No. 45, Bandung', '081234567890', '7', 'BC-TOK-102'],
-      ['TOK-103', 'Toko Sinar Jaya', 'Jl. Ahmad Yani No. 8, Surabaya', 'sinarjaya@tokoku.id', '14', ''],
+      ['TOK-101', 'Toko Elektronik Makmur', 'Jl. Sudirman No. 12, Jakarta Pusat', '021-5551234', '14', 'BC-TOK-101', '8.5'],
+      ['TOK-102', 'CV Sumber Rejeki Abadi', 'Jl. Merdeka No. 45, Bandung', '081234567890', '7', 'BC-TOK-102', '22'],
+      ['TOK-103', 'Toko Sinar Jaya', 'Jl. Ahmad Yani No. 8, Surabaya', 'sinarjaya@tokoku.id', '14', '', ''],
     ]
   )
   return new Response(csv, {

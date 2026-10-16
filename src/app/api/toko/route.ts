@@ -62,6 +62,7 @@ export async function POST(request: Request) {
         frekuensiVisit: Number(body.frekuensiVisit) || 14,
         tglVisitTerakhir: body.tglVisitTerakhir ? new Date(body.tglVisitTerakhir) : null,
         barcodeToko,
+        jarakKm: body.jarakKm === undefined || body.jarakKm === null || body.jarakKm === '' ? null : Math.max(0, Number(body.jarakKm) || 0),
       },
     })
     await logAudit({

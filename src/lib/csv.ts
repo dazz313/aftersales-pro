@@ -184,6 +184,7 @@ export const TOKO_ALIASES: Record<string, string> = {
   frekuensiVisit: 'frekuensi_visit|frekuensivisit|frekuensi|siklus|siklus_visit|frekuensi_kunjungan|visit_hari',
   tglVisitTerakhir: 'tgl_visit_terakhir|tglvisitterakhir|tgl_visit|tglvisit|visit_terakhir|last_visit|tanggal_visit_terakhir',
   barcodeToko: 'barcode_toko|barcodetoko|barcode|kode_barcode|barcode kunjungan',
+  jarakKm: 'jarak_km|jarakkm|jarak|jarak_workshop|jarakworkshop|distance|km',
 }
 
 export const TOKO_REQUIRED_LABELS: Record<string, string> = {
@@ -199,6 +200,7 @@ export interface TokoInsertData {
   frekuensiVisit: number
   tglVisitTerakhir: Date | null
   barcodeToko: string
+  jarakKm: number | null
 }
 
 export interface TokoUpdateData {
@@ -208,6 +210,7 @@ export interface TokoUpdateData {
   frekuensiVisit?: number
   tglVisitTerakhir?: Date
   barcodeToko?: string
+  jarakKm?: number | null
 }
 
 export interface TokoValidated {
@@ -292,6 +295,18 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
       tglVisitTerakhir = d
     }
 
+    // Jarak dari workshop (km, opsional — kosong = belum diketahui, terisi saat maps terintegrasi)
+    let jarakKm: number | null = null
+    const jk = get('jarakKm')
+    if (jk) {
+      const n = parseNum(jk)
+      if (n === null || Number.isNaN(n) || n < 0) {
+        acc.push({ row: rowNum, kode, nama, status: 'error', message: `Jarak "${jk}" tidak valid (isi angka km ≥ 0, kosongkan bila belum diketahui)` })
+        return
+      }
+      jarakKm = n
+    }
+
     const alamat = get('alamat')
     const kontak = get('kontak')
     acc.push({
@@ -300,7 +315,7 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
       nama,
       status: 'pending',
       data: {
-        insert: { kodeToko: kode, namaToko: nama, alamat: alamat || null, kontak: kontak || null, frekuensiVisit, tglVisitTerakhir, barcodeToko },
+        insert: { kodeToko: kode, namaToko: nama, alamat: alamat || null, kontak: kontak || null, frekuensiVisit, tglVisitTerakhir, barcodeToko, jarakKm },
         update: {
           namaToko: nama,
           ...(alamat ? { alamat } : {}),
@@ -308,6 +323,7 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
           ...(fv ? { frekuensiVisit } : {}),
           ...(tglVisitTerakhir ? { tglVisitTerakhir } : {}),
           ...(barcode ? { barcodeToko } : {}),
+          ...(jk ? { jarakKm } : {}),
         },
       },
     })
@@ -486,6 +502,105 @@ export function validateSparepartRows(headers: string[], rows: string[][]): {
 }
 
 export const CSV_MAX_ROWS = MAX_ROWS
+
+// ============================================================
+// Bank Kode Produsen — registry kode sparepart rumit dari produsen.
+// Hanya kode yang wajib; nama/brand/produsen/catatan opsional
+// (kode baru rilis produsen sering belum ada namanya).
+// ============================================================
+
+export const BANKKODE_ALIASES: Record<string, string> = {
+  kode: 'kode|kode_part|kodepart|kode sparepart|kode_sparepart|part_number|partnumber|part_no|sku|kode_produsen|kodeprodusen|kode_barang|kodebarang',
+  nama: 'nama|nama_part|namapart|nama sparepart|nama_sparepart|nama_barang|namabarang|description|deskripsi',
+  brand: 'brand|merk|merek|brand_kompatibel|brandkompatibel|kompatibel',
+  modelTipe: 'model|tipe|type|model_tipe|modeltipe|model/tipe|varian',
+  produsen: 'produsen|supplier|pemasok|vendor|distributor|pabrikan|manufacturer',
+  catatan: 'catatan|keterangan|note|notes|remarks',
+}
+
+export const BANKKODE_REQUIRED_LABELS: Record<string, string> = {
+  kode: '"kode"',
+}
+
+export interface BankKodeInsertData {
+  kode: string
+  namaPart: string
+  brandKompatibel: string
+  modelTipe: string
+  produsen: string
+  catatan: string | null
+}
+
+export interface BankKodeUpdateData {
+  namaPart?: string
+  brandKompatibel?: string
+  modelTipe?: string
+  produsen?: string
+  catatan?: string | null
+}
+
+export interface BankKodeValidated {
+  insert: BankKodeInsertData
+  update: BankKodeUpdateData
+}
+
+export function validateBankKodeRows(headers: string[], rows: string[][]): {
+  acc: ValidatedRow<BankKodeValidated>[]
+  headerError?: string
+} {
+  const { map, missing } = mapHeaders(headers, BANKKODE_ALIASES, ['kode'])
+  if (missing.length) {
+    const label = missing.map((m) => BANKKODE_REQUIRED_LABELS[m]).join(' dan ')
+    return {
+      acc: [],
+      headerError: `Kolom wajib ${label} tidak ditemukan pada baris pertama CSV. Unduh template untuk melihat format yang benar.`,
+    }
+  }
+
+  const acc: ValidatedRow<BankKodeValidated>[] = []
+  const seen = new Set<string>()
+
+  rows.forEach((r, idx) => {
+    const rowNum = idx + 2
+    const get = (f: string) => (map[f] === undefined ? '' : (r[map[f]] ?? '').trim())
+    const kode = get('kode').toUpperCase()
+    const nama = get('nama')
+
+    if (!kode) {
+      acc.push({ row: rowNum, kode, nama, status: 'error', message: 'Kode kosong — kolom kode wajib diisi' })
+      return
+    }
+    if (seen.has(kode)) {
+      acc.push({ row: rowNum, kode, nama, status: 'error', message: `Kode "${kode}" muncul lebih dari satu kali di dalam file` })
+      return
+    }
+    seen.add(kode)
+
+    const brandKompatibel = get('brand')
+    const modelTipe = get('modelTipe')
+    const produsen = get('produsen')
+    const catatan = get('catatan')
+
+    acc.push({
+      row: rowNum,
+      kode,
+      nama,
+      status: 'pending',
+      data: {
+        insert: { kode, namaPart: nama, brandKompatibel, modelTipe, produsen, catatan: catatan || null },
+        update: {
+          ...(nama ? { namaPart: nama } : {}),
+          ...(brandKompatibel ? { brandKompatibel } : {}),
+          ...(modelTipe ? { modelTipe } : {}),
+          ...(produsen ? { produsen } : {}),
+          ...(catatan ? { catatan } : {}),
+        },
+      },
+    })
+  })
+
+  return { acc }
+}
 
 // ============================================================
 // Unit Asset (registrasi massal per toko/perorangan)

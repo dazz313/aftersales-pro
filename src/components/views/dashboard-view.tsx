@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, authHeaders, formatRupiah, type DashboardData, type AlertsResponse } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, type DashboardData, type AlertsResponse, type AlertItem } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore, type NavIntent, type ViewKey } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -95,6 +95,78 @@ export default function DashboardView() {
   const refreshAll = () => {
     refetchDash()
     refetchAlerts()
+  }
+
+  // ===== Alert Engine dua kolom berdampingan (tanpa scroll jauh) =====
+  // Kiri: SLA & Sparepart (ALT-02, ALT-03, ALT-05) · Kanan: Toko & Klaim (ALT-01, ALT-04).
+  const SPAREPART_KODES = ['ALT-02', 'ALT-03', 'ALT-05']
+  const TOKO_KODES = ['ALT-01', 'ALT-04']
+
+  /** Satu baris alert (klik → view sumber). Dipakai kedua kolom grup. */
+  const barisAlert = (a: AlertItem, key: string | number) => {
+    const drill = ALERT_DRILLDOWN[a.kode]
+    const baseCls = `flex items-start gap-3 rounded-lg border p-3 ${
+      a.severity === 'critical' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'
+    }`
+    const content = (
+      <>
+        <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${a.severity === 'critical' ? 'text-rose-600' : 'text-amber-600'}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="font-mono text-[10px]">{a.kode}</Badge>
+            <span className="text-sm font-semibold text-slate-800">{a.nama}</span>
+            {a.severity === 'critical' && <Badge variant="destructive" className="text-[10px]">KRITIS</Badge>}
+          </div>
+          <p className="mt-0.5 text-xs text-slate-600">
+            <span className="font-medium">{a.entitas}</span> — {a.detail}
+          </p>
+        </div>
+        {drill && <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />}
+      </>
+    )
+    return drill ? (
+      <button
+        key={key}
+        type="button"
+        onClick={() => navigateTo(drill.view, drill.intent)}
+        className={cn(
+          baseCls,
+          'w-full cursor-pointer text-left transition-all hover:-translate-y-px hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500'
+        )}
+        aria-label={`Buka sumber alert ${a.kode} di menu ${drill.label}`}
+      >
+        {content}
+      </button>
+    ) : (
+      <div key={key} className={baseCls}>{content}</div>
+    )
+  }
+
+  /** Satu kolom grup alert dengan scroll internal sendiri. */
+  const panelAlert = (judul: string, ikon: React.ReactNode, daftar: AlertItem[], kosong: string) => {
+    const kritis = daftar.filter((a) => a.severity === 'critical').length
+    return (
+      <div className="flex min-h-0 flex-col rounded-xl border border-slate-200 bg-slate-50/50">
+        <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2">
+          {ikon}
+          <p className="text-xs font-bold text-slate-800">{judul}</p>
+          {daftar.length > 0 ? (
+            <Badge variant="outline" className="ml-auto text-[10px] text-slate-600">
+              {daftar.length} aktif{kritis > 0 && <span className="ml-1 font-bold text-rose-600">· {kritis} kritis</span>}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="ml-auto border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700">Aman</Badge>
+          )}
+        </div>
+        {daftar.length === 0 ? (
+          <p className="px-3 py-4 text-center text-[11px] text-slate-500">{kosong}</p>
+        ) : (
+          <ScrollArea className="max-h-80 pr-3">
+            <div className="space-y-2 p-2.5">{daftar.map((a, i) => barisAlert(a, `${judul}-${i}`))}</div>
+          </ScrollArea>
+        )}
+      </div>
+    )
   }
 
   if (isLoading || !dash) {
@@ -403,48 +475,20 @@ export default function DashboardView() {
               <p className="text-xs text-slate-500">Tidak ada SLA terlambat, toko telat kunjungan, stok kritis, atau klaim tertahan.</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-96 pr-3">
-              <div className="space-y-2">
-                {alerts.alerts.map((a, i) => {
-                  const drill = ALERT_DRILLDOWN[a.kode]
-                  const baseCls = `flex items-start gap-3 rounded-lg border p-3 ${
-                    a.severity === 'critical' ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50'
-                  }`
-                  const content = (
-                    <>
-                      <AlertTriangle className={`mt-0.5 h-4 w-4 shrink-0 ${a.severity === 'critical' ? 'text-rose-600' : 'text-amber-600'}`} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="font-mono text-[10px]">{a.kode}</Badge>
-                          <span className="text-sm font-semibold text-slate-800">{a.nama}</span>
-                          {a.severity === 'critical' && <Badge variant="destructive" className="text-[10px]">KRITIS</Badge>}
-                        </div>
-                        <p className="mt-0.5 text-xs text-slate-600">
-                          <span className="font-medium">{a.entitas}</span> — {a.detail}
-                        </p>
-                      </div>
-                      {drill && <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-400" />}
-                    </>
-                  )
-                  return drill ? (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => navigateTo(drill.view, drill.intent)}
-                      className={cn(
-                        baseCls,
-                        'w-full cursor-pointer text-left transition-all hover:-translate-y-px hover:border-slate-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500'
-                      )}
-                      aria-label={`Buka sumber alert ${a.kode} di menu ${drill.label}`}
-                    >
-                      {content}
-                    </button>
-                  ) : (
-                    <div key={i} className={baseCls}>{content}</div>
-                  )
-                })}
-              </div>
-            </ScrollArea>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {panelAlert(
+                'SLA & Sparepart',
+                <PackageX className="h-3.5 w-3.5 text-amber-600" />,
+                alerts.alerts.filter((a) => SPAREPART_KODES.includes(a.kode) || !TOKO_KODES.includes(a.kode)),
+                'Tidak ada SLA terlambat / stok kritis / unit belum terproses.'
+              )}
+              {panelAlert(
+                'Toko & Klaim',
+                <Store className="h-3.5 w-3.5 text-teal-700" />,
+                alerts.alerts.filter((a) => TOKO_KODES.includes(a.kode)),
+                'Tidak ada toko telat kunjungan / klaim tertahan.'
+              )}
+            </div>
           )}
             </CardContent>
           </CollapsibleContent>

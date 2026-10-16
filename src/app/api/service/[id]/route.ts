@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit, generateNoSttb } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
+import { catatBankKode } from '@/lib/bank-kode'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -438,6 +439,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           aktor,
         })
       }
+      await catatBankKode({
+        kode: sp.kodePart,
+        namaPart: sp.namaPart,
+        brandKompatibel: sp.brandKompatibel ?? '',
+        produsen: sp.supplier ?? '',
+        sumber: 'PRODUSEN',
+      })
       let statusPart = 'ORDER_PRODUSEN'
       let statusKonfirmasi = 'MENUNGGU'
       // Cek duplikat SEBELUM menyentuh stok (agar 409 tidak membocorkan reserve)
@@ -562,6 +570,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             aktor,
           })
         }
+        await catatBankKode({
+          kode: sp.kodePart,
+          namaPart: sp.namaPart,
+          brandKompatibel: (sp as { brandKompatibel?: string }).brandKompatibel ?? '',
+          sumber: 'WORKSHOP',
+        })
       }
       let statusPart = 'ORDER_PRODUSEN'
       let statusKonfirmasi = 'MENUNGGU'

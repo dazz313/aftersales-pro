@@ -9,6 +9,8 @@ export interface Toko {
   frekuensiVisit: number
   tglVisitTerakhir: string | null
   barcodeToko: string
+  /** Jarak toko dari workshop (km) — null = belum diketahui (terisi saat maps terintegrasi). */
+  jarakKm: number | null
   createdAt: string
   jumlahUnit: number
   visitTerlambat: boolean
@@ -46,6 +48,19 @@ export interface Sparepart {
   kosong: boolean
   /** Jumlah tiket yang memakai part ini (0 = aman dihapus). */
   dipakai?: number
+}
+
+/** Satu entri Bank Kode produsen — registry kode sparepart rumit. */
+export interface BankKode {
+  id: number
+  kode: string
+  namaPart: string
+  brandKompatibel: string
+  produsen: string
+  sumber: string
+  catatan: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export type StatusGaransi = 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'

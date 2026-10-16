@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { postJson } from '@/lib/api'
-import { parseCsv, validateTokoRows, validateSparepartRows, validateUnitRows, CSV_MAX_ROWS, type ValidatedRow } from '@/lib/csv'
+import { parseCsv, validateTokoRows, validateSparepartRows, validateUnitRows, validateBankKodeRows, CSV_MAX_ROWS, type ValidatedRow } from '@/lib/csv'
 import { useAppStore } from '@/lib/store'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -29,7 +29,7 @@ import {
   MinusCircle,
 } from 'lucide-react'
 
-export type ImportKind = 'toko' | 'sparepart' | 'unit'
+export type ImportKind = 'toko' | 'sparepart' | 'unit' | 'bankkode'
 
 export interface ImportResult {
   total: number
@@ -148,6 +148,38 @@ const CONFIG: Record<
       },
     ],
   },
+  bankkode: {
+    title: 'Import Kode Produsen (CSV)',
+    description: 'Catat banyak kode sparepart rumit rilis produsen sekaligus — bank kode langsung terisi dan siap dipanggil.',
+    templateUrl: '/api/bank-kode/import',
+    apiUrl: '/api/bank-kode/import',
+    requiredCols: ['kode'],
+    optionalCols: ['nama', 'brand', 'produsen', 'catatan'],
+    columns: [
+      { label: 'Kode', get: (r) => r.kode },
+      {
+        label: 'Nama',
+        get: (r) => {
+          const d = r.data as { insert?: { namaPart?: string } } | undefined
+          return d?.insert?.namaPart?.trim() || '—'
+        },
+      },
+      {
+        label: 'Brand',
+        get: (r) => {
+          const d = r.data as { insert?: { brandKompatibel?: string } } | undefined
+          return d?.insert?.brandKompatibel?.trim() || '—'
+        },
+      },
+      {
+        label: 'Produsen',
+        get: (r) => {
+          const d = r.data as { insert?: { produsen?: string } } | undefined
+          return d?.insert?.produsen?.trim() || '—'
+        },
+      },
+    ],
+  },
   unit: {
     title: 'Import Massal Unit (CSV)',
     description: 'Registrasi banyak unit asset sekaligus per toko — cocok untuk pendataan stok toko baru.',
@@ -235,6 +267,7 @@ export default function CsvImportDialog({ kind, open, onOpenChange, existingCode
     if (!parsed || parsed.rows.length === 0) return null
     if (kind === 'toko') return validateTokoRows(parsed.headers, parsed.rows)
     if (kind === 'unit') return validateUnitRows(parsed.headers, parsed.rows)
+    if (kind === 'bankkode') return validateBankKodeRows(parsed.headers, parsed.rows)
     return validateSparepartRows(parsed.headers, parsed.rows)
   }, [parsed, kind])
 

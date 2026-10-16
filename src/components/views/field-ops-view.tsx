@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
@@ -138,6 +139,98 @@ export default function FieldOpsView() {
       toast({ title: 'Saran AI diterima', description: `${r.rencana.length} hari disusun (${r.model}). Jadwal otomatis tetap ada di bawah sebagai cadangan.` })
     },
     onError: (e: Error) => toast({ title: 'Saran AI gagal', description: e.message, variant: 'destructive' }),
+  })
+
+  // ===== Analisa frekuensi kunjungan AI — kategori A/B/C/D + jarak workshop =====
+  // Kriteria: A = banyak laporan (repeat singkat 7h) · B = konsisten (14h) ·
+  // C = jarang (21h) · D = belum pernah (30h) · jarak ikut dipertimbangkan bila ada.
+  // TIDAK ada yang berubah otomatis — siklus baru hanya diterapkan untuk toko
+  // yang dicentang + dikonfirmasi (allowed) via dialog, khusus Admin/Manager.
+  interface FreqStat {
+    id: number
+    kode: string
+    nama: string
+    siklusAktif: number
+    kategori: 'A' | 'B' | 'C' | 'D'
+    siklusBaseline: number
+    tiket90: number
+    tiketAll: number
+    mingguAktif: number
+    kunjungan90: number
+    terakhirLaporan: string | null
+    terlambat: boolean
+    hariSejakVisit: number | null
+    unit: number
+    jarakKm: number | null
+  }
+  interface FreqResponse {
+    generatedAt: string
+    windowHari: number
+    mingguKonsistensi: number
+    ambang: { aTiket90: number; aTiketAll: number; bMinggu: number; bTiket90: number }
+    jarakTerisi: number
+    jarakTotal: number
+    toko: FreqStat[]
+    ai: { saran: { kode: string; kategori: string; siklus: number; alasan: string }[]; catatan: string; model: string } | null
+    aiError: string | null
+  }
+  const KAT_META: Record<string, { label: string; cls: string }> = {
+    A: { label: 'A · Banyak laporan', cls: 'border-rose-300 bg-rose-50 text-rose-700' },
+    B: { label: 'B · Konsisten', cls: 'border-amber-300 bg-amber-50 text-amber-700' },
+    C: { label: 'C · Jarang', cls: 'border-sky-300 bg-sky-50 text-sky-700' },
+    D: { label: 'D · Belum pernah', cls: 'border-slate-300 bg-slate-50 text-slate-500' },
+  }
+  const [freqHasil, setFreqHasil] = useState<FreqResponse | null>(null)
+  const [freqCentang, setFreqCentang] = useState<string[]>([])
+  const [freqConfirm, setFreqConfirm] = useState(false)
+  const bolehUbahSiklus = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
+  const freqMut = useMutation({
+    mutationFn: () => postJson<FreqResponse>('/api/ai/frekuensi-visit', {}),
+    onSuccess: (r) => {
+      setFreqHasil(r)
+      // Default dicentang: yang sarannya berubah dari siklus aktif
+      const saranSiklus = (kode: string) =>
+        r.ai?.saran.find((s) => s.kode.toUpperCase() === kode.toUpperCase())?.siklus ??
+        r.toko.find((t) => t.kode.toUpperCase() === kode.toUpperCase())?.siklusBaseline
+      setFreqCentang(
+        r.toko.filter((t) => saranSiklus(t.kode) !== undefined && saranSiklus(t.kode) !== t.siklusAktif).map((t) => t.kode.toUpperCase())
+      )
+      toast({
+        title: r.ai ? 'Analisa AI diterima' : 'Analisa aturan diterima',
+        description: r.ai
+          ? `${r.ai.saran.length} toko dinilai (${r.ai.model}). Centang + konfirmasi untuk menerapkan.`
+          : `AI tidak tersedia (${r.aiError ?? 'gangguan'}) — memakai aturan baku kategori.`,
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Analisa gagal', description: e.message, variant: 'destructive' }),
+  })
+  const freqSaran = useMemo(() => {
+    const m = new Map<string, { kategori: string; siklus: number; alasan: string }>()
+    if (!freqHasil) return m
+    for (const t of freqHasil.toko) {
+      const s = freqHasil.ai?.saran.find((x) => x.kode.toUpperCase() === t.kode.toUpperCase())
+      m.set(t.kode.toUpperCase(), s ?? { kategori: t.kategori, siklus: t.siklusBaseline, alasan: `Aturan baku kategori ${t.kategori} (AI tidak tersedia).` })
+    }
+    return m
+  }, [freqHasil])
+  const freqDiubah = useMemo(
+    () => (freqHasil?.toko ?? []).filter((t) => freqCentang.includes(t.kode.toUpperCase())),
+    [freqHasil, freqCentang]
+  )
+  const freqTerapkan = useMutation({
+    mutationFn: () =>
+      postJson<{ diterapkan: number }>('/api/ai/frekuensi-visit/terapkan', {
+        perubahan: freqDiubah.map((t) => ({ id: t.id, siklus: freqSaran.get(t.kode.toUpperCase())?.siklus ?? t.siklusAktif })),
+        aktor: role,
+      }),
+    onSuccess: (r) => {
+      invalidateAll()
+      setFreqConfirm(false)
+      setFreqHasil(null)
+      setFreqCentang([])
+      toast({ title: 'Frekuensi diperbarui', description: `${r.diterapkan} toko mengikuti siklus baru atas persetujuan Anda.` })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menerapkan', description: e.message, variant: 'destructive' }),
   })
 
   const invalidateAll = () => {
@@ -316,6 +409,178 @@ export default function FieldOpsView() {
           )}
         </CardContent>
       </Card>
+
+      {/* ===== Analisa frekuensi kunjungan AI — saran siklus per toko ===== */}
+      <Card className="border-violet-200">
+        <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
+          <div>
+            <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+              <Sparkles className="h-4 w-4 text-violet-600" /> Analisa Frekuensi Kunjungan AI
+              <Badge variant="outline" className="border-violet-300 text-[10px] text-violet-700">Powered AI</Badge>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Saran siklus per toko dari laporan kerusakan + konsistensi + jarak — tidak ada yang berubah sebelum Anda mencentang &amp; mengonfirmasi.
+            </CardDescription>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 shrink-0 border-violet-300 px-2 text-[11px] text-violet-700 hover:bg-violet-50"
+            disabled={freqMut.isPending || (tokoList ?? []).length === 0}
+            onClick={() => freqMut.mutate()}
+            title="AI menilai tiap toko (kategori A/B/C/D + jarak) dan menyarankan siklus"
+          >
+            {freqMut.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Sparkles className="mr-1 h-3 w-3" />}
+            {freqMut.isPending ? 'Menganalisa…' : 'Jalankan Analisa'}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {/* Legenda kriteria yang masuk pertimbangan */}
+          <div className="mb-3 grid gap-1.5 text-[11px] sm:grid-cols-2 xl:grid-cols-4">
+            <p className="rounded-lg border border-rose-200 bg-rose-50/60 px-2 py-1.5 text-rose-800">
+              <span className="font-bold">A · Banyak laporan</span> — ≥{freqHasil?.ambang.aTiket90 ?? 5} tiket/90h atau ≥{freqHasil?.ambang.aTiketAll ?? 10} total → <span className="font-bold">4 hari</span> (repeat singkat)
+            </p>
+            <p className="rounded-lg border border-amber-200 bg-amber-50/60 px-2 py-1.5 text-amber-800">
+              <span className="font-bold">B · Konsisten</span> — aktif ≥{freqHasil?.ambang.bMinggu ?? 6} dari {freqHasil?.mingguKonsistensi ?? 12} minggu + ≥{freqHasil?.ambang.bTiket90 ?? 2} tiket/90h → <span className="font-bold">7 hari</span>
+            </p>
+            <p className="rounded-lg border border-sky-200 bg-sky-50/60 px-2 py-1.5 text-sky-800">
+              <span className="font-bold">C · Jarang</span> — pernah ada laporan tapi tak memenuhi A/B → <span className="font-bold">10 hari</span>
+            </p>
+            <p className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-slate-600">
+              <span className="font-bold">D · Belum pernah</span> — nol laporan kerusakan → <span className="font-bold">10 hari</span> (maksimal)
+            </p>
+          </div>
+          <p className="mb-3 text-[11px] text-slate-500">
+            Jarak workshop: {freqHasil ? <span className="font-semibold text-slate-700">{freqHasil.jarakTerisi}/{freqHasil.jarakTotal} toko terisi</span> : `${(tokoList ?? []).filter((t) => t.jarakKm !== null).length}/${(tokoList ?? []).length} toko terisi`} —
+            AI mempertimbangkannya bila ada (toko jauh + C/D → siklus panjang hemat biaya). Lengkapi di Master Data / CSV; otomatis penuh saat maps terintegrasi.
+          </p>
+
+          {freqHasil ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                {(['A', 'B', 'C', 'D'] as const).map((k) => (
+                  <Badge key={k} variant="outline" className={cn('text-[10px]', KAT_META[k].cls)}>
+                    {KAT_META[k].label}: {freqHasil.toko.filter((t) => (freqSaran.get(t.kode.toUpperCase())?.kategori ?? t.kategori) === k).length}
+                  </Badge>
+                ))}
+                {freqHasil.ai
+                  ? <span className="ml-auto text-slate-400">Model {freqHasil.ai.model}{freqHasil.ai.catatan ? ` · ${freqHasil.ai.catatan}` : ''}</span>
+                  : <span className="ml-auto text-amber-600">Mode aturan baku (AI: {freqHasil.aiError ?? 'tidak tersedia'})</span>}
+              </div>
+
+              <div className="max-h-80 overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-slate-50">
+                    <TableRow>
+                      <TableHead className="w-8 text-[10px]">OK</TableHead>
+                      <TableHead className="text-[10px]">Toko</TableHead>
+                      <TableHead className="text-[10px]">Kat</TableHead>
+                      <TableHead className="hidden text-[10px] sm:table-cell">Laporan</TableHead>
+                      <TableHead className="text-[10px]">Siklus</TableHead>
+                      <TableHead className="hidden text-[10px] md:table-cell">Alasan AI</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {freqHasil.toko.map((t) => {
+                      const s = freqSaran.get(t.kode.toUpperCase())!
+                      const berubah = s.siklus !== t.siklusAktif
+                      const kode = t.kode.toUpperCase()
+                      return (
+                        <TableRow key={t.id} className={cn(berubah && freqCentang.includes(kode) && 'bg-violet-50/50')}>
+                          <TableCell>
+                            <Checkbox
+                              checked={freqCentang.includes(kode)}
+                              onCheckedChange={(v) => setFreqCentang((cs) => (v ? [...cs, kode] : cs.filter((c) => c !== kode)))}
+                              aria-label={`Setujui perubahan ${t.kode}`}
+                              disabled={!berubah}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <p className="text-xs font-medium text-slate-800">{t.nama}</p>
+                            <p className="font-mono text-[10px] text-slate-400">
+                              {t.kode} · {t.unit}u{t.jarakKm !== null ? ` · ${t.jarakKm}km` : ' · jarak ?'}
+                              {t.terlambat ? ' · TERLAMBAT' : ''}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={cn('text-[10px]', KAT_META[s.kategori]?.cls ?? KAT_META[t.kategori].cls)}>
+                              {s.kategori}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden whitespace-nowrap text-[11px] text-slate-600 sm:table-cell">
+                            {t.tiket90}/90h · {t.tiketAll} tot · {t.mingguAktif}/12 mgg
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap text-[11px]">
+                            <span className="text-slate-500">{t.siklusAktif}h</span>
+                            <span className="mx-1 text-slate-300">→</span>
+                            <span className={cn('font-bold', berubah ? 'text-violet-700' : 'text-slate-400')}>{s.siklus}h</span>
+                          </TableCell>
+                          <TableCell className="hidden max-w-64 md:table-cell">
+                            <p className="truncate text-[11px] italic text-violet-800" title={s.alasan}>{s.alasan || '—'}</p>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs text-slate-600"><span className="font-bold text-slate-800">{freqDiubah.length}</span> toko dicentang</p>
+                {!bolehUbahSiklus && <span className="text-[11px] text-amber-600">Hanya Admin/Manager yang dapat menerapkan (Anda login sebagai {role}).</span>}
+                <div className="ml-auto flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setFreqHasil(null); setFreqCentang([]) }}>Tutup</Button>
+                  <Button
+                    size="sm"
+                    className="bg-violet-600 hover:bg-violet-700"
+                    disabled={freqDiubah.length === 0 || !bolehUbahSiklus || freqTerapkan.isPending}
+                    onClick={() => setFreqConfirm(true)}
+                    title={bolehUbahSiklus ? 'Minta konfirmasi sebelum mengubah siklus toko' : 'Khusus Admin/Manager'}
+                  >
+                    {freqTerapkan.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <CheckCircle2 className="mr-1 h-3 w-3" />}
+                    Terapkan yang Disetujui ({freqDiubah.length})
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">
+              Klik <span className="font-semibold">Jalankan Analisa</span> — AI menilai {((tokoList ?? []).length)} toko dan menyarankan siklus 4/7/10 hari beserta alasannya.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dialog persetujuan (allowed) sebelum siklus diubah */}
+      <Dialog open={freqConfirm} onOpenChange={setFreqConfirm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Setujui Perubahan Siklus?</DialogTitle>
+            <DialogDescription>
+              {freqDiubah.length} toko akan diubah frekuensi visit-nya. Tindakan tercatat di Audit Log.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-64 space-y-1.5 overflow-y-auto rounded-lg border bg-slate-50/70 p-2.5">
+            {freqDiubah.map((t) => {
+              const s = freqSaran.get(t.kode.toUpperCase())!
+              return (
+                <p key={t.id} className="text-[11px] text-slate-700">
+                  <span className="font-mono font-semibold">{t.kode}</span> · {t.nama}:{' '}
+                  <span className="text-slate-400">{t.siklusAktif} hari</span> → <span className="font-bold text-violet-700">{s.siklus} hari</span>{' '}
+                  <span className="text-slate-400">(kat {s.kategori})</span>
+                </p>
+              )
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFreqConfirm(false)}>Batal</Button>
+            <Button className="bg-violet-600 hover:bg-violet-700" disabled={freqTerapkan.isPending} onClick={() => freqTerapkan.mutate()}>
+              {freqTerapkan.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />}
+              Ya, Terapkan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Peta kepatuhan kunjungan */}
       <Card id="kepatuhan-visit">

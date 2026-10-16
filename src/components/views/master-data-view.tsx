@@ -73,7 +73,7 @@ export default function MasterDataView() {
   const [resetPwValue, setResetPwValue] = useState('')
   // Edit toko & customer
   const [editToko, setEditToko] = useState<Toko | null>(null)
-  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
+  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '' })
   // Hapus massal toko (khusus Admin/Manager — centang baris lalu hapus sekaligus)
   const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(new Set())
   const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
@@ -427,7 +427,7 @@ export default function MasterDataView() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit) }) }} aria-label={`Edit ${t.namaToko}`}>
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit), jarakKm: t.jarakKm !== null && t.jarakKm !== undefined ? String(t.jarakKm) : '' }) }} aria-label={`Edit ${t.namaToko}`}>
                               <Pencil className="mr-1 h-3 w-3" /> Edit
                             </Button>
                             <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
@@ -859,13 +859,14 @@ export default function MasterDataView() {
             <div className="space-y-1.5 sm:col-span-2"><Label>Alamat</Label><HistoryInput historyKey="toko-alamat" value={editTokoForm.alamat} onChange={(e) => setEditTokoForm({ ...editTokoForm, alamat: e.target.value })} placeholder="—" /></div>
             <div className="space-y-1.5"><Label>Kontak</Label><Input value={editTokoForm.kontak} onChange={(e) => setEditTokoForm({ ...editTokoForm, kontak: e.target.value })} placeholder="—" /></div>
             <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" min="1" value={editTokoForm.frekuensiVisit} onChange={(e) => setEditTokoForm({ ...editTokoForm, frekuensiVisit: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Jarak Workshop (km)</Label><Input type="number" min="0" step="0.1" value={editTokoForm.jarakKm} onChange={(e) => setEditTokoForm({ ...editTokoForm, jarakKm: e.target.value })} placeholder="kosong = belum tahu" /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditToko(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
               disabled={!editToko || !editTokoForm.namaToko.trim() || Number(editTokoForm.frekuensiVisit) < 1 || updateToko.isPending}
-              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit) } })}
+              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit), jarakKm: editTokoForm.jarakKm.trim() === '' ? null : Math.max(0, Number(editTokoForm.jarakKm) || 0) } })}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
             </Button>

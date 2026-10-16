@@ -2,16 +2,20 @@
 
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { fetcher, postJson } from '@/lib/api'
+import { fetcher, postJson, type BankKode } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import HistoryInput from '@/components/history-input'
+import CsvImportDialog from '@/components/csv-import-dialog'
+import { useAppStore } from '@/lib/store'
 import { useToast } from '@/hooks/use-toast'
-import { SearchCheck, PackageX, Database, Sparkles, Loader2, X } from 'lucide-react'
+import { SearchCheck, PackageX, Database, Sparkles, Loader2, X, Copy, Check, BookMarked, Plus, Upload, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface HasilCari {
@@ -92,7 +96,108 @@ export default function SparepartFinderView() {
     }
   }
 
+  // ===== Bank Kode Produsen — semua kode rumit, siap dipanggil + disalin =====
+  // Terisi otomatis dari katalog, balasan produsen di tiket, order & CSV.
+  const { role } = useAppStore()
+  const [bankQ, setBankQ] = useState('')
+  const [bankHasil, setBankHasil] = useState<{ total: number; totalBank: number; items: BankKode[] } | null>(null)
+  const [bankLoading, setBankLoading] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [bankCodes, setBankCodes] = useState<string[]>([])
+  const [tambahOpen, setTambahOpen] = useState(false)
+  const [formKode, setFormKode] = useState({ kode: '', nama: '', brand: '', produsen: '', catatan: '' })
+  const muatBank = async (q: string) => {
+    setBankLoading(true)
+    try {
+      const res = await fetcher<{ total: number; totalBank: number; items: BankKode[] }>(
+        `/api/bank-kode?q=${encodeURIComponent(q.trim())}&take=50`
+      )
+      setBankHasil(res)
+    } catch (e) {
+      toast({ title: 'Bank Kode gagal dimuat', description: (e as Error).message, variant: 'destructive' })
+    } finally {
+      setBankLoading(false)
+    }
+  }
+  const sinkronMut = useMutation({
+    mutationFn: () => postJson<{ baru: number; dilengkapi: number; total: number }>('/api/bank-kode/sinkron', { aktor: role }),
+    onSuccess: (r) => {
+      toast({ title: 'Bank Kode tersinkron', description: `${r.baru} kode baru, ${r.dilengkapi} dilengkapi (total ${r.total}).` })
+      void muatBank(bankQ)
+    },
+    onError: (e: Error) => toast({ title: 'Sinkron gagal', description: e.message, variant: 'destructive' }),
+  })
+  const tambahMut = useMutation({
+    mutationFn: () => postJson('/api/bank-kode', { ...formKode, aktor: role }),
+    onSuccess: () => {
+      setTambahOpen(false)
+      setFormKode({ kode: '', nama: '', brand: '', produsen: '', catatan: '' })
+      toast({ title: 'Kode tercatat', description: 'Kode produsen masuk Bank Kode dan siap dipakai.' })
+      void muatBank(bankQ)
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menambah kode', description: e.message, variant: 'destructive' }),
+  })
+  // ===== Tanya AI — kebutuhan bebas → AI memilih dari Bank Kode =====
+  interface AiKode {
+    rekomendasi: { kode: string; alasan: string }[]
+    catatan: string
+    model: string
+  }
+  const [aiButuh, setAiButuh] = useState('')
+  const [aiKode, setAiKode] = useState<AiKode | null>(null)
+  const aiKodeMut = useMutation({
+    mutationFn: () =>
+      postJson<AiKode>('/api/ai/cari-kode', {
+        butuh: aiButuh.trim(),
+        kandidat: (bankHasil?.items ?? []).slice(0, 15).map((b) => ({
+          kode: b.kode,
+          nama: b.namaPart,
+          brand: b.brandKompatibel ?? '',
+          produsen: b.produsen ?? '',
+        })),
+      }),
+    onSuccess: (r) => {
+      setAiKode(r)
+      toast({ title: 'Jawaban AI diterima', description: `${r.rekomendasi.length} kode disarankan (${r.model}).` })
+    },
+    onError: (e: Error) => toast({ title: 'Tanya AI gagal', description: e.message, variant: 'destructive' }),
+  })
+  const SUMBER_CLS: Record<string, string> = {
+    PRODUSEN: 'border-violet-300 bg-violet-50 text-violet-700',
+    KATALOG: 'border-teal-300 bg-teal-50 text-teal-700',
+    CSV: 'border-sky-300 bg-sky-50 text-sky-700',
+    MANUAL: 'border-amber-300 bg-amber-50 text-amber-700',
+    WORKSHOP: 'border-orange-300 bg-orange-50 text-orange-700',
+  }
+
   const skorMax = Math.max(1, ...(hasil?.hasil.map((h) => h.skor) ?? [1]))
+
+  // ===== Salin kode — satu ketuk langsung copy-paste ke tiket/order =====
+  const [disalin, setDisalin] = useState<string | null>(null)
+  const salinKode = async (kode: string) => {
+    const teks = kode.trim()
+    if (!teks) return
+    try {
+      await navigator.clipboard.writeText(teks)
+    } catch {
+      // Fallback untuk iframe / konteks non-secure (clipboard API diblokir)
+      const ta = document.createElement('textarea')
+      ta.value = teks
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      try {
+        document.execCommand('copy')
+      } catch {
+        // abaikan — toast tetap memberi tahu kode yang dimaksud
+      }
+      ta.remove()
+    }
+    setDisalin(teks)
+    toast({ title: 'Kode tersalin', description: `${teks} siap ditempel ke tiket / order.` })
+    setTimeout(() => setDisalin((d) => (d === teks ? null : d)), 1500)
+  }
 
   return (
     <div className="space-y-4">
@@ -133,6 +238,222 @@ export default function SparepartFinderView() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* ===== Bank Kode Produsen — registry kode rumit + Powered AI ===== */}
+      <Card className="border-violet-200">
+        <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
+          <div>
+            <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+              <BookMarked className="h-4 w-4 text-violet-600" /> Bank Kode Produsen
+              <Badge variant="outline" className="border-violet-300 text-[10px] text-violet-700">Powered AI</Badge>
+              {bankHasil && (
+                <Badge variant="outline" className="border-slate-300 text-[10px] text-slate-600">
+                  {bankHasil.totalBank} kode terdaftar
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Semua kode yang pernah masuk aplikasi + kode baru rilis produsen via CSV — cari, tanya AI, salin, tempel ke tiket.
+            </CardDescription>
+          </div>
+          <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-[11px]"
+              disabled={sinkronMut.isPending}
+              onClick={() => sinkronMut.mutate()}
+              title="Tarik semua kode dari katalog, tiket & order ke bank"
+            >
+              {sinkronMut.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <RefreshCw className="mr-1 h-3 w-3" />}
+              Sinkronkan
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 text-[11px]"
+              onClick={() => {
+                void fetcher<{ items: BankKode[] }>('/api/bank-kode?take=200')
+                  .then((r) => {
+                    setBankCodes(r.items.map((b) => b.kode))
+                    setImportOpen(true)
+                  })
+                  .catch((e: Error) => toast({ title: 'Gagal membuka import', description: e.message, variant: 'destructive' }))
+              }}
+              title="Upload CSV kode baru rilis produsen"
+            >
+              <Upload className="mr-1 h-3 w-3" /> Import CSV
+            </Button>
+            <Button size="sm" className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700" onClick={() => setTambahOpen(true)} title="Catat satu kode manual">
+              <Plus className="mr-1 h-3 w-3" /> Tambah
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex flex-1 gap-2">
+              <Input
+                value={bankQ}
+                onChange={(e) => setBankQ(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && void muatBank(bankQ)}
+                placeholder="Cari kode / nama / brand / produsen…"
+                className="h-8 text-xs"
+                aria-label="Cari bank kode"
+              />
+              <Button size="sm" variant="outline" className="h-8 shrink-0" disabled={bankLoading} onClick={() => void muatBank(bankQ)}>
+                {bankLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Cari'}
+              </Button>
+            </div>
+            <div className="flex flex-1 gap-2">
+              <Input
+                value={aiButuh}
+                onChange={(e) => setAiButuh(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && aiButuh.trim() && !aiKodeMut.isPending && aiKodeMut.mutate()}
+                placeholder="Ceritakan kebutuhan kode… cth: kompresor Samsung 3/4 PK"
+                className="h-8 border-violet-300 text-xs"
+                aria-label="Tanya AI kebutuhan kode"
+              />
+              <Button
+                size="sm"
+                className="h-8 shrink-0 bg-violet-600 hover:bg-violet-700"
+                disabled={!aiButuh.trim() || aiKodeMut.isPending}
+                onClick={() => aiKodeMut.mutate()}
+                title="AI memilih kode dari Bank Kode"
+              >
+                {aiKodeMut.isPending ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Sparkles className="mr-1 h-3 w-3" />}
+                Tanya AI
+              </Button>
+            </div>
+          </div>
+
+          {aiKode && (
+            <div className="rounded-xl border border-violet-300 bg-violet-50/50 p-2.5">
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <p className="flex min-w-0 items-center gap-1.5 text-xs font-bold text-violet-800">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Jawaban AI · {aiKode.model}</span>
+                </p>
+                <Button size="sm" variant="ghost" className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:text-slate-700" onClick={() => setAiKode(null)} aria-label="Tutup jawaban AI">
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="space-y-1.5">
+                {aiKode.rekomendasi.map((r, i) => (
+                  <div key={r.kode} className="flex items-start gap-2 rounded-lg border border-violet-200 bg-white px-2.5 py-1.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">{i + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-mono text-[11px] font-bold text-slate-900">{r.kode}</p>
+                      {r.alasan && <p className="mt-0.5 text-[11px] italic leading-snug text-violet-800">{r.alasan}</p>}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 shrink-0 p-0 text-violet-500 hover:bg-violet-100 hover:text-violet-700"
+                      onClick={() => void salinKode(r.kode)}
+                      title={`Salin kode ${r.kode}`}
+                      aria-label={`Salin kode ${r.kode}`}
+                    >
+                      {disalin === r.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              {aiKode.catatan && <p className="mt-1.5 text-[11px] text-violet-800">{aiKode.catatan}</p>}
+            </div>
+          )}
+
+          {bankHasil ? (
+            bankHasil.items.length === 0 ? (
+              <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">
+                Tidak ada kode yang cocok — coba kata kunci lain, Sinkronkan, atau Import CSV kode baru produsen.
+              </p>
+            ) : (
+              <div className="max-h-72 overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-slate-50">
+                    <TableRow>
+                      <TableHead className="text-[10px]">Kode</TableHead>
+                      <TableHead className="text-[10px]">Nama</TableHead>
+                      <TableHead className="hidden text-[10px] sm:table-cell">Brand / Produsen</TableHead>
+                      <TableHead className="text-[10px]">Sumber</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bankHasil.items.map((b) => (
+                      <TableRow key={b.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <p className="font-mono text-[11px] font-semibold text-slate-800">{b.kode}</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:bg-violet-50 hover:text-violet-700"
+                              onClick={() => void salinKode(b.kode)}
+                              title={`Salin kode ${b.kode}`}
+                              aria-label={`Salin kode ${b.kode}`}
+                            >
+                              {disalin === b.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="max-w-48 truncate text-xs text-slate-700" title={b.namaPart || undefined}>{b.namaPart || '—'}</p>
+                        </TableCell>
+                        <TableCell className="hidden max-w-44 truncate text-[11px] text-slate-500 sm:table-cell" title={[b.brandKompatibel, b.produsen].filter(Boolean).join(' · ') || undefined}>
+                          {[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ') || '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={cn('text-[9px]', SUMBER_CLS[b.sumber] ?? 'border-slate-300 bg-slate-50 text-slate-500')}>
+                            {b.sumber}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )
+          ) : (
+            <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">
+              Klik <span className="font-semibold">Cari</span> (kosongkan untuk semua), <span className="font-semibold">Sinkronkan</span> untuk menarik kode lama, atau <span className="font-semibold">Import CSV</span> untuk kode baru rilis produsen.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dialog tambah kode manual */}
+      <Dialog open={tambahOpen} onOpenChange={setTambahOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tambah Kode Produsen</DialogTitle>
+            <DialogDescription>Catat satu kode — mis. baru diterima via chat produsen. Hanya kode yang wajib.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3">
+            <div className="space-y-1.5"><Label>Kode *</Label><Input value={formKode.kode} onChange={(e) => setFormKode({ ...formKode, kode: e.target.value.toUpperCase() })} placeholder="cth: MX-88X-KLIMA" className="font-mono" /></div>
+            <div className="space-y-1.5"><Label>Nama Part</Label><Input value={formKode.nama} onChange={(e) => setFormKode({ ...formKode, nama: e.target.value })} placeholder="boleh kosong bila belum ada" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5"><Label>Brand</Label><Input value={formKode.brand} onChange={(e) => setFormKode({ ...formKode, brand: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Produsen</Label><Input value={formKode.produsen} onChange={(e) => setFormKode({ ...formKode, produsen: e.target.value })} /></div>
+            </div>
+            <div className="space-y-1.5"><Label>Catatan</Label><Input value={formKode.catatan} onChange={(e) => setFormKode({ ...formKode, catatan: e.target.value })} placeholder="cth: rilis katalog Q3" /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTambahOpen(false)}>Batal</Button>
+            <Button className="bg-violet-600 hover:bg-violet-700" disabled={!formKode.kode.trim() || tambahMut.isPending} onClick={() => tambahMut.mutate()}>
+              {tambahMut.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Plus className="mr-1 h-4 w-4" />} Simpan Kode
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog import CSV kode produsen */}
+      <CsvImportDialog
+        kind="bankkode"
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        existingCodes={bankCodes}
+        onSuccess={() => void muatBank(bankQ)}
+      />
 
       {mencari ? (
         <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
@@ -175,13 +496,23 @@ export default function SparepartFinderView() {
                     return (
                       <div key={r.kode} className="flex items-start gap-2 rounded-lg border border-violet-200 bg-white px-2.5 py-1.5">
                         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">{i + 1}</span>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="font-mono text-[11px] font-bold text-slate-900">
                             {r.kode} <span className="font-sans font-medium text-slate-600">· {ref?.namaPart ?? ''}</span>
                             {ref && ref.stokInventory === 0 && <span className="ml-1 rounded bg-rose-100 px-1 font-sans text-[9px] font-semibold text-rose-700">KOSONG</span>}
                           </p>
                           {r.alasan && <p className="mt-0.5 text-[11px] italic leading-snug text-violet-800">{r.alasan}</p>}
                         </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 w-6 shrink-0 p-0 text-violet-500 hover:bg-violet-100 hover:text-violet-700"
+                          onClick={() => void salinKode(r.kode)}
+                          title={`Salin kode ${r.kode}`}
+                          aria-label={`Salin kode ${r.kode}`}
+                        >
+                          {disalin === r.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        </Button>
                       </div>
                     )
                   })}
@@ -213,7 +544,19 @@ export default function SparepartFinderView() {
                     {hasil.hasil.map((h) => (
                       <TableRow key={h.sparepartId}>
                         <TableCell>
-                          <p className="font-mono text-[11px] font-semibold text-slate-800">{h.kodePart}</p>
+                          <div className="flex items-center gap-1">
+                            <p className="font-mono text-[11px] font-semibold text-slate-800">{h.kodePart}</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:bg-teal-50 hover:text-teal-700"
+                              onClick={() => void salinKode(h.kodePart)}
+                              title={`Salin kode ${h.kodePart}`}
+                              aria-label={`Salin kode ${h.kodePart}`}
+                            >
+                              {disalin === h.kodePart ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                            </Button>
+                          </div>
                           {(h.brandKompatibel?.trim() || h.supplier?.trim()) && (
                             <p className="max-w-36 truncate text-[10px] text-slate-400" title={[h.brandKompatibel, h.supplier].filter(Boolean).join(' · ')}>
                               {[h.brandKompatibel?.trim(), h.supplier?.trim()].filter(Boolean).join(' · ')}

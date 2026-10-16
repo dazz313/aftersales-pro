@@ -31,14 +31,14 @@ export function AddTokoDialog({ open, onOpenChange }: { open: boolean; onOpenCha
   const { toast } = useToast()
   const { role } = useAppStore()
   const invalidate = useInvalidate()
-  const [newToko, setNewToko] = useState({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
+  const [newToko, setNewToko] = useState({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '' })
 
   const addToko = useMutation({
-    mutationFn: () => postJson('/api/toko', { ...newToko, frekuensiVisit: Number(newToko.frekuensiVisit), aktor: role }),
+    mutationFn: () => postJson('/api/toko', { ...newToko, frekuensiVisit: Number(newToko.frekuensiVisit), jarakKm: newToko.jarakKm.trim() === '' ? null : Math.max(0, Number(newToko.jarakKm) || 0), aktor: role }),
     onSuccess: () => {
       invalidate(['toko', 'dashboard', 'alerts'])
       onOpenChange(false)
-      setNewToko({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14' })
+      setNewToko({ kodeToko: '', namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '' })
       toast({ title: 'Toko teregistrasi', description: 'Barcode toko otomatis dibuat untuk identifikasi kunjungan.' })
     },
     onError: (e: Error) => toast({ title: 'Gagal menambah toko', description: e.message, variant: 'destructive' }),
@@ -57,6 +57,7 @@ export function AddTokoDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="qa-alamat">Alamat</Label><HistoryInput historyKey="toko-alamat" id="qa-alamat" value={newToko.alamat} onChange={(e) => setNewToko({ ...newToko, alamat: e.target.value })} /></div>
           <div className="space-y-1.5"><Label htmlFor="qa-kontak">Kontak</Label><Input id="qa-kontak" value={newToko.kontak} onChange={(e) => setNewToko({ ...newToko, kontak: e.target.value })} placeholder="021-xxx / 08xx" /></div>
           <div className="space-y-1.5"><Label htmlFor="qa-siklus">Siklus Visit (hari)</Label><Input id="qa-siklus" type="number" value={newToko.frekuensiVisit} onChange={(e) => setNewToko({ ...newToko, frekuensiVisit: e.target.value })} /></div>
+          <div className="space-y-1.5"><Label htmlFor="qa-jarak">Jarak Workshop (km)</Label><Input id="qa-jarak" type="number" min="0" step="0.1" value={newToko.jarakKm} onChange={(e) => setNewToko({ ...newToko, jarakKm: e.target.value })} placeholder="opsional" /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Batal</Button>

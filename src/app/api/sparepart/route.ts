@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
+import { catatBankKode } from '@/lib/bank-kode'
 
 // GET /api/sparepart - list sparepart + status ROP + hitungan pemakaian di tiket
 export async function GET() {
@@ -87,6 +88,13 @@ export async function POST(request: Request) {
       aktor: body.aktor,
     })
     await backupSparepartToGit('CREATE', part.kodePart, body.aktor)
+    await catatBankKode({
+      kode: part.kodePart,
+      namaPart: part.namaPart,
+      brandKompatibel: part.brandKompatibel,
+      produsen: part.supplier,
+      sumber: 'KATALOG',
+    })
     return NextResponse.json(part, { status: 201 })
   } catch (error) {
     console.error('Sparepart POST error:', error)
