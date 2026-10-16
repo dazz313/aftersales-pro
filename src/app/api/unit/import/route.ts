@@ -114,29 +114,37 @@ export async function POST(request: Request) {
     const brandRow = await db.pengaturan.findUnique({ where: { kunci: 'brand_daftar' } })
     const brandRules = parseBrandRules(brandRow?.nilai)
 
-    // Cek serial yang sudah ada di database (sekalian ambil merk/tgl untuk fallback auto)
+    // Cek serial yang sudah ada di database (kunci ternormalisasi + nama toko
+    // untuk trap dobel; sekalian ambil merk/tgl untuk fallback auto)
     const serials = pendingRows.filter((a) => a.data).map((a) => a.data!.insert.serialNumber)
     const existing = serials.length
-      ? await db.unitAsset.findMany({ where: { serialNumber: { in: serials } }, select: { serialNumber: true, merk: true, tglPembelian: true, tokoId: true } })
+      ? await db.unitAsset.findMany({ where: { serialNumber: { in: serials } }, select: { serialNumber: true, merk: true, tglPembelian: true, tokoId: true, toko: { select: { kodeToko: true, namaToko: true } } } })
       : []
-    const existingMap = new Map(existing.map((e) => [e.serialNumber, e]))
-    const existingSet = new Set(existing.map((e) => e.serialNumber))
+    const normSerial = (s: string) => s.trim().toUpperCase()
+    const existingByNorm = new Map(existing.map((e) => [normSerial(e.serialNumber), e]))
+    const tokoLabel = (t: { kodeToko: string; namaToko: string } | null) => (t ? `${t.kodeToko} — ${t.namaToko}` : 'tanpa toko')
 
     const toInsert: typeof pendingRows = []
     const toUpdate: typeof pendingRows = []
 
     for (const a of acc) {
       if (a.status !== 'pending' || !a.data) continue
-      if (existingSet.has(a.data.insert.serialNumber)) {
-        if (mode === 'update') toUpdate.push(a)
-        else {
-          a.status = 'skip'
-          a.message = `No. seri "${a.kode}" sudah terdaftar di database (mode: lewati)`
-          a.data = undefined
-        }
-      } else {
+      const hit = existingByNorm.get(normSerial(a.data.insert.serialNumber))
+      if (!hit) {
         toInsert.push(a)
+        continue
       }
+      if (mode === 'update') {
+        toUpdate.push(a)
+        continue
+      }
+      // Trap dobel: serial + toko sama persis → tolak langsung (tanpa UI khusus)
+      const tokoRowId = a.data.insert.tokoKey ? resolveToko(a.data.insert.tokoKey)?.id ?? null : null
+      a.status = 'skip'
+      a.message = (hit.tokoId ?? null) === tokoRowId
+        ? `No. seri "${a.kode}" sudah terdaftar di ${tokoLabel(hit.toko)} — input ganda ditolak (mode: lewati)`
+        : `No. seri "${a.kode}" sudah terdaftar di ${tokoLabel(hit.toko)} — periksa data, jangan input ulang (mode: lewati)`
+      a.data = undefined
     }
     const skipped = acc.filter((a) => a.status === 'skip').length
 
@@ -156,7 +164,7 @@ export async function POST(request: Request) {
         statusGaransi = d.statusGaransi as 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'
       } else {
         // Kolom status kosong: stok toko (ada toko) → STOK_TOKO, else deteksi merk+tgl
-        const prev = existingMap.get(a.data!.insert.serialNumber)
+        const prev = existingByNorm.get(normSerial(a.data!.insert.serialNumber))
         const tokoEff = d.tokoKey ? resolveToko(d.tokoKey) : null
         if (tokoEff || (!d.tokoKey && prev?.tokoId)) {
           statusGaransi = 'STOK_TOKO'

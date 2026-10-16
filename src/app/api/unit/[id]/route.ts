@@ -70,6 +70,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.tglPembelian !== undefined) {
       data.tglPembelian = body.tglPembelian ? new Date(body.tglPembelian) : null
     }
+    // Koreksi tanggal input registrasi (backdate susulan / salah tanggal)
+    if (body.tglInput !== undefined && body.tglInput !== null && body.tglInput !== '') {
+      const parsed = new Date(body.tglInput)
+      const batas = new Date()
+      batas.setDate(batas.getDate() + 1)
+      batas.setHours(23, 59, 59, 999)
+      if (Number.isNaN(parsed.getTime()) || parsed > batas) {
+        return NextResponse.json({ error: 'Tanggal input tidak valid atau melebihi batas' }, { status: 400 })
+      }
+      data.createdAt = parsed
+    }
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'Tidak ada perubahan data' }, { status: 400 })
     }

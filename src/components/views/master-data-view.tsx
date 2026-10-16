@@ -65,7 +65,16 @@ export default function MasterDataView() {
   const [custOpen, setCustOpen] = useState(false)
   const [stickerToko, setStickerToko] = useState<Toko | null>(null)
   const [unitOpen, setUnitOpen] = useState(false)
-  const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
+  const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
+  // Buka dialog registrasi — default tanggal input = hari ini (bisa dimundurkan untuk susulan)
+  const openUnitRegistrasi = () => {
+    if (!newUnit.tglInput) {
+      const d = new Date()
+      const p = (n: number) => String(n).padStart(2, '0')
+      setNewUnit({ ...newUnit, tglInput: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` })
+    }
+    setUnitOpen(true)
+  }
   const [qrUnit, setQrUnit] = useState<UnitAsset | null>(null)
   const [userOpen, setUserOpen] = useState(false)
   const [newUser, setNewUser] = useState({ nama: '', email: '', username: '', kodeTeknisi: '', password: '', role: 'TEKNISI', noWa: '', wilayahKerja: '' })
@@ -87,7 +96,7 @@ export default function MasterDataView() {
   const [editUnit, setEditUnit] = useState<UnitAsset | null>(null)
   // Hapus unit (koreksi kesalahan input registrasi)
   const [deleteUnit, setDeleteUnit] = useState<UnitAsset | null>(null)
-  const [editUnitForm, setEditUnitForm] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
+  const [editUnitForm, setEditUnitForm] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
   // Quick input kode+nama part dari Master Data → tiket + otomatis PROSES
   const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
   // Multi-part: 1 unit bisa butuh >1 kode+nama part berbeda — tiap baris satu
@@ -125,8 +134,8 @@ export default function MasterDataView() {
   }, [navIntent, clearNavIntent])
 
   const addUnit = useMutation({
-    mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, tglPembelian: newUnit.tokoId ? null : newUnit.tglPembelian || null, aktor: role }),
-    onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' }); setUnitGaransiAuto(true); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
+    mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, tglPembelian: newUnit.tokoId ? null : newUnit.tglPembelian || null, tglInput: newUnit.tglInput ? new Date(newUnit.tglInput).toISOString() : undefined, aktor: role }),
+    onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' }); setUnitGaransiAuto(true); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const addUser = useMutation({
@@ -175,6 +184,7 @@ export default function MasterDataView() {
       customerId: u.customerId ? String(u.customerId) : '',
       statusGaransi: u.statusGaransi,
       tglPembelian: u.tglPembelian ? new Date(u.tglPembelian).toISOString().slice(0, 10) : '',
+      tglInput: u.createdAt ? new Date(u.createdAt).toISOString().slice(0, 10) : '',
     })
   }
   const openInputPart = (u: UnitAsset) => {
@@ -241,8 +251,10 @@ export default function MasterDataView() {
     onError: (e: Error) => toast({ title: 'Gagal mencatat part', description: e.message, variant: 'destructive' }),
   })
   const updateUnit = useMutation({
-    mutationFn: () =>
-      postJson(`/api/unit/${editUnit!.id}`, {
+    mutationFn: () => {
+      // Tanggal input hanya dikirim bila benar-benar diubah (agar jam aslinya tidak terpotong)
+      const tglInputAsli = editUnit!.createdAt ? new Date(editUnit!.createdAt).toISOString().slice(0, 10) : ''
+      return postJson(`/api/unit/${editUnit!.id}`, {
         serialNumber: editUnitForm.serialNumber.trim().toUpperCase(),
         modelUnit: editUnitForm.modelUnit.trim(),
         merk: editUnitForm.merk.trim(),
@@ -251,8 +263,12 @@ export default function MasterDataView() {
         customerId: editUnitForm.customerId ? Number(editUnitForm.customerId) : null,
         statusGaransi: editUnitForm.statusGaransi,
         tglPembelian: editUnitForm.tokoId ? null : editUnitForm.tglPembelian || null,
+        ...(editUnitForm.tglInput && editUnitForm.tglInput !== tglInputAsli
+          ? { tglInput: new Date(editUnitForm.tglInput).toISOString() }
+          : {}),
         aktor: role,
-      }, 'PATCH'),
+      }, 'PATCH')
+    },
     onSuccess: () => {
       invalidate(['units', 'toko', 'dashboard', 'service-tickets'])
       setEditUnit(null)
@@ -314,10 +330,31 @@ export default function MasterDataView() {
     () => (customerList ?? []).filter((c) => matchQuery([c.nama, c.noWa, c.alamat, ...c.unitAssets.map((u) => u.modelUnit)], cariCust)),
     [customerList, cariCust]
   )
+  // Kode sparepart per unit (dari semua tiket) — pemisah "sudah vs belum dapat part"
+  const partInfoByUnit = useMemo(() => {
+    const m = new Map<number, { count: number; codes: string[] }>()
+    for (const u of unitList ?? []) {
+      const codes: string[] = []
+      let count = 0
+      for (const t of u.serviceRequests ?? []) {
+        for (const p of t.parts ?? []) {
+          count += p.qty
+          const k = p.sparepart?.kodePart
+          if (k && !codes.includes(k)) codes.push(k)
+        }
+      }
+      m.set(u.id, { count, codes })
+    }
+    return m
+  }, [unitList])
   const unitTampil = useMemo(
-    () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.merk, u.nama, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi], cariUnit)),
-    [unitList, cariUnit]
+    () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.merk, u.nama, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi, ...(partInfoByUnit.get(u.id)?.codes ?? [])], cariUnit)),
+    [unitList, cariUnit, partInfoByUnit]
   )
+  // Pisahan: unit yang sudah dapat kode sparepart vs yang belum (default: belum)
+  const [unitPartTab, setUnitPartTab] = useState<'belum' | 'sudah'>('belum')
+  const unitBelumPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.count ?? 0) === 0), [unitTampil, partInfoByUnit])
+  const unitSudahPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.count ?? 0) > 0), [unitTampil, partInfoByUnit])
   // Unit terkunci (punya tiket) tidak bisa dicentang — server juga melewatinya
   const unitBisaHapus = (u: UnitAsset) => (u.serviceRequests ?? []).length === 0
   const toggleUnit = (id: number) =>
@@ -327,9 +364,9 @@ export default function MasterDataView() {
       else next.add(id)
       return next
     })
-  const toggleSemuaUnit = () =>
+  const toggleSemuaUnit = (list: UnitAsset[]) => () =>
     setUnitDipilih((prev) => {
-      const ids = unitTampil.filter(unitBisaHapus).map((u) => u.id)
+      const ids = list.filter(unitBisaHapus).map((u) => u.id)
       const semua = ids.length > 0 && ids.every((id) => prev.has(id))
       const next = new Set(prev)
       if (semua) ids.forEach((id) => next.delete(id))
@@ -339,6 +376,128 @@ export default function MasterDataView() {
   const userTampil = useMemo(
     () => (userList ?? []).filter((u) => matchQuery([u.nama, u.email, u.username, u.kodeTeknisi, u.noWa, u.wilayahKerja, u.role], cariUser)),
     [userList, cariUser]
+  )
+
+  // Tabel unit ringkas: scroll vertikal berbatas + header sticky agar tidak panjang ke bawah
+  const renderUnitTable = (list: UnitAsset[], emptyText: string) => (
+    <div className="max-h-[52vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-9 pr-0">
+              <Checkbox
+                aria-label="Pilih semua unit tampil yang bisa dihapus"
+                checked={list.filter(unitBisaHapus).length > 0 && list.filter(unitBisaHapus).every((u) => unitDipilih.has(u.id))}
+                onCheckedChange={toggleSemuaUnit(list)}
+              />
+            </TableHead>
+            <TableHead>Tanggal Input</TableHead>
+            <TableHead>Toko / Customer</TableHead>
+            <TableHead>Merk</TableHead>
+            <TableHead>Model / Tipe</TableHead>
+            <TableHead>Nomor Seri</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Kode Part</TableHead>
+            <TableHead className="text-right">Barcode</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {list.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={9} className="py-8 text-center text-sm text-slate-500">{emptyText}</TableCell>
+            </TableRow>
+          ) : list.map((u) => {
+            const info = partInfoByUnit.get(u.id) ?? { count: 0, codes: [] as string[] }
+            return (
+              <TableRow key={u.id} className={cn(unitDipilih.has(u.id) && 'bg-red-50/50')}>
+                <TableCell className="pr-0">
+                  <Checkbox
+                    aria-label={`Pilih unit ${u.serialNumber}`}
+                    checked={unitDipilih.has(u.id)}
+                    disabled={!unitBisaHapus(u)}
+                    title={!unitBisaHapus(u) ? 'Terkunci: sudah punya tiket service' : `Pilih unit ${u.serialNumber}`}
+                    onCheckedChange={() => toggleUnit(u.id)}
+                  />
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-xs text-slate-600" title="Tanggal input registrasi unit">
+                  {formatTanggal(u.createdAt)}
+                </TableCell>
+                <TableCell className="text-xs text-slate-700">
+                  {u.toko ? (
+                    <>
+                      <p className="font-medium text-slate-800">{u.toko.namaToko}</p>
+                      <p className="font-mono text-[10px] text-slate-400">{u.toko.kodeToko}</p>
+                    </>
+                  ) : u.customer ? (
+                    <>
+                      <p className="font-medium text-slate-800">{u.customer.nama}</p>
+                      <p className="text-[10px] text-slate-400">Perorangan{u.customer.noWa ? ` · ${u.customer.noWa}` : ''}</p>
+                    </>
+                  ) : (
+                    <span className="text-slate-400">-</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-xs text-slate-700">{u.merk?.trim() || <span className="text-slate-400">-</span>}</TableCell>
+                <TableCell className="text-xs font-medium text-slate-800">
+                  {u.modelUnit}
+                  {u.nama?.trim() && <p className="text-[10px] font-normal text-slate-500">{u.nama.trim()}</p>}
+                </TableCell>
+                <TableCell className="font-mono text-[11px] font-semibold text-slate-900">{u.serialNumber}</TableCell>
+                <TableCell>
+                  <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
+                    {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
+                  </Badge>
+                  {u.tglPembelian && (
+                    <p className="mt-0.5 whitespace-nowrap text-[10px] text-slate-500" title="Tgl pembelian — awal masa garansi">
+                      {formatTanggal(u.tglPembelian)}
+                    </p>
+                  )}
+                </TableCell>
+                <TableCell className="max-w-44">
+                  {info.codes.length === 0 ? (
+                    <span className="text-[11px] text-slate-400">–</span>
+                  ) : (
+                    <div className="flex flex-wrap gap-1" title={info.codes.join(', ')}>
+                      {info.codes.slice(0, 3).map((k) => (
+                        <Badge key={k} variant="outline" className="font-mono text-[9px] text-teal-700">{k}</Badge>
+                      ))}
+                      {info.codes.length > 3 && <span className="text-[9px] text-slate-400">+{info.codes.length - 3}</span>}
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    {(() => {
+                      const aktif = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST' || t.status === 'PROSES')
+                      return aktif ? (
+                        <Badge variant="outline" className="border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
+                          {aktif.noTiket}
+                        </Badge>
+                      ) : (
+                        <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
+                          <PackagePlus className="mr-1 h-3 w-3" /> Part
+                        </Button>
+                      )
+                    })()}
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    {(u.serviceRequests ?? []).length === 0 && (
+                      <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-400 hover:text-red-600" onClick={() => setDeleteUnit(u)} aria-label={`Hapus ${u.serialNumber}`} title="Hapus unit (koreksi kesalahan input registrasi)">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setQrUnit(u)}>
+                      <Barcode className="mr-1 h-3 w-3" /> Stiker
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </div>
   )
 
   return (
@@ -509,12 +668,12 @@ export default function MasterDataView() {
               <Button size="sm" variant="outline" onClick={() => setImportUnitOpen(true)}>
                 <Upload className="mr-1 h-4 w-4" /> Import CSV
               </Button>
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setUnitOpen(true)}><Plus className="mr-1 h-4 w-4" /> Registrasi Unit</Button>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={openUnitRegistrasi}><Plus className="mr-1 h-4 w-4" /> Registrasi Unit</Button>
             </div>
           </CardHeader>
           <CardContent>
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari toko / customer / merk / model / seri / status…" className="max-w-xs flex-1" resultCount={unitTampil.length} />
+              <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari toko / customer / merk / model / seri / kode part…" className="max-w-xs flex-1" resultCount={unitTampil.length} />
               {unitDipilih.size > 0 && (
                 <>
                   <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{unitDipilih.size} dipilih</Badge>
@@ -530,104 +689,18 @@ export default function MasterDataView() {
             {unitLoading ? (
               <div className="space-y-2">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-9 pr-0">
-                        <Checkbox
-                          aria-label="Pilih semua unit tampil yang bisa dihapus"
-                          checked={unitTampil.filter(unitBisaHapus).length > 0 && unitTampil.filter(unitBisaHapus).every((u) => unitDipilih.has(u.id))}
-                          onCheckedChange={toggleSemuaUnit}
-                        />
-                      </TableHead>
-                      <TableHead>Tanggal Input</TableHead>
-                      <TableHead>Toko / Customer</TableHead>
-                      <TableHead>Merk</TableHead>
-                      <TableHead>Model / Tipe</TableHead>
-                      <TableHead>Nomor Seri</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Barcode</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {unitTampil.map((u) => (
-                      <TableRow key={u.id} className={cn(unitDipilih.has(u.id) && 'bg-red-50/50')}>
-                        <TableCell className="pr-0">
-                          <Checkbox
-                            aria-label={`Pilih unit ${u.serialNumber}`}
-                            checked={unitDipilih.has(u.id)}
-                            disabled={!unitBisaHapus(u)}
-                            title={!unitBisaHapus(u) ? 'Terkunci: sudah punya tiket service' : `Pilih unit ${u.serialNumber}`}
-                            onCheckedChange={() => toggleUnit(u.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-xs text-slate-600" title="Tanggal input registrasi unit">
-                          {formatTanggal(u.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-700">
-                          {u.toko ? (
-                            <>
-                              <p className="font-medium text-slate-800">{u.toko.namaToko}</p>
-                              <p className="font-mono text-[10px] text-slate-400">{u.toko.kodeToko}</p>
-                            </>
-                          ) : u.customer ? (
-                            <>
-                              <p className="font-medium text-slate-800">{u.customer.nama}</p>
-                              <p className="text-[10px] text-slate-400">Perorangan{u.customer.noWa ? ` · ${u.customer.noWa}` : ''}</p>
-                            </>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-700">{u.merk?.trim() || <span className="text-slate-400">-</span>}</TableCell>
-                        <TableCell className="text-xs font-medium text-slate-800">
-                          {u.modelUnit}
-                          {u.nama?.trim() && <p className="text-[10px] font-normal text-slate-500">{u.nama.trim()}</p>}
-                        </TableCell>
-                        <TableCell className="font-mono text-[11px] font-semibold text-slate-900">{u.serialNumber}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
-                            {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
-                          </Badge>
-                          {u.tglPembelian && (
-                            <p className="mt-0.5 whitespace-nowrap text-[10px] text-slate-500" title="Tgl pembelian — awal masa garansi">
-                              {formatTanggal(u.tglPembelian)}
-                            </p>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            {(() => {
-                              const aktif = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST' || t.status === 'PROSES')
-                              return aktif ? (
-                                <Badge variant="outline" className="border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
-                                  {aktif.noTiket}
-                                </Badge>
-                              ) : (
-                                <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
-                                  <PackagePlus className="mr-1 h-3 w-3" /> Part
-                                </Button>
-                              )
-                            })()}
-                            <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
-                              <Pencil className="h-3 w-3" />
-                            </Button>
-                            {(u.serviceRequests ?? []).length === 0 && (
-                              <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-400 hover:text-red-600" onClick={() => setDeleteUnit(u)} aria-label={`Hapus ${u.serialNumber}`} title="Hapus unit (koreksi kesalahan input registrasi)">
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            )}
-                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => setQrUnit(u)}>
-                              <Barcode className="mr-1 h-3 w-3" /> Stiker
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <Tabs value={unitPartTab} onValueChange={(v) => setUnitPartTab(v as typeof unitPartTab)}>
+                <TabsList>
+                  <TabsTrigger value="belum" className="text-xs">Belum Ada Part ({unitBelumPart.length})</TabsTrigger>
+                  <TabsTrigger value="sudah" className="text-xs">Sudah Ada Part ({unitSudahPart.length})</TabsTrigger>
+                </TabsList>
+                <TabsContent value="belum">
+                  {renderUnitTable(unitBelumPart, 'Semua unit sudah dapat kode part — tidak ada yang belum.')}
+                </TabsContent>
+                <TabsContent value="sudah">
+                  {renderUnitTable(unitSudahPart, 'Belum ada unit yang dapat kode part.')}
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
@@ -735,6 +808,11 @@ export default function MasterDataView() {
               </Select>
             </div>
             <div className="space-y-1.5"><Label>Tgl Pembelian {newUnit.tokoId ? '— nonaktif (stok toko)' : ''}</Label><Input type="date" value={newUnit.tokoId ? '' : newUnit.tglPembelian} onChange={(e) => setUnitTgl(e.target.value)} disabled={!!newUnit.tokoId} /></div>
+            <div className="space-y-1.5">
+              <Label>Tanggal Input</Label>
+              <Input type="date" value={newUnit.tglInput} onChange={(e) => setNewUnit({ ...newUnit, tglInput: e.target.value })} aria-label="Tanggal input registrasi" />
+              <p className="text-[11px] text-slate-500">Boleh diisi mundur sesuai tanggal postingan WA (input susulan).</p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUnitOpen(false)}>Batal</Button>
@@ -985,6 +1063,10 @@ export default function MasterDataView() {
               </Select>
             </div>
             <div className="space-y-1.5"><Label>Tgl Pembelian {editUnitForm.tokoId ? '— nonaktif (stok toko)' : ''}</Label><Input type="date" value={editUnitForm.tokoId ? '' : editUnitForm.tglPembelian} onChange={(e) => setEditUnitForm({ ...editUnitForm, tglPembelian: e.target.value })} disabled={!!editUnitForm.tokoId} /></div>
+            <div className="space-y-1.5">
+              <Label>Tanggal Input</Label>
+              <Input type="date" value={editUnitForm.tglInput} onChange={(e) => setEditUnitForm({ ...editUnitForm, tglInput: e.target.value })} aria-label="Tanggal input registrasi" />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditUnit(null)}>Batal</Button>

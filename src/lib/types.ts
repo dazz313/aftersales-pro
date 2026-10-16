@@ -89,7 +89,7 @@ export interface UnitAsset {
   createdAt: string
   toko?: { id: number; kodeToko: string; namaToko: string } | null
   customer?: { id: number; nama: string; noWa: string | null } | null
-  serviceRequests?: { id: number; noTiket: string; status: string }[]
+  serviceRequests?: { id: number; noTiket: string; status: string; parts?: { qty: number; sparepart?: { kodePart: string } | null }[] }[]
   barcodeData?: string
 }
 
