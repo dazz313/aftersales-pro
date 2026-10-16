@@ -103,14 +103,14 @@ async function main() {
   // 5 komponen utama: kodePart, namaPart, brandKompatibel, stokJual + stokGaransi, supplier
   const sparepartList = await Promise.all(
     [
-      { kodePart: 'PRT-CMP-01', namaPart: 'Kompresor 1/2 PK R134a', brandKompatibel: 'Samsung, LG', supplier: 'PT Sinar Elektronik', stokJual: 6, stokGaransi: 2, stokInventory: 8, reorderLimit: 3, hargaKlaim: 850000 },
-      { kodePart: 'PRT-CMP-02', namaPart: 'Kompresor 1 PK R32 Inverter', brandKompatibel: 'Daikin, Panasonic', supplier: 'PT Sinar Elektronik', stokJual: 2, stokGaransi: 0, stokInventory: 2, reorderLimit: 4, hargaKlaim: 1450000 }, // ROP ALERT (ALT-03)
-      { kodePart: 'PRT-FAN-11', namaPart: 'Motor Fan Indoor 30W', brandKompatibel: 'Sharp, Polytron', supplier: 'CV Sparepart Jaya', stokJual: 12, stokGaransi: 3, stokInventory: 15, reorderLimit: 5, hargaKlaim: 320000 },
-      { kodePart: 'PRT-PCB-A4', namaPart: 'PCB Main AC Split 1 PK', brandKompatibel: 'Samsung', supplier: 'PT Sinar Elektronik', stokJual: 0, stokGaransi: 0, stokInventory: 0, reorderLimit: 2, hargaKlaim: 780000 }, // KOSONG
-      { kodePart: 'PRT-THR-07', namaPart: 'Thermistor NTC 10K', brandKompatibel: 'Universal', supplier: 'CV Sparepart Jaya', stokJual: 20, stokGaransi: 5, stokInventory: 25, reorderLimit: 10, hargaKlaim: 45000 },
-      { kodePart: 'PRT-REM-U2', namaPart: 'Remote Universal AC', brandKompatibel: 'Universal', supplier: 'Toko Grosir Elektro', stokJual: 4, stokGaransi: 0, stokInventory: 4, reorderLimit: 5, hargaKlaim: 85000 }, // ROP ALERT (ALT-03)
-      { kodePart: 'PRT-KPT-3D', namaPart: 'Kapasitor 35uF 450V', brandKompatibel: 'LG, Aqua', supplier: 'CV Sparepart Jaya', stokJual: 15, stokGaransi: 3, stokInventory: 18, reorderLimit: 6, hargaKlaim: 65000 },
-      { kodePart: 'PRT-ESP-09', namaPart: 'Evaaporator Coil 9000BTU', brandKompatibel: 'Daikin', supplier: 'PT Sinar Elektronik', stokJual: 1, stokGaransi: 0, stokInventory: 1, reorderLimit: 2, hargaKlaim: 950000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-DNM-01', namaPart: 'Dinamo Kipas Angin 16 inch', brandKompatibel: 'Miyako', supplier: 'PT Sinar Elektronik', stokJual: 6, stokGaransi: 2, stokInventory: 8, reorderLimit: 3, hargaKlaim: 185000 },
+      { kodePart: 'PRT-DNM-02', namaPart: 'Dinamo Kipas Angin 12 inch', brandKompatibel: 'Miyako, Rinnai', supplier: 'PT Sinar Elektronik', stokJual: 2, stokGaransi: 0, stokInventory: 2, reorderLimit: 4, hargaKlaim: 145000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-BLG-11', namaPart: 'Baling-Baling Kipas Angin 16 inch', brandKompatibel: 'Miyako', supplier: 'CV Sparepart Jaya', stokJual: 12, stokGaransi: 3, stokInventory: 15, reorderLimit: 5, hargaKlaim: 75000 },
+      { kodePart: 'PRT-SLP-A4', namaPart: 'Seal Pompa Air 125 Watt', brandKompatibel: 'Shimizu', supplier: 'PT Sinar Elektronik', stokJual: 0, stokGaransi: 0, stokInventory: 0, reorderLimit: 2, hargaKlaim: 95000 }, // KOSONG
+      { kodePart: 'PRT-TMR-07', namaPart: 'Timer Kompor Gas 2 Tungku', brandKompatibel: 'Rinnai', supplier: 'CV Sparepart Jaya', stokJual: 20, stokGaransi: 5, stokInventory: 25, reorderLimit: 10, hargaKlaim: 45000 },
+      { kodePart: 'PRT-PMT-U2', namaPart: 'Pemantik Kompor Gas', brandKompatibel: 'Rinnai', supplier: 'Toko Grosir Elektro', stokJual: 4, stokGaransi: 0, stokInventory: 4, reorderLimit: 5, hargaKlaim: 35000 }, // ROP ALERT (ALT-03)
+      { kodePart: 'PRT-KPS-3D', namaPart: 'Kapasitor Kipas 1.5uF 450V', brandKompatibel: 'Miyako, Shimizu', supplier: 'CV Sparepart Jaya', stokJual: 15, stokGaransi: 3, stokInventory: 18, reorderLimit: 6, hargaKlaim: 25000 },
+      { kodePart: 'PRT-IMP-09', namaPart: 'Impeller Pompa Air 125 Watt', brandKompatibel: 'Shimizu', supplier: 'PT Sinar Elektronik', stokJual: 1, stokGaransi: 0, stokInventory: 1, reorderLimit: 2, hargaKlaim: 120000 }, // ROP ALERT (ALT-03)
     ].map((s) => prisma.masterSparepart.create({ data: s }))
   )
   console.log('✅ Master Sparepart:', sparepartList.length)
@@ -118,16 +118,16 @@ async function main() {
   // ============ UNIT ASSET (dengan serial number) ============
   const unitList = await Promise.all(
     [
-      { serialNumber: 'SN-ACSP-2023-00101', modelUnit: 'AC Split 1 PK Inverter SE-9000', merk: 'Samsung', nama: 'AC Ruang Tamu', tokoId: tokoList[0].id, customerId: customerList[0].id, statusGaransi: 'STOK_TOKO', tglPembelian: daysAgo(200) },
-      { serialNumber: 'SN-ACSP-2023-00102', modelUnit: 'AC Split 1 PK Inverter SE-9000', merk: 'Samsung', nama: '', tokoId: tokoList[0].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(800) },
-      { serialNumber: 'SN-ACSP-2024-00203', modelUnit: 'AC Split 1/2 PK SE-5000', merk: 'LG', nama: 'AC Kamar Utama', tokoId: tokoList[1].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(120) },
-      { serialNumber: 'SN-ACSP-2024-00204', modelUnit: 'AC Split 1/2 PK SE-5000', merk: 'LG', nama: '', tokoId: tokoList[1].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(90) },
-      { serialNumber: 'SN-CWAS-2022-00311', modelUnit: 'Chest Freezer 300L CF-30', merk: 'Aqua', nama: 'Freezer Dapur', tokoId: tokoList[2].id, customerId: customerList[4].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(1100) },
-      { serialNumber: 'SN-CWAS-2024-00312', modelUnit: 'Chest Freezer 200L CF-20', merk: 'Aqua', nama: '', tokoId: tokoList[2].id, customerId: customerList[5].id, statusGaransi: 'STOK_TOKO', tglPembelian: daysAgo(60) },
-      { serialNumber: 'SN-MESC-2023-00421', modelUnit: 'Mesin Cuci Front Load 8kg FL-80', merk: 'Polytron', nama: 'Mesin Cuci Rumah', tokoId: tokoList[3].id, customerId: customerList[0].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(300) },
-      { serialNumber: 'SN-MESC-2023-00422', modelUnit: 'Mesin Cuci Top Load 7kg TL-70', merk: 'Polytron', nama: '', tokoId: tokoList[4].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(700) },
-      { serialNumber: 'SN-ACSP-2024-00531', modelUnit: 'AC Split 1 PK Inverter SE-9000', merk: 'Daikin', nama: 'AC Kantor', tokoId: tokoList[5].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(45) },
-      { serialNumber: 'SN-ACSP-2024-00532', modelUnit: 'AC Standing Floor 5PK SF-500', merk: 'Daikin', nama: '', tokoId: tokoList[5].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(30) },
+      { serialNumber: 'SN-KPAS-2023-00101', modelUnit: 'Kipas Angin 16 inch K-1601', merk: 'Miyako', nama: 'Kipas Ruang Tamu', tokoId: tokoList[0].id, customerId: customerList[0].id, statusGaransi: 'STOK_TOKO', tglPembelian: daysAgo(200) },
+      { serialNumber: 'SN-KPAS-2023-00102', modelUnit: 'Kipas Angin 16 inch K-1601', merk: 'Miyako', nama: '', tokoId: tokoList[0].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(800) },
+      { serialNumber: 'SN-KPAS-2024-00203', modelUnit: 'Kipas Angin 12 inch K-1205', merk: 'Miyako', nama: 'Kipas Kamar Utama', tokoId: tokoList[1].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(120) },
+      { serialNumber: 'SN-KPAS-2024-00204', modelUnit: 'Kipas Angin 12 inch K-1205', merk: 'Rinnai', nama: '', tokoId: tokoList[1].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(90) },
+      { serialNumber: 'SN-PMPA-2022-00311', modelUnit: 'Pompa Air 125 Watt P-125', merk: 'Shimizu', nama: 'Pompa Sumur', tokoId: tokoList[2].id, customerId: customerList[4].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(1100) },
+      { serialNumber: 'SN-PMPA-2024-00312', modelUnit: 'Pompa Air 200 Watt P-200', merk: 'Shimizu', nama: '', tokoId: tokoList[2].id, customerId: customerList[5].id, statusGaransi: 'STOK_TOKO', tglPembelian: daysAgo(60) },
+      { serialNumber: 'SN-KMPR-2023-00421', modelUnit: 'Kompor Gas 2 Tungku KG-201', merk: 'Rinnai', nama: 'Kompor Dapur', tokoId: tokoList[3].id, customerId: customerList[0].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(300) },
+      { serialNumber: 'SN-KMPR-2023-00422', modelUnit: 'Kompor Gas 1 Tungku KG-101', merk: 'Rinnai', nama: '', tokoId: tokoList[4].id, customerId: customerList[1].id, statusGaransi: 'NON_GARANSI', tglPembelian: daysAgo(700) },
+      { serialNumber: 'SN-KPAS-2024-00531', modelUnit: 'Kipas Angin 16 inch K-1601', merk: 'Miyako', nama: 'Kipas Kantor', tokoId: tokoList[5].id, customerId: customerList[2].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(45) },
+      { serialNumber: 'SN-KPAS-2024-00532', modelUnit: 'Kipas Angin Dinding 16 inch W-1602', merk: 'Miyako', nama: '', tokoId: tokoList[5].id, customerId: customerList[3].id, statusGaransi: 'GARANSI', tglPembelian: daysAgo(30) },
     ].map((u) => prisma.unitAsset.create({ data: u }))
   )
   console.log('✅ Unit Asset:', unitList.length)
@@ -143,7 +143,7 @@ async function main() {
       sumberLaporan: 'KUNJUNGAN',
       lokasiUnit: 'WORKSHOP',
       penanganan: 'TARIK_WORKSHOP',
-      deskripsiKerusakan: 'AC tidak dingin, kompresor mati total saat dinyalakan',
+      deskripsiKerusakan: 'Kipas tidak berputar, dinamo mati total saat dinyalakan',
       slaFlag: false,
       biayaJasa: 150000,
       createdAt: daysAgo(2),
@@ -164,7 +164,7 @@ async function main() {
       sumberLaporan: 'LAPORAN_TOKO',
       lokasiUnit: 'TOKO',
       penanganan: 'TUNGGU_PART_TOKO',
-      deskripsiKerusakan: 'Freezer tidak membekui, evaporator berbunyi aneh',
+      deskripsiKerusakan: 'Pompa tidak menyedot, impeller berbunyi kasar',
       slaFlag: false,
       biayaJasa: 200000,
       createdAt: daysAgo(3),
@@ -186,7 +186,7 @@ async function main() {
       penanganan: 'TARIK_WORKSHOP',
       sttbDicabut: true,
       tglKembaliKeToko: daysAgo(10),
-      deskripsiKerusakan: 'Mesin cuci tidak bisa drainase, air keluar lambat',
+      deskripsiKerusakan: 'Kompor api kecil sebelah, timer tidak berfungsi',
       fotoNotaStempel: 'nota-stempel-sv-0003.jpg',
       biayaJasa: 180000,
       tglFinish: daysAgo(9),
@@ -204,7 +204,7 @@ async function main() {
       unitAssetId: unitList[7].id,
       status: 'FINISH',
       noSttb: 'STTB-20260920-0004',
-      deskripsiKerusakan: 'Mesin cuci bergetar hebat saat spin, bearing rusak',
+      deskripsiKerusakan: 'Api kompor merah dan berjelaga, pemantik lemah',
       fotoNotaStempel: 'nota-stempel-sv-0004.jpg',
       biayaJasa: 220000,
       tglFinish: daysAgo(14),
@@ -212,7 +212,7 @@ async function main() {
       tglKlaim: daysAgo(10),
       createdAt: daysAgo(18),
       parts: {
-        create: [{ sparepartId: sparepartList[6].id, qty: 2, statusPart: 'READY' }],
+        create: [{ sparepartId: sparepartList[5].id, qty: 2, statusPart: 'READY' }],
       },
     },
   })
@@ -224,7 +224,7 @@ async function main() {
       unitAssetId: unitList[2].id,
       status: 'FINISH',
       noSttb: 'STTB-20260905-0005',
-      deskripsiKerusakan: 'AC bocor dari unit indoor, selang drain tersumbat',
+      deskripsiKerusakan: 'Kipas goyang dan berderit, baling-baling retak',
       fotoNotaStempel: 'nota-stempel-sv-0005.jpg',
       biayaJasa: 120000,
       tglFinish: daysAgo(28),
@@ -243,7 +243,7 @@ async function main() {
       noTiket: 'SV-20261009-0006',
       unitAssetId: unitList[8].id,
       status: 'REQUEST',
-      deskripsiKerusakan: 'AC baru dibeli sudah bermasalah, remote tidak merespon',
+      deskripsiKerusakan: 'Kompor baru dibeli sudah bermasalah, pemantik tidak menyala',
       biayaJasa: 100000,
       createdAt: daysAgo(0),
       parts: {
@@ -262,11 +262,11 @@ async function main() {
   // ============ KUNJUNGAN TOKO ============
   await prisma.kunjungan.createMany({
     data: [
-      { tokoId: tokoList[0].id, teknisiId: teknisi1.id, tglKunjungan: daysAgo(3), catatanStokRusak: 'Ditemukan 2 unit AC display kipas berbunyi, direkomendasikan servis rutin.' },
-      { tokoId: tokoList[2].id, teknisiId: teknisi2.id, tglKunjungan: daysAgo(10), catatanStokRusak: 'Kondisi stok display baik. 1 freezer lama perlu pemeriksaan.' },
+      { tokoId: tokoList[0].id, teknisiId: teknisi1.id, tglKunjungan: daysAgo(3), catatanStokRusak: 'Ditemukan 2 unit kipas display berderit, direkomendasikan servis rutin.' },
+      { tokoId: tokoList[2].id, teknisiId: teknisi2.id, tglKunjungan: daysAgo(10), catatanStokRusak: 'Kondisi stok display baik. 1 pompa lama perlu pemeriksaan.' },
       { tokoId: tokoList[3].id, teknisiId: teknisi1.id, tglKunjungan: daysAgo(12), catatanStokRusak: 'Semua unit demo normal. Pelanggan minta jadwal pemasangan baru.' },
       { tokoId: tokoList[5].id, teknisiId: teknisi3.id, tglKunjungan: daysAgo(2), catatanStokRusak: 'Kunjungan rutin, tidak ada temuan kerusakan.' },
-      { tokoId: tokoList[4].id, teknisiId: teknisi3.id, tglKunjungan: daysAgo(9), catatanStokRusak: '1 unit mesin cuci display perlu penggantian kapasitor.' },
+      { tokoId: tokoList[4].id, teknisiId: teknisi3.id, tglKunjungan: daysAgo(9), catatanStokRusak: '1 unit kompor display perlu penggantian pemantik.' },
       { tokoId: tokoList[1].id, teknisiId: teknisi2.id, tglKunjungan: daysAgo(20), catatanStokRusak: 'Kunjungan terakhir, beberapa unit perlu pengecekan berkala.' },
     ],
   })
@@ -275,10 +275,10 @@ async function main() {
   // ============ WA MESSAGE (contoh riwayat) ============
   await prisma.waMessage.createMany({
     data: [
-      { pengirim: 'TOK-001 (Maju Jaya)', tipe: 'IN', pesan: '#LAPOR SN-ACSP-2023-00101 PRT-CMP-01 AC tidak dingin, kompresor mati total', meta: JSON.stringify({ noTiket: tiket1.noTiket }) },
-      { pengirim: 'WA-BOT', tipe: 'OUT', pesan: `Tiket #${tiket1.noTiket} Berhasil Terbuat. Part READY (Kompresor 1/2 PK R134a). Link STTB: /api/sttb/${tiket1.noSttb}`, meta: JSON.stringify({ noTiket: tiket1.noTiket, aksi: 'TIKET_DIBUAT' }) },
-      { pengirim: 'TOK-002 (Berkah Sentosa)', tipe: 'IN', pesan: '#LAPOR SN-CWAS-2022-00311 PRT-ESP-09 Freezer tidak membekui', meta: JSON.stringify({ noTiket: tiket2.noTiket }) },
-      { pengirim: 'WA-BOT', tipe: 'OUT', pesan: `Tiket #${tiket2.noTiket} Terbuat. Part KOSONG (Evaaporator Coil 9000BTU). Menunggu pengiriman sparepart dari produsen.`, meta: JSON.stringify({ noTiket: tiket2.noTiket, aksi: 'PART_ORDER_PRODUSEN' }) },
+      { pengirim: 'TOK-001 (Maju Jaya)', tipe: 'IN', pesan: '#LAPOR SN-KPAS-2023-00101 PRT-DNM-01 Kipas tidak berputar, dinamo mati total', meta: JSON.stringify({ noTiket: tiket1.noTiket }) },
+      { pengirim: 'WA-BOT', tipe: 'OUT', pesan: `Tiket #${tiket1.noTiket} Berhasil Terbuat. Part READY (Dinamo Kipas Angin 16 inch). Link STTB: /api/sttb/${tiket1.noSttb}`, meta: JSON.stringify({ noTiket: tiket1.noTiket, aksi: 'TIKET_DIBUAT' }) },
+      { pengirim: 'TOK-002 (Berkah Sentosa)', tipe: 'IN', pesan: '#LAPOR SN-PMPA-2022-00311 PRT-IMP-09 Pompa tidak menyedot', meta: JSON.stringify({ noTiket: tiket2.noTiket }) },
+      { pengirim: 'WA-BOT', tipe: 'OUT', pesan: `Tiket #${tiket2.noTiket} Terbuat. Part ORDER (Impeller Pompa Air 125 Watt). Menunggu pengiriman sparepart dari produsen.`, meta: JSON.stringify({ noTiket: tiket2.noTiket, aksi: 'PART_ORDER_PRODUSEN' }) },
     ],
   })
   console.log('✅ WA Messages:', 4)

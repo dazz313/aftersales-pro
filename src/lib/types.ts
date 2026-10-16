@@ -56,6 +56,8 @@ export interface BankKode {
   kode: string
   namaPart: string
   brandKompatibel: string
+  /** Model/tipe unit yang cocok — indikator pelacakan cepat. */
+  modelTipe: string
   produsen: string
   sumber: string
   catatan: string | null

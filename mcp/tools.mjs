@@ -252,7 +252,7 @@ export const TOOLS = [
       properties: {
         namaPart: { type: 'string', description: 'Nama sparepart (wajib)' },
         kodePart: str,
-        brandKompatibel: { type: 'string', description: 'Brand kompatibel, pisah koma (mis. Samsung, LG)' },
+        brandKompatibel: { type: 'string', description: 'Brand kompatibel, pisah koma (mis. Miyako, Rinnai)' },
         supplier: { type: 'string', description: 'Nama supplier' },
         stokJual: { type: 'number', description: 'Stok bisa jual' },
         stokGaransi: { type: 'number', description: 'Stok garansi' },
@@ -307,8 +307,8 @@ export const TOOLS = [
       properties: {
         serialNumber: str,
         modelUnit: str,
-        merk: { type: 'string', description: 'Merk/brand unit (mis. Samsung)' },
-        nama: { type: 'string', description: 'Nama panggilan unit (mis. AC Ruang Tamu)' },
+        merk: { type: 'string', description: 'Merk/brand unit (mis. Miyako)' },
+        nama: { type: 'string', description: 'Nama panggilan unit (mis. Kipas Ruang Tamu)' },
         tokoId: num,
         customerId: num,
         statusGaransi: { type: 'string', enum: ['STOK_TOKO', 'GARANSI', 'NON_GARANSI'] },

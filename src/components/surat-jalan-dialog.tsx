@@ -28,16 +28,19 @@ export default function SuratJalanDialog({
   const { toast } = useToast()
   const [busy, setBusy] = useState<'pdf' | 'xlsx' | null>(null)
 
-  const items = tickets.flatMap((t) =>
+  // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
+  const mentah = tickets.flatMap((t) =>
     t.parts.map((p) => ({
       noTiket: t.noTiket,
-      kodePart: p.sparepart?.kodePart ?? '?',
-      namaPart: p.sparepart?.namaPart ?? '?',
+      kodePart: p.sparepart?.kodePart ?? '',
+      namaPart: p.sparepart?.namaPart ?? '',
       qty: p.qty,
       toko: t.unitAsset.toko?.namaToko ?? '-',
       sn: t.unitAsset.serialNumber,
     }))
   )
+  const items = mentah.filter((i) => i.kodePart.trim() && i.namaPart.trim())
+  const tanpaKode = mentah.length - items.length
   const totalQty = items.reduce((a, i) => a + i.qty, 0)
   const totalNilai =
     tickets.reduce((a, t) => a + (t.nilaiKlaim ?? 0), 0)
@@ -155,6 +158,9 @@ export default function SuratJalanDialog({
             {tickets.length} tiket terpilih
           </Badge>
           <span className="min-w-0">No. surat jalan otomatis berurutan harian (SJ-YYYYMMDD-0001) + QR verifikasi.</span>
+          {tanpaKode > 0 && (
+            <span className="min-w-0 text-amber-600">{tanpaKode} part tanpa kode dilewati — lengkapi dulu di tiket.</span>
+          )}
         </div>
 
         <DialogFooter className="gap-2">

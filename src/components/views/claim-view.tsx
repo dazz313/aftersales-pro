@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Truck, X } from 'lucide-react'
+import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Truck, X, Wand2 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
@@ -134,6 +134,32 @@ export default function ClaimView() {
     () => finishTickets.filter((t) => selectedIds.has(t.id)),
     [finishTickets, selectedIds]
   )
+
+  // ===== Draft otomatis: unit yang sudah input kode+nama part & belum terkirim =====
+  // langsung terlist di draft surat jalan — tanpa centang satu per satu.
+  const adaKodeNama = (t: ServiceTicket) => t.parts.some((p) => p.sparepart?.kodePart && p.sparepart?.namaPart)
+  const draftSiap = useMemo(
+    () => finishTickets.filter((t) => adaKodeNama(t) && !t.noSuratJalan),
+    [finishTickets]
+  )
+  const draftOtomatis = () => {
+    if (draftSiap.length === 0) {
+      const tanpaPart = finishTickets.filter((t) => !adaKodeNama(t)).length
+      toast({
+        title: 'Tidak ada draft baru',
+        description: tanpaPart > 0
+          ? `${tanpaPart} tiket belum ada kode+nama part; sisanya sudah pernah dikirim.`
+          : 'Semua tiket berpart sudah pernah dikirim — centang manual bila ingin cetak ulang.',
+      })
+      return
+    }
+    setSelectedIds(new Set(draftSiap.map((t) => t.id)))
+    setSjOpen(true)
+    toast({
+      title: 'Draft otomatis terisi',
+      description: `${draftSiap.length} tiket (kode+nama part sudah lengkap, belum terkirim) masuk draft surat jalan.`,
+    })
+  }
 
   const renderTable = (list: ServiceTicket[], tab: string) => {
     if (isLoading) {
@@ -287,6 +313,16 @@ export default function ClaimView() {
                 <X className="mr-1 h-3.5 w-3.5" /> Reset pilihan ({selectedIds.size})
               </Button>
             )}
+            <Button
+              variant="outline"
+              className="border-violet-600 text-violet-700 hover:bg-violet-50"
+              onClick={draftOtomatis}
+              disabled={draftSiap.length === 0}
+              title="Otomatis: tiket yang kode+nama part-nya sudah lengkap & belum terkirim langsung masuk draft"
+            >
+              <Wand2 className="mr-2 h-4 w-4" />
+              Draft Otomatis ({draftSiap.length})
+            </Button>
             <Button
               variant="outline"
               className="border-teal-700 text-teal-700 hover:bg-teal-50"

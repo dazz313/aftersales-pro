@@ -910,7 +910,7 @@ export default function InventoryView() {
             </div>
             <div className="space-y-1.5">
               <Label>Brand Kompatibel</Label>
-              <HistoryInput historyKey="part-brand" value={editForm.brandKompatibel} onChange={(e) => setEditForm({ ...editForm, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
+              <HistoryInput historyKey="part-brand" value={editForm.brandKompatibel} onChange={(e) => setEditForm({ ...editForm, brandKompatibel: e.target.value })} placeholder="cth: Miyako, Rinnai" />
             </div>
             <div className="space-y-1.5">
               <Label>Supplier</Label>
@@ -1000,11 +1000,11 @@ export default function InventoryView() {
             </div>
             <div className="space-y-1.5">
               <Label>Nama Sparepart</Label>
-              <HistoryInput historyKey="part-nama" value={newPart.namaPart} onChange={(e) => setNewPart({ ...newPart, namaPart: e.target.value })} placeholder="cth: Kompresor 3/4 PK" />
+              <HistoryInput historyKey="part-nama" value={newPart.namaPart} onChange={(e) => setNewPart({ ...newPart, namaPart: e.target.value })} placeholder="cth: Dinamo 16 inch" />
             </div>
             <div className="space-y-1.5">
               <Label>Brand Kompatibel</Label>
-              <HistoryInput historyKey="part-brand" value={newPart.brandKompatibel} onChange={(e) => setNewPart({ ...newPart, brandKompatibel: e.target.value })} placeholder="cth: Samsung, LG" />
+              <HistoryInput historyKey="part-brand" value={newPart.brandKompatibel} onChange={(e) => setNewPart({ ...newPart, brandKompatibel: e.target.value })} placeholder="cth: Miyako, Rinnai" />
             </div>
             <div className="space-y-1.5">
               <Label>Supplier</Label>

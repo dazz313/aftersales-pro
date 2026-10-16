@@ -105,7 +105,7 @@ export default function SparepartFinderView() {
   const [importOpen, setImportOpen] = useState(false)
   const [bankCodes, setBankCodes] = useState<string[]>([])
   const [tambahOpen, setTambahOpen] = useState(false)
-  const [formKode, setFormKode] = useState({ kode: '', nama: '', brand: '', produsen: '', catatan: '' })
+  const [formKode, setFormKode] = useState({ kode: '', nama: '', brand: '', model: '', catatan: '' })
   const muatBank = async (q: string) => {
     setBankLoading(true)
     try {
@@ -128,10 +128,10 @@ export default function SparepartFinderView() {
     onError: (e: Error) => toast({ title: 'Sinkron gagal', description: e.message, variant: 'destructive' }),
   })
   const tambahMut = useMutation({
-    mutationFn: () => postJson('/api/bank-kode', { ...formKode, aktor: role }),
+    mutationFn: () => postJson('/api/bank-kode', { ...formKode, modelTipe: formKode.model, aktor: role }),
     onSuccess: () => {
       setTambahOpen(false)
-      setFormKode({ kode: '', nama: '', brand: '', produsen: '', catatan: '' })
+      setFormKode({ kode: '', nama: '', brand: '', model: '', catatan: '' })
       toast({ title: 'Kode tercatat', description: 'Kode produsen masuk Bank Kode dan siap dipakai.' })
       void muatBank(bankQ)
     },
@@ -153,6 +153,7 @@ export default function SparepartFinderView() {
           kode: b.kode,
           nama: b.namaPart,
           brand: b.brandKompatibel ?? '',
+          model: b.modelTipe ?? '',
           produsen: b.produsen ?? '',
         })),
       }),
@@ -219,7 +220,7 @@ export default function SparepartFinderView() {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && void cari()}
-                placeholder="cth: AC Split 1 PK"
+                placeholder="cth: Kipas Angin 16 inch"
               />
             </div>
             <div className="space-y-1.5">
@@ -229,7 +230,7 @@ export default function SparepartFinderView() {
                 value={rusak}
                 onChange={(e) => setRusak(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && void cari()}
-                placeholder="cth: tidak dingin, kompresor mati"
+                placeholder="cth: tidak berputar, dinamo mati"
               />
             </div>
           </div>
@@ -284,8 +285,8 @@ export default function SparepartFinderView() {
             >
               <Upload className="mr-1 h-3 w-3" /> Import CSV
             </Button>
-            <Button size="sm" className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700" onClick={() => setTambahOpen(true)} title="Catat satu kode manual">
-              <Plus className="mr-1 h-3 w-3" /> Tambah
+            <Button size="sm" className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700" onClick={() => setTambahOpen(true)} title="Catat satu kode sparepart manual">
+              <Plus className="mr-1 h-3 w-3" /> Tambah Kode Sparepart
             </Button>
           </div>
         </CardHeader>
@@ -296,7 +297,7 @@ export default function SparepartFinderView() {
                 value={bankQ}
                 onChange={(e) => setBankQ(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && void muatBank(bankQ)}
-                placeholder="Cari kode / nama / brand / produsen…"
+                placeholder="Cari kode / nama / brand / model…"
                 className="h-8 text-xs"
                 aria-label="Cari bank kode"
               />
@@ -309,7 +310,7 @@ export default function SparepartFinderView() {
                 value={aiButuh}
                 onChange={(e) => setAiButuh(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && aiButuh.trim() && !aiKodeMut.isPending && aiKodeMut.mutate()}
-                placeholder="Ceritakan kebutuhan kode… cth: kompresor Samsung 3/4 PK"
+                placeholder="Ceritakan kebutuhan kode… cth: dinamo Miyako 16 inch"
                 className="h-8 border-violet-300 text-xs"
                 aria-label="Tanya AI kebutuhan kode"
               />
@@ -338,11 +339,20 @@ export default function SparepartFinderView() {
                 </Button>
               </div>
               <div className="space-y-1.5">
-                {aiKode.rekomendasi.map((r, i) => (
+                {aiKode.rekomendasi.map((r, i) => {
+                  const refKode = (bankHasil?.items ?? []).find((b) => b.kode.toUpperCase() === r.kode.toUpperCase())
+                  return (
                   <div key={r.kode} className="flex items-start gap-2 rounded-lg border border-violet-200 bg-white px-2.5 py-1.5">
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">{i + 1}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="font-mono text-[11px] font-bold text-slate-900">{r.kode}</p>
+                      <p className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] font-bold text-slate-900">
+                        {r.kode}
+                        {refKode?.modelTipe?.trim() && (
+                          <span className="rounded bg-emerald-100 px-1 py-px font-sans text-[9px] font-semibold text-emerald-700" title={`Cocok untuk model: ${refKode.modelTipe}`}>
+                            {refKode.modelTipe}
+                          </span>
+                        )}
+                      </p>
                       {r.alasan && <p className="mt-0.5 text-[11px] italic leading-snug text-violet-800">{r.alasan}</p>}
                     </div>
                     <Button
@@ -356,7 +366,8 @@ export default function SparepartFinderView() {
                       {disalin === r.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                     </Button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
               {aiKode.catatan && <p className="mt-1.5 text-[11px] text-violet-800">{aiKode.catatan}</p>}
             </div>
@@ -374,7 +385,7 @@ export default function SparepartFinderView() {
                     <TableRow>
                       <TableHead className="text-[10px]">Kode</TableHead>
                       <TableHead className="text-[10px]">Nama</TableHead>
-                      <TableHead className="hidden text-[10px] sm:table-cell">Brand / Produsen</TableHead>
+                      <TableHead className="hidden text-[10px] sm:table-cell">Model / Brand</TableHead>
                       <TableHead className="text-[10px]">Sumber</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -399,8 +410,19 @@ export default function SparepartFinderView() {
                         <TableCell>
                           <p className="max-w-48 truncate text-xs text-slate-700" title={b.namaPart || undefined}>{b.namaPart || '—'}</p>
                         </TableCell>
-                        <TableCell className="hidden max-w-44 truncate text-[11px] text-slate-500 sm:table-cell" title={[b.brandKompatibel, b.produsen].filter(Boolean).join(' · ') || undefined}>
-                          {[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ') || '—'}
+                        <TableCell className="hidden max-w-44 sm:table-cell">
+                          {b.modelTipe?.trim() ? (
+                            <span className="inline-block max-w-full truncate rounded bg-emerald-100 px-1.5 py-px font-mono text-[10px] font-semibold text-emerald-700" title={`Model/tipe: ${b.modelTipe}${b.brandKompatibel?.trim() ? ` · ${b.brandKompatibel}` : ''}`}>
+                              {b.modelTipe}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-slate-300">—</span>
+                          )}
+                          {(b.brandKompatibel?.trim() || b.produsen?.trim()) && (
+                            <p className="mt-0.5 max-w-44 truncate text-[10px] text-slate-400" title={[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ')}>
+                              {[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ')}
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={cn('text-[9px]', SUMBER_CLS[b.sumber] ?? 'border-slate-300 bg-slate-50 text-slate-500')}>
@@ -421,19 +443,19 @@ export default function SparepartFinderView() {
         </CardContent>
       </Card>
 
-      {/* Dialog tambah kode manual */}
+      {/* Dialog tambah kode sparepart manual */}
       <Dialog open={tambahOpen} onOpenChange={setTambahOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tambah Kode Produsen</DialogTitle>
-            <DialogDescription>Catat satu kode — mis. baru diterima via chat produsen. Hanya kode yang wajib.</DialogDescription>
+            <DialogTitle>Tambah Kode Sparepart</DialogTitle>
+            <DialogDescription>Catat satu kode — mis. baru diterima via chat produsen. Hanya kode yang wajib; isi model/tipe agar cepat terlacak.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
             <div className="space-y-1.5"><Label>Kode *</Label><Input value={formKode.kode} onChange={(e) => setFormKode({ ...formKode, kode: e.target.value.toUpperCase() })} placeholder="cth: MX-88X-KLIMA" className="font-mono" /></div>
             <div className="space-y-1.5"><Label>Nama Part</Label><Input value={formKode.nama} onChange={(e) => setFormKode({ ...formKode, nama: e.target.value })} placeholder="boleh kosong bila belum ada" /></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5"><Label>Brand</Label><Input value={formKode.brand} onChange={(e) => setFormKode({ ...formKode, brand: e.target.value })} /></div>
-              <div className="space-y-1.5"><Label>Produsen</Label><Input value={formKode.produsen} onChange={(e) => setFormKode({ ...formKode, produsen: e.target.value })} /></div>
+              <div className="space-y-1.5"><Label>Model / Tipe *</Label><Input value={formKode.model} onChange={(e) => setFormKode({ ...formKode, model: e.target.value })} placeholder="cth: Kipas Angin 16 inch" /></div>
             </div>
             <div className="space-y-1.5"><Label>Catatan</Label><Input value={formKode.catatan} onChange={(e) => setFormKode({ ...formKode, catatan: e.target.value })} placeholder="cth: rilis katalog Q3" /></div>
           </div>
@@ -608,7 +630,7 @@ export default function SparepartFinderView() {
             <SearchCheck className="h-8 w-8 text-slate-300" />
             <p className="text-sm font-medium text-slate-700">Belum ada pelacakan</p>
             <p className="max-w-sm text-xs text-slate-500">
-              Contoh: model “AC Split 1 PK” + kerusakan “tidak dingin” → sistem menampilkan kode &amp; nama part yang pernah dipakai untuk kasus serupa, lengkap dengan stoknya.
+              Contoh: model “Kipas Angin 16 inch” + kerusakan “tidak berputar” → sistem menampilkan kode &amp; nama part yang pernah dipakai untuk kasus serupa, lengkap dengan stoknya.
             </p>
           </CardContent>
         </Card>

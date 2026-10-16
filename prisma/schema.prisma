@@ -66,7 +66,7 @@ model MasterSparepart {
   namaPart       String
   // 5 komponen utama sparepart:
   // 1. kodePart (kode sparepart) · 2. namaPart (nama sparepart)
-  // 3. brandKompatibel (brand kompatibel, koma-dipisah mis. "Samsung, LG")
+  // 3. brandKompatibel (brand kompatibel, koma-dipisah mis. "Miyako, Rinnai")
   // 4. stokJual (bisa dijual) + stokGaransi (stok garansi/klaim) — stokInventory = total
   // 5. supplier (nama supplier)
   brandKompatibel String              @default("")
@@ -93,8 +93,8 @@ model UnitAsset {
   id              Int              @id @default(autoincrement())
   serialNumber    String           @unique
   modelUnit       String
-  merk            String           @default("") // merk/brand unit (mis. Samsung, Daikin)
-  nama            String           @default("") // nama panggilan unit (mis. "AC Ruang Tamu")
+  merk            String           @default("") // merk/brand unit (mis. Miyako, Shimizu)
+  nama            String           @default("") // nama panggilan unit (mis. "Kipas Ruang Tamu")
   tokoId          Int?
   customerId      Int?
   statusGaransi   String           @default("GARANSI") // GARANSI | NON_GARANSI

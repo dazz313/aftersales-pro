@@ -265,7 +265,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Catatan kondisi di toko</Label>
-              <HistoryInput historyKey="kunjungan-catatan" value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." />
+              <HistoryInput historyKey="kunjungan-catatan" value={catatan} onChange={(e) => setCatatan(e.target.value)} placeholder="Contoh: 2 unit kipas display berderit, 1 pompa air tidak menyedot..." />
             </div>
           </div>
           <DialogFooter>

@@ -154,7 +154,7 @@ const CONFIG: Record<
     templateUrl: '/api/bank-kode/import',
     apiUrl: '/api/bank-kode/import',
     requiredCols: ['kode'],
-    optionalCols: ['nama', 'brand', 'produsen', 'catatan'],
+    optionalCols: ['nama', 'brand', 'model', 'produsen', 'catatan'],
     columns: [
       { label: 'Kode', get: (r) => r.kode },
       {
@@ -165,17 +165,17 @@ const CONFIG: Record<
         },
       },
       {
+        label: 'Model / Tipe',
+        get: (r) => {
+          const d = r.data as { insert?: { modelTipe?: string } } | undefined
+          return d?.insert?.modelTipe?.trim() || '—'
+        },
+      },
+      {
         label: 'Brand',
         get: (r) => {
           const d = r.data as { insert?: { brandKompatibel?: string } } | undefined
           return d?.insert?.brandKompatibel?.trim() || '—'
-        },
-      },
-      {
-        label: 'Produsen',
-        get: (r) => {
-          const d = r.data as { insert?: { produsen?: string } } | undefined
-          return d?.insert?.produsen?.trim() || '—'
         },
       },
     ],

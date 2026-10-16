@@ -739,7 +739,7 @@ export default function FieldOpsView() {
           </DialogHeader>
           <div className="space-y-1.5">
             <Label>Catatan Stok Rusak / Kondisi Toko</Label>
-            <HistoryInput historyKey="kunjungan-catatan" value={editCatatan} onChange={(e) => setEditCatatan(e.target.value)} placeholder="cth: 2 unit AC display kipas berbunyi…" />
+            <HistoryInput historyKey="kunjungan-catatan" value={editCatatan} onChange={(e) => setEditCatatan(e.target.value)} placeholder="cth: 2 unit kipas display berderit…" />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditKunj(null)}>Batal</Button>
@@ -785,7 +785,7 @@ export default function FieldOpsView() {
             </div>
             <div className="space-y-1.5">
               <Label>Catatan Stok Rusak / Temuan</Label>
-              <HistoryInput historyKey="kunjungan-catatan" value={catatanManual} onChange={(e) => setCatatanManual(e.target.value)} placeholder="Contoh: 2 unit AC display kipas berbunyi, 1 freezer suhu tidak stabil..." />
+              <HistoryInput historyKey="kunjungan-catatan" value={catatanManual} onChange={(e) => setCatatanManual(e.target.value)} placeholder="Contoh: 2 unit kipas display berderit, 1 pompa air tidak menyedot..." />
             </div>
           </div>
           <DialogFooter>

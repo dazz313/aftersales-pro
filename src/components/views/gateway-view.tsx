@@ -16,9 +16,9 @@ import QuickSearch, { matchQuery } from '@/components/quick-search'
 import HistoryInput from '@/components/history-input'
 
 const CONTOH_COMMANDS = [
-  '#LAPOR SN-ACSP-2024-00532 PRT-CMP-02 Kompresor tidak menyala sama sekali',
-  '#LAPOR SN-CWAS-2024-00312 PRT-THR-07 Suhu freezer tidak stabil dan sering mati sendiri',
-  '#LAPOR SN-MESC-2023-00422 PRT-KPT-3D Kapasitor mesin cuci bocor, unit tidak mau spin',
+  '#LAPOR SN-KPAS-2024-00532 PRT-DNM-02 Dinamo tidak menyala sama sekali',
+  '#LAPOR SN-PMPA-2024-00312 PRT-TMR-07 Timer pompa air macet dan sering mati sendiri',
+  '#LAPOR SN-KMPR-2023-00422 PRT-PMT-U2 Pemantik kompor bocor, api tidak menyala',
 ]
 
 type Channel = 'WHATSAPP' | 'TELEGRAM'

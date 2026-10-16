@@ -16,9 +16,9 @@ export async function GET() {
   const csv = buildCsvTemplate(
     ['tgl_input', 'toko_customer', 'merk', 'model_tipe', 'nomor_seri', 'status', 'tgl_garansi', 'nama_unit', 'nama_customer'],
     [
-      ['2025-07-20', 'TOK-001', 'Samsung', 'AC Split 1 PK Inverter SE-9000', 'SN-ACSP-2025-10001', 'STOK-TOKO', '', 'AC Ruang Tamu', 'Bpk. Hendra Gunawan'],
-      ['2025-08-16', 'TOK-001', 'LG', 'AC Split 1/2 PK SE-5000', 'SN-ACSP-2025-10002', 'GARANSI', '2025-08-15', '', ''],
-      ['2023-03-20', '', 'Aqua', 'Chest Freezer 300L CF-30', 'SN-CWAS-2023-10311', 'NON-GARANSI', '15/03/2023', 'Freezer Dapur', 'Warung Makan Bu Tini'],
+      ['2025-07-20', 'TOK-001', 'Miyako', 'Kipas Angin 16 inch K-1601', 'SN-KPAS-2025-10001', 'STOK-TOKO', '', 'Kipas Ruang Tamu', 'Bpk. Hendra Gunawan'],
+      ['2025-08-16', 'TOK-001', 'Shimizu', 'Pompa Air 125 Watt P-125', 'SN-PMPA-2025-10002', 'GARANSI', '2025-08-15', '', ''],
+      ['2023-03-20', '', 'Rinnai', 'Kompor Gas 2 Tungku KG-201', 'SN-KMPR-2023-10311', 'NON-GARANSI', '15/03/2023', 'Kompor Dapur', 'Warung Makan Bu Tini'],
     ]
   )
   return new Response(csv, {

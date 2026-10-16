@@ -289,11 +289,11 @@ export default function AnalisaAiView() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label>Model Unit</Label>
-              <HistoryInput historyKey="unit-model" value={model} onChange={(e) => setModel(e.target.value)} placeholder="cth: AC Split 1 PK" />
+              <HistoryInput historyKey="unit-model" value={model} onChange={(e) => setModel(e.target.value)} placeholder="cth: Kipas Angin 16 inch" />
             </div>
             <div className="space-y-1.5">
               <Label>Jenis Kerusakan</Label>
-              <HistoryInput historyKey="service-deskripsi" value={rusak} onChange={(e) => setRusak(e.target.value)} placeholder="cth: tidak dingin" />
+              <HistoryInput historyKey="service-deskripsi" value={rusak} onChange={(e) => setRusak(e.target.value)} placeholder="cth: tidak berputar" />
             </div>
           </div>
           <Button

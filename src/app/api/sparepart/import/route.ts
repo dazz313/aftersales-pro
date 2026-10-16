@@ -11,9 +11,9 @@ export async function GET() {
   const csv = buildCsvTemplate(
     ['kode_part', 'nama_part', 'brand_kompatibel', 'supplier', 'stok_jual', 'stok_garansi', 'stok_inventory', 'reorder_limit', 'harga_klaim'],
     [
-      ['PRT-KMP-075', 'Kompresor AC 3/4 PK', 'Samsung, LG', 'PT Sinar Elektronik', '15', '5', '', '5', '450000'],
-      ['PRT-FAN-101', 'Motor Fan Indoor 1 PK', 'Daikin', 'PT Sinar Elektronik', '12', '3', '', '4', '185000'],
-      ['PRT-PCB-220', 'PCB Mainboard Inverter', 'Sharp, Polytron', 'CV Sparepart Jaya', '6', '2', '', '3', '720000'],
+      ['PRT-DNM-075', 'Dinamo Kipas Angin 16 inch', 'Miyako', 'PT Sinar Elektronik', '15', '5', '', '5', '185000'],
+      ['PRT-SLP-220', 'Seal Pompa Air 125 Watt', 'Shimizu', 'PT Sinar Elektronik', '12', '3', '', '4', '120000'],
+      ['PRT-TNG-101', 'Tungku Kompor Gas 2 Tungku', 'Rinnai', 'CV Sparepart Jaya', '6', '2', '', '3', '95000'],
     ]
   )
   return new Response(csv, {

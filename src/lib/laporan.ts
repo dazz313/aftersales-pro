@@ -50,7 +50,7 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
   const cmd = parseLaporanCommand(pesan)
   if (!cmd) {
     const replyText =
-      '⚠️ Format laporan tidak dikenali.\n\nGunakan format:\n*#LAPOR [Nomor_Seri] [Kode_Sparepart] [Deskripsi_Kerusakan]*\n\nContoh:\n#LAPOR SN-ACSP-2023-00101 PRT-CMP-01 AC tidak dingin, kompresor mati'
+      '⚠️ Format laporan tidak dikenali.\n\nGunakan format:\n*#LAPOR [Nomor_Seri] [Kode_Sparepart] [Deskripsi_Kerusakan]*\n\nContoh:\n#LAPOR SN-KPAS-2023-00101 PRT-DNM-01 Kipas tidak berputar, dinamo mati'
     const fwd = await balas(channel, replyText, { aksi: 'FORMAT_INVALID' })
     return { ok: true, reply: replyText, aksi: 'FORMAT_INVALID', channel, mode: fwd.mode }
   }

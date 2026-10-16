@@ -10,6 +10,7 @@ interface Kandidat {
   kode: string
   nama: string
   brand: string
+  model: string
   produsen: string
 }
 
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       .slice(0, 15)
     if (kandidat.length === 0) {
       const bank = await db.bankKode.findMany({ orderBy: { kode: 'asc' }, take: 15 })
-      kandidat = bank.map((b) => ({ kode: b.kode, nama: b.namaPart, brand: b.brandKompatibel, produsen: b.produsen }))
+      kandidat = bank.map((b) => ({ kode: b.kode, nama: b.namaPart, brand: b.brandKompatibel, model: b.modelTipe, produsen: b.produsen }))
     }
     if (kandidat.length === 0) {
       return NextResponse.json({ error: 'Bank Kode masih kosong — sinkronkan atau import CSV dulu.' }, { status: 400 })
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
     const cfg = resolveAiConfig(map)
 
     const daftar = kandidat
-      .map((k) => `${k.kode}|${k.nama || '-'}|brand ${k.brand || '-'}|produsen ${k.produsen || '-'}`)
+      .map((k) => `${k.kode}|${k.nama || '-'}|brand ${k.brand || '-'}|model ${k.model || '-'}|produsen ${k.produsen || '-'}`)
       .join('\n')
     const teks = await chatCompletion(
       cfg,
@@ -62,9 +63,9 @@ export async function POST(request: Request) {
           role: 'user',
           content:
             `Kebutuhan teknisi: "${butuh}". ` +
-            `Pilih MAKSIMAL 3 kode paling sesuai dari bank kode berikut (kode harus sama persis, cocokkan nama/brand/produsen dengan kebutuhan). ` +
+            `Pilih MAKSIMAL 3 kode paling sesuai dari bank kode berikut (kode harus sama persis, cocokkan nama/brand/MODEL dengan kebutuhan — model/tipe unit paling menentukan). ` +
             `Jelaskan alasan tiap pilihan dalam 1 kalimat Bahasa Indonesia.\n` +
-            `Bank (kode|nama|brand|produsen):\n${daftar}\n` +
+            `Bank (kode|nama|brand|model|produsen):\n${daftar}\n` +
             `Format: {"rekomendasi":[{"kode":"KODE","alasan":"..."}],"catatan":"..."}`,
         },
       ],

@@ -992,7 +992,7 @@ export default function ServiceView() {
             )}
             <div className="space-y-1.5">
               <Label>Deskripsi Kerusakan</Label>
-              <HistoryInput historyKey="service-deskripsi" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: AC tidak dingin, indikator berkedip..." />
+              <HistoryInput historyKey="service-deskripsi" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: Kipas tidak berputar, bau gosong..." />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">

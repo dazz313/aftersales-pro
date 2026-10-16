@@ -56,6 +56,7 @@ export async function POST(request: Request) {
         kode,
         namaPart: String(body.namaPart ?? '').trim(),
         brandKompatibel: String(body.brandKompatibel ?? '').trim(),
+        modelTipe: String(body.modelTipe ?? body.model ?? '').trim(),
         produsen: String(body.produsen ?? '').trim(),
         sumber: 'MANUAL',
         catatan: String(body.catatan ?? '').trim() || null,

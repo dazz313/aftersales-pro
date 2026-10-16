@@ -10,9 +10,9 @@ export async function GET() {
   const csv = buildCsvTemplate(
     ['kode', 'nama', 'brand', 'model', 'produsen', 'catatan'],
     [
-      ['PRT-KMP-075X', 'Kompresor AC 3/4 PK revisi produsen', 'Samsung', 'AC Split 1 PK', 'PT Sinar Elektronik', 'Rilis katalog Q3'],
-      ['MX-88X-KLIMA', '', 'Daikin', 'AC Cassette 2 PK', 'PT Sinar Elektronik', 'Kode baru, nama menyusul'],
-      ['PCB-INV-220-R2', 'PCB Mainboard Inverter R2', '', '', 'CV Sparepart Jaya', ''],
+      ['PRT-DNM-075X', 'Dinamo kipas angin 16 inch revisi produsen', 'Miyako', 'Kipas Angin 16 inch K-1601', 'PT Sinar Elektronik', 'Rilis katalog Q3'],
+      ['MX-88X-POMPA', '', 'Shimizu', 'Pompa Air 125 Watt P-125', 'PT Sinar Elektronik', 'Kode baru, nama menyusul'],
+      ['KPR-API-220-R2', 'Pemantik kompor gas R2', 'Rinnai', 'Kompor Gas 2 Tungku KG-201', 'CV Sparepart Jaya', ''],
     ]
   )
   return new Response(csv, {

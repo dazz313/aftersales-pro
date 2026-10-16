@@ -689,10 +689,10 @@ export default function MasterDataView() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Registrasi Unit Asset</DialogTitle><DialogDescription>Unit baru akan mendapat serial number unik untuk stiker barcode/QR.</DialogDescription></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Serial Number</Label><Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-ACSP-2026-XXXXX" className="font-mono" /></div>
-            <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="AC Split 1 PK ..." /></div>
+            <div className="space-y-1.5"><Label>Serial Number</Label><Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" /></div>
+            <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="Kipas Angin 16 inch ..." /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={newUnit.merk} onChange={(e) => setUnitMerk(e.target.value)} placeholder="cth: Miyako, Rinnai, Shimizu" /></div>
-            <div className="space-y-1.5"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: AC Ruang Tamu" /></div>
+            <div className="space-y-1.5"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: Kipas Ruang Tamu" /></div>
             <div className="space-y-1.5">
               <Label>Toko Mitra</Label>
               <SearchSelect
@@ -1064,7 +1064,7 @@ export default function MasterDataView() {
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>Deskripsi Kerusakan</Label>
-              <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder="cth: Kompresor mati total" />
+              <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder="cth: Dinamo mati total" />
             </div>
             <div className="space-y-2">
               <Label>Sparepart — boleh lebih satu kode (tiap baris kode & nama berbeda)</Label>
@@ -1107,7 +1107,7 @@ export default function MasterDataView() {
                       historyKey="part-nama"
                       value={row.namaPart}
                       onChange={(e) => updatePartRow(row.key, { namaPart: e.target.value })}
-                      placeholder="cth: Kompresor 1 PK"
+                      placeholder="cth: Dinamo 16 inch"
                     />
                     {dup && (
                       <p className="text-[11px] font-medium text-red-600">

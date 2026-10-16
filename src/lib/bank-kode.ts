@@ -14,6 +14,7 @@ export interface CatatKodeInput {
   kode: string
   namaPart?: string
   brandKompatibel?: string
+  modelTipe?: string
   produsen?: string
   sumber?: BankKodeSumber
   catatan?: string
@@ -29,6 +30,7 @@ export async function catatBankKode(input: CatatKodeInput): Promise<'baru' | 'di
   if (!kode) return 'sudah-ada'
   const namaPart = String(input.namaPart ?? '').trim()
   const brandKompatibel = String(input.brandKompatibel ?? '').trim()
+  const modelTipe = String(input.modelTipe ?? '').trim()
   const produsen = String(input.produsen ?? '').trim()
   const sumber = input.sumber ?? 'KATALOG'
   const catatan = String(input.catatan ?? '').trim()
@@ -40,6 +42,7 @@ export async function catatBankKode(input: CatatKodeInput): Promise<'baru' | 'di
         kode,
         namaPart,
         brandKompatibel,
+        modelTipe,
         produsen,
         sumber,
         catatan: catatan || null,
@@ -50,6 +53,7 @@ export async function catatBankKode(input: CatatKodeInput): Promise<'baru' | 'di
   const patch: Record<string, string> = {}
   if (!existing.namaPart && namaPart) patch.namaPart = namaPart
   if (!existing.brandKompatibel && brandKompatibel) patch.brandKompatibel = brandKompatibel
+  if (!existing.modelTipe && modelTipe) patch.modelTipe = modelTipe
   if (!existing.produsen && produsen) patch.produsen = produsen
   if (!existing.catatan && catatan) patch.catatan = catatan
   if (Object.keys(patch).length === 0) return 'sudah-ada'
