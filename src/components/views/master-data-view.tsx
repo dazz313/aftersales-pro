@@ -408,8 +408,10 @@ export default function MasterDataView() {
             </TableRow>
           ) : list.map((u) => {
             const info = partInfoByUnit.get(u.id) ?? { count: 0, codes: [] as string[] }
+            // Unit finish (punya tiket tapi tak ada yang aktif) → abu-abu + label FINISH
+            const finish = (u.serviceRequests ?? []).length > 0 && !(u.serviceRequests ?? []).some((t) => t.status === 'REQUEST' || t.status === 'PROSES')
             return (
-              <TableRow key={u.id} className={cn(unitDipilih.has(u.id) && 'bg-red-50/50')}>
+              <TableRow key={u.id} className={cn(finish && 'bg-slate-100/80 opacity-70', unitDipilih.has(u.id) && 'bg-red-50/50 opacity-100')}>
                 <TableCell className="pr-0">
                   <Checkbox
                     aria-label={`Pilih unit ${u.serialNumber}`}
@@ -447,6 +449,11 @@ export default function MasterDataView() {
                   <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
                     {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
                   </Badge>
+                  {finish && (
+                    <p className="mt-0.5">
+                      <Badge variant="outline" className="border-slate-300 bg-slate-200 text-[10px] text-slate-500">FINISH</Badge>
+                    </p>
+                  )}
                   {u.tglPembelian && (
                     <p className="mt-0.5 whitespace-nowrap text-[10px] text-slate-500" title="Tgl pembelian — awal masa garansi">
                       {formatTanggal(u.tglPembelian)}
@@ -469,15 +476,19 @@ export default function MasterDataView() {
                   <div className="flex items-center justify-end gap-1">
                     {(() => {
                       const aktif = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST' || t.status === 'PROSES')
-                      return aktif ? (
-                        <Badge variant="outline" className="border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
-                          {aktif.noTiket}
-                        </Badge>
-                      ) : (
-                        <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
-                          <PackagePlus className="mr-1 h-3 w-3" /> Part
-                        </Button>
-                      )
+                              return aktif ? (
+                                <Badge variant="outline" className="border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
+                                  {aktif.noTiket}
+                                </Badge>
+                              ) : finish ? (
+                                <Button size="sm" variant="outline" className="h-7 border-slate-200 bg-slate-100 px-2 text-[11px] text-slate-400" disabled title="Unit sudah finish — tidak dapat input part lagi">
+                                  FINISH
+                                </Button>
+                              ) : (
+                                <Button size="sm" variant="outline" className="h-7 border-teal-300 px-2 text-[11px] text-teal-700" onClick={() => openInputPart(u)} aria-label={`Input part ${u.serialNumber}`} title="Input kode + nama sparepart (otomatis PROSES)">
+                                  <PackagePlus className="mr-1 h-3 w-3" /> Part
+                                </Button>
+                              )
                     })()}
                     <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
                       <Pencil className="h-3 w-3" />
