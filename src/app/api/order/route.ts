@@ -21,9 +21,8 @@ export async function GET() {
   }
 }
 
-async function generateNoOrder(): Promise<string> {
-  const now = new Date()
-  const ymd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
+async function generateNoOrder(base: Date = new Date()): Promise<string> {
+  const ymd = `${base.getFullYear()}${String(base.getMonth() + 1).padStart(2, '0')}${String(base.getDate()).padStart(2, '0')}`
   const last = await db.permintaanOrder.findFirst({
     where: { noOrder: { startsWith: `ORD-${ymd}` } },
     orderBy: { noOrder: 'desc' },
@@ -76,9 +75,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Nama pemesan wajib diisi' }, { status: 400 })
       }
     }
+    // Tanggal order — opsional, default sekarang. Mendukung backdate untuk
+    // mencatat pesanan susulan; ditolak bila invalid atau setelah besok.
+    let tglOrder = new Date()
+    if (body.tglOrder !== undefined && body.tglOrder !== null && body.tglOrder !== '') {
+      const parsed = new Date(body.tglOrder)
+      const batas = new Date()
+      batas.setDate(batas.getDate() + 1)
+      batas.setHours(23, 59, 59, 999)
+      if (Number.isNaN(parsed.getTime()) || parsed > batas) {
+        return NextResponse.json({ error: 'Tanggal order tidak valid atau melebihi batas' }, { status: 400 })
+      }
+      tglOrder = parsed
+    }
     const order = await db.permintaanOrder.create({
       data: {
-        noOrder: await generateNoOrder(),
+        noOrder: await generateNoOrder(tglOrder),
         tipeCustomer,
         tokoId,
         customerId,
@@ -90,6 +102,7 @@ export async function POST(request: Request) {
         qty,
         status: 'BARU',
         catatan: body.catatan ? String(body.catatan) : null,
+        createdAt: tglOrder,
       },
       include: {
         toko: { select: { id: true, kodeToko: true, namaToko: true } },

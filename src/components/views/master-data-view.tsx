@@ -87,7 +87,7 @@ export default function MasterDataView() {
   const [editUnit, setEditUnit] = useState<UnitAsset | null>(null)
   // Hapus unit (koreksi kesalahan input registrasi)
   const [deleteUnit, setDeleteUnit] = useState<UnitAsset | null>(null)
-  const [editUnitForm, setEditUnitForm] = useState({ modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
+  const [editUnitForm, setEditUnitForm] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '' })
   // Quick input kode+nama part dari Master Data → tiket + otomatis PROSES
   const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
   // Multi-part: 1 unit bisa butuh >1 kode+nama part berbeda — tiap baris satu
@@ -96,6 +96,7 @@ export default function MasterDataView() {
   const [partForm, setPartForm] = useState({
     deskripsi: '',
     jasa: '0',
+    tgl: '',
     rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1' }] as PartUnitRow[],
   })
   const nextPartRowKey = useRef(1)
@@ -166,6 +167,7 @@ export default function MasterDataView() {
   const openEditUnit = (u: UnitAsset) => {
     setEditUnit(u)
     setEditUnitForm({
+      serialNumber: u.serialNumber,
       modelUnit: u.modelUnit,
       merk: u.merk ?? '',
       nama: u.nama ?? '',
@@ -177,9 +179,12 @@ export default function MasterDataView() {
   }
   const openInputPart = (u: UnitAsset) => {
     setPartUnit(u)
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
     setPartForm({
       deskripsi: '',
       jasa: '0',
+      tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
       rows: [{ key: nextPartRowKey.current++, kodePart: '', namaPart: '', qty: '1' }],
     })
   }
@@ -211,6 +216,7 @@ export default function MasterDataView() {
       return postJson('/api/service', {
         unitAssetId: partUnit!.id,
         deskripsiKerusakan: partForm.deskripsi.trim(),
+        tglTiket: partForm.tgl ? new Date(partForm.tgl).toISOString() : undefined,
         biayaJasa: freeJasa ? 0 : Number(partForm.jasa) || 0,
         sumberLaporan: 'MANUAL',
         customerType: isToko ? 'TOKO' : 'PERORANGAN',
@@ -237,6 +243,7 @@ export default function MasterDataView() {
   const updateUnit = useMutation({
     mutationFn: () =>
       postJson(`/api/unit/${editUnit!.id}`, {
+        serialNumber: editUnitForm.serialNumber.trim().toUpperCase(),
         modelUnit: editUnitForm.modelUnit.trim(),
         merk: editUnitForm.merk.trim(),
         nama: editUnitForm.nama.trim(),
@@ -936,9 +943,10 @@ export default function MasterDataView() {
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Unit {editUnit && <span className="font-mono text-sm text-slate-500">{editUnit.serialNumber}</span>}</DialogTitle>
-            <DialogDescription>Nomor seri tidak dapat diubah karena dipakai di tiket &amp; barcode.</DialogDescription>
+            <DialogDescription>Nomor seri boleh dikoreksi selama unit belum punya tiket &amp; belum duplikat. Bila sudah bertiket, nomor seri terkunci.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5 sm:col-span-2"><Label>Nomor Seri</Label><Input value={editUnitForm.serialNumber} onChange={(e) => setEditUnitForm({ ...editUnitForm, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" /></div>
             <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={editUnitForm.modelUnit} onChange={(e) => setEditUnitForm({ ...editUnitForm, modelUnit: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={editUnitForm.merk} onChange={(e) => setEditUnitForm({ ...editUnitForm, merk: e.target.value })} /></div>
             <div className="space-y-1.5 sm:col-span-2"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={editUnitForm.nama} onChange={(e) => setEditUnitForm({ ...editUnitForm, nama: e.target.value })} /></div>
@@ -982,7 +990,7 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setEditUnit(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!editUnit || !editUnitForm.modelUnit.trim() || updateUnit.isPending}
+              disabled={!editUnit || !editUnitForm.serialNumber.trim() || !editUnitForm.modelUnit.trim() || updateUnit.isPending}
               onClick={() => updateUnit.mutate()}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
@@ -1065,6 +1073,11 @@ export default function MasterDataView() {
             <div className="space-y-1.5">
               <Label>Deskripsi Kerusakan</Label>
               <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder="cth: Dinamo mati total" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Tanggal Kejadian</Label>
+              <Input type="date" value={partForm.tgl} onChange={(e) => setPartForm({ ...partForm, tgl: e.target.value })} aria-label="Tanggal kejadian tiket" />
+              <p className="text-[11px] text-slate-500">Boleh diisi mundur (data historis) — nomor tiket otomatis menyesuaikan tanggal ini.</p>
             </div>
             <div className="space-y-2">
               <Label>Sparepart — boleh lebih satu kode (tiap baris kode & nama berbeda)</Label>

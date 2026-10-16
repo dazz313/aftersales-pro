@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, formatRupiah, type Sparepart, type Toko, type Customer, type PermintaanOrder } from '@/lib/api'
+import { fetcher, postJson, formatRupiah, type Sparepart, type Toko, type Customer, type PermintaanOrder, type ServiceTicket } from '@/lib/api'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -85,11 +86,14 @@ export default function InventoryView() {
   const [stokFilter, setStokFilter] = useState<'SEMUA' | 'KRITIS' | 'KOSONG'>('SEMUA')
   const [cari, setCari] = useState('')
   const [restockJenis, setRestockJenis] = useState<'JUAL' | 'GARANSI'>('JUAL')
+  // Tab utama: stok titipan brand vs order per unit rusak vs order customer
+  const [invTab, setInvTab] = useState<'titipan' | 'unit' | 'customer'>('titipan')
   // Semua section berupa dropdown — diklik baru muncul
   const [secStok, setSecStok] = useState(false)
   const [secTitipan, setSecTitipan] = useState(false)
   const [secOrder, setSecOrder] = useState(false)
   const [secUnit, setSecUnit] = useState(false)
+  const [secUnitTiket, setSecUnitTiket] = useState(true)
 
   // Konsumsi navIntent dari Dashboard → terapkan filter stok
   // (dijalankan di callback async agar tidak setState sinkron di effect body)
@@ -98,7 +102,10 @@ export default function InventoryView() {
     const t = setTimeout(() => {
       if (navIntent.inventoryFilter === 'kritis') setStokFilter('KRITIS')
       if (navIntent.inventoryFilter === 'kosong') setStokFilter('KOSONG')
-      if (navIntent.inventoryFilter) setSecStok(true)
+      if (navIntent.inventoryFilter) {
+        setInvTab('titipan')
+        setSecStok(true)
+      }
       clearNavIntent()
     }, 0)
     return () => clearTimeout(t)
@@ -118,15 +125,54 @@ export default function InventoryView() {
   })
   const { data: customerList } = useQuery<Customer[]>({
     queryKey: ['customers'],
-    queryFn: () => fetcher<Customer[]>('/api/customer'),
+    queryFn: () => fetcher<Customer[]>('/api/customers'),
   })
+  // Tiket service → sumber rincian order per unit rusak (part ORDER_PRODUSEN)
+  const { data: tickets } = useQuery<ServiceTicket[]>({
+    queryKey: ['service-tickets'],
+    queryFn: () => fetcher<ServiceTicket[]>('/api/service'),
+  })
+  // Baris order per unit: tiap part ORDER_PRODUSEN di tiap tiket (unit rusak)
+  const unitOrderRows = useMemo(() => {
+    const rows: { noTiket: string; status: string; tglTiket: string; serial: string; model: string; kode: string; nama: string; qty: number }[] = []
+    for (const t of tickets ?? []) {
+      for (const p of t.parts ?? []) {
+        if (p.statusPart !== 'ORDER_PRODUSEN') continue
+        rows.push({
+          noTiket: t.noTiket,
+          status: t.status,
+          tglTiket: t.tglTiket,
+          serial: t.unitAsset?.serialNumber ?? '—',
+          model: t.unitAsset?.modelUnit ?? '—',
+          kode: p.sparepart?.kodePart ?? '—',
+          nama: p.sparepart?.namaPart ?? '—',
+          qty: p.qty,
+        })
+      }
+    }
+    return rows.sort((a, b) => b.tglTiket.localeCompare(a.tglTiket))
+  }, [tickets])
+  const unitOrderPcs = useMemo(() => unitOrderRows.reduce((a, r) => a + r.qty, 0), [unitOrderRows])
+  // Kelompokkan per tiket agar mudah dibaca (satu tiket bisa butuh >1 part)
+  const unitOrderPerTiket = useMemo(() => {
+    const map = new Map<string, { noTiket: string; status: string; tglTiket: string; serial: string; model: string; items: { kode: string; nama: string; qty: number }[] }>()
+    for (const r of unitOrderRows) {
+      const g = map.get(r.noTiket) ?? { noTiket: r.noTiket, status: r.status, tglTiket: r.tglTiket, serial: r.serial, model: r.model, items: [] }
+      g.items.push({ kode: r.kode, nama: r.nama, qty: r.qty })
+      map.set(r.noTiket, g)
+    }
+    return [...map.values()]
+  }, [unitOrderRows])
+  const orderAktif = useMemo(() => (orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length, [orders])
 
   // Form order customer
   const [orderOpen, setOrderOpen] = useState(false)
   const [cariOrder, setCariOrder] = useState('')
-  const [orderForm, setOrderForm] = useState({ tipe: 'TOKO' as 'TOKO' | 'PERORANGAN', pemilikId: '', namaPemesan: '', sparepartId: '', qty: '1', catatan: '' })
+  const [orderForm, setOrderForm] = useState({ tipe: 'TOKO' as 'TOKO' | 'PERORANGAN', pemilikId: '', namaPemesan: '', sparepartId: '', qty: '1', catatan: '', tgl: '' })
   const openOrder = (sparepartId?: number) => {
-    setOrderForm({ tipe: 'TOKO', pemilikId: '', namaPemesan: '', sparepartId: sparepartId ? String(sparepartId) : '', qty: '1', catatan: '' })
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    setOrderForm({ tipe: 'TOKO', pemilikId: '', namaPemesan: '', sparepartId: sparepartId ? String(sparepartId) : '', qty: '1', catatan: '', tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` })
     setOrderOpen(true)
   }
 
@@ -148,6 +194,7 @@ export default function InventoryView() {
         sparepartId: Number(orderForm.sparepartId),
         qty: Number(orderForm.qty) || 1,
         catatan: orderForm.catatan.trim() || undefined,
+        tglOrder: orderForm.tgl ? new Date(orderForm.tgl).toISOString() : undefined,
         aktor: role,
       }),
     onSuccess: (o: unknown) => {
@@ -327,6 +374,20 @@ export default function InventoryView() {
 
   return (
     <div className="space-y-4">
+      {/* Pemisahan alur: stok titipan brand vs order per unit rusak vs order customer */}
+      <Tabs value={invTab} onValueChange={(v) => setInvTab(v as typeof invTab)}>
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="titipan" className="gap-1.5 text-xs">
+            <Boxes className="h-3.5 w-3.5" /> Stok Titipan Brand{kosong.length > 0 ? ` (${kosong.length})` : ''}
+          </TabsTrigger>
+          <TabsTrigger value="unit" className="gap-1.5 text-xs">
+            <Truck className="h-3.5 w-3.5" /> Order Unit Rusak{unitOrderPcs > 0 ? ` (${unitOrderPcs})` : ''}
+          </TabsTrigger>
+          <TabsTrigger value="customer" className="gap-1.5 text-xs">
+            <ClipboardList className="h-3.5 w-3.5" /> Order Customer{orderAktif > 0 ? ` (${orderAktif})` : ''}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="titipan" className="space-y-4">
       {/* Summary — tipis agar hemat ruang */}
       <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
         <Card>
@@ -367,15 +428,12 @@ export default function InventoryView() {
         </Card>
       </div>
 
-      {/* Urutan tampil: titipan kosong + order customer berdampingan (portable), lalu order per unit, tabel, draft */}
-      <div className="grid items-start gap-4 xl:grid-cols-2">
-        {/* Tabel stok */}
+        {/* Tabel stok titipan brand (konsinyasi) */}
         <SectionCollapse
-          className="order-3 xl:col-span-2"
           icon={<Package className="h-4 w-4 text-slate-500" />}
-          title="Stok Sparepart Inventory"
+          title="Stok Titipan Brand"
           badge={<span className="text-xs font-normal text-slate-400">{tampilParts.length} item</span>}
-          desc="Stok Brand (jual/garansi) · Part/Unit (terpakai & ORDER)"
+          desc="Stok konsinyasi brand — jual / garansi / ROP"
           open={secStok}
           onOpenChange={setSecStok}
           actions={
@@ -423,8 +481,7 @@ export default function InventoryView() {
                     <TableRow>
                       <TableHead>Part (Kode · Nama)</TableHead>
                       <TableHead>Brand / Supplier</TableHead>
-                      <TableHead>Stok Brand (Jual/Garansi)</TableHead>
-                      <TableHead>Part per Unit</TableHead>
+                      <TableHead>Stok (Jual/Garansi)</TableHead>
                       <TableHead>Nilai Klaim/unit</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Aksi</TableHead>
@@ -433,7 +490,7 @@ export default function InventoryView() {
                   <TableBody>
                     {tampilParts.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-8 text-center text-sm text-slate-500">
+                        <TableCell colSpan={6} className="py-8 text-center text-sm text-slate-500">
                           Tidak ada item yang cocok dengan filter aktif.
                         </TableCell>
                       </TableRow>
@@ -457,17 +514,6 @@ export default function InventoryView() {
                               <span className="text-[10px] text-slate-400">({p.stokInventory} total / ROP {p.reorderLimit})</span>
                             </div>
                             <Progress value={pct} className="mt-1 h-1.5" aria-label={`Stok ${p.stokInventory} dari limit ${p.reorderLimit}`} />
-                          </TableCell>
-                          <TableCell className="w-40 whitespace-nowrap">
-                            <div className="flex items-baseline gap-1" title="Kumulatif part terpakai di tiket service — tidak mengurangi stok brand">
-                              <span className="text-[10px] text-slate-500">Terpakai</span>
-                              <span className="text-sm font-semibold text-slate-800">{p.totalTerpakai ?? 0}</span>
-                            </div>
-                            <div className="flex items-baseline gap-1" title={p.menungguDi?.length ? `Menunggu di tiket: ${p.menungguDi.join(', ')}` : 'Part dipesan khusus untuk unit (ORDER_PRODUSEN) — tidak menambah stok brand'}>
-                              <span className="text-[10px] text-slate-500">Dipesan</span>
-                              <span className={cn('text-sm font-semibold', (p.dipesanPerUnit ?? 0) > 0 ? 'text-rose-600' : 'text-slate-400')}>{p.dipesanPerUnit ?? 0}</span>
-                              {(p.dipesanPerUnit ?? 0) > 0 && <span className="text-[9px] text-rose-500">ORDER</span>}
-                            </div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-xs text-slate-600">{formatRupiah(p.hargaKlaim)}</TableCell>
                           <TableCell>
@@ -578,9 +624,10 @@ export default function InventoryView() {
           )}
       </SectionCollapse>
 
+        </TabsContent>
+        <TabsContent value="customer" className="space-y-4">
       {/* Permintaan order customer */}
       <SectionCollapse
-        className="order-2"
         icon={<ClipboardList className="h-4 w-4 text-teal-700" />}
         title="Permintaan Order Customer"
         badge={(orders ?? []).filter((o) => o.status === 'BARU' || o.status === 'DITERUSKAN').length > 0 && (
@@ -683,12 +730,66 @@ export default function InventoryView() {
           )}
       </SectionCollapse>
 
-      {/* Order Part per Unit — terpisah dari order customer (stok) */}
+        </TabsContent>
+        <TabsContent value="unit" className="space-y-4">
+      {/* Rincian per tiket: part dipesan khusus karena unit rusak (ORDER_PRODUSEN) */}
       <SectionCollapse
-        className="order-2 xl:col-span-2"
         cardClass="border-rose-200"
         icon={<Truck className="h-4 w-4 text-rose-600" />}
-        title="Order Part per Unit (ORDER_PRODUSEN)"
+        title="Menunggu Part per Tiket"
+        badge={unitOrderRows.length > 0 && (
+          <Badge variant="destructive" className="text-[10px]">
+            {unitOrderPerTiket.length} tiket · {unitOrderPcs} pcs
+          </Badge>
+        )}
+        desc="Part yang dipesan khusus karena unit rusak — bukan stok titipan. Penerimaan part di menu Service → detail tiket → Terima Part Produsen"
+        open={secUnitTiket}
+        onOpenChange={setSecUnitTiket}
+      >
+        {unitOrderPerTiket.length === 0 ? (
+          <p className="rounded-lg border border-dashed p-6 text-center text-xs text-slate-500">Tidak ada part yang sedang dipesan untuk unit rusak — semua part di tiket ready dari stok.</p>
+        ) : (
+          <div className="max-h-[50vh] space-y-2 overflow-y-auto pr-1">
+            {unitOrderPerTiket.map((g) => (
+              <div key={g.noTiket} className="rounded-lg border border-rose-200 bg-rose-50/50 p-2.5">
+                <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="font-mono text-[11px] font-bold text-slate-800">{g.noTiket}</span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'text-[10px]',
+                      g.status === 'REQUEST' && 'border-amber-300 text-amber-700',
+                      g.status === 'PROSES' && 'border-sky-300 text-sky-700',
+                      g.status === 'FINISH' && 'border-emerald-300 text-emerald-700'
+                    )}
+                  >
+                    {g.status}
+                  </Badge>
+                  <span className="truncate font-mono text-[10px] text-slate-500" title={`${g.serial} · ${g.model}`}>{g.serial} · {g.model}</span>
+                  <span className="ml-auto text-[10px] text-slate-400">{new Date(g.tglTiket).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </div>
+                <div className="space-y-1">
+                  {g.items.map((it, i) => (
+                    <div key={i} className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1">
+                      <div className="min-w-0">
+                        <p className="truncate text-[11px] font-medium text-slate-700">{it.nama}</p>
+                        <p className="font-mono text-[10px] text-slate-400">{it.kode}</p>
+                      </div>
+                      <Badge className="shrink-0 bg-rose-600 text-[10px] text-white hover:bg-rose-600">×{it.qty}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCollapse>
+
+      {/* Rekap agregat per part — pindahan dari tabel campur */}
+      <SectionCollapse
+        cardClass="border-rose-200"
+        icon={<Truck className="h-4 w-4 text-rose-600" />}
+        title="Rekap per Part"
         badge={(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length > 0 && (
           <Badge variant="destructive" className="text-[10px]">
             {(parts ?? []).filter((p) => (p.dipesanPerUnit ?? 0) > 0).length} part · {(parts ?? []).reduce((a, p) => a + (p.dipesanPerUnit ?? 0), 0)} pcs
@@ -721,7 +822,8 @@ export default function InventoryView() {
             )
           })()}
       </SectionCollapse>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog catat order customer */}
       <Dialog open={orderOpen} onOpenChange={setOrderOpen}>
@@ -801,10 +903,15 @@ export default function InventoryView() {
                 <Input type="number" min="1" value={orderForm.qty} onChange={(e) => setOrderForm({ ...orderForm, qty: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label>Catatan (opsional)</Label>
-                <HistoryInput historyKey="order-catatan" value={orderForm.catatan} onChange={(e) => setOrderForm({ ...orderForm, catatan: e.target.value })} placeholder="cth: ditunggu Senin" />
+                <Label>Tanggal Order</Label>
+                <Input type="date" value={orderForm.tgl} onChange={(e) => setOrderForm({ ...orderForm, tgl: e.target.value })} aria-label="Tanggal order" />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <Label>Catatan (opsional)</Label>
+              <HistoryInput historyKey="order-catatan" value={orderForm.catatan} onChange={(e) => setOrderForm({ ...orderForm, catatan: e.target.value })} placeholder="cth: ditunggu Senin" />
+            </div>
+            <p className="text-[11px] text-slate-500">Tanggal order boleh diisi mundur (pesanan susulan) — nomor order otomatis menyesuaikan tanggal ini.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOrderOpen(false)}>Batal</Button>

@@ -4,7 +4,8 @@ import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 
-// PATCH /api/unit/[id] - koreksi data unit (serial tidak dapat diubah)
+// PATCH /api/unit/[id] - koreksi data unit (termasuk nomor seri,
+// selama belum dipakai di tiket service & tidak duplikat unit lain)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { session, denied } = await requireActiveSession(request)
@@ -17,6 +18,29 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
     }
     const data: Record<string, unknown> = {}
+    if (body.serialNumber !== undefined) {
+      const serial = String(body.serialNumber ?? '').trim().toUpperCase()
+      if (!serial) {
+        return NextResponse.json({ error: 'Nomor seri tidak boleh kosong' }, { status: 400 })
+      }
+      if (serial !== existing.serialNumber) {
+        const dupe = await db.unitAsset.findUnique({ where: { serialNumber: serial } })
+        if (dupe) {
+          return NextResponse.json({ error: `Nomor seri ${serial} sudah dipakai oleh unit ${dupe.modelUnit}` }, { status: 409 })
+        }
+        const dipakai = await db.serviceRequest.findFirst({
+          where: { unitAssetId: existing.id },
+          select: { noTiket: true },
+        })
+        if (dipakai) {
+          return NextResponse.json(
+            { error: `Nomor seri terkunci: unit ini sudah punya tiket ${dipakai.noTiket} — riwayat service & barcode harus utuh sehingga nomor seri tidak dapat diubah.` },
+            { status: 409 }
+          )
+        }
+        data.serialNumber = serial
+      }
+    }
     if (body.modelUnit !== undefined) {
       const model = String(body.modelUnit ?? '').trim()
       if (!model) {
@@ -54,7 +78,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       aksi: 'UPDATE_UNIT_ASSET',
       entitas: 'unit_asset',
       entitasId: unit.serialNumber,
-      deskripsi: `Data unit diperbarui: ${Object.keys(data).join(', ')} (${unit.serialNumber})`,
+      deskripsi: `Data unit diperbarui: ${Object.keys(data).join(', ')}${data.serialNumber ? ` (${existing.serialNumber} → ${data.serialNumber})` : ` (${unit.serialNumber})`}`,
       aktor: body.aktor,
     })
     await autoGitBackup('UPDATE', 'unit_asset', unit.serialNumber, body.aktor)
