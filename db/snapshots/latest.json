@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T22:54:16.273Z",
+  "generatedAt": "2026-10-17T23:14:53.000Z",
   "masterToko": [
     {
       "id": 216,
@@ -618,10 +618,24 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T06:13:48.923Z"
+    },
+    {
+      "id": 324,
+      "kodePart": "1P90273A",
+      "namaPart": "Casing PS 135 E",
+      "brandKompatibel": "Shimizu",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-17T23:14:52.943Z"
     },
     {
       "id": 254,
@@ -3308,6 +3322,47 @@
   ],
   "serviceRequest": [
     {
+      "id": 46,
+      "noTiket": "SV-20260921-0001",
+      "unitAssetId": 200,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260921-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "kaki patah",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-21T00:00:00.000Z",
+      "createdAt": "2026-10-17T23:14:52.956Z",
+      "updatedAt": "2026-10-17T23:14:52.956Z",
+      "editedAt": null,
+      "editedBy": null,
+      "parts": [
+        {
+          "id": 59,
+          "serviceRequestId": 46,
+          "sparepartId": 324,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 44,
       "noTiket": "SV-20261015-0024",
       "unitAssetId": 198,
@@ -3331,21 +3386,10 @@
       "tglFinish": "2026-10-16T09:36:33.628Z",
       "tglTiket": "2026-10-15T06:13:48.916Z",
       "createdAt": "2026-10-15T06:13:48.981Z",
-      "updatedAt": "2026-10-17T22:54:16.241Z",
-      "editedAt": "2026-10-17T22:54:16.237Z",
+      "updatedAt": "2026-10-17T22:54:20.157Z",
+      "editedAt": "2026-10-17T22:54:20.154Z",
       "editedBy": "dazz",
       "parts": [
-        {
-          "id": 53,
-          "serviceRequestId": 44,
-          "sparepartId": 317,
-          "qty": 1,
-          "statusPart": "READY",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        },
         {
           "id": 55,
           "serviceRequestId": 44,
@@ -5052,6 +5096,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 556,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260921-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit ZL141514 (PS-135 E, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260921-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-17T23:14:52.975Z"
+    },
+    {
+      "id": 555,
+      "aksi": "HAPUS_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SV-20261015-0024",
+      "deskripsi": "Koreksi salah input: baris 1P90265A ×1 (READY) dihapus dari tiket [TIKET FINISH — koreksi Admin/Manager]",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-17T22:54:20.169Z"
+    },
     {
       "id": 554,
       "aksi": "HAPUS_PART_SERVICE",
