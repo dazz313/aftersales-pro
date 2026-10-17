@@ -111,11 +111,13 @@ export function labelChannel(channel: string): string {
  * Otorisasi webhook inbound (produksi).
  * Bila env WEBHOOK_SECRET diisi, pemanggil wajib menyertakan nilai yang sama
  * via query `?secret=` atau header `x-webhook-secret` (dibandingkan
- * timing-safe). Bila env kosong → terbuka (mode dev/simulator).
+ * timing-safe). Bila env kosong: FAIL-CLOSED di produksi (NODE_ENV=production
+ * → semua request webhook ditolak, agar secret lupa-set tidak membuka pintu
+ * publik); di mode dev/simulator tetap terbuka agar simulator internal jalan.
  */
 export function isWebhookAuthorized(request: Request): boolean {
   const secret = process.env.WEBHOOK_SECRET
-  if (!secret) return true
+  if (!secret) return process.env.NODE_ENV !== 'production'
   const url = new URL(request.url)
   const given = url.searchParams.get('secret') ?? request.headers.get('x-webhook-secret') ?? ''
   const a = Buffer.from(given)
