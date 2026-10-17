@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T23:47:46.575Z",
+  "generatedAt": "2026-10-17T23:58:09.731Z",
   "masterToko": [
     {
       "id": 216,
@@ -11,7 +11,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-001",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": -6.914444,
+      "longitude": 107.609811
     },
     {
       "id": 217,
@@ -23,7 +25,9 @@
       "tglVisitTerakhir": "2026-10-13T03:32:00.000Z",
       "barcodeToko": "BC-TOK-002",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 218,
@@ -35,7 +39,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-003",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 219,
@@ -47,7 +53,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-004",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 220,
@@ -59,7 +67,9 @@
       "tglVisitTerakhir": "2026-10-14T04:21:00.000Z",
       "barcodeToko": "BC-TOK-005",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 221,
@@ -71,7 +81,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-006",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 222,
@@ -83,7 +95,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-007",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 223,
@@ -95,7 +109,9 @@
       "tglVisitTerakhir": "2026-10-12T04:23:00.000Z",
       "barcodeToko": "BC-TOK-008",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 224,
@@ -107,7 +123,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-009",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 225,
@@ -119,7 +137,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-010",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 226,
@@ -131,7 +151,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-011",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 227,
@@ -143,7 +165,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-012",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 228,
@@ -155,7 +179,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-013",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 229,
@@ -167,7 +193,9 @@
       "tglVisitTerakhir": "2026-10-06T11:07:00.000Z",
       "barcodeToko": "BC-TOK-014",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 230,
@@ -179,7 +207,9 @@
       "tglVisitTerakhir": "2026-10-13T04:22:00.000Z",
       "barcodeToko": "BC-TOK-015",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 231,
@@ -191,7 +221,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-016",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 232,
@@ -203,7 +235,9 @@
       "tglVisitTerakhir": "2026-10-14T03:44:00.000Z",
       "barcodeToko": "BC-TOK-017",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 233,
@@ -215,7 +249,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-018",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 234,
@@ -227,7 +263,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-019",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 235,
@@ -239,7 +277,9 @@
       "tglVisitTerakhir": "2026-10-11T11:05:00.000Z",
       "barcodeToko": "BC-TOK-020",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 236,
@@ -251,7 +291,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-021",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 237,
@@ -263,7 +305,9 @@
       "tglVisitTerakhir": "2026-10-10T11:08:00.000Z",
       "barcodeToko": "BC-TOK-022",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 238,
@@ -275,7 +319,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-023",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 239,
@@ -287,7 +333,9 @@
       "tglVisitTerakhir": "2026-10-05T10:48:00.000Z",
       "barcodeToko": "BC-TOK-024",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 240,
@@ -299,7 +347,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-025",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 241,
@@ -311,7 +361,9 @@
       "tglVisitTerakhir": "2026-10-12T11:05:00.000Z",
       "barcodeToko": "BC-TOK-026",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 242,
@@ -323,7 +375,9 @@
       "tglVisitTerakhir": "2026-10-06T14:23:00.000Z",
       "barcodeToko": "BC-TOK-027",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 243,
@@ -335,7 +389,9 @@
       "tglVisitTerakhir": "2026-10-12T11:06:00.000Z",
       "barcodeToko": "BC-TOK-028",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 244,
@@ -347,7 +403,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-029",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 245,
@@ -359,7 +417,9 @@
       "tglVisitTerakhir": "2026-10-12T11:06:00.000Z",
       "barcodeToko": "BC-TOK-030",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 246,
@@ -371,7 +431,9 @@
       "tglVisitTerakhir": "2026-10-07T14:19:00.000Z",
       "barcodeToko": "BC-TOK-031",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 247,
@@ -383,7 +445,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-032",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 248,
@@ -395,7 +459,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-033",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 249,
@@ -407,7 +473,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-034",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 250,
@@ -419,7 +487,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-035",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 251,
@@ -431,7 +501,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-036",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 252,
@@ -443,7 +515,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-037",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 253,
@@ -455,7 +529,9 @@
       "tglVisitTerakhir": "2026-10-17T10:49:00.000Z",
       "barcodeToko": "BC-TOK-038",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 254,
@@ -467,7 +543,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-039",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 255,
@@ -479,7 +557,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-040",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 256,
@@ -491,7 +571,9 @@
       "tglVisitTerakhir": "2026-10-08T14:21:00.000Z",
       "barcodeToko": "BC-TOK-041",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 257,
@@ -503,7 +585,9 @@
       "tglVisitTerakhir": "2026-10-12T14:18:00.000Z",
       "barcodeToko": "BC-TOK-042",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 258,
@@ -515,7 +599,9 @@
       "tglVisitTerakhir": "2026-10-08T11:07:00.000Z",
       "barcodeToko": "BC-TOK-043",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 259,
@@ -527,7 +613,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-044",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 260,
@@ -539,7 +627,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-045",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 261,
@@ -551,7 +641,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-046",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 262,
@@ -563,7 +655,9 @@
       "tglVisitTerakhir": "2026-10-05T01:40:00.000Z",
       "barcodeToko": "BC-TOK-047",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     },
     {
       "id": 263,
@@ -575,7 +669,9 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-048",
       "jarakKm": null,
-      "createdAt": "2026-10-14T00:26:39.218Z"
+      "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
     }
   ],
   "masterCustomer": [
@@ -5122,6 +5218,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 560,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-001",
+      "deskripsi": "Koordinat toko diperbarui: -6.914444, 107.609811",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-17T23:58:09.697Z"
+    },
     {
       "id": 559,
       "aksi": "CREATE_UNIT_ASSET",
