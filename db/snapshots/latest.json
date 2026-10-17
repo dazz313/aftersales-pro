@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T10:48:24.822Z",
+  "generatedAt": "2026-10-17T10:49:05.078Z",
   "masterToko": [
     {
       "id": 216,
@@ -452,7 +452,7 @@
       "alamat": "Jl. Jend. Sukawati",
       "kontak": "081241939999",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-17T10:49:00.000Z",
       "barcodeToko": "BC-TOK-038",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z"
@@ -3116,6 +3116,16 @@
   ],
   "kunjungan": [
     {
+      "id": 55,
+      "tokoId": 253,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-17T10:49:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 37,
       "tokoId": 220,
       "teknisiId": 27,
@@ -4885,6 +4895,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 544,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "55",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Mahkota (TOK-038) · tgl 17/10/2026, 18.49.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-17T10:49:05.055Z"
+    },
     {
       "id": 543,
       "aksi": "CREATE_KUNJUNGAN",
