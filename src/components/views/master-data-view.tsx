@@ -25,8 +25,30 @@ import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import UnitBarcodeSticker from '@/components/unit-barcode-sticker'
 import { GARANSI_LABEL } from '@/lib/types'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X, Trash2 } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X, Trash2, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+// Peringatan nomor seri ganda — tampil live saat mengetik (sebelum tombol ditekan),
+// supaya inputer langsung tahu faktanya dan tidak menekan Registrasi berulang-ulang.
+function DupSerialWarning({ existing, mode, tokoIdSekarang }: { existing: UnitAsset; mode: 'registrasi' | 'edit'; tokoIdSekarang?: string }) {
+  const pemilikLama = existing.toko
+    ? `${existing.toko.kodeToko} — ${existing.toko.namaToko}`
+    : existing.customer?.nama
+      ? `customer ${existing.customer.nama}`
+      : 'tanpa toko'
+  const pesan =
+    mode === 'edit'
+      ? 'Nomor seri ini sudah terdaftar di unit lain — ganti ke nomor yang belum terpakai.'
+      : (existing.tokoId ? String(existing.tokoId) : '') === (tokoIdSekarang ?? '')
+        ? 'Nomor seri ini sudah terdaftar di toko yang sama — input ganda, Registrasi akan ditolak.'
+        : 'Nomor seri ini sudah terdaftar — periksa data, jangan input ulang.'
+  return (
+    <div role="alert" className="rounded-md border border-red-300 bg-red-50 px-2.5 py-1.5 text-[11px] leading-snug text-red-700">
+      <p className="flex items-start gap-1.5 font-semibold"><AlertTriangle aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0" />{pesan}</p>
+      <p className="mt-0.5 pl-5 font-mono">{existing.serialNumber} · {existing.modelUnit} · {pemilikLama}</p>
+    </div>
+  )
+}
 
 export default function MasterDataView() {
   const { toast } = useToast()
@@ -94,6 +116,8 @@ export default function MasterDataView() {
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
   // Edit unit
   const [editUnit, setEditUnit] = useState<UnitAsset | null>(null)
+  // Koreksi nomor seri unit bertiket (hanya Admin Workshop/Manager) wajib dikonfirmasi centang dulu
+  const [konfirmasiKoreksiSN, setKonfirmasiKoreksiSN] = useState(false)
   // Hapus unit (koreksi kesalahan input registrasi)
   const [deleteUnit, setDeleteUnit] = useState<UnitAsset | null>(null)
   const [editUnitForm, setEditUnitForm] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
@@ -175,6 +199,7 @@ export default function MasterDataView() {
   })
   const openEditUnit = (u: UnitAsset) => {
     setEditUnit(u)
+    setKonfirmasiKoreksiSN(false)
     setEditUnitForm({
       serialNumber: u.serialNumber,
       modelUnit: u.modelUnit,
@@ -254,8 +279,9 @@ export default function MasterDataView() {
     mutationFn: () => {
       // Tanggal input hanya dikirim bila benar-benar diubah (agar jam aslinya tidak terpotong)
       const tglInputAsli = editUnit!.createdAt ? new Date(editUnit!.createdAt).toISOString().slice(0, 10) : ''
+      const snBaru = editUnitForm.serialNumber.trim().toUpperCase()
       return postJson(`/api/unit/${editUnit!.id}`, {
-        serialNumber: editUnitForm.serialNumber.trim().toUpperCase(),
+        serialNumber: snBaru,
         modelUnit: editUnitForm.modelUnit.trim(),
         merk: editUnitForm.merk.trim(),
         nama: editUnitForm.nama.trim(),
@@ -265,6 +291,10 @@ export default function MasterDataView() {
         tglPembelian: editUnitForm.tokoId ? null : editUnitForm.tglPembelian || null,
         ...(editUnitForm.tglInput && editUnitForm.tglInput !== tglInputAsli
           ? { tglInput: new Date(editUnitForm.tglInput).toISOString() }
+          : {}),
+        // Koreksi disengaja nomor seri unit bertiket — server cek ulang role Admin/Manager
+        ...(snBaru !== editUnit!.serialNumber.trim().toUpperCase() && (editUnit!.serviceRequests?.length ?? 0) > 0
+          ? { koreksiSerial: konfirmasiKoreksiSN }
           : {}),
         aktor: role,
       }, 'PATCH')
@@ -351,6 +381,27 @@ export default function MasterDataView() {
     () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.merk, u.nama, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi, ...(partInfoByUnit.get(u.id)?.codes ?? [])], cariUnit)),
     [unitList, cariUnit, partInfoByUnit]
   )
+  // Deteksi nomor seri ganda secara live saat mengetik — instant dari daftar unit yang
+  // sudah termuat (kunci normalisasi sama dengan server: trim + uppercase), jadi faktanya
+  // tampak jauh sebelum request dikirim & tombol Registrasi tidak bisa dipaksa berulang.
+  const regSerialDupe = useMemo(() => {
+    const sn = newUnit.serialNumber.trim().toUpperCase()
+    if (!sn) return null
+    return (unitList ?? []).find((u) => u.serialNumber.trim().toUpperCase() === sn) ?? null
+  }, [newUnit.serialNumber, unitList])
+  const editSerialDupe = useMemo(() => {
+    const sn = editUnitForm.serialNumber.trim().toUpperCase()
+    if (!sn || !editUnit) return null
+    return (unitList ?? []).find((u) => u.id !== editUnit.id && u.serialNumber.trim().toUpperCase() === sn) ?? null
+  }, [editUnitForm.serialNumber, editUnit, unitList])
+  // Koreksi nomor seri pada unit bertiket: terkunci default, dibuka hanya
+  // melalui jalur koreksi disengaja (khusus Admin Workshop/Manager — server
+  // juga memvalidasi role & flag `koreksiSerial`, bukan sekadar percaya UI).
+  const bisaKoreksiSerial = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
+  const editUnitBertiket = !!editUnit && (editUnit.serviceRequests?.length ?? 0) > 0
+  const editSnBerubah = !!editUnit && editUnitForm.serialNumber.trim().toUpperCase() !== editUnit.serialNumber.trim().toUpperCase()
+  const editSnButuhKoreksi = editUnitBertiket && editSnBerubah
+  const editSnTerblokir = editSnButuhKoreksi && !bisaKoreksiSerial
   // Pisahan: unit yang sudah dapat kode sparepart vs yang belum (default: belum).
   // Saat ada kata kunci pencarian, filter dilepas → hasil mencakup keduanya (tanpa perlu swap tab).
   const [unitPartTab, setUnitPartTab] = useState<'belum' | 'sudah' | 'semua'>('belum')
@@ -804,7 +855,11 @@ export default function MasterDataView() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Registrasi Unit Asset</DialogTitle><DialogDescription>Unit baru akan mendapat serial number unik untuk stiker barcode/QR.</DialogDescription></DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5"><Label>Serial Number</Label><Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" /></div>
+            <div className="space-y-1.5">
+              <Label>Serial Number</Label>
+              <Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" aria-invalid={!!regSerialDupe} />
+              {regSerialDupe && <DupSerialWarning existing={regSerialDupe} mode="registrasi" tokoIdSekarang={newUnit.tokoId} />}
+            </div>
             <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="Kipas Angin 16 inch ..." /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={newUnit.merk} onChange={(e) => setUnitMerk(e.target.value)} placeholder="cth: Miyako, Rinnai, Shimizu" /></div>
             <div className="space-y-1.5"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: Kipas Ruang Tamu" /></div>
@@ -851,7 +906,7 @@ export default function MasterDataView() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUnitOpen(false)}>Batal</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newUnit.serialNumber || !newUnit.modelUnit || addUnit.isPending} onClick={() => addUnit.mutate()}><Plus className="mr-1 h-4 w-4" /> Registrasi</Button>
+            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newUnit.serialNumber || !newUnit.modelUnit || !!regSerialDupe || addUnit.isPending} onClick={() => addUnit.mutate()}><Plus className="mr-1 h-4 w-4" /> Registrasi</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1056,10 +1111,28 @@ export default function MasterDataView() {
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Unit {editUnit && <span className="font-mono text-sm text-slate-500">{editUnit.serialNumber}</span>}</DialogTitle>
-            <DialogDescription>Nomor seri boleh dikoreksi selama unit belum punya tiket &amp; belum duplikat. Bila sudah bertiket, nomor seri terkunci.</DialogDescription>
+            <DialogDescription>Nomor seri boleh dikoreksi selama belum duplikat. Unit yang sudah punya tiket terkunci — koreksi hanya oleh Admin Workshop/Manager dengan konfirmasi (tiket tetap menaut unit lewat ID).</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5 sm:col-span-2"><Label>Nomor Seri</Label><Input value={editUnitForm.serialNumber} onChange={(e) => setEditUnitForm({ ...editUnitForm, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" /></div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Nomor Seri</Label>
+              <Input value={editUnitForm.serialNumber} onChange={(e) => setEditUnitForm({ ...editUnitForm, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" aria-invalid={!!editSerialDupe} />
+              {editSerialDupe && <DupSerialWarning existing={editSerialDupe} mode="edit" />}
+              {editSnTerblokir && (
+                <div role="alert" className="rounded-md border border-red-300 bg-red-50 px-2.5 py-1.5 text-[11px] leading-snug text-red-700">
+                  <span className="flex items-start gap-1.5 font-semibold"><AlertTriangle aria-hidden className="mt-0.5 h-3.5 w-3.5 shrink-0" />Nomor seri terkunci</span>
+                  <p className="pl-5">Unit ini sudah punya tiket {editUnit?.serviceRequests?.map((t) => t.noTiket).join(', ')} — koreksi nomor seri hanya oleh Admin Workshop/Manager.</p>
+                </div>
+              )}
+              {editSnButuhKoreksi && bisaKoreksiSerial && !editSerialDupe && (
+                <label className="flex cursor-pointer items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] leading-snug text-amber-800">
+                  <Checkbox checked={konfirmasiKoreksiSN} onCheckedChange={(v) => setKonfirmasiKoreksiSN(v === true)} className="mt-0.5" aria-label="Konfirmasi koreksi nomor seri" />
+                  <span>
+                    <b>Koreksi nomor seri unit bertiket</b> ({editUnit?.serviceRequests?.map((t) => t.noTiket).join(', ')}): riwayat tiket &amp; klaim tetap menaut unit ini lewat ID, namun stiker barcode tercetak lama harus dicetak ulang. Centang bila Anda yakin koreksinya benar.
+                  </span>
+                </label>
+              )}
+            </div>
             <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={editUnitForm.modelUnit} onChange={(e) => setEditUnitForm({ ...editUnitForm, modelUnit: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={editUnitForm.merk} onChange={(e) => setEditUnitForm({ ...editUnitForm, merk: e.target.value })} /></div>
             <div className="space-y-1.5 sm:col-span-2"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={editUnitForm.nama} onChange={(e) => setEditUnitForm({ ...editUnitForm, nama: e.target.value })} /></div>
@@ -1107,7 +1180,7 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setEditUnit(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!editUnit || !editUnitForm.serialNumber.trim() || !editUnitForm.modelUnit.trim() || updateUnit.isPending}
+              disabled={!editUnit || !editUnitForm.serialNumber.trim() || !editUnitForm.modelUnit.trim() || !!editSerialDupe || editSnTerblokir || (editSnButuhKoreksi && !konfirmasiKoreksiSN) || updateUnit.isPending}
               onClick={() => updateUnit.mutate()}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan

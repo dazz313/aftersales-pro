@@ -5,12 +5,12 @@ import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 
 // PATCH /api/unit/[id] - koreksi data unit (termasuk nomor seri,
-// selama belum dipakai di tiket service & tidak duplikat unit lain)
+// selama belum duplikat unit lain. Unit bertiket terkunci secara default,
+// kecuali koreksi disengaja oleh Admin Workshop/Manager — lihat di bawah)
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
-    void session
     const { id } = await params
     const body = await request.json()
     const existing = await db.unitAsset.findUnique({ where: { id: Number(id) } })
@@ -18,6 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
     }
     const data: Record<string, unknown> = {}
+    let koreksiSerial = false
     if (body.serialNumber !== undefined) {
       const serial = String(body.serialNumber ?? '').trim().toUpperCase()
       if (!serial) {
@@ -33,10 +34,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           select: { noTiket: true },
         })
         if (dipakai) {
-          return NextResponse.json(
-            { error: `Nomor seri terkunci: unit ini sudah punya tiket ${dipakai.noTiket} — riwayat service & barcode harus utuh sehingga nomor seri tidak dapat diubah.` },
-            { status: 409 }
-          )
+          // Tiket menaut unit via id (unitAssetId), BUKAN teks nomor seri — jadi
+          // mengoreksi nomor salah ketik TIDAK merusak riwayat (barcode data juga
+          // dihitung dinamis saat GET). Izinkan khusus Admin Workshop/Manager dan
+          // hanya bila dialog mengirim flag `koreksiSerial: true` (koreksi disengaja).
+          const rolenya = session?.role
+          const lolos = Boolean(body.koreksiSerial) && (rolenya === 'ADMIN_WORKSHOP' || rolenya === 'MANAGER')
+          if (!lolos) {
+            return NextResponse.json(
+              { error: `Nomor seri terkunci: unit ini sudah punya tiket ${dipakai.noTiket} — koreksi nomor seri hanya oleh Admin Workshop/Manager.` },
+              { status: 409 }
+            )
+          }
+          koreksiSerial = true
         }
         data.serialNumber = serial
       }
@@ -89,7 +99,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       aksi: 'UPDATE_UNIT_ASSET',
       entitas: 'unit_asset',
       entitasId: unit.serialNumber,
-      deskripsi: `Data unit diperbarui: ${Object.keys(data).join(', ')}${data.serialNumber ? ` (${existing.serialNumber} → ${data.serialNumber})` : ` (${unit.serialNumber})`}`,
+      deskripsi: `Data unit diperbarui: ${Object.keys(data).join(', ')}${data.serialNumber ? ` (${existing.serialNumber} → ${data.serialNumber})${koreksiSerial ? ' [KOREKSI nomor seri unit bertiket oleh Admin/Manager]' : ''}` : ` (${unit.serialNumber})`}`,
       aktor: body.aktor,
     })
     await autoGitBackup('UPDATE', 'unit_asset', unit.serialNumber, body.aktor)
