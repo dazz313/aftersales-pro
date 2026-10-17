@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T22:32:41.251Z",
+  "generatedAt": "2026-10-17T22:51:35.723Z",
   "masterToko": [
     {
       "id": 216,
@@ -1926,6 +1926,34 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 322,
+      "kodePart": "TEST-KOR-A",
+      "namaPart": "Part A Uji Coba",
+      "brandKompatibel": "",
+      "supplier": "",
+      "stokJual": 7,
+      "stokGaransi": 0,
+      "stokInventory": 7,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-17T22:51:35.599Z"
+    },
+    {
+      "id": 323,
+      "kodePart": "TEST-KOR-B",
+      "namaPart": "Part B Uji Coba",
+      "brandKompatibel": "UJI",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-17T22:51:35.657Z"
+    },
+    {
       "id": 280,
       "kodePart": "V569-00-100",
       "namaPart": "PIEZO UNIT (R/L)",
@@ -2982,6 +3010,18 @@
       "createdAt": "2026-09-21T16:00:00.000Z"
     },
     {
+      "id": 202,
+      "serialNumber": "TEST-KOREKSI-UJI-01",
+      "modelUnit": "Uji Koreksi Unit",
+      "merk": "UJI",
+      "nama": "",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-17T22:51:35.582Z"
+    },
+    {
       "id": 168,
       "serialNumber": "ZD152841",
       "modelUnit": "PS-230 BIT",
@@ -3308,6 +3348,47 @@
   ],
   "serviceRequest": [
     {
+      "id": 45,
+      "noTiket": "SV-TEST-KOREKSI",
+      "unitAssetId": 202,
+      "status": "FINISH",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "PERORANGAN",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": null,
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": "uji-nota.jpg",
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": "2026-10-17T22:51:35.611Z",
+      "tglTiket": "2026-10-17T22:51:35.614Z",
+      "createdAt": "2026-10-17T22:51:35.614Z",
+      "updatedAt": "2026-10-17T22:51:35.614Z",
+      "editedAt": null,
+      "editedBy": null,
+      "parts": [
+        {
+          "id": 58,
+          "serviceRequestId": 45,
+          "sparepartId": 322,
+          "qty": 2,
+          "statusPart": "READY",
+          "statusKonfirmasi": "READY",
+          "sumberPart": "KATALOG",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 44,
       "noTiket": "SV-20261015-0024",
       "unitAssetId": 198,
@@ -3332,6 +3413,8 @@
       "tglTiket": "2026-10-15T06:13:48.916Z",
       "createdAt": "2026-10-15T06:13:48.981Z",
       "updatedAt": "2026-10-16T09:36:33.629Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 53,
@@ -3340,7 +3423,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         },
         {
           "id": 54,
@@ -3349,7 +3434,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         },
         {
           "id": 55,
@@ -3358,7 +3445,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3387,6 +3476,8 @@
       "tglTiket": "2026-10-15T06:11:57.890Z",
       "createdAt": "2026-10-15T06:11:57.897Z",
       "updatedAt": "2026-10-16T09:37:02.021Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 52,
@@ -3395,7 +3486,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3424,6 +3517,8 @@
       "tglTiket": "2026-10-15T06:02:54.147Z",
       "createdAt": "2026-10-15T06:02:54.195Z",
       "updatedAt": "2026-10-16T07:22:33.069Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 51,
@@ -3432,7 +3527,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "READY",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         },
         {
           "id": 56,
@@ -3441,7 +3538,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "READY",
-          "sumberPart": "KATALOG"
+          "sumberPart": "KATALOG",
+          "editedAt": null,
+          "editedBy": null
         },
         {
           "id": 57,
@@ -3450,7 +3549,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "READY",
-          "sumberPart": "KATALOG"
+          "sumberPart": "KATALOG",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3479,6 +3580,8 @@
       "tglTiket": "2026-10-15T06:02:15.181Z",
       "createdAt": "2026-10-15T06:02:15.197Z",
       "updatedAt": "2026-10-16T16:17:14.946Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 50,
@@ -3487,7 +3590,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3516,6 +3621,8 @@
       "tglTiket": "2026-10-15T06:01:29.030Z",
       "createdAt": "2026-10-15T06:01:29.046Z",
       "updatedAt": "2026-10-16T07:22:32.977Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 49,
@@ -3524,7 +3631,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3553,6 +3662,8 @@
       "tglTiket": "2026-10-15T06:00:47.438Z",
       "createdAt": "2026-10-15T06:00:47.443Z",
       "updatedAt": "2026-10-16T16:24:34.599Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 48,
@@ -3561,7 +3672,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3590,6 +3703,8 @@
       "tglTiket": "2026-10-15T05:59:23.518Z",
       "createdAt": "2026-10-15T05:59:23.534Z",
       "updatedAt": "2026-10-16T07:22:32.866Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 47,
@@ -3598,7 +3713,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3627,6 +3744,8 @@
       "tglTiket": "2026-10-15T05:56:54.440Z",
       "createdAt": "2026-10-15T05:56:54.455Z",
       "updatedAt": "2026-10-16T08:31:21.441Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 46,
@@ -3635,7 +3754,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3664,6 +3785,8 @@
       "tglTiket": "2026-10-15T05:55:55.873Z",
       "createdAt": "2026-10-15T05:55:55.879Z",
       "updatedAt": "2026-10-16T07:22:32.727Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 45,
@@ -3672,7 +3795,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3701,6 +3826,8 @@
       "tglTiket": "2026-10-15T05:52:36.180Z",
       "createdAt": "2026-10-15T05:52:36.199Z",
       "updatedAt": "2026-10-16T07:22:32.657Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 44,
@@ -3709,7 +3836,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3738,6 +3867,8 @@
       "tglTiket": "2026-10-15T05:46:21.837Z",
       "createdAt": "2026-10-15T05:46:21.867Z",
       "updatedAt": "2026-10-16T16:03:25.244Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 42,
@@ -3746,7 +3877,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         },
         {
           "id": 43,
@@ -3755,7 +3888,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3784,6 +3919,8 @@
       "tglTiket": "2026-10-15T05:43:15.080Z",
       "createdAt": "2026-10-15T05:43:15.086Z",
       "updatedAt": "2026-10-16T08:28:55.204Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 41,
@@ -3792,7 +3929,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3821,6 +3960,8 @@
       "tglTiket": "2026-10-15T05:42:09.929Z",
       "createdAt": "2026-10-15T05:42:09.946Z",
       "updatedAt": "2026-10-16T07:22:32.433Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 40,
@@ -3829,7 +3970,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3858,6 +4001,8 @@
       "tglTiket": "2026-10-15T05:40:17.497Z",
       "createdAt": "2026-10-15T05:40:17.513Z",
       "updatedAt": "2026-10-16T16:08:41.004Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 39,
@@ -3866,7 +4011,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3895,6 +4042,8 @@
       "tglTiket": "2026-10-15T05:38:49.930Z",
       "createdAt": "2026-10-15T05:38:49.947Z",
       "updatedAt": "2026-10-16T16:05:09.321Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 38,
@@ -3903,7 +4052,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3932,6 +4083,8 @@
       "tglTiket": "2026-10-15T05:37:49.322Z",
       "createdAt": "2026-10-15T05:37:49.338Z",
       "updatedAt": "2026-10-16T07:48:16.614Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 37,
@@ -3940,7 +4093,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -3969,6 +4124,8 @@
       "tglTiket": "2026-10-15T05:36:57.892Z",
       "createdAt": "2026-10-15T05:36:57.908Z",
       "updatedAt": "2026-10-16T07:22:32.292Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 36,
@@ -3977,7 +4134,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4006,6 +4165,8 @@
       "tglTiket": "2026-10-15T05:36:01.333Z",
       "createdAt": "2026-10-15T05:36:01.349Z",
       "updatedAt": "2026-10-16T16:21:00.332Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 35,
@@ -4014,7 +4175,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4043,6 +4206,8 @@
       "tglTiket": "2026-10-15T05:34:46.494Z",
       "createdAt": "2026-10-15T05:34:46.501Z",
       "updatedAt": "2026-10-16T08:25:35.169Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 34,
@@ -4051,7 +4216,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4080,6 +4247,8 @@
       "tglTiket": "2026-10-15T05:29:49.815Z",
       "createdAt": "2026-10-15T05:29:49.831Z",
       "updatedAt": "2026-10-16T16:07:41.573Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 33,
@@ -4088,7 +4257,9 @@
           "qty": 9,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4117,6 +4288,8 @@
       "tglTiket": "2026-10-15T05:28:56.200Z",
       "createdAt": "2026-10-15T05:28:56.216Z",
       "updatedAt": "2026-10-16T16:07:04.287Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 32,
@@ -4125,7 +4298,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4154,6 +4329,8 @@
       "tglTiket": "2026-10-15T05:27:46.945Z",
       "createdAt": "2026-10-15T05:27:46.960Z",
       "updatedAt": "2026-10-16T16:01:02.658Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 31,
@@ -4162,7 +4339,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4191,6 +4370,8 @@
       "tglTiket": "2026-10-15T04:53:14.467Z",
       "createdAt": "2026-10-15T04:53:14.493Z",
       "updatedAt": "2026-10-16T06:00:50.802Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 30,
@@ -4199,7 +4380,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4228,6 +4411,8 @@
       "tglTiket": "2026-10-15T04:51:23.765Z",
       "createdAt": "2026-10-15T04:51:23.800Z",
       "updatedAt": "2026-10-16T06:00:50.769Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 29,
@@ -4236,7 +4421,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4265,6 +4452,8 @@
       "tglTiket": "2026-10-14T05:20:38.638Z",
       "createdAt": "2026-10-14T05:20:38.660Z",
       "updatedAt": "2026-10-15T00:13:23.406Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 28,
@@ -4273,7 +4462,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4302,6 +4493,8 @@
       "tglTiket": "2026-10-14T05:19:03.719Z",
       "createdAt": "2026-10-14T05:19:03.736Z",
       "updatedAt": "2026-10-15T00:40:10.945Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 27,
@@ -4310,7 +4503,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "READY",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4339,6 +4534,8 @@
       "tglTiket": "2026-10-14T05:17:49.433Z",
       "createdAt": "2026-10-14T05:17:49.449Z",
       "updatedAt": "2026-10-15T00:31:20.295Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 26,
@@ -4347,7 +4544,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4376,6 +4575,8 @@
       "tglTiket": "2026-10-14T05:15:49.705Z",
       "createdAt": "2026-10-14T05:15:49.722Z",
       "updatedAt": "2026-10-15T00:41:21.633Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 25,
@@ -4384,7 +4585,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4413,6 +4616,8 @@
       "tglTiket": "2026-10-14T05:14:58.997Z",
       "createdAt": "2026-10-14T05:14:59.014Z",
       "updatedAt": "2026-10-15T06:31:40.451Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 24,
@@ -4421,7 +4626,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4450,6 +4657,8 @@
       "tglTiket": "2026-10-14T05:13:45.740Z",
       "createdAt": "2026-10-14T05:13:45.757Z",
       "updatedAt": "2026-10-15T06:14:53.758Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 23,
@@ -4458,7 +4667,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4487,6 +4698,8 @@
       "tglTiket": "2026-10-14T05:12:35.093Z",
       "createdAt": "2026-10-14T05:12:35.109Z",
       "updatedAt": "2026-10-15T06:14:53.736Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 22,
@@ -4495,7 +4708,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4524,6 +4739,8 @@
       "tglTiket": "2026-10-14T05:11:24.317Z",
       "createdAt": "2026-10-14T05:11:24.334Z",
       "updatedAt": "2026-10-15T06:14:53.713Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 21,
@@ -4532,7 +4749,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4561,6 +4780,8 @@
       "tglTiket": "2026-10-14T05:09:59.922Z",
       "createdAt": "2026-10-14T05:09:59.965Z",
       "updatedAt": "2026-10-15T06:14:53.690Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 20,
@@ -4569,7 +4790,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4598,6 +4821,8 @@
       "tglTiket": "2026-10-14T05:09:01.176Z",
       "createdAt": "2026-10-14T05:09:01.193Z",
       "updatedAt": "2026-10-15T06:14:53.667Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 19,
@@ -4606,7 +4831,9 @@
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4635,6 +4862,8 @@
       "tglTiket": "2026-10-14T04:46:04.860Z",
       "createdAt": "2026-10-14T04:46:04.887Z",
       "updatedAt": "2026-10-15T05:51:23.893Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 18,
@@ -4643,7 +4872,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4672,6 +4903,8 @@
       "tglTiket": "2026-10-14T04:45:01.727Z",
       "createdAt": "2026-10-14T04:45:01.744Z",
       "updatedAt": "2026-10-15T05:51:23.864Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 17,
@@ -4680,7 +4913,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4709,6 +4944,8 @@
       "tglTiket": "2026-10-14T04:29:50.983Z",
       "createdAt": "2026-10-14T04:29:51.001Z",
       "updatedAt": "2026-10-15T05:51:23.841Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": []
     },
     {
@@ -4736,6 +4973,8 @@
       "tglTiket": "2026-10-14T04:28:45.514Z",
       "createdAt": "2026-10-14T04:28:45.532Z",
       "updatedAt": "2026-10-15T05:51:23.817Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 15,
@@ -4744,7 +4983,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4773,6 +5014,8 @@
       "tglTiket": "2026-10-14T04:27:49.344Z",
       "createdAt": "2026-10-14T04:27:50.190Z",
       "updatedAt": "2026-10-15T05:51:23.792Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 14,
@@ -4781,7 +5024,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -4810,6 +5055,8 @@
       "tglTiket": "2026-10-14T04:25:03.957Z",
       "createdAt": "2026-10-14T04:25:03.982Z",
       "updatedAt": "2026-10-15T05:51:23.763Z",
+      "editedAt": null,
+      "editedBy": null,
       "parts": [
         {
           "id": 13,
@@ -4818,7 +5065,9 @@
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN"
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     }
@@ -4895,6 +5144,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 550,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "TEST-KOR-B",
+      "deskripsi": "Kode koreksi part otomatis masuk katalog: Part B Uji Coba (tiket SV-TEST-KOREKSI)",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-17T22:51:35.686Z"
+    },
     {
       "id": 549,
       "aksi": "UPDATE_UNIT_ASSET",
