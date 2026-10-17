@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T22:22:28.068Z",
+  "generatedAt": "2026-10-17T22:30:18.542Z",
   "masterToko": [
     {
       "id": 216,
@@ -2911,7 +2911,7 @@
     },
     {
       "id": 175,
-      "serialNumber": "AH33145",
+      "serialNumber": "AH331145",
       "modelUnit": "PS226BIT",
       "merk": "SHIMIZU",
       "nama": "",
@@ -4895,6 +4895,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 548,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AH331145",
+      "deskripsi": "Data unit diperbarui: serialNumber (AH33145 → AH331145) [KOREKSI nomor seri unit bertiket oleh Admin/Manager — salah ketik registrasi]",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-17T22:30:18.517Z"
+    },
     {
       "id": 547,
       "aksi": "DELETE_UNIT_ASSET",
