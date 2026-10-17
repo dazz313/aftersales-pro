@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T22:21:34.582Z",
+  "generatedAt": "2026-10-17T22:22:28.068Z",
   "masterToko": [
     {
       "id": 216,
@@ -2910,18 +2910,6 @@
       "createdAt": "2026-07-23T16:00:00.000Z"
     },
     {
-      "id": 201,
-      "serialNumber": "AH331145",
-      "modelUnit": "PS-226BIT",
-      "merk": "Shimizu",
-      "nama": "",
-      "tokoId": 242,
-      "customerId": null,
-      "statusGaransi": "STOK_TOKO",
-      "tglPembelian": null,
-      "createdAt": "2026-09-21T00:00:00.000Z"
-    },
-    {
       "id": 175,
       "serialNumber": "AH33145",
       "modelUnit": "PS226BIT",
@@ -4907,6 +4895,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 547,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AH331145",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): AH331145 — PS-226BIT",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-17T22:22:28.050Z"
+    },
     {
       "id": 546,
       "aksi": "UPDATE_UNIT_ASSET",
