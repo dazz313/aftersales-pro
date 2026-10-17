@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T23:14:53.000Z",
+  "generatedAt": "2026-10-17T23:18:16.356Z",
   "masterToko": [
     {
       "id": 216,
@@ -638,6 +638,20 @@
       "createdAt": "2026-10-17T23:14:52.943Z"
     },
     {
+      "id": 325,
+      "kodePart": "2M90061 A",
+      "namaPart": "FAN COVER PS 226",
+      "brandKompatibel": "SHIMIZU",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-17T23:18:16.250Z"
+    },
+    {
       "id": 254,
       "kodePart": "3KG0034B",
       "namaPart": "GAS VALVE KG-302",
@@ -660,7 +674,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 2,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T04:51:23.770Z"
@@ -4362,20 +4376,20 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T04:51:23.765Z",
       "createdAt": "2026-10-15T04:51:23.800Z",
-      "updatedAt": "2026-10-16T06:00:50.769Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-17T23:18:16.327Z",
+      "editedAt": "2026-10-17T23:18:16.325Z",
+      "editedBy": "dazz",
       "parts": [
         {
           "id": 29,
           "serviceRequestId": 21,
-          "sparepartId": 298,
+          "sparepartId": 325,
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
+          "editedAt": "2026-10-17T23:18:16.312Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -5096,6 +5110,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 558,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SV-20261015-0001",
+      "deskripsi": "Koreksi part [edited]: kode 3M90119D → 2M90061 A, nama \"Fan cover ( model Lama pake Baut )\" → \"FAN COVER PS 226\" — terpakai 3M90119D -1 → 2M90061 A +1",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-17T23:18:16.338Z"
+    },
+    {
+      "id": 557,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "2M90061 A",
+      "deskripsi": "Kode koreksi part otomatis masuk katalog: FAN COVER PS 226 (tiket SV-20261015-0001)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-17T23:18:16.276Z"
+    },
     {
       "id": 556,
       "aksi": "CREATE_SERVICE_REQUEST",
