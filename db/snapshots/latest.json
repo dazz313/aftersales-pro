@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T22:51:35.723Z",
+  "generatedAt": "2026-10-17T22:54:16.273Z",
   "masterToko": [
     {
       "id": 216,
@@ -702,7 +702,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T06:13:48.948Z"
@@ -1926,34 +1926,6 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
-      "id": 322,
-      "kodePart": "TEST-KOR-A",
-      "namaPart": "Part A Uji Coba",
-      "brandKompatibel": "",
-      "supplier": "",
-      "stokJual": 7,
-      "stokGaransi": 0,
-      "stokInventory": 7,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-17T22:51:35.599Z"
-    },
-    {
-      "id": 323,
-      "kodePart": "TEST-KOR-B",
-      "namaPart": "Part B Uji Coba",
-      "brandKompatibel": "UJI",
-      "supplier": "",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-17T22:51:35.657Z"
-    },
-    {
       "id": 280,
       "kodePart": "V569-00-100",
       "namaPart": "PIEZO UNIT (R/L)",
@@ -3010,18 +2982,6 @@
       "createdAt": "2026-09-21T16:00:00.000Z"
     },
     {
-      "id": 202,
-      "serialNumber": "TEST-KOREKSI-UJI-01",
-      "modelUnit": "Uji Koreksi Unit",
-      "merk": "UJI",
-      "nama": "",
-      "tokoId": null,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-17T22:51:35.582Z"
-    },
-    {
       "id": 168,
       "serialNumber": "ZD152841",
       "modelUnit": "PS-230 BIT",
@@ -3348,47 +3308,6 @@
   ],
   "serviceRequest": [
     {
-      "id": 45,
-      "noTiket": "SV-TEST-KOREKSI",
-      "unitAssetId": 202,
-      "status": "FINISH",
-      "noSttb": null,
-      "sumberLaporan": "MANUAL",
-      "tipeCustomer": "PERORANGAN",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
-      "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": null,
-      "fotoKerusakanWa": null,
-      "fotoNotaStempel": "uji-nota.jpg",
-      "tandaTanganDigital": null,
-      "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
-      "biayaJasa": 0,
-      "tglFinish": "2026-10-17T22:51:35.611Z",
-      "tglTiket": "2026-10-17T22:51:35.614Z",
-      "createdAt": "2026-10-17T22:51:35.614Z",
-      "updatedAt": "2026-10-17T22:51:35.614Z",
-      "editedAt": null,
-      "editedBy": null,
-      "parts": [
-        {
-          "id": 58,
-          "serviceRequestId": 45,
-          "sparepartId": 322,
-          "qty": 2,
-          "statusPart": "READY",
-          "statusKonfirmasi": "READY",
-          "sumberPart": "KATALOG",
-          "editedAt": null,
-          "editedBy": null
-        }
-      ]
-    },
-    {
       "id": 44,
       "noTiket": "SV-20261015-0024",
       "unitAssetId": 198,
@@ -3412,25 +3331,14 @@
       "tglFinish": "2026-10-16T09:36:33.628Z",
       "tglTiket": "2026-10-15T06:13:48.916Z",
       "createdAt": "2026-10-15T06:13:48.981Z",
-      "updatedAt": "2026-10-16T09:36:33.629Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-17T22:54:16.241Z",
+      "editedAt": "2026-10-17T22:54:16.237Z",
+      "editedBy": "dazz",
       "parts": [
         {
           "id": 53,
           "serviceRequestId": 44,
           "sparepartId": 317,
-          "qty": 1,
-          "statusPart": "READY",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        },
-        {
-          "id": 54,
-          "serviceRequestId": 44,
-          "sparepartId": 318,
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
@@ -5145,13 +5053,13 @@
   ],
   "auditLog": [
     {
-      "id": 550,
-      "aksi": "CREATE_MASTER_SPAREPART",
-      "entitas": "master_sparepart",
-      "entitasId": "TEST-KOR-B",
-      "deskripsi": "Kode koreksi part otomatis masuk katalog: Part B Uji Coba (tiket SV-TEST-KOREKSI)",
-      "aktor": "ADMIN",
-      "createdAt": "2026-10-17T22:51:35.686Z"
+      "id": 554,
+      "aksi": "HAPUS_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SV-20261015-0024",
+      "deskripsi": "Koreksi salah input: baris 3P10799C ×1 (READY) dihapus dari tiket [TIKET FINISH — koreksi Admin/Manager]",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-17T22:54:16.252Z"
     },
     {
       "id": 549,
