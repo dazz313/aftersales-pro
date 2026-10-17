@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
-import { requireActiveSession } from '@/lib/auth-server'
+import { requireActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 const MAKS_HAPUS = 500
 
@@ -14,7 +14,9 @@ export async function POST(request: Request) {
   try {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
-    void session
+    // Hapus massal = aksi berbahaya, sama seperti toko/bulk-delete: khusus Admin Workshop/Manager
+    const roleDenied = requireManagerSession(session)
+    if (roleDenied) return roleDenied
     const body = (await request.json()) as { ids?: unknown; aktor?: string }
     const mentah = Array.isArray(body.ids) ? body.ids : []
     const ids = [...new Set(mentah.map((v) => Number(v)).filter((n) => Number.isFinite(n) && n > 0))]

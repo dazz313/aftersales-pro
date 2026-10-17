@@ -37,19 +37,21 @@ function cp(src, dest) {
 console.log('→ next build (standalone)...')
 // Panggil CLI Next.js langsung via node (tanpa shell) agar argumen tidak
 // digabung/di-escape ulang — menghindari deprecation DEP0190 & injection.
-// Alternatif di luar: npx next build (pakai shell) — tidak digunakan lagi.
 const nextCli = path.join(ROOT, 'node_modules', 'next', 'dist', 'bin', 'next')
-const nextArgs = fs.existsSync(nextCli) ? [nextCli, 'build'] : [] // fallback npx
-if (nextArgs.length === 0) console.warn('! CLI Next.js tidak ditemukan, fallback ke npx...')
-const res = spawnSync(
-  nextArgs.length === 2 ? process.execPath : process.platform === 'win32' ? 'npx.cmd' : 'npx',
-  nextArgs.length === 2 ? nextArgs.slice(1) : ['next', 'build'],
-  {
-    cwd: ROOT,
-    stdio: 'inherit',
-    env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || 'file:./db/custom.db', NEXT_TELEMETRY_DISABLED: '1' },
-  }
-)
+let cmd, args
+if (fs.existsSync(nextCli)) {
+  cmd = process.execPath
+  args = [nextCli, 'build']
+} else {
+  console.warn('! CLI Next.js tidak ditemukan, fallback ke npx...')
+  cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+  args = ['next', 'build']
+}
+const res = spawnSync(cmd, args, {
+  cwd: ROOT,
+  stdio: 'inherit',
+  env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || 'file:./db/custom.db', NEXT_TELEMETRY_DISABLED: '1' },
+})
 if (res.status !== 0) {
   console.error('✗ next build gagal')
   process.exit(1)

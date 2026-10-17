@@ -16,6 +16,7 @@
     "db:reset": "prisma migrate reset",
     "mcp": "node mcp/server.mjs",
     "mcp:test": "node scripts/test-mcp.mjs",
+    "tg:poll": "node mini-services/tg-polling.mjs",
     "icon": "node scripts/make-icon.mjs",
     "desktop:dev": "electron electron/main.js",
     "desktop:build": "node scripts/build-desktop.mjs"

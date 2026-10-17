@@ -3,18 +3,9 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { hashPassword } from '@/lib/auth-node'
-import { getActiveSession } from '@/lib/auth-server'
+import { getActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 const USER_PUBLIC = { id: true, nama: true, email: true, username: true, kodeTeknisi: true, role: true, noWa: true, wilayahKerja: true, aktif: true, createdAt: true }
-
-/** Hanya Admin Workshop & Manager boleh kelola akun karyawan */
-async function requireManager(request: Request): Promise<NextResponse | null> {
-  const session = await getActiveSession(request)
-  if (!session || !['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)) {
-    return NextResponse.json({ error: 'Akses ditolak: hanya Admin Workshop/Manager' }, { status: 403 })
-  }
-  return null
-}
 
 // GET /api/pengguna - list karyawan (tanpa passwordHash)
 export async function GET() {
@@ -33,7 +24,8 @@ export async function GET() {
 // POST /api/pengguna — karyawan baru (username & password opsional)
 export async function POST(request: Request) {
   try {
-    const denied = await requireManager(request)
+    const session = await getActiveSession(request)
+    const denied = requireManagerSession(session)
     if (denied) return denied
     const body = await request.json()
     if (!body.nama || !body.email) {

@@ -25,17 +25,21 @@ import {
 import { cn } from '@/lib/utils'
 import { authHeaders, clearSessionToken, fetcher } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
+import dynamic from 'next/dynamic'
 import DashboardView from '@/components/views/dashboard-view'
-import AnalisaAiView from '@/components/views/analisa-ai-view'
-import InboxView from '@/components/views/inbox-view'
-import ServiceView from '@/components/views/service-view'
-import GatewayView from '@/components/views/gateway-view'
-import FieldOpsView from '@/components/views/field-ops-view'
-import InventoryView from '@/components/views/inventory-view'
-import SparepartFinderView from '@/components/views/sparepart-finder-view'
-import MasterDataView from '@/components/views/master-data-view'
-import ClaimView from '@/components/views/claim-view'
-import SettingsView from '@/components/views/settings-view'
+// View berat (~440KB total) di-bundle on-demand: dipisah per chunk & hanya
+// dimuat saat menunya pertama kali dibuka — mempercepat load & mengurangi
+// re-render lintas view. Dashboard tetap statis (view awal aplikasi).
+const AnalisaAiView = dynamic(() => import('@/components/views/analisa-ai-view'), { ssr: false })
+const InboxView = dynamic(() => import('@/components/views/inbox-view'), { ssr: false })
+const ServiceView = dynamic(() => import('@/components/views/service-view'), { ssr: false })
+const GatewayView = dynamic(() => import('@/components/views/gateway-view'), { ssr: false })
+const FieldOpsView = dynamic(() => import('@/components/views/field-ops-view'), { ssr: false })
+const InventoryView = dynamic(() => import('@/components/views/inventory-view'), { ssr: false })
+const SparepartFinderView = dynamic(() => import('@/components/views/sparepart-finder-view'), { ssr: false })
+const MasterDataView = dynamic(() => import('@/components/views/master-data-view'), { ssr: false })
+const ClaimView = dynamic(() => import('@/components/views/claim-view'), { ssr: false })
+const SettingsView = dynamic(() => import('@/components/views/settings-view'), { ssr: false })
 import AutoBackupWatcher from '@/components/auto-backup-watcher'
 import CompanyLogo from '@/components/company-logo'
 import QuickActions from '@/components/quick-entry'

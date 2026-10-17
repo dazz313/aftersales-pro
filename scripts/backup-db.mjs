@@ -42,8 +42,11 @@ if (!fs.existsSync(dbPath)) {
 fs.mkdirSync(BACKUP_DIR, { recursive: true })
 const d = new Date()
 const p2 = (n) => String(n).padStart(2, '0')
-const stamp = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}`
+const stamp = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}`
 const dest = path.join(BACKUP_DIR, `custom-${stamp}.db`)
+// Bila file dengan stamp sama sudah ada (backup rapat/jam dipercepat), hapus
+// dulu — VACUUM INTO menolak menulis ke file yang sudah ada.
+if (fs.existsSync(dest)) fs.unlinkSync(dest)
 
 const db = new PrismaClient()
 try {
@@ -60,7 +63,7 @@ try {
 // Rotasi: sisakan KEEP file terbaru (nama ber-sort kronologis)
 const files = fs
   .readdirSync(BACKUP_DIR)
-  .filter((f) => /^custom-\d{4}-\d{2}-\d{2}-\d{4}\.db$/.test(f))
+  .filter((f) => /^custom-\d{4}-\d{2}-\d{2}-\d{4,6}\.db$/.test(f))
   .sort()
 for (const f of files.slice(0, Math.max(files.length - KEEP, 0))) {
   fs.unlinkSync(path.join(BACKUP_DIR, f))
