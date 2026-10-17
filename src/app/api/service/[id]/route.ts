@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit, generateNoSttb } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
+import type { SessionPayload } from '@/lib/auth'
 import { catatBankKode } from '@/lib/bank-kode'
 
 // GET /api/service/[id] - detail satu tiket
@@ -32,6 +33,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 /**
+ * Koreksi part tiket FINISH hanya oleh Admin Workshop/Manager + flag disengaja
+ * dari UI (`koreksiSelesai`) — pelindung riwayat tetap berlaku untuk role lain.
+ */
+function bolehKoreksiSelesai(flag: unknown, session: SessionPayload | null) {
+  return Boolean(flag) && !!session && ['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)
+}
+
+/**
  * PATCH /api/service/[id] - Transisi workflow tiket
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
@@ -47,7 +56,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
-    void session
     const { id } = await params
     const body = await request.json()
     const ticketId = Number(id)
@@ -663,8 +671,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     // READY via penerimaan order (konfirmasi masih MENUNGGU) = stok brand tak
     // tersentuh → hanya kurangi hitungan terpakai; ORDER = hapus baris saja.
     if (aksi === 'HAPUS_PART') {
-      if (existing.status === 'FINISH') {
-        return NextResponse.json({ error: 'Tiket FINISH tidak dapat dihapus part-nya (riwayat terkunci)' }, { status: 409 })
+      // Tiket FINISH riwayatnya terkunci — KECUALI koreksi disengaja Admin
+      // Workshop/Manager (flag `koreksiSelesai`): tiket diberi tanda "(edited)".
+      if (existing.status === 'FINISH' && !bolehKoreksiSelesai(body.koreksiSelesai, session)) {
+        return NextResponse.json(
+          { error: `Tiket FINISH tidak dapat dihapus part-nya (riwayat terkunci — koreksi hanya oleh Admin Workshop/Manager${session && ['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role) ? ' melalui tombol koreksi dengan konfirmasi' : ''})` },
+          { status: 409 }
+        )
       }
       const partId = Number(body.partId)
       if (!partId) {
@@ -687,11 +700,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         if (kembaliStok > 0) await backupSparepartToGit('RETURN', baris.sparepart.kodePart, aktor)
       }
       await db.serviceRequestPart.delete({ where: { id: baris.id } })
+      // Tandai tiket yang pernah dikoreksi setelah FINISH (badge "(edited)" di UI)
+      if (existing.status === 'FINISH' && session) {
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { editedAt: new Date(), editedBy: session.username ?? session.nama } })
+      }
       await logAudit({
         aksi: 'HAPUS_PART_SERVICE',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Koreksi salah input: baris ${baris.sparepart.kodePart} ×${baris.qty} (${baris.statusPart}) dihapus dari tiket${direserve ? ` — stok dikembalikan +${baris.qty}` : ''}`,
+        deskripsi: `Koreksi salah input: baris ${baris.sparepart.kodePart} ×${baris.qty} (${baris.statusPart}) dihapus dari tiket${direserve ? ` — stok dikembalikan +${baris.qty}` : ''}${existing.status === 'FINISH' ? ' [TIKET FINISH — koreksi Admin/Manager]' : ''}`,
         aktor,
       })
       const updated = await db.serviceRequest.findUnique({
@@ -705,8 +722,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     // Aksi koreksi: ubah qty baris part (kelebihan/kekurangan input).
     // Naik → reserve tambahan (stok harus cukup bila READY); turun → stok dikembalikan.
     if (aksi === 'UBAH_QTY_PART') {
-      if (existing.status === 'FINISH') {
-        return NextResponse.json({ error: 'Tiket FINISH tidak dapat diubah part-nya (riwayat terkunci)' }, { status: 409 })
+      if (existing.status === 'FINISH' && !bolehKoreksiSelesai(body.koreksiSelesai, session)) {
+        return NextResponse.json(
+          { error: `Tiket FINISH tidak dapat diubah part-nya (riwayat terkunci — koreksi hanya oleh Admin Workshop/Manager${session && ['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role) ? ' melalui tombol koreksi dengan konfirmasi' : ''})` },
+          { status: 409 }
+        )
       }
       const partId = Number(body.partId)
       const qtyBaru = Math.trunc(Number(body.qty) || 0)
@@ -753,19 +773,191 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           await backupSparepartToGit('RETURN', sp.kodePart, aktor)
         }
       }
-      await db.serviceRequestPart.update({ where: { id: baris.id }, data: { qty: qtyBaru } })
+      await db.serviceRequestPart.update({
+        where: { id: baris.id },
+        data: {
+          qty: qtyBaru,
+          // Koreksi qty pada FINISH → baris ikut ditandai "(edited)"
+          ...(existing.status === 'FINISH' && session ? { editedAt: new Date(), editedBy: session.username ?? session.nama } : {}),
+        },
+      })
       await logAudit({
         aksi: 'UBAH_QTY_PART_SERVICE',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Koreksi qty: ${baris.sparepart.kodePart} ${baris.qty} → ${qtyBaru}${selisih !== 0 && baris.statusPart === 'READY' ? (selisih > 0 ? ` (reserve tambahan +${selisih})` : ` (stok dikembalikan +${-selisih})`) : ''}`,
+        deskripsi: `Koreksi qty: ${baris.sparepart.kodePart} ${baris.qty} → ${qtyBaru}${selisih !== 0 && baris.statusPart === 'READY' ? (selisih > 0 ? ` (reserve tambahan +${selisih})` : ` (stok dikembalikan +${-selisih})`) : ''}${existing.status === 'FINISH' ? ' [TIKET FINISH — koreksi Admin/Manager]' : ''}`,
         aktor,
       })
+      if (existing.status === 'FINISH' && session) {
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { editedAt: new Date(), editedBy: session.username ?? session.nama } })
+      }
       const updated = await db.serviceRequest.findUnique({
         where: { id: ticketId },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi koreksi Admin Workshop/Manager: ubah kode/nama dan/atau qty SATU baris
+    // part — termasuk tiket FINISH (kesalahan input baru ketahuan setelah selesai).
+    // Setiap baris yang dikoreksi & tiketnya ditandai editedAt/editedBy → badge
+    // kecil "(edited)" di UI; riwayat lengkap tersimpan di Audit Log.
+    // Logika stok mengikuti aturan HAPUS_PART/UBAH_QTY_PART agar stok tetap benar.
+    if (aksi === 'KOREKSI_PART') {
+      if (!session || !['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)) {
+        return NextResponse.json({ error: 'Koreksi part hanya oleh Admin Workshop/Manager' }, { status: 403 })
+      }
+      const partId = Number(body.partId)
+      if (!partId) {
+        return NextResponse.json({ error: 'Baris part wajib dipilih' }, { status: 400 })
+      }
+      const baris = existing.parts.find((p) => p.id === partId)
+      if (!baris) {
+        return NextResponse.json({ error: 'Part tidak ditemukan di tiket ini' }, { status: 404 })
+      }
+      const editedBy = session.username ?? session.nama
+      const kodeInput = String(body.kodePart ?? '').trim().toUpperCase()
+      const namaInput = String(body.namaPart ?? '').trim()
+      const qtyInput = body.qty === undefined || body.qty === null || body.qty === '' ? baris.qty : Math.trunc(Number(body.qty) || 0)
+      if (!kodeInput) {
+        return NextResponse.json({ error: 'Kode part tidak boleh kosong' }, { status: 400 })
+      }
+      if (qtyInput < 1) {
+        return NextResponse.json({ error: 'Qty minimal 1 — untuk membuang baris part pakai tombol hapus' }, { status: 400 })
+      }
+      const kodeBerubah = kodeInput !== baris.sparepart.kodePart
+      const namaBerubah = !!namaInput && namaInput !== baris.sparepart.namaPart && !kodeBerubah
+      const selisih = qtyInput - baris.qty
+      if (!kodeBerubah && !namaBerubah && selisih === 0) {
+        return NextResponse.json({ error: 'Tidak ada perubahan data part' }, { status: 400 })
+      }
+      // direserve = READY + konfirmasi READY → stok katalog benar-benar direserve.
+      // READY + konfirmasi MENUNGGU (diterima order per-unit) → stok tak tersentuh,
+      // hanya hitungan terpakai. ORDER_PRODUSEN → belum ada pencatatan stok.
+      const direserve = baris.statusPart === 'READY' && baris.statusKonfirmasi === 'READY'
+      const catatanStok: string[] = []
+      let masterBaruId: number | null = null
+      if (kodeBerubah) {
+        // Kode salah input → relink ke master yang benar (auto-daftar bila belum ada).
+        let baru = await db.masterSparepart.findUnique({ where: { kodePart: kodeInput } })
+        if (!baru) {
+          baru = await db.masterSparepart.create({
+            data: {
+              kodePart: kodeInput,
+              namaPart: namaInput || baris.sparepart.namaPart,
+              brandKompatibel: existing.unitAsset.merk ?? '',
+              supplier: '',
+              stokJual: 0,
+              stokGaransi: 0,
+              stokInventory: 0,
+              reorderLimit: 5,
+              hargaKlaim: 0,
+            },
+          })
+          await catatBankKode({ kode: baru.kodePart, namaPart: baru.namaPart, brandKompatibel: baru.brandKompatibel ?? '', sumber: 'WORKSHOP' })
+          await logAudit({
+            aksi: 'CREATE_MASTER_SPAREPART',
+            entitas: 'master_sparepart',
+            entitasId: baru.kodePart,
+            deskripsi: `Kode koreksi part otomatis masuk katalog: ${baru.namaPart} (tiket ${existing.noTiket})`,
+            aktor,
+          })
+        } else if (namaInput && namaInput !== baru.namaPart) {
+          await db.masterSparepart.update({ where: { id: baru.id }, data: { namaPart: namaInput } })
+        }
+        masterBaruId = baru.id
+        if (baris.statusPart === 'READY') {
+          // Pemakaian dibalikkan pada master LAMA (pattern HAPUS_PART) lalu
+          // dipindahkan ke master BARU (part fisik memang sudah terpasang).
+          if (direserve) {
+            await db.masterSparepart.update({
+              where: { id: baris.sparepartId },
+              data: { stokJual: { increment: baris.qty }, stokInventory: { increment: baris.qty } },
+            })
+            catatanStok.push(`stok ${baris.sparepart.kodePart} dikembalikan +${baris.qty}`)
+            await backupSparepartToGit('RETURN', baris.sparepart.kodePart, aktor)
+          }
+          await db.masterSparepart.update({
+            where: { id: baris.sparepartId },
+            data: { totalTerpakai: Math.max(0, (baris.sparepart.totalTerpakai ?? 0) - baris.qty) },
+          })
+          await db.masterSparepart.update({
+            where: { id: baru.id },
+            data: { totalTerpakai: { increment: qtyInput } },
+          })
+          catatanStok.push(`terpakai ${baris.sparepart.kodePart} -${baris.qty} → ${baru.kodePart} +${qtyInput}`)
+        }
+      } else {
+        // Kode tetap — koreksi nama katalog dan/atau qty (pattern UBAH_QTY_PART).
+        if (namaBerubah) {
+          await db.masterSparepart.update({ where: { id: baris.sparepartId }, data: { namaPart: namaInput } })
+        }
+        if (selisih !== 0 && baris.statusPart === 'READY') {
+          const target = await db.masterSparepart.findUnique({ where: { id: baris.sparepartId } })
+          if (!target) {
+            return NextResponse.json({ error: 'Sparepart tidak ditemukan' }, { status: 404 })
+          }
+          if (direserve) {
+            if (selisih > 0) {
+              if (target.stokInventory < selisih) {
+                return NextResponse.json(
+                  { error: `Stok tidak cukup untuk tambah +${selisih} ${target.kodePart} (sisa ${target.stokInventory}). Restock dulu atau kurangi qty.` },
+                  { status: 409 }
+                )
+              }
+              const ambilJual = Math.min(target.stokJual, selisih)
+              await db.masterSparepart.update({
+                where: { id: target.id },
+                data: {
+                  stokJual: { decrement: ambilJual },
+                  stokGaransi: { decrement: selisih - ambilJual },
+                  stokInventory: { decrement: selisih },
+                },
+              })
+              catatanStok.push(`reserve tambahan +${selisih}`)
+            } else {
+              const kembali = -selisih
+              await db.masterSparepart.update({
+                where: { id: target.id },
+                data: { stokJual: { increment: kembali }, stokInventory: { increment: kembali } },
+              })
+              catatanStok.push(`stok dikembalikan +${kembali}`)
+              await backupSparepartToGit('RETURN', target.kodePart, aktor)
+            }
+          }
+          await db.masterSparepart.update({
+            where: { id: target.id },
+            data: { totalTerpakai: Math.max(0, (target.totalTerpakai ?? 0) + selisih) },
+          })
+          catatanStok.push(`terpakai ${target.kodePart} ${selisih > 0 ? '+' : ''}${selisih}`)
+        }
+      }
+      await db.serviceRequestPart.update({
+        where: { id: baris.id },
+        data: {
+          ...(masterBaruId ? { sparepartId: masterBaruId } : {}),
+          qty: qtyInput,
+          editedAt: new Date(),
+          editedBy,
+        },
+      })
+      await db.serviceRequest.update({ where: { id: ticketId }, data: { editedAt: new Date(), editedBy } })
+      const kataKode = kodeBerubah ? `kode ${baris.sparepart.kodePart} → ${kodeInput}` : `kode ${baris.sparepart.kodePart}`
+      const kataNama = namaInput && namaInput !== baris.sparepart.namaPart ? `, nama "${baris.sparepart.namaPart}" → "${namaInput}"` : ''
+      const kataQty = selisih !== 0 ? `, qty ${baris.qty} → ${qtyInput}` : ''
+      await logAudit({
+        aksi: 'KOREKSI_PART_SERVICE',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Koreksi part [edited]: ${kataKode}${kataNama}${kataQty}${catatanStok.length ? ` — ${catatanStok.join(', ')}` : ''}${existing.statusKlaimProdusen !== 'DRAFT' ? ` (klaim ${existing.statusKlaimProdusen} — nilai klaim mengikuti koreksi)` : ''}`,
+        aktor,
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
       return NextResponse.json(updated)
     }
 

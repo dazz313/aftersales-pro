@@ -39,6 +39,19 @@ const KLAIM_STYLES: Record<string, { label: string; cls: string }> = {
   PAID: { label: 'PAID', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
 }
 
+/** Badge kecil "(edited)" — penanda koreksi data untuk kepentingan pemeriksaan kelak. */
+function BadgeEdited({ waktu, oleh }: { waktu: string; oleh?: string | null }) {
+  return (
+    <Badge
+      variant="outline"
+      className="border-amber-300 bg-amber-50 text-[9px] text-amber-700"
+      title={`Pernah dikoreksi oleh ${oleh ?? '-'} · ${formatTanggal(waktu)} — riwayat lengkap di Audit Log`}
+    >
+      edited
+    </Badge>
+  )
+}
+
 export default function ServiceView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -57,6 +70,10 @@ export default function ServiceView() {
   const [tiketEdit, setTiketEdit] = useState(false)
   const [tiketDesc, setTiketDesc] = useState('')
   const [tiketJasa, setTiketJasa] = useState('0')
+  // Koreksi part (kode/nama/qty) oleh Admin Workshop/Manager — tersimpan dengan
+  // tanda "(edited)" di baris part & tiket untuk audit pemeriksaan kelak.
+  const bisaKoreksiPart = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
+  const [partEdit, setPartEdit] = useState<{ id: number; kode: string; nama: string; qty: string } | null>(null)
   const [finishTarget, setFinishTarget] = useState<ServiceTicket | null>(null)
   const [notaFile, setNotaFile] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
@@ -79,6 +96,7 @@ export default function ServiceView() {
   // Ganti tiket di dialog detail → tutup mode koreksi
   const openDetail = (t: ServiceTicket | null) => {
     setTiketEdit(false)
+    setPartEdit(null)
     setDetail(t)
   }
 
@@ -580,6 +598,7 @@ export default function ServiceView() {
                             <Badge variant="outline" className={st.cls}>{st.label}</Badge>
                             {t.slaFlag && <Badge variant="destructive" className="gap-0.5 text-[9px]"><AlertOctagon className="h-2.5 w-2.5" /> SLA</Badge>}
                             {t.status === 'FINISH' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
+                            {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -703,6 +722,7 @@ export default function ServiceView() {
                 <DialogTitle className="flex flex-wrap items-center gap-2 font-mono text-base">
                   {detail.noTiket}
                   <Badge variant="outline" className={STATUS_STYLES[detail.status].cls}>{STATUS_STYLES[detail.status].label}</Badge>
+                  {detail.editedAt && <BadgeEdited waktu={detail.editedAt} oleh={detail.editedBy} />}
                   {detail.slaFlag && <Badge variant="destructive">SLA TERLAMBAT</Badge>}
                 </DialogTitle>
                 <DialogDescription>
@@ -769,59 +789,107 @@ export default function ServiceView() {
                   ) : (
                     <div className="space-y-1.5">
                       {detail.parts.map((p) => (
-                        <div key={p.id} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
-                          <div className="min-w-0">
-                            <p className="text-xs font-medium text-slate-800">{p.sparepart?.namaPart}</p>
-                            <p className="font-mono text-[10px] text-slate-400">{p.sparepart?.kodePart} · qty {p.qty}</p>
-                            {((p.sparepart?.brandKompatibel?.trim() || p.sparepart?.supplier?.trim())) && (
-                              <p className="text-[10px] text-slate-500">
-                                {[p.sparepart?.brandKompatibel?.trim(), p.sparepart?.supplier?.trim()].filter(Boolean).join(' · ')}
-                              </p>
-                            )}
+                        <div key={p.id} className="rounded-md border px-3 py-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-xs font-medium text-slate-800">{p.sparepart?.namaPart}</p>
+                              <p className="font-mono text-[10px] text-slate-400">{p.sparepart?.kodePart} · qty {p.qty}</p>
+                              {((p.sparepart?.brandKompatibel?.trim() || p.sparepart?.supplier?.trim())) && (
+                                <p className="text-[10px] text-slate-500">
+                                  {[p.sparepart?.brandKompatibel?.trim(), p.sparepart?.supplier?.trim()].filter(Boolean).join(' · ')}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex shrink-0 flex-col items-end gap-1">
+                              <Badge variant="outline" className={p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}>
+                                {p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
+                              </Badge>
+                              {p.editedAt && <BadgeEdited waktu={p.editedAt} oleh={p.editedBy} />}
+                              {p.sumberPart === 'PRODUSEN' && (
+                                <Badge variant="outline" className="border-teal-300 text-[9px] text-teal-700" title="Kode dari balasan produsen — tampil di surat jalan">
+                                  dari Produsen
+                                </Badge>
+                              )}
+                              {p.statusKonfirmasi !== 'MENUNGGU' && (
+                                <Badge variant="outline" className={cn('text-[9px]', p.statusKonfirmasi === 'READY' ? 'border-teal-300 text-teal-700' : 'border-rose-300 text-rose-700')}>
+                                  Produsen: {p.statusKonfirmasi === 'READY' ? 'READY' : 'TIDAK READY'}
+                                </Badge>
+                              )}
+                              {(detail.status !== 'FINISH' || bisaKoreksiPart) && (
+                                <div className="mt-0.5 flex items-center gap-1">
+                                  {bisaKoreksiPart && (
+                                    <Button
+                                      size="sm" variant="outline" className="h-6 w-6 p-0 text-amber-600 hover:bg-amber-50" title="Koreksi kode/nama/qty part — tersimpan dengan tanda (edited) di sistem"
+                                      disabled={flowMutation.isPending}
+                                      onClick={() => setPartEdit({ id: p.id, kode: p.sparepart?.kodePart ?? '', nama: p.sparepart?.namaPart ?? '', qty: String(p.qty) })}
+                                    >
+                                      <Pencil className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm" variant="outline" className="h-6 w-6 p-0" title="Kurangi qty 1"
+                                    disabled={flowMutation.isPending || p.qty <= 1}
+                                    onClick={() => flowMutation.mutate({ id: detail.id, body: { aksi: 'UBAH_QTY_PART', partId: p.id, qty: p.qty - 1, ...(detail.status === 'FINISH' ? { koreksiSelesai: true } : {}) } })}
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm" variant="outline" className="h-6 w-6 p-0" title="Tambah qty 1 (cek stok bila READY)"
+                                    disabled={flowMutation.isPending}
+                                    onClick={() => flowMutation.mutate({ id: detail.id, body: { aksi: 'UBAH_QTY_PART', partId: p.id, qty: p.qty + 1, ...(detail.status === 'FINISH' ? { koreksiSelesai: true } : {}) } })}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm" variant="outline" className="h-6 w-6 p-0 text-rose-600 hover:bg-rose-50" title="Hapus baris part ini (koreksi salah input — stok dikembalikan)"
+                                    disabled={flowMutation.isPending}
+                                    onClick={() => {
+                                      if (!window.confirm(`Hapus ${p.sparepart?.kodePart} ×${p.qty} dari tiket ${detail.noTiket}? Stok yang direserve akan dikembalikan${detail.status === 'FINISH' ? ' — tiket akan tertanda (edited)' : ''}.`)) return
+                                      flowMutation.mutate({ id: detail.id, body: { aksi: 'HAPUS_PART', partId: p.id, ...(detail.status === 'FINISH' ? { koreksiSelesai: true } : {}) } })
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex shrink-0 flex-col items-end gap-1">
-                            <Badge variant="outline" className={p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}>
-                              {p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
-                            </Badge>
-                            {p.sumberPart === 'PRODUSEN' && (
-                              <Badge variant="outline" className="border-teal-300 text-[9px] text-teal-700" title="Kode dari balasan produsen — tampil di surat jalan">
-                                dari Produsen
-                              </Badge>
-                            )}
-                            {p.statusKonfirmasi !== 'MENUNGGU' && (
-                              <Badge variant="outline" className={cn('text-[9px]', p.statusKonfirmasi === 'READY' ? 'border-teal-300 text-teal-700' : 'border-rose-300 text-rose-700')}>
-                                Produsen: {p.statusKonfirmasi === 'READY' ? 'READY' : 'TIDAK READY'}
-                              </Badge>
-                            )}
-                            {detail.status !== 'FINISH' && (
-                              <div className="mt-0.5 flex items-center gap-1">
+                          {partEdit?.id === p.id && (
+                            <div className="mt-2 space-y-2 rounded-md border border-amber-200 bg-amber-50 p-2.5">
+                              <p className="text-[11px] font-semibold text-amber-800">Koreksi part — perubahan tertanda (edited) di sistem &amp; Audit Log untuk pemeriksaan kelak</p>
+                              <div className="grid gap-2 sm:grid-cols-3">
+                                <div className="space-y-1">
+                                  <Label className="text-[10px] text-slate-500">Kode Part</Label>
+                                  <Input value={partEdit.kode} onChange={(e) => setPartEdit({ ...partEdit, kode: e.target.value.toUpperCase() })} className="h-7 font-mono text-[11px]" aria-label="Kode part koreksi" />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-[10px] text-slate-500">Nama Part</Label>
+                                  <Input value={partEdit.nama} onChange={(e) => setPartEdit({ ...partEdit, nama: e.target.value })} className="h-7 text-[11px]" aria-label="Nama part koreksi" />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-[10px] text-slate-500">Qty</Label>
+                                  <Input type="number" min={1} value={partEdit.qty} onChange={(e) => setPartEdit({ ...partEdit, qty: e.target.value })} className="h-7 text-[11px]" aria-label="Qty part koreksi" />
+                                </div>
+                              </div>
+                              {detail.statusKlaimProdusen !== 'DRAFT' && (
+                                <p className="text-[10px] text-amber-700">Klaim sudah {detail.statusKlaimProdusen} — nilai klaim akan mengikuti data hasil koreksi.</p>
+                              )}
+                              <div className="flex items-center justify-end gap-2">
+                                <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => setPartEdit(null)}>Batal</Button>
                                 <Button
-                                  size="sm" variant="outline" className="h-6 w-6 p-0" title="Kurangi qty 1"
-                                  disabled={flowMutation.isPending || p.qty <= 1}
-                                  onClick={() => flowMutation.mutate({ id: detail.id, body: { aksi: 'UBAH_QTY_PART', partId: p.id, qty: p.qty - 1 } })}
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm" variant="outline" className="h-6 w-6 p-0" title="Tambah qty 1 (cek stok bila READY)"
-                                  disabled={flowMutation.isPending}
-                                  onClick={() => flowMutation.mutate({ id: detail.id, body: { aksi: 'UBAH_QTY_PART', partId: p.id, qty: p.qty + 1 } })}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm" variant="outline" className="h-6 w-6 p-0 text-rose-600 hover:bg-rose-50" title="Hapus baris part ini (koreksi salah input — stok dikembalikan)"
-                                  disabled={flowMutation.isPending}
+                                  size="sm"
+                                  className="h-7 bg-emerald-600 text-[11px] hover:bg-emerald-700"
+                                  disabled={!partEdit.kode.trim() || !partEdit.nama.trim() || !(Number(partEdit.qty) >= 1) || flowMutation.isPending}
                                   onClick={() => {
-                                    if (!window.confirm(`Hapus ${p.sparepart?.kodePart} ×${p.qty} dari tiket ${detail.noTiket}? Stok yang direserve akan dikembalikan.`)) return
-                                    flowMutation.mutate({ id: detail.id, body: { aksi: 'HAPUS_PART', partId: p.id } })
+                                    flowMutation.mutate({ id: detail.id, body: { aksi: 'KOREKSI_PART', partId: partEdit.id, kodePart: partEdit.kode.trim().toUpperCase(), namaPart: partEdit.nama.trim(), qty: partEdit.qty } })
+                                    setPartEdit(null)
                                   }}
                                 >
-                                  <Trash2 className="h-3 w-3" />
+                                  Simpan Koreksi
                                 </Button>
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

@@ -158,6 +158,10 @@ model ServiceRequest {
   tglTiket            DateTime            @default(now()) // tanggal kejadian/laporan — boleh backdated (data historis)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+  // Tanda koreksi (mis. salah input part baru ditemukan setelah FINISH) —
+  // ditampilkan sebagai badge kecil "(edited)" untuk kepentingan pemeriksaan.
+  editedAt            DateTime?
+  editedBy            String?
   unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])
   parts               ServiceRequestPart[]
 }
@@ -175,6 +179,10 @@ model ServiceRequestPart {
   statusPart       String          @default("READY")
   statusKonfirmasi String          @default("MENUNGGU")
   sumberPart       String          @default("KATALOG") // KATALOG | PRODUSEN (kode dari balasan produsen)
+  // Tanda koreksi baris part (ubah kode/nama/qty oleh Admin/Manager setelah
+  // tiket selesai) — tampil kecil "(edited)" di UI untuk pemeriksaan kelak.
+  editedAt         DateTime?
+  editedBy         String?
   serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
   sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
 }

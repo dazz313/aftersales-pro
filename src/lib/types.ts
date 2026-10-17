@@ -115,6 +115,9 @@ export interface ServicePart {
   statusPart: 'READY' | 'ORDER_PRODUSEN'
   statusKonfirmasi: 'MENUNGGU' | 'READY' | 'TIDAK_READY'
   sumberPart: 'KATALOG' | 'PRODUSEN'
+  // Tanda koreksi (badge kecil "(edited)" di UI, untuk pemeriksaan kelak)
+  editedAt?: string | null
+  editedBy?: string | null
   sparepart?: Sparepart & { reorderLimit?: number }
 }
 
@@ -169,6 +172,9 @@ export interface ServiceTicket {
   tglTiket: string
   createdAt: string
   updatedAt: string
+  // Tanda koreksi tiket (badge kecil "(edited)" di UI, untuk pemeriksaan kelak)
+  editedAt?: string | null
+  editedBy?: string | null
   unitAsset: UnitAsset & {
     toko?: Toko | null
     customer?: Customer | null

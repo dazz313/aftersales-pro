@@ -21,6 +21,10 @@ import {
   ChevronDown,
   Loader2,
   Sparkles,
+  Store,
+  Users,
+  QrCode,
+  UserCog,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { authHeaders, clearSessionToken, fetcher } from '@/lib/api'
@@ -73,6 +77,15 @@ const ROLE_COLORS: Record<RoleKey, string> = {
   PRODUSEN: 'bg-teal-500',
 }
 
+// Root Master Data — muncul sebagai dropdown di sidebar saat menu Master Data
+// ditekan, sehingga akses langsung ke tab tidak perlu masuk dulu lalu pindah tab.
+const MASTER_TABS: { key: 'toko' | 'customer' | 'unit' | 'karyawan'; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: 'toko', label: 'Toko', icon: Store },
+  { key: 'customer', label: 'Customer', icon: Users },
+  { key: 'unit', label: 'Unit Asset', icon: QrCode },
+  { key: 'karyawan', label: 'Karyawan', icon: UserCog },
+]
+
 function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -83,12 +96,31 @@ function getInitials(name: string): string {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { view, setView, user } = useAppStore()
+  const { view, setView, navigateTo, navIntent, user } = useAppStore()
   const { data: inboxCount } = useQuery({
     queryKey: ['inbox-pending-count'],
     queryFn: () => fetcher<{ items: unknown[]; pending: number }>('/api/inbox?status=PENDING'),
     refetchInterval: 30_000,
   })
+  // Dropdown root Master Data: terbuka otomatis saat sedang berada di Master Data;
+  // tekan menu "Master Data" sekali → dropdown muncul + langsung masuk view-nya.
+  // Pola "adjust state during render" (disetujui React) — bukan effect.
+  const [lastView, setLastView] = useState(view)
+  const [mintaBukaMaster, setMintaBukaMaster] = useState<boolean | null>(null)
+  if (lastView !== view) {
+    setLastView(view)
+    // Datang ke Master Data → dropdown terbuka; keluar → reset ke default
+    setMintaBukaMaster(view === 'master' ? true : null)
+  }
+  const masterBuka = mintaBukaMaster === null ? view === 'master' : mintaBukaMaster
+  const [masterRoot, setMasterRoot] = useState<'toko' | 'customer' | 'unit' | 'karyawan'>('toko')
+  const [lastIntentTs, setLastIntentTs] = useState(0)
+  const intentTs = navIntent?.ts ?? 0
+  if (intentTs !== lastIntentTs) {
+    setLastIntentTs(intentTs)
+    // Masuk Master Data via drill-down lain (mis. Dashboard) → highlight root mengikuti
+    if (navIntent?.masterTab) setMasterRoot(navIntent.masterTab)
+  }
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
@@ -102,30 +134,77 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const active = view === item.key
+          const isMaster = item.key === 'master'
           return (
-            <button
-              key={item.key}
-              onClick={() => {
-                setView(item.key)
-                onNavigate?.()
-              }}
-              className={cn(
-                'group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
-                active ? 'bg-emerald-500/15 text-emerald-300' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              )}
-              aria-current={active ? 'page' : undefined}
-            >
-              <Icon className={cn('h-4.5 w-4.5 shrink-0', active ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white')} />
-              <span className="min-w-0">
-                <span className="block text-sm font-medium leading-tight">{item.label}</span>
-                <span className="block truncate text-xs text-slate-500 leading-tight">{item.desc}</span>
-              </span>
-              {item.key === 'inbox' && (inboxCount?.pending ?? 0) > 0 && (
-                <span className="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                  {inboxCount!.pending}
+            <div key={item.key}>
+              <button
+                onClick={() => {
+                  if (!isMaster) {
+                    setView(item.key)
+                    onNavigate?.()
+                    return
+                  }
+                  if (view !== 'master') {
+                    // Pertama kali ditekan: masuk view + buka dropdown rootnya
+                    navigateTo('master')
+                    setMintaBukaMaster(true)
+                    onNavigate?.()
+                  } else {
+                    // Sudah di Master Data: tekan lagi = buka/tutup dropdown
+                    setMintaBukaMaster(!masterBuka)
+                  }
+                }}
+                className={cn(
+                  'group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                  active ? 'bg-emerald-500/15 text-emerald-300' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                )}
+                aria-current={active ? 'page' : undefined}
+                aria-expanded={isMaster ? masterBuka : undefined}
+              >
+                <Icon className={cn('h-4.5 w-4.5 shrink-0', active ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white')} />
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium leading-tight">{item.label}</span>
+                  <span className="block truncate text-xs text-slate-500 leading-tight">{item.desc}</span>
                 </span>
+                {item.key === 'inbox' && (inboxCount?.pending ?? 0) > 0 && (
+                  <span className="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                    {inboxCount!.pending}
+                  </span>
+                )}
+                {isMaster && (
+                  <ChevronDown
+                    className={cn('ml-auto h-4 w-4 shrink-0 text-slate-500 transition-transform', active && 'text-emerald-400', masterBuka && 'rotate-180')}
+                  />
+                )}
+              </button>
+              {isMaster && masterBuka && (
+                <div className="ml-6 mt-0.5 mb-1 space-y-0.5 border-l border-slate-800 pl-3" aria-label="Pemilihan dalam Master Data">
+                  {MASTER_TABS.map((t) => {
+                    const TIcon = t.icon
+                    const rootAktif = view === 'master' && masterRoot === t.key
+                    return (
+                      <button
+                        key={t.key}
+                        onClick={() => {
+                          setMasterRoot(t.key)
+                          // langsung menuju tab tujuan — tidak perlu buka view lalu cari tab
+                          navigateTo('master', { masterTab: t.key })
+                          onNavigate?.()
+                        }}
+                        className={cn(
+                          'flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs transition-colors',
+                          rootAktif ? 'bg-emerald-500/15 font-semibold text-emerald-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        )}
+                        aria-current={rootAktif ? 'true' : undefined}
+                      >
+                        <TIcon className={cn('h-3.5 w-3.5 shrink-0', rootAktif ? 'text-emerald-400' : 'text-slate-500')} />
+                        {t.label}
+                      </button>
+                    )
+                  })}
+                </div>
               )}
-            </button>
+            </div>
           )
         })}
       </nav>
