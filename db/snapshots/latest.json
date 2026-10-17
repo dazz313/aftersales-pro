@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-17T23:18:16.356Z",
+  "generatedAt": "2026-10-17T23:47:46.575Z",
   "masterToko": [
     {
       "id": 216,
@@ -2276,6 +2276,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-03T16:00:00.000Z"
+    },
+    {
+      "id": 203,
+      "serialNumber": "03020006746",
+      "modelUnit": "KAS-1607",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-09-22T00:00:00.000Z"
     },
     {
       "id": 146,
@@ -5110,6 +5122,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 559,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03020006746",
+      "deskripsi": "Unit baru teregistrasi: KAS-1607 (GARANSI) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-17T23:47:46.550Z"
+    },
     {
       "id": 558,
       "aksi": "KOREKSI_PART_SERVICE",
