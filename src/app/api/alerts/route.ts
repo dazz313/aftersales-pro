@@ -30,15 +30,18 @@ export async function GET() {
     ])
 
     // ===== ALT-01: Toko Melewati Jadwal Kunjungan =====
+    // Toko tidak aktif (dicentang) & mode siklus BY REQUEST dikeluarkan —
+    // kunjungan mereka tidak dijadwal ulang secara otomatis.
     const alerts1 = tokoList
       .map((t) => {
+        if (!t.aktif || t.modeSiklus === 'BY_REQUEST') return null
         if (!t.tglVisitTerakhir) {
           return { toko: t, hariTerlambat: t.frekuensiVisit, neverVisited: true }
         }
         const hariSejak = Math.floor((now - new Date(t.tglVisitTerakhir).getTime()) / (24 * 3600 * 1000))
         return { toko: t, hariSejak, terlambat: hariSejak > t.frekuensiVisit }
       })
-      .filter((x) => x.neverVisited || (x as { terlambat?: boolean }).terlambat)
+      .filter((x) => x !== null && ((x as { neverVisited?: boolean }).neverVisited || (x as { terlambat?: boolean }).terlambat))
       .map((x) => ({
         kode: 'ALT-01',
         nama: 'Toko Melewati Jadwal Kunjungan',

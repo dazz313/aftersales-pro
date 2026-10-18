@@ -82,7 +82,11 @@ export async function POST(request: Request) {
       jarakKm: number | null
     }
 
-    const stats: Stat[] = tokoList.map((t) => {
+    const stats: Stat[] = tokoList
+      // Toko tidak aktif (dicentang) & siklus BY REQUEST bukan kandidat
+      // penjadwalan otomatis — dikecualikan dari analisa frekuensi visit.
+      .filter((t) => t.aktif && t.modeSiklus !== 'BY_REQUEST')
+      .map((t) => {
       const milik = tickets.filter((tk) => tk.unitAsset?.tokoId === t.id)
       const t90 = milik.filter((tk) => new Date(tk.tglTiket).getTime() >= batas90.getTime())
       // Konsistensi: jumlah minggu berbeda (dari 12 minggu terakhir) yang ada laporan

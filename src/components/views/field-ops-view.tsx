@@ -85,13 +85,30 @@ export default function FieldOpsView() {
     [kunjunganList, cariKunjungan]
   )
 
+  // ===== Indikator Field Ops: centang "Tidak aktif" & mode siklus per toko =====
+  // Centang tanda toko berhenti operasional (dikucilkan dari siklus & alert);
+  // mode BY REQUEST = kunjungan hanya dilakukan saat toko meminta.
+  const ubahToko = useMutation({
+    mutationFn: (p: { id: number; aktif?: boolean; modeSiklus?: 'REGULER' | 'BY_REQUEST' }) => {
+      const { id, ...data } = p
+      return postJson<Toko>(`/api/toko/${id}`, { ...data, aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['toko'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['alerts'] })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal memperbarui toko', description: e.message, variant: 'destructive' }),
+  })
+
   // ===== Saran jadwal kunjungan 6 hari kerja (analisa data toko) =====
   // Skor: terlambat dulu (makin lama makin atas, tie-break unit terbanyak),
   // lalu bagi rata ke 6 hari kerja ke depan (lewati Minggu). Teknisi tinggal mengikuti.
   const skorToko = (t: Toko) => (t.visitTerlambat ? 1000 + (t.hariSejakVisit ?? t.frekuensiVisit) : 0) * 100 + t.jumlahUnit
   const isoLokal = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   const saranJadwal = useMemo(() => {
-    const urut = [...(tokoList ?? [])].sort((a, b) => skorToko(b) - skorToko(a))
+    // Toko tidak aktif (dicentang) & mode BY REQUEST tidak dijadwalkan otomatis.
+    const urut = [...(tokoList ?? [])].filter((t) => t.aktif && t.modeSiklus !== 'BY_REQUEST').sort((a, b) => skorToko(b) - skorToko(a))
     const hari: Date[] = []
     const d = new Date()
     while (hari.length < 6) {
@@ -124,7 +141,8 @@ export default function FieldOpsView() {
   const [aiSaran, setAiSaran] = useState<AiRencana | null>(null)
   const aiMut = useMutation({
     mutationFn: () => {
-      const prioritas = [...(tokoList ?? [])].sort((a, b) => skorToko(b) - skorToko(a)).slice(0, 30)
+      // Mode BY REQUEST & toko tidak aktif tidak masuk prioritas AI.
+      const prioritas = [...(tokoList ?? [])].filter((t) => t.aktif && t.modeSiklus !== 'BY_REQUEST').sort((a, b) => skorToko(b) - skorToko(a)).slice(0, 30)
       return postJson<AiRencana>('/api/ai/suggest', {
         stores: prioritas.map((t) => ({
           kode: t.kodeToko,
@@ -640,8 +658,10 @@ export default function FieldOpsView() {
             <div className="grid max-h-[560px] gap-2 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {tokoTampil.map((t) => {
                 const late = t.visitTerlambat
+                const byRequest = t.modeSiklus === 'BY_REQUEST'
+                const nonaktif = !t.aktif
                 return (
-                  <div key={t.id} className={cn('flex items-center gap-2 rounded-lg border px-2.5 py-2 transition hover:shadow-sm', late ? 'border-rose-200 bg-rose-50/50' : 'bg-white')}>
+                  <div key={t.id} className={cn('flex items-center gap-2 rounded-lg border px-2.5 py-2 transition hover:shadow-sm', nonaktif ? 'border-slate-200 bg-slate-100/60 opacity-70' : late ? 'border-rose-200 bg-rose-50/50' : byRequest ? 'border-indigo-200 bg-indigo-50/40' : 'bg-white')}>
                     <div className="min-w-0 flex-1">
                       <button
                         type="button"
@@ -652,16 +672,46 @@ export default function FieldOpsView() {
                         {t.namaToko}
                       </button>
                       <p className="truncate font-mono text-[10px] text-slate-400" title={`${t.kodeToko} · ${t.barcodeToko}`}>
-                        {t.kodeToko} · siklus {t.frekuensiVisit}h · sejak {t.hariSejakVisit ?? '∞'}h · {t.jumlahUnit}u
+                        {t.kodeToko} · {byRequest ? 'siklus by request' : `siklus ${t.frekuensiVisit}h`} · sejak {t.hariSejakVisit ?? '∞'}h · {t.jumlahUnit}u
                       </p>
+                      {/* Indikator 1: centang "Tidak aktif" · Indikator 2: mode siklus (BY REQUEST) */}
+                      <div className="mt-1 flex items-center gap-3">
+                        <label className="flex cursor-pointer items-center gap-1 text-[10px] text-slate-500">
+                          <Checkbox
+                            className="h-3 w-3"
+                            checked={nonaktif}
+                            onCheckedChange={(c) => ubahToko.mutate({ id: t.id, aktif: c !== true })}
+                            aria-label={`Tandai toko ${t.namaToko} tidak aktif`}
+                          />
+                          Tidak aktif
+                        </label>
+                        <select
+                          value={t.modeSiklus}
+                          onChange={(e) => ubahToko.mutate({ id: t.id, modeSiklus: e.target.value as 'REGULER' | 'BY_REQUEST' })}
+                          aria-label={`Mode siklus kunjungan toko ${t.namaToko}`}
+                          title="Mode siklus kunjungan: otomatis per siklus (REGULER) atau hanya saat toko meminta (BY REQUEST)"
+                          className="cursor-pointer rounded border border-slate-200 bg-white px-1 py-0.5 text-[10px] text-slate-600 disabled:opacity-50"
+                          disabled={ubahToko.isPending}
+                        >
+                          <option value="REGULER">Siklus otomatis</option>
+                          <option value="BY_REQUEST">By request</option>
+                        </select>
+                      </div>
                     </div>
-                    <Badge variant="outline" className={cn('shrink-0 text-[9px]', late ? 'border-rose-300 bg-rose-100 text-rose-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700')}>
-                      {late ? 'TERLAMBAT' : 'ON TRACK'}
-                    </Badge>
+                    {!nonaktif && (
+                      <Badge variant="outline" className={cn('shrink-0 text-[9px]', byRequest ? 'border-indigo-300 bg-indigo-100 text-indigo-700' : late ? 'border-rose-300 bg-rose-100 text-rose-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700')}>
+                        {byRequest ? 'BY REQUEST' : late ? 'TERLAMBAT' : 'ON TRACK'}
+                      </Badge>
+                    )}
+                    {nonaktif && (
+                      <Badge variant="outline" className="shrink-0 border-slate-300 bg-slate-200 text-[9px] text-slate-600" title="Toko tidak aktif (dicentang) — dikucilkan dari siklus & alert kunjungan">
+                        TIDAK AKTIF
+                      </Badge>
+                    )}
                     <Button size="sm" variant="outline" className="h-7 w-7 shrink-0 border-slate-200 p-0 text-slate-400 hover:border-teal-300 hover:text-teal-700" onClick={() => setMapToko(t)} aria-label={`Lihat peta ${t.namaToko}`} title="Lihat peta lokasi toko">
                       <MapIcon className="h-3.5 w-3.5" />
                     </Button>
-                    <Button size="sm" className={cn('h-7 w-7 shrink-0 p-0', late ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700')} onClick={() => bukaCheckin(t)} aria-label={`Check-in manual ${t.namaToko}`} title="Check-in Manual">
+                    <Button size="sm" disabled={nonaktif} className={cn('h-7 w-7 shrink-0 p-0', nonaktif && 'opacity-40', late && !nonaktif ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700')} onClick={() => bukaCheckin(t)} aria-label={`Check-in manual ${t.namaToko}`} title={nonaktif ? 'Toko tidak aktif — check-in dinonaktifkan' : 'Check-in Manual'}>
                       <MapPin className="h-3.5 w-3.5" />
                     </Button>
                   </div>

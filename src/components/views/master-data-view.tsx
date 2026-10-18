@@ -110,7 +110,7 @@ export default function MasterDataView() {
   const [resetPwValue, setResetPwValue] = useState('')
   // Edit toko & customer
   const [editToko, setEditToko] = useState<Toko | null>(null)
-  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '' })
+  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '', aktif: true, modeSiklus: 'REGULER' as 'REGULER' | 'BY_REQUEST' })
   // Hapus massal toko (khusus Admin/Manager — centang baris lalu hapus sekaligus)
   const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(new Set())
   const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
@@ -773,7 +773,7 @@ export default function MasterDataView() {
                   </TableHeader>
                   <TableBody>
                     {tokoTampil.map((t) => (
-                      <TableRow key={t.id} className={cn(tokoDipilih.has(t.id) && 'bg-red-50/50')}>
+                      <TableRow key={t.id} className={cn(!t.aktif && 'opacity-60', tokoDipilih.has(t.id) && 'bg-red-50/50')}>
                         {bisaHapusToko && (
                           <TableCell className="pr-0">
                             <Checkbox
@@ -789,10 +789,26 @@ export default function MasterDataView() {
                         </TableCell>
                         <TableCell className="hidden max-w-52 md:table-cell"><p className="truncate text-xs text-slate-600">{t.alamat}</p></TableCell>
                         <TableCell className="hidden text-xs text-slate-600 sm:table-cell">{t.kontak}</TableCell>
-                        <TableCell className="text-xs text-slate-700">{t.frekuensiVisit} hari</TableCell>
+                        <TableCell className="text-xs text-slate-700">
+                          {t.modeSiklus === 'BY_REQUEST' ? (
+                            <Badge variant="outline" className="border-indigo-300 bg-indigo-50 text-[10px] text-indigo-700" title="Kunjungan hanya saat toko meminta — tidak dijadwalkan otomatis">
+                              BY REQUEST
+                            </Badge>
+                          ) : (
+                            <>{t.frekuensiVisit} hari</>
+                          )}
+                        </TableCell>
                         <TableCell className="text-xs text-slate-600">{formatTanggal(t.tglVisitTerakhir)}</TableCell>
                         <TableCell>
-                          {t.visitTerlambat ? (
+                          {!t.aktif ? (
+                            <Badge variant="outline" className="border-slate-400 bg-slate-200 text-[10px] text-slate-600" title="Toko tidak aktif (dicentang di edit) — dikucilkan dari siklus & alert kunjungan">
+                              TIDAK AKTIF
+                            </Badge>
+                          ) : t.modeSiklus === 'BY_REQUEST' ? (
+                            <Badge variant="outline" className="border-indigo-300 bg-indigo-50 text-[10px] text-indigo-700" title="Kunjungan atas permintaan toko">
+                              BY REQUEST
+                            </Badge>
+                          ) : t.visitTerlambat ? (
                             <Badge variant="destructive" className="gap-1 text-[10px]"><MapPinOff className="h-2.5 w-2.5" /> TERLAMBAT</Badge>
                           ) : (
                             <Badge variant="outline" className="gap-1 border-emerald-300 text-[10px] text-emerald-700"><MapPinCheck className="h-2.5 w-2.5" /> ON TRACK</Badge>
@@ -800,7 +816,7 @@ export default function MasterDataView() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit), jarakKm: t.jarakKm !== null && t.jarakKm !== undefined ? String(t.jarakKm) : '' }) }} aria-label={`Edit ${t.namaToko}`}>
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit), jarakKm: t.jarakKm !== null && t.jarakKm !== undefined ? String(t.jarakKm) : '', aktif: t.aktif, modeSiklus: t.modeSiklus }) }} aria-label={`Edit ${t.namaToko}`}>
                               <Pencil className="mr-1 h-3 w-3" /> Edit
                             </Button>
                             <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
@@ -1165,15 +1181,38 @@ export default function MasterDataView() {
             <div className="space-y-1.5 sm:col-span-2"><Label>Nama Toko</Label><HistoryInput historyKey="toko-nama" value={editTokoForm.namaToko} onChange={(e) => setEditTokoForm({ ...editTokoForm, namaToko: e.target.value })} /></div>
             <div className="space-y-1.5 sm:col-span-2"><Label>Alamat</Label><HistoryInput historyKey="toko-alamat" value={editTokoForm.alamat} onChange={(e) => setEditTokoForm({ ...editTokoForm, alamat: e.target.value })} placeholder="—" /></div>
             <div className="space-y-1.5"><Label>Kontak</Label><Input value={editTokoForm.kontak} onChange={(e) => setEditTokoForm({ ...editTokoForm, kontak: e.target.value })} placeholder="—" /></div>
-            <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" min="1" value={editTokoForm.frekuensiVisit} onChange={(e) => setEditTokoForm({ ...editTokoForm, frekuensiVisit: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Mode Siklus Kunjungan</Label>
+              <select
+                value={editTokoForm.modeSiklus}
+                onChange={(e) => setEditTokoForm({ ...editTokoForm, modeSiklus: e.target.value as 'REGULER' | 'BY_REQUEST' })}
+                className="h-9 w-full cursor-pointer rounded-md border border-input bg-transparent px-2 text-sm"
+                aria-label="Mode siklus kunjungan"
+              >
+                <option value="REGULER">Reguler — otomatis per siklus</option>
+                <option value="BY_REQUEST">BY REQUEST — hanya saat toko minta</option>
+              </select>
+            </div>
+            <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" min="1" value={editTokoForm.frekuensiVisit} onChange={(e) => setEditTokoForm({ ...editTokoForm, frekuensiVisit: e.target.value })} disabled={editTokoForm.modeSiklus === 'BY_REQUEST'} title={editTokoForm.modeSiklus === 'BY_REQUEST' ? 'Mode BY REQUEST aktif — siklus otomatis tidak dipakai' : undefined} /></div>
             <div className="space-y-1.5"><Label>Jarak Workshop (km)</Label><Input type="number" min="0" step="0.1" value={editTokoForm.jarakKm} onChange={(e) => setEditTokoForm({ ...editTokoForm, jarakKm: e.target.value })} placeholder="kosong = belum tahu" /></div>
+            {/* Centang "tidak aktif": toko berhenti operasional → keluar dari siklus, alert, dan jadwal otomatis */}
+            <div className="flex items-center gap-2 rounded-md border border-dashed border-slate-300 p-2 sm:col-span-2">
+              <Checkbox
+                id="toko-nonaktif"
+                checked={!editTokoForm.aktif}
+                onCheckedChange={(c) => setEditTokoForm({ ...editTokoForm, aktif: c !== true })}
+                aria-label="Tandai toko tidak aktif"
+              />
+              <label htmlFor="toko-nonaktif" className="cursor-pointer text-xs text-slate-600">
+                Tandai toko <b>tidak aktif</b> <span className="text-slate-400">(dicentang = tidak dikunjungi otomatis / tidak alert telat)</span>
+              </label>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditToko(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
               disabled={!editToko || !editTokoForm.namaToko.trim() || Number(editTokoForm.frekuensiVisit) < 1 || updateToko.isPending}
-              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit), jarakKm: editTokoForm.jarakKm.trim() === '' ? null : Math.max(0, Number(editTokoForm.jarakKm) || 0) } })}
+              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit), jarakKm: editTokoForm.jarakKm.trim() === '' ? null : Math.max(0, Number(editTokoForm.jarakKm) || 0), aktif: editTokoForm.aktif, modeSiklus: editTokoForm.modeSiklus } })}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
             </Button>

@@ -106,9 +106,11 @@ export async function GET() {
     const stokKosong = spareparts.filter((s) => s.stokInventory === 0)
     const nilaiTotalStok = spareparts.reduce((acc, s) => acc + s.stokInventory * s.hargaKlaim, 0)
 
-    // Kepatuhan kunjungan toko (ALT-01 basis data)
+    // Kepatuhan kunjungan toko (ALT-01 basis data) — toko tidak aktif & mode
+    // BY REQUEST dikecualikan (tidak dijadwalkan otomatis).
     const now = Date.now()
     const tokoTerlambat = tokoList.filter((t) => {
+      if (!t.aktif || t.modeSiklus === 'BY_REQUEST') return false
       if (!t.tglVisitTerakhir) return true
       const hariSejak = (now - new Date(t.tglVisitTerakhir).getTime()) / (24 * 3600 * 1000)
       return hariSejak > t.frekuensiVisit

@@ -35,6 +35,12 @@ model MasterToko {
   alamat           String?
   kontak           String?
   frekuensiVisit   Int               @default(14) // siklus kunjungan dalam hari
+  // Toko masih beroperasi — centang "Tidak aktif" (false) bila toko ditutup/
+  // berhenti dikunjungi; toko nonaktif dikucilkan dari siklus & alert visit.
+  aktif            Boolean           @default(true)
+  // Mode siklus kunjungan: REGULER = otomatis per frekuensiVisit |
+  // BY_REQUEST = kunjungan hanya dilakukan saat toko meminta (tanpa alert telat).
+  modeSiklus       String            @default("REGULER")
   tglVisitTerakhir DateTime?
   barcodeToko      String            @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
   jarakKm          Float? // jarak toko dari workshop (km) — diisi manual; otomatis setelah maps terintegrasi

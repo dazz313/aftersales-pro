@@ -17,6 +17,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.alamat !== undefined) data.alamat = body.alamat
     if (body.kontak !== undefined) data.kontak = body.kontak
     if (body.frekuensiVisit !== undefined) data.frekuensiVisit = Number(body.frekuensiVisit)
+    // Centang "Tidak aktif" (false = toko berhenti/tutup, dikucilkan dari siklus visit)
+    if (body.aktif !== undefined) data.aktif = Boolean(body.aktif)
+    // Mode siklus kunjungan: REGULER (otomatis) | BY_REQUEST (hanya saat toko request)
+    if (body.modeSiklus !== undefined) {
+      if (!['REGULER', 'BY_REQUEST'].includes(body.modeSiklus)) {
+        return NextResponse.json({ error: 'modeSiklus tidak valid (REGULER | BY_REQUEST)' }, { status: 400 })
+      }
+      data.modeSiklus = body.modeSiklus
+    }
     if (body.jarakKm !== undefined) data.jarakKm = body.jarakKm === null || body.jarakKm === '' ? null : Math.max(0, Number(body.jarakKm) || 0)
     if (body.tglVisitTerakhir !== undefined) data.tglVisitTerakhir = new Date(body.tglVisitTerakhir)
     // Koordinat posisi toko (peta Field Ops): null = hapus posisi, validasi rentang WGS-84.

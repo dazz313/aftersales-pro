@@ -59,7 +59,9 @@ export async function GET(request: Request) {
       jumlahUnit: toko._count.unitAssets,
       totalKunjungan: toko._count.kunjungan,
       hariSejakVisit: hariSejak,
-      visitTerlambat: hariSejak === null || hariSejak > toko.frekuensiVisit,
+      // Toko tidak aktif / siklus BY REQUEST tidak dianggap "terlambat" —
+      // kunjungannya atas permintaan (konsisten Field Ops & ALT-01).
+      visitTerlambat: !toko.aktif || toko.modeSiklus === 'BY_REQUEST' ? false : hariSejak === null || hariSejak > toko.frekuensiVisit,
       kunjunganTerakhir: toko.kunjungan[0]
         ? { waktu: toko.kunjungan[0].tglKunjungan, teknisi: toko.kunjungan[0].teknisi.nama, metode: toko.kunjungan[0].metodeCheckin }
         : null,

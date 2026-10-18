@@ -15,6 +15,10 @@ export interface Toko {
   latitude: number | null
   longitude: number | null
   createdAt: string
+  /** Toko masih beroperasi — false = dicentang "Tidak Aktif" (dikucilkan dari siklus visit). */
+  aktif: boolean
+  /** Mode siklus kunjungan: REGULER (otomatis per frekuensiVisit) | BY_REQUEST (hanya saat toko request). */
+  modeSiklus: 'REGULER' | 'BY_REQUEST'
   jumlahUnit: number
   visitTerlambat: boolean
   hariSejakVisit: number | null

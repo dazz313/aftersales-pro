@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       db.serviceRequest.count({ where: { status: 'FINISH' } }),
       db.serviceRequest.count({ where: { status: 'REQUEST', slaFlag: true } }),
       db.masterSparepart.findMany({ select: { stokInventory: true, reorderLimit: true } }),
-      db.masterToko.findMany({ select: { tglVisitTerakhir: true, frekuensiVisit: true } }),
+      db.masterToko.findMany({ select: { tglVisitTerakhir: true, frekuensiVisit: true, aktif: true, modeSiklus: true } }),
       db.serviceRequest.findMany({
         where: { status: 'FINISH', statusKlaimProdusen: 'DRAFT' },
         include: { parts: { include: { sparepart: { select: { hargaKlaim: true } } } } },
@@ -40,6 +40,9 @@ export async function POST(request: Request) {
     const kosong = parts.filter((p) => p.stokInventory === 0).length
     const now = Date.now()
     const telat = tokos.filter((t) => {
+      // Toko tidak aktif (dicentang) & siklus BY REQUEST tidak dihitung telat —
+      // kunjungan mereka tidak dijadwalkan otomatis (konsisten ALT-01/Field Ops).
+      if (!t.aktif || t.modeSiklus === 'BY_REQUEST') return false
       if (!t.tglVisitTerakhir) return true
       return (now - new Date(t.tglVisitTerakhir).getTime()) / 86400000 > t.frekuensiVisit
     }).length

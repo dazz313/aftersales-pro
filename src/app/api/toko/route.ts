@@ -22,7 +22,9 @@ export async function GET() {
       return {
         ...t,
         jumlahUnit: t.unitAssets.length,
-        visitTerlambat: hariSejak === null || hariSejak > t.frekuensiVisit,
+        // Toko tidak aktif / siklus BY REQUEST tidak pernah "terlambat" —
+        // kunjungannya diatur sendiri (tidak ikut siklus otomatis).
+        visitTerlambat: !t.aktif || t.modeSiklus === 'BY_REQUEST' ? false : hariSejak === null || hariSejak > t.frekuensiVisit,
         hariSejakVisit: hariSejak,
       }
     })
