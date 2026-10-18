@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:07:46.541Z",
+  "generatedAt": "2026-10-18T01:08:18.474Z",
   "masterToko": [
     {
       "id": 216,
@@ -5220,9 +5220,75 @@
       "id": 58,
       "kunci": "partner_produsen",
       "nilai": "PT. BHAKTI IDOLA TAMA"
+    },
+    {
+      "id": 95,
+      "kunci": "smtp_dari",
+      "nilai": "Workshop <uji@test>"
+    },
+    {
+      "id": 91,
+      "kunci": "smtp_host",
+      "nilai": "smtp.uji-tidaknyata.invalid"
+    },
+    {
+      "id": 94,
+      "kunci": "smtp_password",
+      "nilai": "***"
+    },
+    {
+      "id": 92,
+      "kunci": "smtp_port",
+      "nilai": "465"
+    },
+    {
+      "id": 96,
+      "kunci": "smtp_secure",
+      "nilai": "1"
+    },
+    {
+      "id": 93,
+      "kunci": "smtp_user",
+      "nilai": "uji@test"
     }
   ],
   "auditLog": [
+    {
+      "id": 579,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-TEK",
+      "deskripsi": "Kekurangan sparepart unit . dicatat & mengantre email ke produsen (1 item)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-18T01:08:18.452Z"
+    },
+    {
+      "id": 578,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-GAGAL1",
+      "deskripsi": "Kekurangan sparepart unit . dicatat & mengantre email ke produsen (1 item)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:07:47.004Z"
+    },
+    {
+      "id": 577,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_host, smtp_port, smtp_user, smtp_password, smtp_dari, smtp_secure",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:07:46.937Z"
+    },
+    {
+      "id": 576,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-DRAF1",
+      "deskripsi": "Kekurangan sparepart unit . dicatat & mengantre email ke produsen (1 item)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:07:46.711Z"
+    },
     {
       "id": 575,
       "aksi": "UPDATE_PENGATURAN",
