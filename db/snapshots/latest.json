@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T09:50:17.319Z",
+  "generatedAt": "2026-10-18T10:55:33.299Z",
   "masterToko": [
     {
       "id": 216,
@@ -1418,6 +1418,20 @@
       "createdAt": "2026-10-18T06:20:35.068Z"
     },
     {
+      "id": 347,
+      "kodePart": "IP90273 A",
+      "namaPart": "Casing PS 135 E",
+      "brandKompatibel": "Shimizu",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T10:35:29.340Z"
+    },
+    {
       "id": 287,
       "kodePart": "MCMX-207-2-2-1-PR",
       "namaPart": "FRONT PANEL ASSY 712 T",
@@ -2298,20 +2312,6 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
-    },
-    {
-      "id": 346,
-      "kodePart": "TST-B4",
-      "namaPart": "Part Uji Lapis 2",
-      "brandKompatibel": "Miyako",
-      "supplier": "PRODUSEN",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-18T09:48:48.120Z"
     },
     {
       "id": 326,
@@ -3400,6 +3400,30 @@
       "createdAt": "2026-09-20T16:00:00.000Z"
     },
     {
+      "id": 207,
+      "serialNumber": "AZ045951",
+      "modelUnit": "PS-135 E",
+      "merk": "Shimizu",
+      "nama": "",
+      "tokoId": 235,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-07-30T00:00:00.000Z"
+    },
+    {
+      "id": 206,
+      "serialNumber": "AZ107840",
+      "modelUnit": "PS-135 E",
+      "merk": "Shimizu",
+      "nama": "",
+      "tokoId": 235,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-07-29T00:00:00.000Z"
+    },
+    {
       "id": 197,
       "serialNumber": "CSG220392",
       "modelUnit": "PS-128 BIT",
@@ -3422,6 +3446,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-21T16:00:00.000Z"
+    },
+    {
+      "id": 208,
+      "serialNumber": "TST-PERP-01",
+      "modelUnit": "Unit Uji Perbaiki",
+      "merk": "TST",
+      "nama": "Unit Uji",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "NON_GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-18T10:55:33.187Z"
     },
     {
       "id": 168,
@@ -3860,11 +3896,11 @@
   ],
   "serviceRequest": [
     {
-      "id": 67,
-      "noTiket": "SV-EM-20261018-0002",
-      "unitAssetId": 199,
-      "status": "PROSES",
-      "noSttb": null,
+      "id": 68,
+      "noTiket": "SV-20260730-0001",
+      "unitAssetId": 206,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260730-0001",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
@@ -3872,7 +3908,7 @@
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "uji lapis 2",
+      "deskripsiKerusakan": "CASING BOCOR",
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
@@ -3881,22 +3917,22 @@
       "tglKlaim": null,
       "biayaJasa": 0,
       "tglFinish": null,
-      "tglTiket": "2026-10-18T09:48:48.122Z",
-      "createdAt": "2026-10-18T09:48:48.122Z",
-      "updatedAt": "2026-10-18T09:48:48.549Z",
+      "tglTiket": "2026-07-30T00:00:00.000Z",
+      "createdAt": "2026-10-18T10:35:29.360Z",
+      "updatedAt": "2026-10-18T10:35:29.360Z",
       "editedAt": null,
       "editedBy": null,
-      "noSuratJalanProdusen": "SJ-DUM-C",
-      "tglPartDatang": "2026-10-18T09:48:48.481Z",
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
-          "id": 82,
-          "serviceRequestId": 67,
-          "sparepartId": 346,
+          "id": 83,
+          "serviceRequestId": 68,
+          "sparepartId": 347,
           "qty": 1,
-          "statusPart": "READY",
-          "statusKonfirmasi": "READY",
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "editedAt": null,
           "editedBy": null
@@ -6512,6 +6548,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 713,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "TST-PERP-01",
+      "deskripsi": "Unit baru teregistrasi: Unit Uji Perbaiki (NON_GARANSI)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T10:55:33.235Z"
+    },
+    {
+      "id": 712,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AZ045951",
+      "deskripsi": "Unit baru teregistrasi: PS-135 E (STOK_TOKO) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T10:37:50.318Z"
+    },
+    {
+      "id": 711,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260730-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit AZ107840 (PS-135 E, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260730-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T10:35:29.381Z"
+    },
+    {
+      "id": 710,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AZ107840",
+      "deskripsi": "Unit baru teregistrasi: PS-135 E (STOK_TOKO) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T10:33:29.968Z"
+    },
     {
       "id": 709,
       "aksi": "HAPUS",
