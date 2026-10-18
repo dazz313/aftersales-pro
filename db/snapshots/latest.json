@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T23:45:27.727Z",
+  "generatedAt": "2026-10-18T23:49:45.815Z",
   "masterToko": [
     {
       "id": 216,
@@ -3766,6 +3766,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-06T16:00:00.000Z"
+    },
+    {
+      "id": 217,
+      "serialNumber": "ZZTEST-NUM-A",
+      "modelUnit": "Uji Nomor Tiket",
+      "merk": "",
+      "nama": "",
+      "kerusakanAwal": null,
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-18T23:49:45.779Z"
     }
   ],
   "kunjungan": [
@@ -7543,6 +7556,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 754,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZZTEST-NUM-A",
+      "deskripsi": "Unit baru teregistrasi: Uji Nomor Tiket (GARANSI)",
+      "aktor": "UJI-NOMOR",
+      "createdAt": "2026-10-18T23:49:45.792Z"
+    },
     {
       "id": 753,
       "aksi": "UPDATE_UNIT_ASSET",
