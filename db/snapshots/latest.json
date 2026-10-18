@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:22:14.462Z",
+  "generatedAt": "2026-10-18T01:39:16.794Z",
   "masterToko": [
     {
       "id": 216,
@@ -2350,6 +2350,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-23T16:00:00.000Z"
+    },
+    {
+      "id": 205,
+      "serialNumber": "02100056000",
+      "modelUnit": "WD-186 H",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": 223,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-18T00:00:00.000Z"
     },
     {
       "id": 163,
@@ -5267,6 +5279,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 589,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "02100056000",
+      "deskripsi": "Unit baru teregistrasi: WD-186 H (STOK_TOKO) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:39:16.772Z"
+    },
     {
       "id": 588,
       "aksi": "BACKUP_DATA",
