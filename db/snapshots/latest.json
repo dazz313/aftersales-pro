@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T00:16:19.246Z",
+  "generatedAt": "2026-10-18T00:20:33.976Z",
   "masterToko": [
     {
       "id": 216,
@@ -2386,6 +2386,18 @@
       "createdAt": "2026-09-22T00:00:00.000Z"
     },
     {
+      "id": 192,
+      "serialNumber": "03020055749",
+      "modelUnit": "MCM-528TS",
+      "merk": "MIYAKO",
+      "nama": "",
+      "tokoId": 222,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-23T00:00:00.000Z"
+    },
+    {
       "id": 146,
       "serialNumber": "03020073129",
       "modelUnit": "MCM-509",
@@ -2764,18 +2776,6 @@
       "merk": "MIYAKO",
       "nama": "",
       "tokoId": 251,
-      "customerId": null,
-      "statusGaransi": "STOK_TOKO",
-      "tglPembelian": null,
-      "createdAt": "2026-10-15T04:41:23.577Z"
-    },
-    {
-      "id": 192,
-      "serialNumber": "3020055749",
-      "modelUnit": "MCM-528TS",
-      "merk": "MIYAKO",
-      "nama": "",
-      "tokoId": 222,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
@@ -5218,6 +5218,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 568,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03020055749",
+      "deskripsi": "Data unit diperbarui: serialNumber, modelUnit, merk, nama, tokoId, customerId, statusGaransi, tglPembelian, createdAt (3020055749 → 03020055749) [KOREKSI nomor seri unit bertiket oleh Admin/Manager]",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T00:20:33.956Z"
+    },
     {
       "id": 567,
       "aksi": "SETPIN_MASTER_TOKO",
