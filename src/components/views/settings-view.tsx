@@ -3,9 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  fetcher, postJson, formatWaktu, formatTanggal, testGateway, authHeaders, bukaLinkEksternal,
+  fetcher, postJson, formatWaktu, testGateway, authHeaders,
   type AuditLog, type Pengguna, type GatewayStatus, type GatewayTestResult, type BackupStatus, type BackupOutcome,
-  type OrderEmailPart, type HasilKirimEmail,
 } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -249,7 +248,7 @@ export default function SettingsView() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pengaturan'] })
       queryClient.invalidateQueries({ queryKey: ['audit'] })
-      toast({ title: 'Konfigurasi Email Produsen tersimpan', description: 'Order kekurangan part akan memakai pengaturan ini saat dikirim.' })
+      toast({ title: 'Konfigurasi Email Produsen tersimpan', description: 'Dipakai sebagai tujuan email order part yang kurang.' })
     },
     onError: (e: Error) => toast({ title: 'Gagal menyimpan konfigurasi email', description: e.message, variant: 'destructive' }),
   })
@@ -259,49 +258,6 @@ export default function SettingsView() {
     onSuccess: (r) => setEmailTest(r.ok ? { ok: true, info: `Email tes terkirim ke ${r.ke} — cek kotak masuk produsen.` } : { ok: false, info: r.error ?? 'Tes email gagal' }),
     onError: (e: Error) => setEmailTest({ ok: false, info: e.message }),
   })
-
-  // Daftar khusus: kekurangan part yang akan/sudah diemail ke produsen
-  const { data: orderEmailList, isLoading: orderEmailLoading } = useQuery<OrderEmailPart[]>({
-    queryKey: ['order-email'],
-    queryFn: () => fetcher<OrderEmailPart[]>('/api/order-email'),
-  })
-  const [filterEmail, setFilterEmail] = useState<'PENDING' | 'TERKIRIM' | 'SELESAI' |'ALL'>('ALL')
-  const emailTampil = useMemo(() => {
-    const l = orderEmailList ?? []
-    return filterEmail === 'ALL' ? l : l.filter((i) => i.status === filterEmail)
-  }, [orderEmailList, filterEmail])
-  const pendingEmailCount = (orderEmailList ?? []).filter((i) => i.status === 'PENDING').length
-
-  const kirimEmail = useMutation({
-    mutationFn: (ids?: number[]) => postJson<HasilKirimEmail>('/api/order-email/kirim', { ids, aktor: role }),
-    onSuccess: (r) => {
-      queryClient.invalidateQueries({ queryKey: ['order-email'] })
-      queryClient.invalidateQueries({ queryKey: ['audit'] })
-      if (r.mode === 'SMTP') {
-        toast({ title: 'Email terkirim ke produsen', description: `${r.terkirim} item dikirim ke ${r.ke ?? 'produsen'} via SMTP.` })
-      } else if (r.mailto) {
-        bukaLinkEksternal(r.mailto)
-        toast({
-          title: 'Draf email dibuka',
-          description: 'SMTP belum diset/gagal — aplikasi email Anda terbuka dengan draf order. Setelah terkirim, tandai item "Terkirim". Agar otomatis, lengkapi SMTP di atas.',
-        })
-      } else {
-        toast({ title: 'Tidak ada item yang dikirim', description: r.error, variant: 'destructive' })
-      }
-    },
-    onError: (e: Error) => toast({ title: 'Gagal mengirim email', description: e.message, variant: 'destructive' }),
-  })
-  const ubahStatusEmail = useMutation({
-    mutationFn: ({ id, aksi }: { id: number; aksi: 'TANDAI_TERKIRIM' | 'TANDAI_SELESAI' | 'HAPUS' }) =>
-      postJson(`/api/order-email/${id}`, { aksi, aktor: role }, 'PATCH'),
-    onSuccess: (_, v) => {
-      queryClient.invalidateQueries({ queryKey: ['order-email'] })
-      queryClient.invalidateQueries({ queryKey: ['audit'] })
-      toast({ title: v.aksi === 'HAPUS' ? 'Item dihapus dari daftar' : v.aksi === 'TANDAI_TERKIRIM' ? 'Ditandai terkirim (manual)' : 'Item ditandai selesai' })
-    },
-    onError: (e: Error) => toast({ title: 'Gagal memperbarui item', description: e.message, variant: 'destructive' }),
-  })
-  const bisaKelolaEmail = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
 
   const backupMutation = useMutation({
     mutationFn: () => postJson<BackupOutcome>('/api/backup/sheets', { trigger: 'MANUAL', aktor: role }),
@@ -723,12 +679,12 @@ export default function SettingsView() {
             </Button>
         </SettingSection>
 
-        {/* ===== EMAIL PRODUSEN — ORDER KEKURANGAN SPAREPART ===== */}
+        {/* ===== EMAIL PRODUSEN — KONFIGURASI UNTUK ORDER PART YANG KURANG ===== */}
         <SettingSection
           sec="email"
-          title="Email Produsen — Order Kekurangan Sparepart"
+          title="Email Produsen (Kekurangan Sparepart)"
           icon={<Mail className="h-4 w-4 text-sky-600" />}
-          desc="Aturan baru: part yang kurang dipesan ke produsen via EMAIL. Btn “Kekurangan Sparepart → Simpan & Email” ada di Master Data → Input Part unit; daftar lengkap tampil di bawah."
+          desc="Isi tujuan + akun pengirim untuk email order part yang kurang. Dokumen lampirannya dibuat dari Master Data → Unit Asset → tombol Aksi → PDF Detail Unit."
           contentClass="space-y-3"
           secOpen={secOpen}
           onToggle={toggleSec}
@@ -772,7 +728,7 @@ export default function SettingsView() {
                   <Label htmlFor="em-secure" className="text-xs font-normal">SSL/TLS langsung</Label>
                 </div>
               </div>
-              <p className="text-[11px] text-slate-500">Tanpa SMTP: tombol kirim membuka draf email (mailto) di aplikasi email Anda — item tetap <b>PENDING</b> sampai ditandai terkirim.</p>
+              <p className="text-[11px] text-slate-500">Email + PDF detail unit dikirim manual dari aplikasi email Anda; SMTP dipakai untuk uji kirim konfigurasi.</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" disabled={testEmail.isPending} onClick={() => testEmail.mutate()}>
@@ -786,101 +742,6 @@ export default function SettingsView() {
               <p className={cn('rounded-md p-2 text-[11px]', emailTest.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-700')}>
                 {emailTest.info}
               </p>
-            )}
-
-            {/* DAFTAR KHUSUS: kekurangan part yang akan/sudah diemail ke produsen */}
-            <div className="flex flex-wrap items-center gap-1.5 border-t pt-3">
-              <Inbox className="h-3.5 w-3.5 text-sky-600" />
-              <span className="text-xs font-semibold text-slate-700">Daftar Kekurangan Part (Order Email)</span>
-              {pendingEmailCount > 0 && (
-                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">{pendingEmailCount} menunggu</span>
-              )}
-              <div className="ml-auto flex flex-wrap items-center gap-1">
-                {(['ALL', 'PENDING', 'TERKIRIM', 'SELESAI'] as const).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    onClick={() => setFilterEmail(f)}
-                    className={cn('rounded-full px-2 py-0.5 text-[10px] font-medium transition', filterEmail === f ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
-                  >
-                    {f === 'ALL' ? 'Semua' : f}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" disabled={pendingEmailCount === 0 || kirimEmail.isPending} onClick={() => kirimEmail.mutate(undefined)}>
-                <Send className="mr-1 h-3 w-3" /> {kirimEmail.isPending ? 'Mengirim…' : `Kirim Semua Menunggu (${pendingEmailCount})`}
-              </Button>
-              <Button size="sm" variant="ghost" aria-label="Muat ulang daftar" onClick={() => queryClient.invalidateQueries({ queryKey: ['order-email'] })}>
-                <RefreshCw className="h-3 w-3" />
-              </Button>
-            </div>
-            {orderEmailLoading ? (
-              <Skeleton className="h-10 w-full" />
-            ) : emailTampil.length === 0 ? (
-              <p className="py-3 text-center text-[11px] text-slate-400">
-                Tidak ada item pada filter ini. Input via Master Data → Unit → tombol part → pilih <b>Kekurangan Sparepart</b>.
-              </p>
-            ) : (
-              <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
-                {emailTampil.map((it) => (
-                  <div key={it.id} className="flex items-start gap-2 rounded-md border p-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-800">
-                        <span className="font-mono">{it.kodePart}</span>
-                        <span className="truncate">{it.namaPart}</span>
-                        <span className="rounded bg-slate-100 px-1.5 text-[10px] font-semibold text-slate-600">×{it.qty}</span>
-                      </p>
-                      <p className="mt-0.5 truncate text-[10px] text-slate-500">
-                        {it.serialNumber ? `${it.modelUnit ?? ''} · SN ${it.serialNumber}${it.tokoNama ? ` · ${it.tokoNama}` : ''}` : 'Tanpa unit'}
-                        {it.diinputOleh ? ` · oleh ${it.diinputOleh}` : ''}
-                        {it.catatan ? ` · ${it.catatan}` : ''}
-                      </p>
-                      {it.emailPesanGagal && <p className="mt-0.5 truncate text-[10px] text-rose-600">Gagal: {it.emailPesanGagal}</p>}
-                      {it.status === 'TERKIRIM' && (
-                        <p className="mt-0.5 truncate text-[10px] text-emerald-700">
-                          {it.emailMode === 'SMTP' ? 'SMTP' : 'Manual'} → {it.emailTujuan} · {formatTanggal(it.emailKirimAt)}{it.emailOleh ? ` · ${it.emailOleh}` : ''}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
-                      <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold', it.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : it.status === 'TERKIRIM' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600')}>
-                        {it.status}
-                      </span>
-                      <div className="flex gap-1">
-                        {it.status === 'PENDING' && (
-                          <Button size="sm" variant="outline" className="h-6 px-1.5 text-[10px]" disabled={kirimEmail.isPending} onClick={() => kirimEmail.mutate([it.id])}>
-                            <Send className="mr-0.5 h-3 w-3" /> Kirim
-                          </Button>
-                        )}
-                        {it.status !== 'SELESAI' && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 px-1.5 text-[10px]"
-                            disabled={ubahStatusEmail.isPending}
-                            onClick={() => ubahStatusEmail.mutate({ id: it.id, aksi: it.status === 'TERKIRIM' ? 'TANDAI_SELESAI' : 'TANDAI_TERKIRIM' })}
-                          >
-                            <CheckCircle2 className="mr-0.5 h-3 w-3" /> {it.status === 'TERKIRIM' ? 'Selesai' : 'Terkirim'}
-                          </Button>
-                        )}
-                        {bisaKelolaEmail && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 px-1.5 text-[10px] text-rose-600 hover:text-rose-700"
-                            disabled={ubahStatusEmail.isPending}
-                            onClick={() => ubahStatusEmail.mutate({ id: it.id, aksi: 'HAPUS' })}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             )}
         </SettingSection>
 

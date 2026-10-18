@@ -183,6 +183,5 @@ export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewaySt
 export type {
   Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
   Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus, BankKode,
-  OrderEmailPart, HasilKirimEmail,
 } from '@/lib/types'
 

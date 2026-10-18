@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:46:14.198Z",
+  "generatedAt": "2026-10-18T01:46:17.861Z",
   "masterToko": [
     {
       "id": 216,
@@ -5279,6 +5279,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 594,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "WDXX-PX318-WH-KGX",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (RESERVOIR GIRLL 186)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:46:17.842Z"
+    },
+    {
+      "id": 593,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "WDXX-PX317-WH-KGX",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (RESERVOIR GIRLL 186 WHITE)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:46:16.862Z"
+    },
+    {
+      "id": 592,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "WDXX-PX317-WH-KGX",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (RESERVOIR GIRLL 186 WHITE)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:46:15.200Z"
+    },
     {
       "id": 591,
       "aksi": "DELETE_ORDER_EMAIL",
