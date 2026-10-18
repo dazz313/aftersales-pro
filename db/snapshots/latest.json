@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T23:12:04.631Z",
+  "generatedAt": "2026-10-18T23:12:41.923Z",
   "masterToko": [
     {
       "id": 216,
@@ -3017,7 +3017,7 @@
       "customerId": null,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
-      "createdAt": "2026-10-19T00:00:00.000Z"
+      "createdAt": "2026-09-28T00:00:00.000Z"
     },
     {
       "id": 185,
@@ -7432,6 +7432,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 739,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2603170129",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, tokoId, customerId, statusGaransi, tglPembelian, createdAt (2603170129)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T23:12:41.900Z"
+    },
     {
       "id": 738,
       "aksi": "CREATE_UNIT_ASSET",
