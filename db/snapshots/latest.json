@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:45:13.926Z",
+  "generatedAt": "2026-10-18T04:45:55.774Z",
   "masterToko": [
     {
       "id": 216,
@@ -120,7 +120,7 @@
       "alamat": "Jl. Mesjid No. 24 / Jl. MT. Haryono, Palakka",
       "kontak": "0811425796",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-15T04:45:00.000Z",
       "barcodeToko": "BC-TOK-009",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -442,7 +442,7 @@
       "alamat": "Watampone",
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-02T04:45:00.000Z",
       "barcodeToko": "BC-TOK-032",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3316,6 +3316,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 57,
+      "tokoId": 224,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-15T04:45:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 56,
       "tokoId": 216,
       "teknisiId": 27,
@@ -3504,6 +3514,16 @@
       "barcodeTerscan": null,
       "fotoOnsite": null,
       "catatanStokRusak": "nn"
+    },
+    {
+      "id": 58,
+      "tokoId": 247,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-02T04:45:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
     }
   ],
   "serviceRequest": [
@@ -5411,6 +5431,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 621,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "58",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Aneka Logam (TOK-032) · tgl 2/10/2026, 12.45.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:45:55.756Z"
+    },
+    {
+      "id": 620,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "57",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Senang (TOK-009) · tgl 15/10/2026, 12.45.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:45:32.415Z"
+    },
     {
       "id": 619,
       "aksi": "CREATE_KUNJUNGAN",
