@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:48:28.341Z",
+  "generatedAt": "2026-10-18T04:48:55.657Z",
   "masterToko": [
     {
       "id": 216,
@@ -316,7 +316,7 @@
       "alamat": "Jl. Sukawati",
       "kontak": "0811448850",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-15T04:48:00.000Z",
       "barcodeToko": "BC-TOK-023",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3316,6 +3316,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 63,
+      "tokoId": 238,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-15T04:48:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 57,
       "tokoId": 224,
       "teknisiId": 27,
@@ -5471,6 +5481,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 626,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "63",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Karya Bessi (TOK-023) · tgl 15/10/2026, 12.48.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:48:55.638Z"
+    },
     {
       "id": 625,
       "aksi": "CREATE_KUNJUNGAN",
