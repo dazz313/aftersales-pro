@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:48:55.657Z",
+  "generatedAt": "2026-10-18T04:49:24.670Z",
   "masterToko": [
     {
       "id": 216,
@@ -666,7 +666,7 @@
       "alamat": null,
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-09-29T04:49:00.000Z",
       "barcodeToko": "BC-TOK-048",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3566,6 +3566,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 64,
+      "tokoId": 263,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-09-29T04:49:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 61,
       "tokoId": 227,
       "teknisiId": 27,
@@ -5481,6 +5491,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 627,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "64",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Surya Plastik (TOK-048) · tgl 29/9/2026, 12.49.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:49:24.651Z"
+    },
     {
       "id": 626,
       "aksi": "CREATE_KUNJUNGAN",
