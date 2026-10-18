@@ -253,6 +253,27 @@ export async function POST(request: Request) {
       deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}`,
       aktor: body.aktor,
     })
+    // Folder Kekurangan Sparepart: begitu tiket part unit ini dibuat (part dari produsen
+    // sudah datang → diinput sama seperti unit lain), seluruh item order email unit-nya
+    // otomatis SELESAI agar antrean di Master Data → Kekurangan Sparepart bersih.
+    const orderEmailTerpaut = await db.orderEmailPart.findMany({
+      where: { unitAssetId: unit.id, status: { in: ['PENDING', 'TERKIRIM'] } },
+      select: { id: true, kodePart: true },
+    })
+    if (orderEmailTerpaut.length > 0) {
+      await db.orderEmailPart.updateMany({
+        where: { id: { in: orderEmailTerpaut.map((p) => p.id) } },
+        data: { status: 'SELESAI' },
+      })
+      await logAudit({
+        aksi: 'MARK_EMAIL_SELESAI',
+        entitas: 'order_email_part',
+        entitasId: orderEmailTerpaut.map((p) => p.kodePart).join(','),
+        deskripsi: `Part sudah datang → tiket ${noTiket} dibuat → ${orderEmailTerpaut.length} item order email otomatis selesai`,
+        aktor: body.aktor,
+      })
+      await autoGitBackup('UPDATE', 'order_email_part', 'selesai-otomatis', body.aktor)
+    }
     if (partResults.some((r) => r.status === 'READY')) {
       await backupSparepartToGit('RESERVE', partsCreate.map((p) => String(p.sparepartId)).join(',') || noTiket, body.aktor)
     }

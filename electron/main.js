@@ -225,9 +225,9 @@ function createWindow(port) {
 
   mainWindow.once('ready-to-show', () => mainWindow.show())
 
-  // Link target=_blank / window.open → buka di browser default
+  // Link target=_blank / window.open → buka di app default (browser/email client)
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:/i.test(url)) shell.openExternal(url)
+    if (/^(https?:|mailto:)/i.test(url)) shell.openExternal(url)
     return { action: 'deny' }
   })
 

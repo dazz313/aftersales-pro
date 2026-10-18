@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, formatTanggal, type Toko, type Customer, type UnitAsset, type Pengguna } from '@/lib/api'
+import { fetcher, postJson, formatTanggal, mailtoHref, bukaLinkEksternal, type Toko, type Customer, type UnitAsset, type Pengguna, type HasilKirimEmail, type OrderEmailPart } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,7 @@ import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import UnitBarcodeSticker from '@/components/unit-barcode-sticker'
 import { GARANSI_LABEL } from '@/lib/types'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, X, Trash2, AlertTriangle } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, PackageOpen, Mail, CheckCircle2, X, Trash2, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // Peringatan nomor seri ganda — tampil live saat mengetik (sebelum tombol ditekan),
@@ -130,6 +130,7 @@ export default function MasterDataView() {
     deskripsi: '',
     jasa: '0',
     tgl: '',
+    kekurangan: false, // pilihan "Kekurangan Sparepart" → Simpan & Email ke produsen
     rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1' }] as PartUnitRow[],
   })
   const nextPartRowKey = useRef(1)
@@ -212,15 +213,21 @@ export default function MasterDataView() {
       tglInput: u.createdAt ? new Date(u.createdAt).toISOString().slice(0, 10) : '',
     })
   }
-  const openInputPart = (u: UnitAsset) => {
+  const openInputPart = (u: UnitAsset, prefillRows?: { kodePart: string; namaPart: string; qty: number }[]) => {
     setPartUnit(u)
     const d = new Date()
     const p = (n: number) => String(n).padStart(2, '0')
+    // Bila dibuka dari folder Kekurangan Sparepart ("Part Sudah Datang"), baris part
+    // yang dipesan ke produsen otomatis dipindah ke form ini — tinggal Simpan & Proses
+    // seperti unit lain (tiket dibuat → PROSES → FINISH klaim).
     setPartForm({
       deskripsi: '',
       jasa: '0',
       tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
-      rows: [{ key: nextPartRowKey.current++, kodePart: '', namaPart: '', qty: '1' }],
+      kekurangan: false,
+      rows: prefillRows && prefillRows.length > 0
+        ? prefillRows.map((r) => ({ key: nextPartRowKey.current++, kodePart: r.kodePart, namaPart: r.namaPart, qty: String(r.qty) }))
+        : [{ key: nextPartRowKey.current++, kodePart: '', namaPart: '', qty: '1' }],
     })
   }
   const updatePartRow = (key: number, patch: Partial<PartUnitRow>) =>
@@ -241,8 +248,11 @@ export default function MasterDataView() {
     (r) => (r.kodePart.trim() && !r.namaPart.trim()) || (!r.kodePart.trim() && r.namaPart.trim())
   )
   const partsLengkap = partForm.rows.filter((r) => r.kodePart.trim() && r.namaPart.trim())
+  // Mode Kekurangan Sparepart: deskripsi tidak wajib (jadi catatan), jasa/tgl tidak dipakai.
   const partFormValid =
-    partForm.deskripsi.trim() !== '' && partsLengkap.length > 0 && !partRowSetengah && dupPartKode.size === 0
+    partForm.kekurangan
+      ? partsLengkap.length > 0 && !partRowSetengah && dupPartKode.size === 0
+      : partForm.deskripsi.trim() !== '' && partsLengkap.length > 0 && !partRowSetengah && dupPartKode.size === 0
 
   const createTiketPart = useMutation({
     mutationFn: () => {
@@ -274,6 +284,47 @@ export default function MasterDataView() {
       })
     },
     onError: (e: Error) => toast({ title: 'Gagal mencatat part', description: e.message, variant: 'destructive' }),
+  })
+  // Pilihan "Kekurangan Sparepart" → baris tersimpan ke Daftar Order Email (Pengaturan →
+  // Email Produsen) lalu otomatis mencoba kirim email ke produsen; bila SMTP belum diset,
+  // server mengembalikan draf mailto yang dibuka di aplikasi email pengguna.
+  const createOrderEmail = useMutation({
+    mutationFn: () =>
+      postJson<{ items: { kodePart: string; qty: number }[]; kirim: HasilKirimEmail }>('/api/order-email', {
+        unitAssetId: partUnit!.id,
+        catatan: partForm.deskripsi.trim(),
+        rows: partsLengkap.map((r) => ({ kodePart: r.kodePart.trim().toUpperCase(), namaPart: r.namaPart.trim(), qty: Number(r.qty) || 1 })),
+        aktor: role,
+      }),
+    onSuccess: (r) => {
+      invalidate(['order-email'])
+      setPartUnit(null)
+      toast({
+        title: 'Kekurangan sparepart tersimpan',
+        description:
+          r.kirim.mode === 'SMTP'
+            ? `${r.items.length} item tersimpan & email order terkirim ke produsen (riwayat: Pengaturan → Email Produsen).`
+            : 'Tersimpan ke Daftar Order Email. SMTP belum diset — draf email dibuka di aplikasi email Anda; konfigurasi di Pengaturan → Email Produsen.',
+      })
+      if (r.kirim.mailto) bukaLinkEksternal(r.kirim.mailto)
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menyimpan order email', description: e.message, variant: 'destructive' }),
+  })
+  // Folder Kekurangan Sparepart: kirim ulang email untuk kumpulan item satu unit
+  const kirimEmailUnit = useMutation({
+    mutationFn: (ids: number[]) => postJson<HasilKirimEmail>('/api/order-email/kirim', { ids, aktor: role }),
+    onSuccess: (r) => {
+      invalidate(['order-email', 'audit'])
+      if (r.mode === 'SMTP') {
+        toast({ title: 'Email terkirim ke produsen', description: `${r.terkirim} item dikirim ke ${r.ke ?? 'produsen'} via SMTP.` })
+      } else if (r.mailto) {
+        bukaLinkEksternal(r.mailto)
+        toast({ title: 'Draf email dibuka', description: 'SMTP belum diset — aplikasi email terbuka dengan draf order. Setelah terkirim tandai item via Pengaturan → Email Produsen; atau isi SMTP agar kirim otomatis.' })
+      } else {
+        toast({ title: 'Tidak ada yang dikirim', description: r.error ?? '-', variant: 'destructive' })
+      }
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mengirim email', description: e.message, variant: 'destructive' }),
   })
   const updateUnit = useMutation({
     mutationFn: () => {
@@ -416,6 +467,36 @@ export default function MasterDataView() {
   const unitSudahPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.countAktif ?? 0) > 0), [unitTampil, partInfoByUnit])
   // Unit terkunci (punya tiket) tidak bisa dicentang — server juga melewatinya
   const unitBisaHapus = (u: UnitAsset) => (u.serviceRequests ?? []).length === 0
+  // ===== Kekurangan part (order email produsen) — dipungut per unit =====
+  // Tampil di kolom STATUS tabel unit (badge pendek + dropdown detail), bukan folder terpisah.
+  const { data: orderEmailList, isLoading: orderEmailLoading } = useQuery<OrderEmailPart[]>({
+    queryKey: ['order-email'],
+    queryFn: () => fetcher<OrderEmailPart[]>('/api/order-email'),
+  })
+  const orderEmailByUnit = useMemo(() => {
+    const m = new Map<number, OrderEmailPart[]>()
+    for (const it of orderEmailList ?? []) {
+      if (it.unitAssetId == null) continue
+      const arr = m.get(it.unitAssetId) ?? []
+      arr.push(it)
+      m.set(it.unitAssetId, arr)
+    }
+    return m
+  }, [orderEmailList])
+  // "Part Sudah Datang": baris antre unit diprehill ke form Input Part (dedup kode → qty digabung)
+  const bukaPartSudahDatang = (unitId: number, items: OrderEmailPart[]) => {
+    const unit = unitList?.find((u) => u.id === unitId)
+    if (!unit) return
+    const byKode = new Map<string, { kodePart: string; namaPart: string; qty: number }>()
+    for (const it of items) {
+      if (it.status === 'SELESAI') continue
+      const kode = it.kodePart
+      const ada = byKode.get(kode)
+      byKode.set(kode, ada ? { ...ada, qty: ada.qty + it.qty } : { kodePart: kode, namaPart: it.namaPart, qty: it.qty })
+    }
+    openInputPart(unit, [...byKode.values()])
+    toast({ title: 'Part dipindah ke form Input', description: `Kode part dari ${byKode.size} order diunit ini sudah terisi. Pilih READY (part dari produsen sudah ada stok) → Simpan & Proses; tiket berlanjut normal hingga FINISH & ajukan klaim.` })
+  }
   const toggleUnit = (id: number) =>
     setUnitDipilih((prev) => {
       const next = new Set(prev)
@@ -1263,15 +1344,40 @@ export default function MasterDataView() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>Deskripsi Kerusakan</Label>
-              <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder="cth: Dinamo mati total" />
+            {/* Pilihan jalur pencatatan: proses biasa (tiket) vs kekurangan sparepart (order email produsen) */}
+            <div className="grid grid-cols-2 gap-1.5 rounded-md bg-slate-100 p-1">
+              <button
+                type="button"
+                onClick={() => setPartForm({ ...partForm, kekurangan: false })}
+                className={cn('rounded px-2 py-1.5 text-[11px] font-medium transition', !partForm.kekurangan ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+              >
+                Proses Biasa (Part → Tiket)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPartForm({ ...partForm, kekurangan: true })}
+                className={cn('rounded px-2 py-1.5 text-[11px] font-medium transition', partForm.kekurangan ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500 hover:text-slate-700')}
+              >
+                Kekurangan Sparepart (Email Produsen)
+              </button>
             </div>
+            {partForm.kekurangan && (
+              <p className="rounded-md bg-violet-50 p-2 text-[11px] text-violet-800">
+                Aturan baru: part yang kurang dipesan ke produsen melalui <b>Email</b> — kode &amp; nama tetap diinput,
+                tombol bawah: <b>Simpan &amp; Email</b>. Daftar lengkap tersimpan di <b>Pengaturan → Email Produsen</b>.
+              </p>
+            )}
             <div className="space-y-1.5">
-              <Label>Tanggal Kejadian</Label>
-              <Input type="date" value={partForm.tgl} onChange={(e) => setPartForm({ ...partForm, tgl: e.target.value })} aria-label="Tanggal kejadian tiket" />
-              <p className="text-[11px] text-slate-500">Boleh diisi mundur (data historis) — nomor tiket otomatis menyesuaikan tanggal ini.</p>
+              <Label>{partForm.kekurangan ? 'Catatan Kekurangan (opsional)' : 'Deskripsi Kerusakan'}</Label>
+              <HistoryInput historyKey="service-deskripsi" value={partForm.deskripsi} onChange={(e) => setPartForm({ ...partForm, deskripsi: e.target.value })} placeholder={partForm.kekurangan ? 'cth: stok lokal kosong, mohon order ke pabrik' : 'cth: Dinamo mati total'} />
             </div>
+            {!partForm.kekurangan && (
+              <div className="space-y-1.5">
+                <Label>Tanggal Kejadian</Label>
+                <Input type="date" value={partForm.tgl} onChange={(e) => setPartForm({ ...partForm, tgl: e.target.value })} aria-label="Tanggal kejadian tiket" />
+                <p className="text-[11px] text-slate-500">Boleh diisi mundur (data historis) — nomor tiket otomatis menyesuaikan tanggal ini.</p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Sparepart — boleh lebih satu kode (tiap baris kode & nama berbeda)</Label>
               {partForm.rows.map((row, i) => {
@@ -1330,13 +1436,13 @@ export default function MasterDataView() {
                 <Plus className="mr-1 h-3.5 w-3.5" /> Tambah Part
               </Button>
             </div>
-            {partUnit && !partUnit.tokoId && partUnit.statusGaransi === 'NON_GARANSI' && (
+            {partUnit && !partForm.kekurangan && !partUnit.tokoId && partUnit.statusGaransi === 'NON_GARANSI' && (
               <div className="space-y-1.5">
                 <Label>Biaya Jasa (Rp)</Label>
                 <Input type="number" min={0} value={partForm.jasa} onChange={(e) => setPartForm({ ...partForm, jasa: e.target.value })} />
               </div>
             )}
-            {partUnit && (partUnit.tokoId || partUnit.statusGaransi !== 'NON_GARANSI') && (
+            {partUnit && !partForm.kekurangan && (partUnit.tokoId || partUnit.statusGaransi !== 'NON_GARANSI') && (
               <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">Unit {partUnit.tokoId ? 'stok toko' : 'garansi'} — biaya jasa Rp 0 (otomatis).</p>
             )}
             {(!partFormValid && !dupPartKode.size && !partRowSetengah) && (
@@ -1348,11 +1454,11 @@ export default function MasterDataView() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setPartUnit(null)}>Batal</Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!partUnit || !partFormValid || createTiketPart.isPending}
-              onClick={() => createTiketPart.mutate()}
+              className={partForm.kekurangan ? 'bg-violet-600 hover:bg-violet-700' : 'bg-emerald-600 hover:bg-emerald-700'}
+              disabled={!partUnit || !partFormValid || createTiketPart.isPending || createOrderEmail.isPending}
+              onClick={() => (partForm.kekurangan ? createOrderEmail.mutate() : createTiketPart.mutate())}
             >
-              <PackagePlus className="mr-1 h-4 w-4" /> Simpan &amp; Proses
+              <PackagePlus className="mr-1 h-4 w-4" /> {partForm.kekurangan ? 'Simpan & Email Produsen' : 'Simpan & Proses'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -60,6 +60,26 @@ export async function postJson<T>(url: string, body: unknown, method = 'POST'): 
   return res.json() as Promise<T>
 }
 
+/** Bangun link mailto: dengan subject & body terisi — dipakai sebagai fallback bila SMTP belum diset. */
+export function mailtoHref(to: string, subject: string, body: string): string {
+  return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.replace(/\n/g, '\r\n'))}`
+}
+
+/**
+ * Buka link eksternal aman di semua lingkungan: <a target="_blank"> → browser membuka browser/mail client,
+ * Electron menangkapnya via setWindowOpenHandler (mailto/https → aplikasi default sistem).
+ */
+export function bukaLinkEksternal(href: string) {
+  if (typeof document === 'undefined') return
+  const a = document.createElement('a')
+  a.href = href
+  a.target = '_blank'
+  a.rel = 'noreferrer'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+}
+
 export function formatRupiah(n: number): string {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -163,5 +183,6 @@ export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewaySt
 export type {
   Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
   Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus, BankKode,
+  OrderEmailPart, HasilKirimEmail,
 } from '@/lib/types'
 

@@ -340,3 +340,39 @@ export interface DashboardData {
   garansiCount: { GARANSI: number; NON_GARANSI: number }
   tren14hari: { tanggal: string; tiket: number }[]
 }
+
+// ============ Order Email Part (kekurangan sparepart → email ke produsen) ============
+
+export interface OrderEmailPart {
+  id: number
+  kodePart: string
+  namaPart: string
+  brand: string | null
+  qty: number
+  unitAssetId: number | null
+  serialNumber: string | null
+  modelUnit: string | null
+  tokoKode: string | null
+  tokoNama: string | null
+  catatan: string | null
+  status: 'PENDING' | 'TERKIRIM' | 'SELESAI'
+  emailTujuan: string | null
+  emailKirimAt: string | null
+  emailOleh: string | null
+  emailMode: string | null
+  emailPesanGagal: string | null
+  diinputOleh: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface HasilKirimEmail {
+  /** SMTP = benar-benar terkirim · MAILTO = SMTP belum diset, tersedia draft mailto · SMTP_GAGAL = gagal kirim + draft mailto */
+  mode: 'SMTP' | 'MAILTO' | 'SMTP_GAGAL'
+  terkirim?: number
+  /** Email tujuan yang dipakai (bila diketahui). */
+  ke?: string
+  /** Mail-to link draft (buka aplikasi email pengguna dengan isi terisi). */
+  mailto?: string
+  error?: string
+}

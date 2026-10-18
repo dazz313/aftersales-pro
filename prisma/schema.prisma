@@ -108,6 +108,7 @@ model UnitAsset {
   toko            MasterToko?      @relation(fields: [tokoId], references: [id])
   customer        MasterCustomer?  @relation(fields: [customerId], references: [id])
   serviceRequests ServiceRequest[]
+  orderEmailParts OrderEmailPart[]
 }
 
 // ==========================================
@@ -340,4 +341,34 @@ model InboxItem {
   direviewOleh  String?
   direviewAt    DateTime?
   createdAt     DateTime  @default(now())
+}
+
+// ==========================================
+// 10. Order Email Part (order_email_part)
+// Daftar khusus kekurangan sparepart unit yang DIORDER KE PRODUSEN VIA EMAIL.
+// Dibuat dari form Input Part unit dengan pilihan "Kekurangan Sparepart" → tombol Simpan & Email.
+// Status: PENDING (menunggu email) → TERKIRIM (email terkirim ke produsen) → SELESAI (sudah ditangani).
+// ==========================================
+model OrderEmailPart {
+  id              Int        @id @default(autoincrement())
+  kodePart        String
+  namaPart        String
+  brand           String?
+  qty             Int        @default(1)
+  unitAssetId     Int?
+  serialNumber    String? // snapshot unit saat input
+  modelUnit       String?
+  tokoKode        String?
+  tokoNama        String?
+  catatan         String?
+  status          String     @default("PENDING") // PENDING | TERKIRIM | SELESAI
+  emailTujuan     String?
+  emailKirimAt    DateTime?
+  emailOleh       String?
+  emailMode       String? // SMTP | MANUAL
+  emailPesanGagal String?
+  diinputOleh     String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  unit            UnitAsset? @relation(fields: [unitAssetId], references: [id], onDelete: SetNull)
 }
