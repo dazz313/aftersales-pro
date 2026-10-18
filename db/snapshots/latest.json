@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:39:16.794Z",
+  "generatedAt": "2026-10-18T01:41:39.587Z",
   "masterToko": [
     {
       "id": 216,
@@ -5279,6 +5279,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 590,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "WDXX-PX318-WH-KGX,WDXX-PX317-WH-KGX",
+      "deskripsi": "Kekurangan sparepart unit 02100056000 dicatat & mengantre email ke produsen (2 item)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:41:39.554Z"
+    },
     {
       "id": 589,
       "aksi": "CREATE_UNIT_ASSET",
