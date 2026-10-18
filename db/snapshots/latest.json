@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T02:56:00.214Z",
+  "generatedAt": "2026-10-18T03:24:34.266Z",
   "masterToko": [
     {
       "id": 216,
@@ -2050,6 +2050,34 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 329,
+      "kodePart": "TST-A1",
+      "namaPart": "Reservoir Uji",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T03:24:34.217Z"
+    },
+    {
+      "id": 330,
+      "kodePart": "TST-B2",
+      "namaPart": "Karet Uji",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T03:24:34.220Z"
+    },
+    {
       "id": 326,
       "kodePart": "UP-LANJUT",
       "namaPart": "Part Lanjut Uji",
@@ -2244,6 +2272,34 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T05:20:38.647Z"
+    },
+    {
+      "id": 328,
+      "kodePart": "WDXX-PX317-WH-KGX",
+      "namaPart": "RESERVOIR GRILL186 WHITE",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T03:22:38.008Z"
+    },
+    {
+      "id": 327,
+      "kodePart": "WDXX-PX318-WH-KGX",
+      "namaPart": "RESERVOIR GRILL186",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T03:22:37.974Z"
     },
     {
       "id": 253,
@@ -3470,6 +3526,112 @@
   ],
   "serviceRequest": [
     {
+      "id": 49,
+      "noTiket": "SV-20261018-0002",
+      "unitAssetId": 199,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "uji otomatis",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T03:24:34.222Z",
+      "createdAt": "2026-10-18T03:24:34.222Z",
+      "updatedAt": "2026-10-18T03:24:34.222Z",
+      "editedAt": null,
+      "editedBy": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 63,
+          "serviceRequestId": 49,
+          "sparepartId": 329,
+          "qty": 2,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        },
+        {
+          "id": 64,
+          "serviceRequestId": 49,
+          "sparepartId": 330,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "noTiket": "SV-20261018-0001",
+      "unitAssetId": 205,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "Kekurangan part: WDXX-PX318-WH-KGX, WDXX-PX317-WH-KGX",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T03:22:37.961Z",
+      "createdAt": "2026-10-18T03:22:37.961Z",
+      "updatedAt": "2026-10-18T03:22:37.961Z",
+      "editedAt": null,
+      "editedBy": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 61,
+          "serviceRequestId": 48,
+          "sparepartId": 327,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        },
+        {
+          "id": 62,
+          "serviceRequestId": 48,
+          "sparepartId": 328,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 46,
       "noTiket": "SV-20260921-0001",
       "unitAssetId": 200,
@@ -3496,6 +3658,7 @@
       "updatedAt": "2026-10-17T23:14:52.956Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 59,
@@ -3537,6 +3700,7 @@
       "updatedAt": "2026-10-17T22:54:20.157Z",
       "editedAt": "2026-10-17T22:54:20.154Z",
       "editedBy": "dazz",
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 55,
@@ -3578,6 +3742,7 @@
       "updatedAt": "2026-10-16T09:37:02.021Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 52,
@@ -3619,6 +3784,7 @@
       "updatedAt": "2026-10-16T07:22:33.069Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 51,
@@ -3682,6 +3848,7 @@
       "updatedAt": "2026-10-16T16:17:14.946Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 50,
@@ -3723,6 +3890,7 @@
       "updatedAt": "2026-10-16T07:22:32.977Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 49,
@@ -3764,6 +3932,7 @@
       "updatedAt": "2026-10-16T16:24:34.599Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 48,
@@ -3805,6 +3974,7 @@
       "updatedAt": "2026-10-16T07:22:32.866Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 47,
@@ -3846,6 +4016,7 @@
       "updatedAt": "2026-10-16T08:31:21.441Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 46,
@@ -3887,6 +4058,7 @@
       "updatedAt": "2026-10-16T07:22:32.727Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 45,
@@ -3928,6 +4100,7 @@
       "updatedAt": "2026-10-16T07:22:32.657Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 44,
@@ -3969,6 +4142,7 @@
       "updatedAt": "2026-10-16T16:03:25.244Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 42,
@@ -4021,6 +4195,7 @@
       "updatedAt": "2026-10-16T08:28:55.204Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 41,
@@ -4062,6 +4237,7 @@
       "updatedAt": "2026-10-16T07:22:32.433Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 40,
@@ -4103,6 +4279,7 @@
       "updatedAt": "2026-10-16T16:08:41.004Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 39,
@@ -4144,6 +4321,7 @@
       "updatedAt": "2026-10-16T16:05:09.321Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 38,
@@ -4185,6 +4363,7 @@
       "updatedAt": "2026-10-16T07:48:16.614Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 37,
@@ -4226,6 +4405,7 @@
       "updatedAt": "2026-10-16T07:22:32.292Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 36,
@@ -4267,6 +4447,7 @@
       "updatedAt": "2026-10-16T16:21:00.332Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 35,
@@ -4308,6 +4489,7 @@
       "updatedAt": "2026-10-16T08:25:35.169Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 34,
@@ -4349,6 +4531,7 @@
       "updatedAt": "2026-10-16T16:07:41.573Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 33,
@@ -4390,6 +4573,7 @@
       "updatedAt": "2026-10-16T16:07:04.287Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 32,
@@ -4431,6 +4615,7 @@
       "updatedAt": "2026-10-16T16:01:02.658Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 31,
@@ -4472,6 +4657,7 @@
       "updatedAt": "2026-10-16T06:00:50.802Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 30,
@@ -4513,6 +4699,7 @@
       "updatedAt": "2026-10-17T23:18:16.327Z",
       "editedAt": "2026-10-17T23:18:16.325Z",
       "editedBy": "dazz",
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 29,
@@ -4554,6 +4741,7 @@
       "updatedAt": "2026-10-15T00:13:23.406Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 28,
@@ -4595,6 +4783,7 @@
       "updatedAt": "2026-10-15T00:40:10.945Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 27,
@@ -4636,6 +4825,7 @@
       "updatedAt": "2026-10-15T00:31:20.295Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 26,
@@ -4677,6 +4867,7 @@
       "updatedAt": "2026-10-15T00:41:21.633Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 25,
@@ -4718,6 +4909,7 @@
       "updatedAt": "2026-10-15T06:31:40.451Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 24,
@@ -4759,6 +4951,7 @@
       "updatedAt": "2026-10-15T06:14:53.758Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 23,
@@ -4800,6 +4993,7 @@
       "updatedAt": "2026-10-15T06:14:53.736Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 22,
@@ -4841,6 +5035,7 @@
       "updatedAt": "2026-10-15T06:14:53.713Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 21,
@@ -4882,6 +5077,7 @@
       "updatedAt": "2026-10-15T06:14:53.690Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 20,
@@ -4923,6 +5119,7 @@
       "updatedAt": "2026-10-15T06:14:53.667Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 19,
@@ -4964,6 +5161,7 @@
       "updatedAt": "2026-10-15T05:51:23.893Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 18,
@@ -5005,6 +5203,7 @@
       "updatedAt": "2026-10-15T05:51:23.864Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 17,
@@ -5046,6 +5245,7 @@
       "updatedAt": "2026-10-15T05:51:23.841Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": []
     },
     {
@@ -5075,6 +5275,7 @@
       "updatedAt": "2026-10-15T05:51:23.817Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 15,
@@ -5116,6 +5317,7 @@
       "updatedAt": "2026-10-15T05:51:23.792Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 14,
@@ -5157,6 +5359,7 @@
       "updatedAt": "2026-10-15T05:51:23.763Z",
       "editedAt": null,
       "editedBy": null,
+      "lampiranEmail": null,
       "parts": [
         {
           "id": 13,
@@ -5279,6 +5482,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 599,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-20261018-0002",
+      "deskripsi": "Input part kurang unit .: TST-A1 ×2, TST-B2 ×1 — tiket SV-20261018-0002 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T03:24:34.244Z"
+    },
+    {
+      "id": 598,
+      "aksi": "MIGRASI",
+      "entitas": "order-email-part",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Item part kurang lama dilink ke tiket SV-20261018-0001 (REQUEST EMAIL) — 2 item",
+      "aktor": "MIGRASI",
+      "createdAt": "2026-10-18T03:22:38.042Z"
+    },
+    {
+      "id": 597,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "13",
+      "deskripsi": "Input part kurang unit 02100056000: WDXX-PX318-WH-KGX ×1, WDXX-PX317-WH-KGX ×1 — tersimpan (kirim email: tahap berikutnya)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T03:00:03.573Z"
+    },
     {
       "id": 596,
       "aksi": "BACKUP_DATA",
