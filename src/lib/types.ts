@@ -329,6 +329,23 @@ export interface DashboardData {
     count: number
     items: { noTiket: string; serial: string; model: string; toko: string; umurJam: number | null; adaPart: boolean; isDataLama: boolean }[]
   }
+  /** Panel Part Request by Email: tiket REQUEST_EMAIL (kode SV-EM) + agregat item email-nya. */
+  partEmail: {
+    countTiket: number
+    countPending: number
+    countTerkirim: number
+    items: {
+      id: number
+      noTiket: string
+      tgl: string
+      model: string
+      serial: string
+      toko: string
+      parts: { kode: string; nama: string; qty: number }[]
+      pending: number
+      terkirim: number
+    }[]
+  }
   /** Unit terdaftar yang belum pernah punya tiket service sama sekali. */
   unitBelumDiproses: { count: number; total: number }
   klaim: { pendingCount: number; pendingValue: number; submitted: number }

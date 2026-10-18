@@ -552,13 +552,15 @@ export default function MasterDataView() {
           ) : list.map((u) => {
             const info = partInfoByUnit.get(u.id) ?? { count: 0, countAktif: 0, codes: [] as string[] }
             // Unit finish (punya tiket tapi tak ada yang aktif) → abu-abu + label FINISH
-            // Tiket REQUEST EMAIL (kekurangan part → email produsen) ikut dihitung masih berproses
+            // Unit ber-tiket REQUEST EMAIL → label WAITING PART (menunggu part dari produsen via email)
             const finish =
               (u.serviceRequests ?? []).length > 0 &&
               !(u.serviceRequests ?? []).some((t) => t.status === 'REQUEST' || t.status === 'PROSES' || t.status === 'REQUEST_EMAIL')
             const aktifTiket = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST' || t.status === 'PROSES')
+            const emailTiket = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST_EMAIL')
+            const waitingPart = !finish && !aktifTiket && !!emailTiket
             return (
-              <TableRow key={u.id} className={cn(finish && 'bg-slate-100/80 opacity-70', unitDipilih.has(u.id) && 'bg-red-50/50 opacity-100')}>
+              <TableRow key={u.id} className={cn(finish && 'bg-slate-100/80 opacity-70', waitingPart && 'bg-indigo-50/40', unitDipilih.has(u.id) && 'bg-red-50/50 opacity-100')}>
                 <TableCell className="pr-0">
                   <Checkbox
                     aria-label={`Pilih unit ${u.serialNumber}`}
@@ -596,11 +598,17 @@ export default function MasterDataView() {
                   <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
                     {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
                   </Badge>
-                  {finish && (
+                  {finish ? (
                     <p className="mt-0.5">
                       <Badge variant="outline" className="border-slate-300 bg-slate-200 text-[10px] text-slate-500">FINISH</Badge>
                     </p>
-                  )}
+                  ) : waitingPart && emailTiket ? (
+                    <p className="mt-0.5">
+                      <Badge variant="outline" className="border-indigo-300 bg-indigo-50 text-[10px] font-semibold text-indigo-700" title={`Menunggu part dari produsen via email — tiket ${emailTiket.noTiket}`}>
+                        WAITING PART
+                      </Badge>
+                    </p>
+                  ) : null}
                   {u.tglPembelian && (
                     <p className="mt-0.5 whitespace-nowrap text-[10px] text-slate-500" title="Tgl pembelian — awal masa garansi">
                       {formatTanggal(u.tglPembelian)}
@@ -621,7 +629,11 @@ export default function MasterDataView() {
                 </TableCell>
                 {showStatus && (
                   <TableCell>
-                    {info.countAktif > 0 ? (
+                    {waitingPart ? (
+                      <Badge variant="outline" className="border-indigo-300 bg-indigo-50 text-[10px] text-indigo-700" title={`Part dipesan ke produsen via email — tiket ${emailTiket?.noTiket ?? ''}`}>
+                        Waiting Part (Email)
+                      </Badge>
+                    ) : info.countAktif > 0 ? (
                       <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[10px] text-teal-700">Part Ready Produsen</Badge>
                     ) : info.count > 0 ? (
                       <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[10px] text-slate-500" title="Part sebelumnya sudah dibawa tiket yang FINISH — tidak dihitung Part Ready Produsen">Selesai (FINISH)</Badge>
@@ -635,6 +647,11 @@ export default function MasterDataView() {
                     {aktifTiket && (
                       <Badge variant="outline" className="shrink-0 border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
                         {aktifTiket.noTiket}
+                      </Badge>
+                    )}
+                    {waitingPart && emailTiket && (
+                      <Badge variant="outline" className="shrink-0 border-indigo-300 font-mono text-[10px] text-indigo-700" title="Menunggu part dari produsen via email — input part saat sudah datang">
+                        {emailTiket.noTiket}
                       </Badge>
                     )}
                     <DropdownMenu>
@@ -655,7 +672,7 @@ export default function MasterDataView() {
                           <PackageOpen className="mr-2 h-3.5 w-3.5 text-violet-600" /> Input Part Kurang
                         </DropdownMenuItem>
                         <p className="px-2 pb-1.5 text-[10px] text-slate-400">
-                          Simpan → kode service terbit (REQUEST EMAIL) · kirim email &amp; upload lampiran di Daftar Tiket Service.
+                          Simpan → kode service terbit (REQUEST EMAIL) · Kirim Email ke produsen dari Daftar Tiket Service.
                         </p>
                         <DropdownMenuItem onSelect={() => unduhPdfDetail(u)} data-testid="aksi-pdf-detail">
                           <FileDown className="mr-2 h-3.5 w-3.5 text-violet-600" /> PDF Detail Unit
@@ -665,6 +682,8 @@ export default function MasterDataView() {
                         </DropdownMenuItem>
                         {aktifTiket ? (
                           <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">Tiket aktif {aktifTiket.noTiket} — tambah part lewat panel Service.</p>
+                        ) : waitingPart && emailTiket ? (
+                          <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">WAITING PART ({emailTiket.noTiket}) — email/kirim & input part saat datang.</p>
                         ) : finish ? (
                           <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">Unit FINISH — tiket baru tidak bisa dibuat.</p>
                         ) : (

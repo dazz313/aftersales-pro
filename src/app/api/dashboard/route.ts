@@ -24,6 +24,7 @@ export async function GET() {
       kunjungan7hari,
       unitTanpaTiket,
       totalUnit,
+      orderEmailItems,
     ] = await Promise.all([
       db.serviceRequest.count({ where: { status: 'REQUEST' } }),
       db.serviceRequest.count({ where: { status: 'PROSES' } }),
@@ -46,6 +47,8 @@ export async function GET() {
       // Unit terdaftar tapi belum pernah diproses (tanpa tiket service sama sekali)
       db.unitAsset.count({ where: { serviceRequests: { none: {} } } }),
       db.unitAsset.count(),
+      // Item order email (PENDING / TERKIRIM) — untuk panel Part Request by Email
+      db.orderEmailPart.findMany({ select: { serviceRequestId: true, status: true } }),
     ])
 
     // Total estimasi dana klaim tertahan (ALT-04): jasa + part
@@ -150,6 +153,36 @@ export async function GET() {
       })),
     }
 
+    // Part Request by Email (tiket REQUEST_EMAIL / kode SV-EM): agregat status item
+    // order email-nya — PENDING (belum dikirim) vs TERKIRIM (sudah di-email ke produsen).
+    const emailStatusMap = new Map<number, { pending: number; terkirim: number }>()
+    for (const it of orderEmailItems) {
+      if (it.serviceRequestId == null) continue
+      const e = emailStatusMap.get(it.serviceRequestId) ?? { pending: 0, terkirim: 0 }
+      if (it.status === 'TERKIRIM') e.terkirim++
+      else e.pending++
+      emailStatusMap.set(it.serviceRequestId, e)
+    }
+    const emailTiketList = serviceRequests
+      .filter((t) => t.status === 'REQUEST_EMAIL')
+      .sort((a, b) => new Date(b.tglTiket).getTime() - new Date(a.tglTiket).getTime())
+    const partEmail = {
+      countTiket: emailTiketList.length,
+      countPending: [...emailStatusMap.values()].reduce((a, e) => a + e.pending, 0),
+      countTerkirim: [...emailStatusMap.values()].reduce((a, e) => a + e.terkirim, 0),
+      items: emailTiketList.slice(0, 8).map((t) => ({
+        id: t.id,
+        noTiket: t.noTiket,
+        tgl: new Date(t.tglTiket).toISOString(),
+        model: t.unitAsset?.modelUnit ?? '-',
+        serial: t.unitAsset?.serialNumber ?? '-',
+        toko: t.unitAsset?.toko ? `${t.unitAsset.toko.kodeToko} — ${t.unitAsset.toko.namaToko}` : 'Perorangan',
+        parts: t.parts.map((p) => ({ kode: p.sparepart.kodePart, nama: p.sparepart.namaPart, qty: p.qty })),
+        pending: emailStatusMap.get(t.id)?.pending ?? 0,
+        terkirim: emailStatusMap.get(t.id)?.terkirim ?? 0,
+      })),
+    }
+
     return NextResponse.json({
       tiket: {
         request: countRequest,
@@ -159,6 +192,7 @@ export async function GET() {
         total: countRequest + countProses + countFinish,
       },
       belumProses,
+      partEmail,
       unitBelumDiproses: { count: unitTanpaTiket, total: totalUnit },
       klaim: {
         pendingCount: claimsDraft.length,

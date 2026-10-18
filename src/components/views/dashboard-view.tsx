@@ -19,7 +19,7 @@ import {
 import {
   FileClock, Loader, CheckCircle2, Wallet, PackageX, MapPinOff, AlertTriangle,
   RefreshCw, TrendingUp, Store, ClipboardList, ChevronRight, ChevronDown, Hourglass,
-  FileDown, FileSpreadsheet, Send, QrCode,
+  FileDown, FileSpreadsheet, Send, QrCode, Mail,
 } from 'lucide-react'
 import { KpiGrid, type KpiDef } from '@/components/kpi-card'
 
@@ -432,6 +432,82 @@ export default function DashboardView() {
           </CardContent>
         </Card>
       )}
+
+      {/* Part Request by Email — pantau order kekurangan sparepart via email produsen (tiket SV-EM) */}
+      <Card className="border-indigo-200">
+        <CardHeader className="flex-row items-start justify-between space-y-0">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Mail className="h-4 w-4 text-indigo-600" />
+              Part Request by Email
+              {dash.partEmail.countTiket > 0 && (
+                <Badge className="bg-indigo-600 text-[10px] text-white hover:bg-indigo-600">{dash.partEmail.countTiket} tiket</Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Kekurangan sparepart diorder ke produsen via email — Klik &quot;Kirim Email&quot; di tiket SV-EM; part datang diinput lewat tombol Part di Master Data
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+            onClick={() => navigateTo('service', { serviceStatus: 'REQUEST_EMAIL' })}
+            aria-label="Buka tiket REQUEST EMAIL di panel Service"
+          >
+            Buka Tiket <ChevronRight className="ml-1 h-3.5 w-3.5" />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {dash.partEmail.items.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-400">
+              Belum ada part request via email — simpan <b>Input Part Kurang</b> (tombol Aksi ▾ di Master Barcode) untuk menerbitkan tiket <span className="font-mono">SV-EM-…</span>
+            </p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {dash.partEmail.items.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => navigateTo('service', { serviceStatus: 'REQUEST_EMAIL' })}
+                  className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-2.5 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50"
+                  title={`Buka tiket ${t.noTiket} di panel Service`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-mono text-xs font-semibold text-indigo-800">{t.noTiket}</p>
+                    {t.pending > 0 ? (
+                      <Badge variant="outline" className="border-indigo-300 text-[9px] text-indigo-700" title="Part belum di-email ke produsen">
+                        {t.pending} menunggu
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-emerald-300 text-[9px] text-emerald-700" title="Semua part sudah di-email ke produsen">
+                        terkirim
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="mt-0.5 truncate text-[11px] text-slate-600">{t.model} · {t.serial}</p>
+                  <p className="truncate text-[10px] text-slate-400">{t.toko}</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {t.parts.map((p, i) => (
+                      <span key={i} className="rounded border border-teal-200 bg-white px-1 font-mono text-[9px] text-teal-700" title={p.nama}>
+                        {p.kode} ×{p.qty}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          {dash.partEmail.countTiket > dash.partEmail.items.length && (
+            <p className="mt-2 text-[11px] text-slate-500">+ {dash.partEmail.countTiket - dash.partEmail.items.length} tiket lainnya — buka tiket untuk daftar penuh.</p>
+          )}
+          {dash.partEmail.countTiket > 0 && (
+            <p className="mt-2 text-[11px] text-slate-500">
+              {dash.partEmail.countPending} part menunggu email ke produsen · {dash.partEmail.countTerkirim} part sudah terkirim.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Alert Engine — dropdown, diklik baru muncul */}
       <Collapsible open={alertOpen} onOpenChange={setAlertOpen}>

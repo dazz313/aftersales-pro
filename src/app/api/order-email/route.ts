@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { logAudit, generateNoTiket } from '@/lib/audit'
+import { logAudit, generateNoTiketEmail } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { getActiveSession } from '@/lib/auth-server'
 
@@ -58,8 +58,10 @@ export async function POST(request: Request) {
       bersih.push({ kodePart: kode, namaPart: nama, qty: Math.floor(qty) })
     }
 
-    // Kode service dari sekuens tiket harian (menyatu dengan tiket service lain)
-    const noTiket = await generateNoTiket()
+    // Kode service khusus tiket REQUEST EMAIL: SV-EM-YYYYMMDD-XXXX — pembeda
+    // "order part via email" yang pendek & langsung dikenali; sekuens harian
+    // sendiri, tidak mencampur nomor tiket service biasa (SV-YYYYMMDD-XXXX).
+    const noTiket = await generateNoTiketEmail()
     const catatan = (body.catatan ?? '').trim()
     const aktor = body.aktor?.trim() || session.nama
 
