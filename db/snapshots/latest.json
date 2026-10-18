@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:06:52.621Z",
+  "generatedAt": "2026-10-18T01:07:46.541Z",
   "masterToko": [
     {
       "id": 216,
@@ -5187,6 +5187,11 @@
       "nilai": "eracoolteknik@gmail.com"
     },
     {
+      "id": 82,
+      "kunci": "email_produsen",
+      "nilai": "produsen@uji.test"
+    },
+    {
       "id": 73,
       "kunci": "gateway_tg_aktif",
       "nilai": "true"
@@ -5218,6 +5223,60 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 575,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, email_produsen",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:07:46.520Z"
+    },
+    {
+      "id": 574,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "WDXX-PX318-WH-KGX,WDXX-PX317-WH-KGX",
+      "deskripsi": "Kekurangan sparepart unit . dicatat & mengantre email ke produsen (2 item)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:06:54.692Z"
+    },
+    {
+      "id": 573,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-UJI2",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (Elemen Uji)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:06:54.650Z"
+    },
+    {
+      "id": 572,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-UJI1",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (Termostat Uji)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:06:54.350Z"
+    },
+    {
+      "id": 571,
+      "aksi": "MARK_EMAIL_SELESAI",
+      "entitas": "order_email_part",
+      "entitasId": "UP-UJI1",
+      "deskripsi": "Item kekurangan part selesai ditangani — Termostat Uji",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:06:54.044Z"
+    },
+    {
+      "id": 570,
+      "aksi": "MARK_EMAIL_TERKIRIM",
+      "entitas": "order_email_part",
+      "entitasId": "UP-UJI1",
+      "deskripsi": "Item ditandai terkirim secara manual (draf email dibuka) — Termostat Uji",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:06:53.973Z"
+    },
     {
       "id": 569,
       "aksi": "CREATE_ORDER_EMAIL",
