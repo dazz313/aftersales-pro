@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import HistoryInput from '@/components/history-input'
-import { Sparkles, Loader2, X, CalendarDays, SearchCheck, FileText, Truck } from 'lucide-react'
+import { Sparkles, Loader2, X, CalendarDays, SearchCheck, FileText, Truck, FileSpreadsheet, Layers, PackageCheck } from 'lucide-react'
 import SuratJalanMasukDialog from '@/components/surat-jalan-masuk-dialog'
 import { cn } from '@/lib/utils'
 
@@ -128,14 +128,42 @@ export default function AnalisaAiView() {
 
   return (
     <div className="space-y-4">
+      {/* ===== Header hero ===== */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-teal-600 px-5 py-4 text-white shadow-md shadow-indigo-200/70">
+        <Sparkles className="pointer-events-none absolute -right-6 -top-8 h-28 w-28 opacity-20" />
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/30">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold leading-tight">Analisa AI</h1>
+              <p className="max-w-2xl text-xs leading-snug text-white/85">
+                Empat asisten cerdas saling berdampingan — ringkasan usaha, jadwal kunjungan, pencarian part, dan penerimaan barang dari produsen.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold tracking-wide ring-1 ring-white/30">4 FITUR</span>
+            <span className="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold tracking-wide ring-1 ring-white/30">DITENAGAI 9ROUTER</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== Fitur berdampingan: 2 kolom × 2 baris ke bawah ===== */}
+      <div className="grid items-stretch gap-4 lg:grid-cols-2">
       {/* ===== 1. Ringkasan operasional ===== */}
-      <Card className="border-violet-200">
+      <Card className="overflow-hidden border-slate-200/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="h-1 bg-gradient-to-r from-violet-500 via-fuchsia-400 to-violet-300" />
         <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="h-4 w-4 text-violet-700" /> Ringkasan Operasional AI
-            </CardTitle>
-            <CardDescription className="text-xs">Kondisi usaha hari ini + 3 prioritas tindakan, ditulis AI dari data sistem.</CardDescription>
+          <div className="flex items-start gap-2.5">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-violet-700 shadow-sm">
+              <FileText className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold tracking-tight text-slate-900">Ringkasan Operasional AI</CardTitle>
+              <CardDescription className="text-[11px] leading-snug">Kondisi usaha hari ini + 3 prioritas tindakan, ditulis AI dari data sistem.</CardDescription>
+            </div>
           </div>
           <Button
             size="sm" className="h-7 shrink-0 bg-violet-600 px-2 text-[11px] hover:bg-violet-700"
@@ -195,19 +223,23 @@ export default function AnalisaAiView() {
               </div>
             </div>
           ) : (
-            <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-400">Klik “Buat Ringkasan” — AI membaca tiket, stok, toko, dan klaim lalu menulis intisarinya.</p>
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-center text-xs text-slate-400">Klik “Buat Ringkasan” — AI membaca tiket, stok, toko, dan klaim lalu menulis intisarinya.</p>
           )}
         </CardContent>
       </Card>
 
       {/* ===== 2. Saran jadwal kunjungan ===== */}
-      <Card className="border-teal-200">
+      <Card className="overflow-hidden border-slate-200/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="h-1 bg-gradient-to-r from-teal-500 via-cyan-400 to-teal-300" />
         <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CalendarDays className="h-4 w-4 text-teal-700" /> Saran Jadwal Kunjungan AI
-            </CardTitle>
-            <CardDescription className="text-xs">6 hari kerja ke depan + alasan per hari. Versi interaktif (dengan check-in) ada di Field Ops.</CardDescription>
+          <div className="flex items-start gap-2.5">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 shadow-sm">
+              <CalendarDays className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold tracking-tight text-slate-900">Saran Jadwal Kunjungan AI</CardTitle>
+              <CardDescription className="text-[11px] leading-snug">6 hari kerja ke depan + alasan per hari. Versi interaktif (dengan check-in) ada di Field Ops.</CardDescription>
+            </div>
           </div>
           <div className="flex shrink-0 gap-1.5">
             <Button
@@ -267,22 +299,26 @@ export default function AnalisaAiView() {
               )}
             </div>
           ) : (
-            <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-400">Klik “Saran AI” — jadwal 6 hari + alasan disusun dari data toko.</p>
+            <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 p-4 text-center text-xs text-slate-400">Klik “Saran AI” — jadwal 6 hari + alasan disusun dari data toko.</p>
           )}
         </CardContent>
       </Card>
 
       {/* ===== 3. Rekomendasi sparepart ===== */}
-      <Card className="border-teal-200">
+      <Card className="overflow-hidden border-slate-200/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="h-1 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-300" />
         <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <SearchCheck className="h-4 w-4 text-teal-700" /> Rekomendasi Sparepart AI
-            </CardTitle>
-            <CardDescription className="text-xs">Model + kerusakan → lacak riwayat → AI meranking kandidat + alasan.</CardDescription>
+          <div className="flex items-start gap-2.5">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 shadow-sm">
+              <SearchCheck className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold tracking-tight text-slate-900">Rekomendasi Sparepart AI</CardTitle>
+              <CardDescription className="text-[11px] leading-snug">Model + kerusakan → lacak riwayat → AI meranking kandidat + alasan.</CardDescription>
+            </div>
           </div>
           <Button
-            size="sm" variant="outline" className="h-7 shrink-0 border-teal-300 px-2 text-[11px] text-teal-700 hover:bg-teal-50"
+            size="sm" variant="outline" className="h-7 shrink-0 border-amber-300 px-2 text-[11px] text-amber-800 hover:bg-amber-50"
             onClick={() => setView('lacak')}
           >
             Buka Lacak
@@ -332,26 +368,42 @@ export default function AnalisaAiView() {
       </Card>
 
       {/* ===== 4. Surat jalan masuk — penerimaan part dari produsen (cek berlapis + pencocokan AI) ===== */}
-      <Card className="border-indigo-200">
+      <Card className="overflow-hidden border-slate-200/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-blue-400 to-indigo-300" />
         <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Truck className="h-4 w-4 text-indigo-700" /> Surat Jalan Masuk — Penerimaan Part Produsen
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Uraikan Excel hasil scan → pencocokan otomatis (+ bantuan AI) ke tiket SV-EM/candidate part siap → <b>Simpan Draft → Cek Berlapis (+ opsi Cek Manual per baris) → Cek Akhir → Terapkan Permanen</b>.
-            </CardDescription>
+          <div className="flex items-start gap-2.5">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-sm">
+              <Truck className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold tracking-tight text-slate-900">Surat Jalan Masuk — Penerimaan Part Produsen</CardTitle>
+              <CardDescription className="text-[11px] leading-snug">
+                Uraikan Excel hasil scan → pencocokan otomatis (+ bantuan AI) → <b>Simpan Draft → Cek Berlapis (+ Cek Manual per baris) → Cek Akhir → Terapkan Permanen</b>.
+              </CardDescription>
+            </div>
           </div>
           <Button size="sm" className="h-7 shrink-0 bg-indigo-600 px-2 text-[11px] hover:bg-indigo-700" onClick={() => setSjMasukOpen(true)}>
             <Truck className="mr-1 h-3.5 w-3.5" /> Buka
           </Button>
         </CardHeader>
         <CardContent>
-          <p className="rounded-lg border border-dashed p-3 text-center text-xs text-slate-400">
-            Barang dari produsen sudah datang? Unggah surat jalan Excel/CSV — baris yang cocok otomatis <b>siap di tiket</b>, tiket part-lengkap naik <b>PROSES</b>; barang tanpa tiket tetap tercatat tanpa masuk stok.
-          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2.5">
+              <p className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-800"><FileSpreadsheet className="h-3.5 w-3.5" /> 1 · Unggah Excel/CSV</p>
+              <p className="mt-1 text-[10px] leading-snug text-slate-500">Hasil scan manual (kode, nama, qty, SN) dari barang datangan produsen.</p>
+            </div>
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2.5">
+              <p className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-800"><Layers className="h-3.5 w-3.5" /> 2 · Cek Berlapis</p>
+              <p className="mt-1 text-[10px] leading-snug text-slate-500">Draft → cek otomatis → cek manual per baris → cek akhir bersih.</p>
+            </div>
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-2.5">
+              <p className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-800"><PackageCheck className="h-3.5 w-3.5" /> 3 · Terapkan Permanen</p>
+              <p className="mt-1 text-[10px] leading-snug text-slate-500">Baris cocok siap di tiket & tiket part-lengkap naik PROSES; barang tanpa tiket tetap tercatat tanpa masuk stok.</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
+      </div>
       <SuratJalanMasukDialog open={sjMasukOpen} onOpenChange={setSjMasukOpen} />
 
       <p className="text-center text-[11px] text-slate-400">
