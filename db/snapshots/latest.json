@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:37:58.038Z",
+  "generatedAt": "2026-10-18T04:38:32.726Z",
   "masterToko": [
     {
       "id": 216,
@@ -5401,6 +5401,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 617,
+      "aksi": "CETAK_STTB_KOLEKTIF",
+      "entitas": "sttb_kolektif",
+      "entitasId": "STTBK-20261018-0003",
+      "deskripsi": "Cetak STTB kolektif STTBK-20261018-0003: 5 unit siap pick up dari TOK-042 — Toko Semeru Ahmad Yani",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T04:38:32.701Z"
+    },
     {
       "id": 616,
       "aksi": "CETAK_STTB_KOLEKTIF",
