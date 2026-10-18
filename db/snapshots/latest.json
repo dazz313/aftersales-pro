@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:45:55.774Z",
+  "generatedAt": "2026-10-18T04:46:18.995Z",
   "masterToko": [
     {
       "id": 216,
@@ -442,7 +442,7 @@
       "alamat": "Watampone",
       "kontak": null,
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": "2026-10-02T04:45:00.000Z",
+      "tglVisitTerakhir": "2026-10-05T04:46:00.000Z",
       "barcodeToko": "BC-TOK-032",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3506,6 +3506,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 59,
+      "tokoId": 247,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-05T04:46:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 53,
       "tokoId": 262,
       "teknisiId": 27,
@@ -5431,6 +5441,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 622,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "59",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Aneka Logam (TOK-032) · tgl 5/10/2026, 12.46.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:46:18.975Z"
+    },
     {
       "id": 621,
       "aksi": "CREATE_KUNJUNGAN",
