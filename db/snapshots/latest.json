@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:46:17.861Z",
+  "generatedAt": "2026-10-18T02:56:00.214Z",
   "masterToko": [
     {
       "id": 216,
@@ -5280,6 +5280,24 @@
   ],
   "auditLog": [
     {
+      "id": 596,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T02-55-59.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-18T02:56:00.194Z"
+    },
+    {
+      "id": 595,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "11",
+      "deskripsi": "Input part kurang unit .: TST-A1 ×2, TST-B2 ×1 — tersimpan (kirim email: tahap berikutnya)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T02:54:59.303Z"
+    },
+    {
       "id": 594,
       "aksi": "DELETE_ORDER_EMAIL",
       "entitas": "order_email_part",
@@ -8755,6 +8773,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 13,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 312,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T02-55-59.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-18T02:56:00.181Z"
+    },
     {
       "id": 12,
       "status": "LOCAL",
