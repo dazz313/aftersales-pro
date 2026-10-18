@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T05:05:01.547Z",
+  "generatedAt": "2026-10-18T05:06:39.478Z",
   "masterToko": [
     {
       "id": 216,
@@ -632,7 +632,7 @@
       "alamat": "Jl. Komp. Pasar Sentral Palakka",
       "kontak": null,
       "frekuensiVisit": 14,
-      "aktif": true,
+      "aktif": false,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-040",
@@ -760,7 +760,7 @@
       "alamat": null,
       "kontak": null,
       "frekuensiVisit": 14,
-      "aktif": false,
+      "aktif": true,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": "2026-09-29T04:49:00.000Z",
       "barcodeToko": "BC-TOK-048",
@@ -5608,6 +5608,51 @@
   ],
   "auditLog": [
     {
+      "id": 635,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-040",
+      "deskripsi": "Data toko diperbarui: aktif",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T05:06:39.443Z"
+    },
+    {
+      "id": 634,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T05-05-15.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-18T05:05:15.825Z"
+    },
+    {
+      "id": 633,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-048",
+      "deskripsi": "Data toko diperbarui: modeSiklus",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:05:02.125Z"
+    },
+    {
+      "id": 632,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-048",
+      "deskripsi": "Data toko diperbarui: modeSiklus",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:05:01.873Z"
+    },
+    {
+      "id": 631,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-048",
+      "deskripsi": "Data toko diperbarui: aktif",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:05:01.801Z"
+    },
+    {
       "id": 630,
       "aksi": "UPDATE_MASTER_TOKO",
       "entitas": "master_toko",
@@ -9407,6 +9452,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 17,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 326,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T05-05-15.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-18T05:05:15.801Z"
+    },
     {
       "id": 16,
       "status": "LOCAL",
