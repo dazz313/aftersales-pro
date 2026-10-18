@@ -412,6 +412,14 @@ model SuratJalanMasuk {
   catatan       String?
   createdAt     DateTime              @default(now())
   createdBy     String?
+  // Alur cek berlapis: DRAFT (simpan) → DIPERIKSA (cek otomatis/manual) → DITERAPKAN.
+  // Efek ke tiket/unit HANYA saat status naik ke DITERAPKAN (cek akhir bersih).
+  status         String    @default("DRAFT")
+  cekManual      Boolean   @default(false)
+  diperiksaAt    DateTime?
+  diperiksaOleh  String?
+  diterapkanAt   DateTime?
+  diterapkanOleh String?
   items         SuratJalanMasukItem[]
 }
 
