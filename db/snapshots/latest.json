@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:21:40.559Z",
+  "generatedAt": "2026-10-18T01:22:14.462Z",
   "masterToko": [
     {
       "id": 216,
@@ -2050,6 +2050,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 326,
+      "kodePart": "UP-LANJUT",
+      "namaPart": "Part Lanjut Uji",
+      "brandKompatibel": "UJI",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T01:21:40.826Z"
+    },
+    {
       "id": 280,
       "kodePart": "V569-00-100",
       "namaPart": "PIEZO UNIT (R/L)",
@@ -3116,18 +3130,6 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-21T16:00:00.000Z"
-    },
-    {
-      "id": 204,
-      "serialNumber": "UJILANJUT-001",
-      "modelUnit": "UJI Lanjut Model",
-      "merk": "UJI",
-      "nama": "Unit Uji Lanjut",
-      "tokoId": null,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-18T01:21:40.527Z"
     },
     {
       "id": 168,
@@ -5265,6 +5267,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 588,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T01-22-14.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:22:14.436Z"
+    },
+    {
+      "id": 587,
+      "aksi": "MARK_EMAIL_SELESAI",
+      "entitas": "order_email_part",
+      "entitasId": "UP-LANJUT",
+      "deskripsi": "Part sudah datang → tiket SV-20261018-0001 dibuat → 1 item order email otomatis selesai",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:21:40.923Z"
+    },
+    {
+      "id": 586,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit UJILANJUT-001 (UJI Lanjut Model, GARANSI) — ada part ORDER_PRODUSEN — STTB STTB-20261018-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:21:40.886Z"
+    },
+    {
+      "id": 585,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-LANJUT",
+      "deskripsi": "Kekurangan sparepart unit UJILANJUT-001 dicatat & mengantre email ke produsen (1 item)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:21:40.606Z"
+    },
     {
       "id": 584,
       "aksi": "CREATE_UNIT_ASSET",
@@ -8651,6 +8689,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 12,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 311,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T01-22-14.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-18T01:22:14.424Z"
+    },
     {
       "id": 11,
       "status": "LOCAL",
