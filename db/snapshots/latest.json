@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:41:39.587Z",
+  "generatedAt": "2026-10-18T01:46:14.198Z",
   "masterToko": [
     {
       "id": 216,
@@ -5279,6 +5279,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 591,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "WDXX-PX318-WH-KGX",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (RESERVOIR GIRLL 186)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:46:14.176Z"
+    },
     {
       "id": 590,
       "aksi": "CREATE_ORDER_EMAIL",
