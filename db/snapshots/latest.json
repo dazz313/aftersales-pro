@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T10:55:33.299Z",
+  "generatedAt": "2026-10-18T10:55:33.582Z",
   "masterToko": [
     {
       "id": 216,
@@ -3896,6 +3896,38 @@
   ],
   "serviceRequest": [
     {
+      "id": 69,
+      "noTiket": "SV-20261018-0002",
+      "unitAssetId": 208,
+      "status": "REQUEST",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "PERORANGAN",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "uji perbaiki tanpa sparepart — bersihkan mesin",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 25000,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T10:55:33.529Z",
+      "createdAt": "2026-10-18T10:55:33.542Z",
+      "updatedAt": "2026-10-18T10:55:33.542Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
+    {
       "id": 68,
       "noTiket": "SV-20260730-0001",
       "unitAssetId": 206,
@@ -6548,6 +6580,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 714,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0002",
+      "deskripsi": "Tiket manual dibuat untuk unit TST-PERP-01 (Unit Uji Perbaiki, NON_GARANSI)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T10:55:33.559Z"
+    },
     {
       "id": 713,
       "aksi": "CREATE_UNIT_ASSET",

@@ -26,7 +26,7 @@ import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import UnitBarcodeSticker from '@/components/unit-barcode-sticker'
 import { GARANSI_LABEL } from '@/lib/types'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, PackageOpen, FileDown, ChevronDown, X, Trash2, AlertTriangle } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, PackageOpen, FileDown, ChevronDown, X, Trash2, AlertTriangle, Wrench } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // Peringatan nomor seri ganda — tampil live saat mengetik (sebelum tombol ditekan),
@@ -306,6 +306,44 @@ export default function MasterDataView() {
       })
     },
     onError: (e: Error) => toast({ title: 'Gagal mencatat part', description: e.message, variant: 'destructive' }),
+  })
+
+  // ===== Modul Perbaiki Tanpa Sparepart =====
+  // Tiket service TANPA baris part (hanya deskripsi kerusakan/pekerjaan) —
+  // status REQUEST, tanpa STTB. Untuk unit yang cukup beres tanpa part.
+  const [perbaikiUnit, setPerbaikiUnit] = useState<UnitAsset | null>(null)
+  const [perbaikiForm, setPerbaikiForm] = useState({ deskripsi: '', jasa: '0', tgl: '' })
+  const openPerbaiki = (u: UnitAsset) => {
+    setPerbaikiUnit(u)
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    setPerbaikiForm({ deskripsi: '', jasa: '0', tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` })
+  }
+  const createTiketPerbaiki = useMutation({
+    mutationFn: () => {
+      const isToko = !!perbaikiUnit!.tokoId
+      const freeJasa = isToko || perbaikiUnit!.statusGaransi !== 'NON_GARANSI'
+      return postJson<{ noTiket?: string; status?: string }>('/api/service', {
+        unitAssetId: perbaikiUnit!.id,
+        deskripsiKerusakan: perbaikiForm.deskripsi.trim(),
+        tglTiket: perbaikiForm.tgl ? new Date(perbaikiForm.tgl).toISOString() : undefined,
+        biayaJasa: freeJasa ? 0 : Number(perbaikiForm.jasa) || 0,
+        sumberLaporan: 'MANUAL',
+        customerType: isToko ? 'TOKO' : 'PERORANGAN',
+        klasifikasiGaransi: perbaikiUnit!.statusGaransi,
+        parts: [],
+        aktor: role,
+      })
+    },
+    onSuccess: (t) => {
+      invalidate(['units', 'service-tickets', 'dashboard', 'alerts'])
+      setPerbaikiUnit(null)
+      toast({
+        title: `Tiket perbaikan tanpa sparepart ${t?.noTiket ?? ''} terbit`,
+        description: 'Status REQUEST di Daftar Tiket Service — tanpa part & tanpa STTB; lanjutkan pekerjaan dari tiket.',
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal membuat tiket perbaikan', description: e.message, variant: 'destructive' }),
   })
   // Unduh PDF "Detail Unit" (detail + daftar part yang kurang) — persiapan lampiran
   // email order ke produsen. PDF dibuat server (jsPDF), diunduh sebagai file.
@@ -679,6 +717,9 @@ export default function MasterDataView() {
                         </DropdownMenuItem>
                         <DropdownMenuItem disabled={!!aktifTiket || finish} onSelect={() => openInputPart(u)}>
                           <PackagePlus className="mr-2 h-3.5 w-3.5 text-teal-600" /> Input Kode &amp; Sparepart
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={!!aktifTiket || finish} onSelect={() => openPerbaiki(u)} data-testid="aksi-perbaiki-tanpa-part">
+                          <Wrench className="mr-2 h-3.5 w-3.5 text-emerald-600" /> Perbaiki Tanpa Sparepart
                         </DropdownMenuItem>
                         {aktifTiket ? (
                           <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">Tiket aktif {aktifTiket.noTiket} — tambah part lewat panel Service.</p>
@@ -1624,6 +1665,58 @@ export default function MasterDataView() {
               onClick={() => simpanPartKurang.mutate()}
             >
               <PackageOpen className="mr-1 h-4 w-4" /> Simpan Part Kurang
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Perbaiki Tanpa Sparepart — tiket tanpa baris part: hanya
+          deskripsi kerusakan/pekerjaan; status REQUEST, tanpa STTB */}
+      <Dialog open={!!perbaikiUnit} onOpenChange={(o) => !o && setPerbaikiUnit(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Perbaiki Tanpa Sparepart</DialogTitle>
+            <DialogDescription>
+              {perbaikiUnit && (
+                <span>
+                  {perbaikiUnit.modelUnit} · <span className="font-mono">{perbaikiUnit.serialNumber}</span> — tiket terbit <b>tanpa part &amp; tanpa STTB</b> (status REQUEST di Daftar Tiket Service).
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Deskripsi Kerusakan / Pekerjaan</Label>
+              <HistoryInput historyKey="service-deskripsi" value={perbaikiForm.deskripsi} onChange={(e) => setPerbaikiForm({ ...perbaikiForm, deskripsi: e.target.value })} placeholder="cth: bersihkan mesin, pengencangan baut" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Tanggal Kejadian</Label>
+              <Input type="date" value={perbaikiForm.tgl} onChange={(e) => setPerbaikiForm({ ...perbaikiForm, tgl: e.target.value })} aria-label="Tanggal kejadian tiket" />
+              <p className="text-[11px] text-slate-500">Boleh diisi mundur (data historis) — nomor tiket otomatis menyesuaikan tanggal ini.</p>
+            </div>
+            {perbaikiUnit && !perbaikiUnit.tokoId && perbaikiUnit.statusGaransi === 'NON_GARANSI' && (
+              <div className="space-y-1.5">
+                <Label>Biaya Jasa (Rp)</Label>
+                <Input type="number" min={0} value={perbaikiForm.jasa} onChange={(e) => setPerbaikiForm({ ...perbaikiForm, jasa: e.target.value })} aria-label="Biaya jasa perbaikan" />
+              </div>
+            )}
+            {perbaikiUnit && (perbaikiUnit.tokoId || perbaikiUnit.statusGaransi !== 'NON_GARANSI') && (
+              <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">Unit {perbaikiUnit.tokoId ? 'stok toko' : 'garansi'} — biaya jasa Rp 0 (otomatis).</p>
+            )}
+            {!perbaikiForm.deskripsi.trim() && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Isi dulu deskripsi kerusakan — tombol Simpan aktif setelah lengkap.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPerbaikiUnit(null)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!perbaikiUnit || !perbaikiForm.deskripsi.trim() || createTiketPerbaiki.isPending}
+              onClick={() => createTiketPerbaiki.mutate()}
+            >
+              <Wrench className="mr-1 h-4 w-4" /> Simpan Tiket
             </Button>
           </DialogFooter>
         </DialogContent>
