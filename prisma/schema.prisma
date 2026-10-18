@@ -39,6 +39,11 @@ model MasterToko {
   barcodeToko      String      @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
   jarakKm          Float? // jarak toko dari workshop (km) — diisi manual; otomatis setelah maps terintegrasi
   createdAt        DateTime    @default(now())
+  // Koordinat posisi toko — diisi otomatis via Nominatim/OpenStreetMap (gratis,
+  // tanpa API key) dari alamat saat peta pertama kali dibuka, atau diset manual
+  // dengan klik di peta oleh Admin/Manager. Null = belum ditetapkan.
+  latitude         Float?
+  longitude        Float?
   unitAssets       UnitAsset[]
   kunjungan        Kunjungan[]
   orders           PermintaanOrder[]

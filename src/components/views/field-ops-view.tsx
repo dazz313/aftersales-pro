@@ -14,10 +14,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, X, Pencil, CalendarDays, Sparkles, Loader2 } from 'lucide-react'
+import { MapPin, ScanLine, Camera, CheckCircle2, Clock, Navigation, Users, QrCode, X, Pencil, CalendarDays, Sparkles, Loader2, Map as MapIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import VisionScanner from '@/components/vision-scanner'
 import ScanToko from '@/components/scan-toko'
+import TokoMapDialog from '@/components/toko-map-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
@@ -30,6 +31,8 @@ export default function FieldOpsView() {
   // ===== State check-in manual =====
   const [checkinOpen, setCheckinOpen] = useState(false)
   const [selectedToko, setSelectedToko] = useState<Toko | null>(null)
+  // Peta posisi toko (OpenStreetMap) — dibuka saat klik nama toko / ikon peta
+  const [mapToko, setMapToko] = useState<Toko | null>(null)
   const [teknisiId, setTeknisiId] = useState('')
   const [catatanManual, setCatatanManual] = useState('')
   const [fotoFile, setFotoFile] = useState('')
@@ -390,7 +393,14 @@ export default function FieldOpsView() {
                       h.toko.map((t) => (
                         <div key={t.id} className="flex items-center gap-1.5 rounded-md bg-slate-50 px-1.5 py-1">
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[11px] font-medium text-slate-800" title={t.namaToko}>{t.namaToko}</p>
+                            <button
+                              type="button"
+                              onClick={() => setMapToko(t)}
+                              className="block max-w-full truncate text-left text-[11px] font-medium text-slate-800 underline-offset-2 hover:text-teal-700 hover:underline"
+                              title={`${t.namaToko} · klik untuk lihat peta`}
+                            >
+                              {t.namaToko}
+                            </button>
                             <p className="font-mono text-[9px] text-slate-400">{t.kodeToko}</p>
                           </div>
                           {t.visitTerlambat && (
@@ -633,7 +643,14 @@ export default function FieldOpsView() {
                 return (
                   <div key={t.id} className={cn('flex items-center gap-2 rounded-lg border px-2.5 py-2 transition hover:shadow-sm', late ? 'border-rose-200 bg-rose-50/50' : 'bg-white')}>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-semibold text-slate-800" title={t.alamat ? `${t.namaToko} — ${t.alamat}` : t.namaToko}>{t.namaToko}</p>
+                      <button
+                        type="button"
+                        onClick={() => setMapToko(t)}
+                        className="block max-w-full truncate text-left text-xs font-semibold text-slate-800 underline-offset-2 hover:text-teal-700 hover:underline"
+                        title={t.alamat ? `${t.namaToko} — ${t.alamat} · klik untuk lihat peta` : `${t.namaToko} · klik untuk lihat peta`}
+                      >
+                        {t.namaToko}
+                      </button>
                       <p className="truncate font-mono text-[10px] text-slate-400" title={`${t.kodeToko} · ${t.barcodeToko}`}>
                         {t.kodeToko} · siklus {t.frekuensiVisit}h · sejak {t.hariSejakVisit ?? '∞'}h · {t.jumlahUnit}u
                       </p>
@@ -641,6 +658,9 @@ export default function FieldOpsView() {
                     <Badge variant="outline" className={cn('shrink-0 text-[9px]', late ? 'border-rose-300 bg-rose-100 text-rose-700' : 'border-emerald-300 bg-emerald-50 text-emerald-700')}>
                       {late ? 'TERLAMBAT' : 'ON TRACK'}
                     </Badge>
+                    <Button size="sm" variant="outline" className="h-7 w-7 shrink-0 border-slate-200 p-0 text-slate-400 hover:border-teal-300 hover:text-teal-700" onClick={() => setMapToko(t)} aria-label={`Lihat peta ${t.namaToko}`} title="Lihat peta lokasi toko">
+                      <MapIcon className="h-3.5 w-3.5" />
+                    </Button>
                     <Button size="sm" className={cn('h-7 w-7 shrink-0 p-0', late ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700')} onClick={() => bukaCheckin(t)} aria-label={`Check-in manual ${t.namaToko}`} title="Check-in Manual">
                       <MapPin className="h-3.5 w-3.5" />
                     </Button>
@@ -800,6 +820,9 @@ export default function FieldOpsView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Peta posisi toko (OpenStreetMap + Leaflet, gratis) */}
+      <TokoMapDialog toko={mapToko} onOpenChange={(o) => { if (!o) setMapToko(null) }} />
     </div>
   )
 }

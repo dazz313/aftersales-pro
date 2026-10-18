@@ -19,13 +19,29 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.frekuensiVisit !== undefined) data.frekuensiVisit = Number(body.frekuensiVisit)
     if (body.jarakKm !== undefined) data.jarakKm = body.jarakKm === null || body.jarakKm === '' ? null : Math.max(0, Number(body.jarakKm) || 0)
     if (body.tglVisitTerakhir !== undefined) data.tglVisitTerakhir = new Date(body.tglVisitTerakhir)
+    // Koordinat posisi toko (peta Field Ops): null = hapus posisi, validasi rentang WGS-84.
+    if (body.latitude !== undefined || body.longitude !== undefined) {
+      const lat = body.latitude === null ? null : Number(body.latitude)
+      const lng = body.longitude === null ? null : Number(body.longitude)
+      const valid = (n: number | null, min: number, max: number) => n === null || (Number.isFinite(n) && n >= min && n <= max)
+      if (!valid(lat, -90, 90) || !valid(lng, -180, 180)) {
+        return NextResponse.json({ error: 'Koordinat tidak valid (latitude -90..90, longitude -180..180)' }, { status: 400 })
+      }
+      data.latitude = lat
+      data.longitude = lng
+    }
 
     const toko = await db.masterToko.update({ where: { id: Number(id) }, data })
     await logAudit({
-      aksi: 'UPDATE_MASTER_TOKO',
+      aksi: data.latitude !== undefined && data.longitude !== undefined ? 'SETPIN_MASTER_TOKO' : 'UPDATE_MASTER_TOKO',
       entitas: 'master_toko',
       entitasId: toko.kodeToko,
-      deskripsi: `Data toko diperbarui: ${Object.keys(data).join(', ')}`,
+      deskripsi:
+        data.latitude !== undefined && data.longitude !== undefined
+          ? data.latitude === null && data.longitude === null
+            ? 'Koordinat posisi toko dihapus (reset)'
+            : `Koordinat toko diperbarui: ${toko.latitude}, ${toko.longitude}`
+          : `Data toko diperbarui: ${Object.keys(data).join(', ')}`,
       aktor: body.aktor,
     })
     await autoGitBackup('UPDATE', 'master_toko', toko.kodeToko, body.aktor)

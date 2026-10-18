@@ -360,20 +360,25 @@ export default function MasterDataView() {
     () => (customerList ?? []).filter((c) => matchQuery([c.nama, c.noWa, c.alamat, ...c.unitAssets.map((u) => u.modelUnit)], cariCust)),
     [customerList, cariCust]
   )
-  // Kode sparepart per unit (dari semua tiket) — pemisah "sudah vs belum dapat part"
+  // Kode sparepart per unit (dari semua tiket) — pemisah "sudah vs belum dapat part".
+  // "Part Ready Produsen" = unit punya part di tiket yang masih BERJALAN (REQUEST/PROSES);
+  // tiket yang sudah FINISH tidak lagi dilabeli ready produsen (part-nya selesai diproses).
   const partInfoByUnit = useMemo(() => {
-    const m = new Map<number, { count: number; codes: string[] }>()
+    const m = new Map<number, { count: number; countAktif: number; codes: string[] }>()
     for (const u of unitList ?? []) {
       const codes: string[] = []
       let count = 0
+      let countAktif = 0
       for (const t of u.serviceRequests ?? []) {
+        const aktif = t.status === 'REQUEST' || t.status === 'PROSES'
         for (const p of t.parts ?? []) {
           count += p.qty
+          if (aktif) countAktif += p.qty
           const k = p.sparepart?.kodePart
           if (k && !codes.includes(k)) codes.push(k)
         }
       }
-      m.set(u.id, { count, codes })
+      m.set(u.id, { count, countAktif, codes })
     }
     return m
   }, [unitList])
@@ -407,7 +412,8 @@ export default function MasterDataView() {
   const [unitPartTab, setUnitPartTab] = useState<'belum' | 'sudah' | 'semua'>('belum')
   const sedangMencariUnit = cariUnit.trim() !== ''
   const unitBelumPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.count ?? 0) === 0), [unitTampil, partInfoByUnit])
-  const unitSudahPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.count ?? 0) > 0), [unitTampil, partInfoByUnit])
+  // Part Ready Produsen: hanya part pada tiket BERJALAN — unit bertiket FINISH dikeluarkan.
+  const unitSudahPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.countAktif ?? 0) > 0), [unitTampil, partInfoByUnit])
   // Unit terkunci (punya tiket) tidak bisa dicentang — server juga melewatinya
   const unitBisaHapus = (u: UnitAsset) => (u.serviceRequests ?? []).length === 0
   const toggleUnit = (id: number) =>
@@ -432,7 +438,7 @@ export default function MasterDataView() {
   )
 
   // Tabel unit ringkas: scroll vertikal berbatas + header sticky agar tidak panjang ke bawah.
-  // showStatus=true dipakai untuk hasil pencarian gabungan agar jelas asal Belum/Sudah Ada Part.
+  // showStatus=true dipakai untuk hasil pencarian gabungan agar jelas asal Belum/Part Ready Produsen.
   const renderUnitTable = (list: UnitAsset[], emptyText: string, showStatus = false) => (
     <div className="max-h-[52vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
       <Table>
@@ -462,7 +468,7 @@ export default function MasterDataView() {
               <TableCell colSpan={showStatus ? 10 : 9} className="py-8 text-center text-sm text-slate-500">{emptyText}</TableCell>
             </TableRow>
           ) : list.map((u) => {
-            const info = partInfoByUnit.get(u.id) ?? { count: 0, codes: [] as string[] }
+            const info = partInfoByUnit.get(u.id) ?? { count: 0, countAktif: 0, codes: [] as string[] }
             // Unit finish (punya tiket tapi tak ada yang aktif) → abu-abu + label FINISH
             const finish = (u.serviceRequests ?? []).length > 0 && !(u.serviceRequests ?? []).some((t) => t.status === 'REQUEST' || t.status === 'PROSES')
             return (
@@ -529,8 +535,10 @@ export default function MasterDataView() {
                 </TableCell>
                 {showStatus && (
                   <TableCell>
-                    {info.count > 0 ? (
-                      <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[10px] text-teal-700">Sudah Ada Part</Badge>
+                    {info.countAktif > 0 ? (
+                      <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[10px] text-teal-700">Part Ready Produsen</Badge>
+                    ) : info.count > 0 ? (
+                      <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[10px] text-slate-500" title="Part sebelumnya sudah dibawa tiket yang FINISH — tidak dihitung Part Ready Produsen">Selesai (FINISH)</Badge>
                     ) : (
                       <Badge variant="outline" className="border-slate-300 text-[10px] text-slate-500">Belum Ada Part</Badge>
                     )}
@@ -577,13 +585,8 @@ export default function MasterDataView() {
 
   return (
     <Tabs value={tabAktif} onValueChange={setTabAktif} className="space-y-4">
-      <TabsList className="flex-wrap">
-        <TabsTrigger value="toko"><Store className="mr-1 h-3.5 w-3.5" /> Toko</TabsTrigger>
-        <TabsTrigger value="customer"><Users className="mr-1 h-3.5 w-3.5" /> Customer</TabsTrigger>
-        <TabsTrigger value="unit"><QrCode className="mr-1 h-3.5 w-3.5" /> Unit Asset</TabsTrigger>
-        <TabsTrigger value="karyawan"><UserCog className="mr-1 h-3.5 w-3.5" /> Karyawan</TabsTrigger>
-      </TabsList>
-
+      {/* Header tab Toko/Customer/Unit/Karyawan DIHAPUS — pindah root sekarang
+          lewat dropdown di sidebar (menu Master Data), fungsinya sama. */}
       {/* ===== TOKO ===== */}
       <TabsContent value="toko">
         <Card>
@@ -766,16 +769,16 @@ export default function MasterDataView() {
             ) : sedangMencariUnit ? (
               <div className="space-y-2">
                 <p className="rounded-md bg-teal-50 px-2.5 py-1.5 text-[11px] text-teal-800">
-                  Hasil pencarian mencakup <span className="font-semibold">Belum &amp; Sudah Ada Part</span> — {unitTampil.length} unit cocok &quot;{cariUnit.trim()}&quot;.
+                  Hasil pencarian mencakup <span className="font-semibold">Belum &amp; Part Ready Produsen</span> — {unitTampil.length} unit cocok &quot;{cariUnit.trim()}&quot;.
                 </p>
-                {renderUnitTable(unitTampil, `Tidak ada unit yang cocok dengan "${cariUnit.trim()}" di Belum maupun Sudah Ada Part.`, true)}
+                {renderUnitTable(unitTampil, `Tidak ada unit yang cocok dengan "${cariUnit.trim()}" di Belum maupun Part Ready Produsen.`, true)}
               </div>
             ) : (
               <Tabs value={unitPartTab} onValueChange={(v) => setUnitPartTab(v as typeof unitPartTab)}>
                 <TabsList className="flex-wrap">
                   <TabsTrigger value="semua" className="text-xs">Semua ({unitTampil.length})</TabsTrigger>
                   <TabsTrigger value="belum" className="text-xs">Belum Ada Part ({unitBelumPart.length})</TabsTrigger>
-                  <TabsTrigger value="sudah" className="text-xs">Sudah Ada Part ({unitSudahPart.length})</TabsTrigger>
+                  <TabsTrigger value="sudah" className="text-xs">Part Ready Produsen ({unitSudahPart.length})</TabsTrigger>
                 </TabsList>
                 <TabsContent value="semua">
                   {renderUnitTable(unitTampil, 'Belum ada unit terdaftar.', true)}
@@ -784,7 +787,7 @@ export default function MasterDataView() {
                   {renderUnitTable(unitBelumPart, 'Semua unit sudah dapat kode part — tidak ada yang belum.')}
                 </TabsContent>
                 <TabsContent value="sudah">
-                  {renderUnitTable(unitSudahPart, 'Belum ada unit yang dapat kode part.')}
+                  {renderUnitTable(unitSudahPart, 'Tidak ada unit dengan part pada tiket berjalan (REQUEST/PROSES).')}
                 </TabsContent>
               </Tabs>
             )}

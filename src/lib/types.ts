@@ -11,6 +11,9 @@ export interface Toko {
   barcodeToko: string
   /** Jarak toko dari workshop (km) — null = belum diketahui (terisi saat maps terintegrasi). */
   jarakKm: number | null
+  /** Koordinat posisi toko (WGS-84) — terisi otomatis via OpenStreetMap/Nominatim atau pin manual. */
+  latitude: number | null
+  longitude: number | null
   createdAt: string
   jumlahUnit: number
   visitTerlambat: boolean
