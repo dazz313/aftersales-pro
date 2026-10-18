@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T03:25:18.082Z",
+  "generatedAt": "2026-10-18T03:49:07.820Z",
   "masterToko": [
     {
       "id": 216,
@@ -2050,6 +2050,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 331,
+      "kodePart": "TST-A1",
+      "namaPart": "Reservoir Uji",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T03:49:07.764Z"
+    },
+    {
       "id": 326,
       "kodePart": "UP-LANJUT",
       "namaPart": "Part Lanjut Uji",
@@ -3498,8 +3512,50 @@
   ],
   "serviceRequest": [
     {
+      "id": 50,
+      "noTiket": "SV-20261018-0002-U199",
+      "unitAssetId": 199,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "uji format nomor",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T03:49:07.766Z",
+      "createdAt": "2026-10-18T03:49:07.766Z",
+      "updatedAt": "2026-10-18T03:49:07.766Z",
+      "editedAt": null,
+      "editedBy": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 65,
+          "serviceRequestId": 50,
+          "sparepartId": 331,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 48,
-      "noTiket": "SV-20261018-0001",
+      "noTiket": "SV-20261018-0001-02100056000",
       "unitAssetId": 205,
       "status": "REQUEST_EMAIL",
       "noSttb": null,
@@ -3521,7 +3577,7 @@
       "tglFinish": null,
       "tglTiket": "2026-10-18T03:22:37.961Z",
       "createdAt": "2026-10-18T03:22:37.961Z",
-      "updatedAt": "2026-10-18T03:22:37.961Z",
+      "updatedAt": "2026-10-18T03:40:52.778Z",
       "editedAt": null,
       "editedBy": null,
       "lampiranEmail": null,
@@ -5401,6 +5457,51 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 608,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-20261018-0002-U199",
+      "deskripsi": "Input part kurang unit .: TST-A1 ×1 — tiket SV-20261018-0002-U199 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T03:49:07.782Z"
+    },
+    {
+      "id": 607,
+      "aksi": "RENAME",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001-02100056000",
+      "deskripsi": "Nomor tiket REQUEST EMAIL disesuaikan: SV-20261018-0001 → SV-20261018-0001-02100056000 (format baru: dgn kode unit)",
+      "aktor": "MIGRASI",
+      "createdAt": "2026-10-18T03:40:52.789Z"
+    },
+    {
+      "id": 606,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Draf email order part 2 item dibuka (SMTP belum diset) — tiket SV-20261018-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T03:27:18.556Z"
+    },
+    {
+      "id": 605,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Draf email order part 2 item dibuka (SMTP belum diset) — tiket SV-20261018-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T03:26:52.204Z"
+    },
+    {
+      "id": 604,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Draf email order part 2 item dibuka (SMTP belum diset) — tiket SV-20261018-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T03:25:59.926Z"
+    },
     {
       "id": 603,
       "aksi": "BACKUP_DATA",
