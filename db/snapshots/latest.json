@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T05:08:52.383Z",
+  "generatedAt": "2026-10-18T08:07:12.838Z",
   "masterToko": [
     {
       "id": 216,
@@ -1362,6 +1362,20 @@
       "createdAt": "2026-10-15T05:46:21.842Z"
     },
     {
+      "id": 336,
+      "kodePart": "GCXX-MX218-CX-KGX",
+      "namaPart": "TOP BODY 502C PRINTING",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T06:20:35.068Z"
+    },
+    {
       "id": 287,
       "kodePart": "MCMX-207-2-2-1-PR",
       "namaPart": "FRONT PANEL ASSY 712 T",
@@ -1404,6 +1418,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 335,
+      "kodePart": "MCMX-AX219-RG-KGX",
+      "namaPart": "Out Case 508 ROSE GOLD",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T06:09:17.855Z"
+    },
+    {
       "id": 306,
       "kodePart": "MCMX-AX354-HF-KGX",
       "namaPart": "Out Case 558 red flower",
@@ -1412,7 +1440,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T05:38:49.934Z"
@@ -1496,7 +1524,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T05:27:46.948Z"
@@ -1614,6 +1642,20 @@
       "createdAt": "2026-10-14T04:25:03.963Z"
     },
     {
+      "id": 338,
+      "kodePart": "RI-602-150-5X02",
+      "namaPart": "REAL PANEL (BODY BELAKANG) RI-602AG",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T07:00:59.251Z"
+    },
+    {
       "id": 307,
       "kodePart": "RI202-001-2-1X02-PR",
       "namaPart": "Top Plate RI 202 S",
@@ -1692,7 +1734,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T05:36:57.896Z"
@@ -1710,6 +1752,20 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 334,
+      "kodePart": "RI7-207-2-2-1-PR",
+      "namaPart": "FRONT PANEL ASSY712 GA",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T05:54:13.612Z"
     },
     {
       "id": 279,
@@ -1978,6 +2034,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 333,
+      "kodePart": "SFMX-PX022-AS-KGX",
+      "namaPart": "BLADE (AS)1697 DRW",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T05:51:46.823Z"
+    },
+    {
       "id": 234,
       "kodePart": "SFMX-PX022-DB-KGX",
       "namaPart": "BLADE (DARK BLUE)",
@@ -2118,6 +2188,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 337,
+      "kodePart": "SFMX-PX494-BK-KGX",
+      "namaPart": "BIG PIPE LOCK BLACK",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T06:56:44.923Z"
+    },
+    {
       "id": 240,
       "kodePart": "SMXX-AX069-XX-KGX",
       "namaPart": "MOTOR MIXER ASSY 610 WHITE SOCKET",
@@ -2144,6 +2228,20 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 339,
+      "kodePart": "TST-B2",
+      "namaPart": "Part Uji SJ",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T08:07:12.721Z"
     },
     {
       "id": 326,
@@ -2522,18 +2620,6 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-03T16:00:00.000Z"
-    },
-    {
-      "id": 203,
-      "serialNumber": "03020006746",
-      "modelUnit": "KAS-1607",
-      "merk": "Miyako",
-      "nama": "",
-      "tokoId": null,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-09-22T00:00:00.000Z"
     },
     {
       "id": 192,
@@ -3704,6 +3790,402 @@
   ],
   "serviceRequest": [
     {
+      "id": 60,
+      "noTiket": "SV-EM-20261018-0002",
+      "unitAssetId": 199,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "uji surat jalan",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T08:07:12.746Z",
+      "createdAt": "2026-10-18T08:07:12.746Z",
+      "updatedAt": "2026-10-18T08:07:12.746Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 75,
+          "serviceRequestId": 60,
+          "sparepartId": 339,
+          "qty": 3,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "noTiket": "SV-20260804-0006",
+      "unitAssetId": 159,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260804-0006",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T07:00:59.263Z",
+      "updatedAt": "2026-10-18T07:00:59.263Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 74,
+          "serviceRequestId": 59,
+          "sparepartId": 338,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "noTiket": "SV-20260804-0005",
+      "unitAssetId": 144,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260804-0005",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "TIDAK NYALA",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T06:56:44.935Z",
+      "updatedAt": "2026-10-18T06:56:44.935Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 73,
+          "serviceRequestId": 58,
+          "sparepartId": 337,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "noTiket": "SV-20260804-0004",
+      "unitAssetId": 161,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260804-0004",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T06:47:16.043Z",
+      "updatedAt": "2026-10-18T06:47:16.043Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 72,
+          "serviceRequestId": 57,
+          "sparepartId": 304,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "noTiket": "SV-20261008-0001",
+      "unitAssetId": 145,
+      "status": "PROSES",
+      "noSttb": "STTB-20261008-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "PECAH TOP BODY",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-08T00:00:00.000Z",
+      "createdAt": "2026-10-18T06:20:35.080Z",
+      "updatedAt": "2026-10-18T06:33:56.103Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 71,
+          "serviceRequestId": 56,
+          "sparepartId": 336,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "noTiket": "SV-20261018-0001",
+      "unitAssetId": 156,
+      "status": "REQUEST",
+      "noSttb": "STTB-20261018-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T00:00:00.000Z",
+      "createdAt": "2026-10-18T06:12:07.494Z",
+      "updatedAt": "2026-10-18T06:12:07.494Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 70,
+          "serviceRequestId": 55,
+          "sparepartId": 286,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "noTiket": "SV-20260804-0003",
+      "unitAssetId": 158,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260804-0003",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T05:54:13.624Z",
+      "updatedAt": "2026-10-18T05:54:13.624Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 69,
+          "serviceRequestId": 54,
+          "sparepartId": 334,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "noTiket": "SV-20260804-0002",
+      "unitAssetId": 143,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260804-0002",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "SFMX-PX022-AS-KGX",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T05:51:46.835Z",
+      "updatedAt": "2026-10-18T05:51:46.835Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 68,
+          "serviceRequestId": 53,
+          "sparepartId": 333,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "noTiket": "SV-20260804-0001",
+      "unitAssetId": 155,
+      "status": "PROSES",
+      "noSttb": "STTB-20260804-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T05:45:14.618Z",
+      "updatedAt": "2026-10-18T05:48:05.243Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 67,
+          "serviceRequestId": 52,
+          "sparepartId": 300,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 48,
       "noTiket": "SV-EM-20261018-0001",
       "unitAssetId": 205,
@@ -3730,6 +4212,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -3783,6 +4267,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -3825,6 +4311,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": "2026-10-17T22:54:20.154Z",
       "editedBy": "dazz",
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -3867,6 +4355,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -3909,6 +4399,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -3973,6 +4465,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4015,6 +4509,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4057,6 +4553,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4099,6 +4597,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4141,6 +4641,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4183,6 +4685,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4225,6 +4729,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4267,6 +4773,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4320,6 +4828,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4362,6 +4872,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4404,6 +4916,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4443,21 +4957,23 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:38:49.930Z",
       "createdAt": "2026-10-15T05:38:49.947Z",
-      "updatedAt": "2026-10-18T04:35:53.281Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-18T06:09:17.927Z",
+      "editedAt": "2026-10-18T06:09:17.926Z",
+      "editedBy": "dazz",
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
           "id": 38,
           "serviceRequestId": 30,
-          "sparepartId": 306,
+          "sparepartId": 335,
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
+          "editedAt": "2026-10-18T06:09:17.915Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -4488,6 +5004,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4530,6 +5048,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4572,6 +5092,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4614,6 +5136,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4656,6 +5180,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4698,6 +5224,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4740,6 +5268,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4782,6 +5312,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4824,6 +5356,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": "2026-10-17T23:18:16.325Z",
       "editedBy": "dazz",
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4866,6 +5400,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4908,6 +5444,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4950,6 +5488,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4992,6 +5532,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5034,6 +5576,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5076,6 +5620,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5118,6 +5664,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5160,6 +5708,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5202,6 +5752,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5244,6 +5796,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5286,6 +5840,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5328,6 +5884,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5370,6 +5928,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": []
     },
@@ -5400,6 +5960,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5442,6 +6004,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5484,6 +6048,8 @@
       "updatedAt": "2026-10-18T04:35:53.281Z",
       "editedAt": null,
       "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5607,6 +6173,159 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 667,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-EM-20261018-0002",
+      "deskripsi": "Input part kurang unit .: TST-B2 ×3 — tiket SV-EM-20261018-0002 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T08:07:12.792Z"
+    },
+    {
+      "id": 666,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0006",
+      "deskripsi": "Tiket manual dibuat untuk unit 2601373365 (RI-602 AG, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0006 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T07:00:59.276Z"
+    },
+    {
+      "id": 665,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0005",
+      "deskripsi": "Tiket manual dibuat untuk unit 02060012333 (KAS-1607 PL, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0005 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T06:56:44.948Z"
+    },
+    {
+      "id": 664,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0004",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T06:52:25.782Z"
+    },
+    {
+      "id": 663,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0004",
+      "deskripsi": "Tiket manual dibuat untuk unit 2505248042 (RI-522 CE, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0004 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T06:47:16.056Z"
+    },
+    {
+      "id": 662,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SV-20261008-0001",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-20261008-0001 diterbitkan untuk penarikan unit 44050061941 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T06:33:56.115Z"
+    },
+    {
+      "id": 661,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SV-20261008-0001",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T06:21:08.250Z"
+    },
+    {
+      "id": 660,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261008-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 44050061941 (KG-502 C, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20261008-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T06:20:35.092Z"
+    },
+    {
+      "id": 659,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 42110363216 (MCM-528, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20261018-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T06:12:07.510Z"
+    },
+    {
+      "id": 658,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SV-20261015-0010",
+      "deskripsi": "Koreksi part [edited]: kode MCMX-AX354-HF-KGX → MCMX-AX219-RG-KGX, nama \"Out Case 558 red flower\" → \"Out Case 508 ROSE GOLD\" — terpakai MCMX-AX354-HF-KGX -1 → MCMX-AX219-RG-KGX +1",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T06:09:17.937Z"
+    },
+    {
+      "id": 657,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "MCMX-AX219-RG-KGX",
+      "deskripsi": "Kode koreksi part otomatis masuk katalog: Out Case 508 ROSE GOLD (tiket SV-20261015-0010)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T06:09:17.884Z"
+    },
+    {
+      "id": 656,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03020006746",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03020006746 — KAS-1607",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T05:54:50.971Z"
+    },
+    {
+      "id": 655,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0003",
+      "deskripsi": "Tiket manual dibuat untuk unit 2511015067 (RI-712 GA, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0003 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T05:54:13.637Z"
+    },
+    {
+      "id": 654,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0002",
+      "deskripsi": "Tiket manual dibuat untuk unit 44020001427 (KAS-1697 DRW, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0002 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T05:51:46.848Z"
+    },
+    {
+      "id": 653,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0001",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-20260804-0001 diterbitkan untuk penarikan unit 44050011853 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T05:48:05.255Z"
+    },
+    {
+      "id": 652,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0001",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T05:47:54.636Z"
+    },
+    {
+      "id": 651,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 44050011853 (MJ-709EP, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T05:45:14.641Z"
+    },
     {
       "id": 650,
       "aksi": "BACKUP_DATA",
