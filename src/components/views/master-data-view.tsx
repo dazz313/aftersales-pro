@@ -312,12 +312,12 @@ export default function MasterDataView() {
   // Tiket service TANPA baris part (hanya deskripsi kerusakan/pekerjaan) —
   // status REQUEST, tanpa STTB. Untuk unit yang cukup beres tanpa part.
   const [perbaikiUnit, setPerbaikiUnit] = useState<UnitAsset | null>(null)
-  const [perbaikiForm, setPerbaikiForm] = useState({ deskripsi: '', jasa: '0', tgl: '' })
+  const [perbaikiForm, setPerbaikiForm] = useState({ deskripsi: '', jasa: '0', tgl: '', langsung: true })
   const openPerbaiki = (u: UnitAsset) => {
     setPerbaikiUnit(u)
     const d = new Date()
     const p = (n: number) => String(n).padStart(2, '0')
-    setPerbaikiForm({ deskripsi: '', jasa: '0', tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` })
+    setPerbaikiForm({ deskripsi: '', jasa: '0', tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`, langsung: true })
   }
   const createTiketPerbaiki = useMutation({
     mutationFn: () => {
@@ -332,6 +332,7 @@ export default function MasterDataView() {
         customerType: isToko ? 'TOKO' : 'PERORANGAN',
         klasifikasiGaransi: perbaikiUnit!.statusGaransi,
         parts: [],
+        langsungProses: perbaikiForm.langsung,
         aktor: role,
       })
     },
@@ -340,7 +341,9 @@ export default function MasterDataView() {
       setPerbaikiUnit(null)
       toast({
         title: `Tiket perbaikan tanpa sparepart ${t?.noTiket ?? ''} terbit`,
-        description: 'Status REQUEST di Daftar Tiket Service — tanpa part & tanpa STTB; lanjutkan pekerjaan dari tiket.',
+        description: t?.status === 'PROSES'
+          ? 'Status langsung PROSES — penyelesaian aktif: buka Daftar Tiket Service → tombol Selesaikan (nota stempel + TTD). Tanpa part & tanpa STTB.'
+          : 'Status REQUEST di Daftar Tiket Service — tanpa part & tanpa STTB; lanjutkan pekerjaan dari tiket.',
       })
     },
     onError: (e: Error) => toast({ title: 'Gagal membuat tiket perbaikan', description: e.message, variant: 'destructive' }),
@@ -1679,7 +1682,7 @@ export default function MasterDataView() {
             <DialogDescription>
               {perbaikiUnit && (
                 <span>
-                  {perbaikiUnit.modelUnit} · <span className="font-mono">{perbaikiUnit.serialNumber}</span> — tiket terbit <b>tanpa part &amp; tanpa STTB</b> (status REQUEST di Daftar Tiket Service).
+                  {perbaikiUnit.modelUnit} · <span className="font-mono">{perbaikiUnit.serialNumber}</span> — tiket terbit <b>tanpa part &amp; tanpa STTB</b>; kerusakan dari kerjaan seperti <i>stell impeller, pengencangan mesin</i>.
                 </span>
               )}
             </DialogDescription>
@@ -1694,6 +1697,18 @@ export default function MasterDataView() {
               <Input type="date" value={perbaikiForm.tgl} onChange={(e) => setPerbaikiForm({ ...perbaikiForm, tgl: e.target.value })} aria-label="Tanggal kejadian tiket" />
               <p className="text-[11px] text-slate-500">Boleh diisi mundur (data historis) — nomor tiket otomatis menyesuaikan tanggal ini.</p>
             </div>
+            <label className="flex cursor-pointer items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 p-2 text-[11px] text-emerald-800">
+              <Checkbox
+                className="mt-0.5 h-3.5 w-3.5"
+                checked={perbaikiForm.langsung === true}
+                onCheckedChange={(c) => setPerbaikiForm({ ...perbaikiForm, langsung: c === true })}
+                aria-label="Langsung aktifkan penyelesaian"
+              />
+              <span>
+                <b>Langsung aktifkan penyelesaian</b> — tiket langsung status PROSES (dikerjakan di toko) dan tombol <b>Selesaikan</b> tersedia di Daftar Tiket Service.
+                {!perbaikiForm.langsung && <span className="text-slate-500"> Matikan bila pekerjaan menunggu — tiket masuk REQUEST dulu.</span>}
+              </span>
+            </label>
             {perbaikiUnit && !perbaikiUnit.tokoId && perbaikiUnit.statusGaransi === 'NON_GARANSI' && (
               <div className="space-y-1.5">
                 <Label>Biaya Jasa (Rp)</Label>

@@ -226,7 +226,10 @@ export async function POST(request: Request) {
     // (kode+nama diminta, READY ataupun ORDER), nomor STTB langsung ada untuk
     // dibawa saat pick up. Tidak menunggu part datang. Part READY → otomatis
     // PROSES sekalian. Tanpa part → tetap REQUEST tanpa STTB.
-    const autoProses = hasReadyPart
+    // Perbaikan tanpa sparepart bisa LANGSUNG diaktifkan penyelesaiannya
+    // (contoh: "STEEL/stell impeller" — kerjakan di toko, langsung bisa FINISH).
+    const langsungProses = body.langsungProses === true && resolvedParts.length === 0
+    const autoProses = hasReadyPart || langsungProses
     const noSttbOtomatis = resolvedParts.length > 0 ? generateNoSttb(noTiket) : null
     const ticket = await db.serviceRequest.create({
       data: {
@@ -237,7 +240,7 @@ export async function POST(request: Request) {
         sumberLaporan,
         tipeCustomer,
         lokasiUnit: 'TOKO',
-        penanganan: 'BELUM',
+        penanganan: langsungProses ? 'DI_TOKO' : 'BELUM',
         deskripsiKerusakan: body.deskripsiKerusakan,
         biayaJasa,
         tglTiket,
@@ -250,7 +253,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}${langsungProses ? ' — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)' : ''}`,
       aktor: body.aktor,
     })
     // Folder Kekurangan Sparepart: begitu tiket part unit ini dibuat (part dari produsen
