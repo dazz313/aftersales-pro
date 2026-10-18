@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:46:18.995Z",
+  "generatedAt": "2026-10-18T04:46:57.158Z",
   "masterToko": [
     {
       "id": 216,
@@ -484,7 +484,7 @@
       "alamat": "Pasar Sentral Palakka",
       "kontak": "085255666451",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-01T04:46:00.000Z",
       "barcodeToko": "BC-TOK-035",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3534,6 +3534,16 @@
       "barcodeTerscan": null,
       "fotoOnsite": null,
       "catatanStokRusak": null
+    },
+    {
+      "id": 60,
+      "tokoId": 250,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-01T04:46:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
     }
   ],
   "serviceRequest": [
@@ -5441,6 +5451,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 623,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "60",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Fatma Jaya (TOK-035) · tgl 1/10/2026, 12.46.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:46:57.139Z"
+    },
     {
       "id": 622,
       "aksi": "CREATE_KUNJUNGAN",
