@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { fetcher, postJson, authHeaders, formatTanggal, formatWaktu, type SJKandidat, type SJPreview, type SJRingkasan, type SJRiwayat, type SJCekHasil, type SJDraftDetail } from '@/lib/api'
-import { CheckCircle2, Loader2, Search, Truck } from 'lucide-react'
+import { CheckCircle2, Download, Loader2, Search, Truck } from 'lucide-react'
 
 /**
  * Dialog Surat Jalan Masuk — penerimaan part dari produsen dengan CEK BERLAPIS:
@@ -81,6 +81,35 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
     },
     onError: (e: Error) => toast({ title: 'Gagal menguraikan surat jalan', description: e.message, variant: 'destructive' }),
   })
+
+  // Templat Excel resmi Surat Jalan Masuk — dibuat muka di browser (SheetJS)
+  // agar pengisian intake selalu cocok dengan parser (kepala tabel + alias kolom).
+  const unduhTemplat = async () => {
+    const X = await import('xlsx')
+    const isi = [
+      ['KODE PART', 'NAMA PART', 'QTY', 'SN UNIT'],
+      ['WD-6200', 'Impeller Pompa', 1, '02100056000'],
+      ['FK-2200', 'Filter Kapasitor', 2, ''],
+    ]
+    const petunjuk = [
+      ['TEMPLATE SURAT JALAN MASUK — penerimaan part dari produsen'],
+      [''],
+      ['1. Isi baris item di sheet "SURAT JALAN" mulai baris ke-2, lalu hapus baris contoh (WD-6200/FK-2200).'],
+      ['2. KODE PART wajib; NAMA PART, QTY (angka, kosong = 1), SN UNIT opsional (serial unit tujuan).'],
+      ['3. Nama kolom lain yang juga dikenali parser: kode/no part/part number/kode item · nama/deskripsi/item · qty/jumlah/pcs · sn/serial/no seri/unit.'],
+      ['4. No Surat Jalan, Tanggal, dan Produsen diisi pada FORM dialog (bukan di file).'],
+      ['5. Simpan sbg .xlsx/.xls/.csv lalu unggah di dialog Surat Jalan Masuk → Uraikan & Cocokkan.'],
+    ]
+    const wb = X.utils.book_new()
+    const ws = X.utils.aoa_to_sheet(isi)
+    ws['!cols'] = [{ wch: 14 }, { wch: 26 }, { wch: 8 }, { wch: 16 }]
+    X.utils.book_append_sheet(wb, ws, 'SURAT JALAN')
+    const ws2 = X.utils.aoa_to_sheet(petunjuk)
+    ws2['!cols'] = [{ wch: 120 }]
+    X.utils.book_append_sheet(wb, ws2, 'PETUNJUK')
+    X.writeFile(wb, 'templat-surat-jalan-masuk.xlsx')
+  }
+
   const sjApplyMutation = useMutation({
     // SIMPAN DRAFT — tanpa efek ke tiket/unit; lanjut: cek berlapis → cek akhir → terapkan.
     mutationFn: () =>
@@ -217,6 +246,13 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                 <Checkbox className="h-3.5 w-3.5" checked={sjGunakanAi} onCheckedChange={(c) => setSjGunakanAi(c === true)} aria-label="Gunakan AI untuk baris yang belum cocok" />
                 Bantuan AI untuk baris belum cocok
               </label>
+              <Button
+                size="sm" variant="outline"
+                className="h-8 border-indigo-300 px-2 text-[11px] text-indigo-700 hover:bg-indigo-50"
+                onClick={() => { unduhTemplat().catch((e) => toast({ title: 'Gagal menyiapkan templat', description: String(e), variant: 'destructive' })) }}
+              >
+                <Download className="mr-1 h-3.5 w-3.5" /> Unduh Templat Excel
+              </Button>
               <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" disabled={!sjFile || sjMatchMutation.isPending} onClick={() => sjMatchMutation.mutate()}>
                 {sjMatchMutation.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Truck className="mr-1 h-4 w-4" />} Uraikan &amp; Cocokkan
               </Button>

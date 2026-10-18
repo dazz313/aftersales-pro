@@ -203,28 +203,38 @@ export function cocokkan(rows: BarisSuratJalan[], kandidat: Kandidat[]): HasilBa
 }
 
 // ===== Parser Excel/CSV (SheetJS) — kolom via alias fleksibel =====
+// Kepala tabel dicari di ±30 baris pertama sehingga file surat jalan produsen
+// dengan judul/logo di atas tabel tetap terbaca. Nama kolom di-NORM-kan
+// (huruf besar, tanpa spasi/tanda baca) lalu dicocokkan ke alias berikut.
 const DAFTAR_ALIAS = {
-  kodePart: ['kodepart', 'kode', 'partno', 'nomorpart', 'partnumber', 'kodebarang', 'kodesparepart', 'kdpart'],
-  namaPart: ['namapart', 'nama', 'namaproduk', 'deskripsi', 'item', 'produk', 'namabarang', 'partname'],
+  kodePart: ['kodepart', 'kode', 'partno', 'nomorpart', 'partnumber', 'kodebarang', 'kodesparepart', 'kdpart', 'nopart', 'kodeitem', 'itemcode', 'material'],
+  namaPart: ['namapart', 'nama', 'namaproduk', 'deskripsi', 'item', 'produk', 'namabarang', 'partname', 'namasparepart', 'namaitem'],
   qty: ['qty', 'jumlah', 'pcs', 'roll', 'quantity'],
-  serialNumber: ['sn', 'serialnumber', 'serial', 'nomorseri', 'noseri', 'barcode', 'barcodeunit', 'unit'],
+  serialNumber: ['sn', 'serialnumber', 'serial', 'nomorseri', 'noseri', 'barcode', 'barcodeunit', 'unit', 'snunit', 'serialunit', 'nosn'],
   noSuratJalan: ['nosuratjalan', 'nosj', 'no sj'.replace(/\s/g, ''), 'suratjalan', 'nosurat'],
   tanggalSurat: ['tglsurat', 'tanggal', 'tgl', 'tanggaljalan', 'date'],
   produsen: ['produsen', 'supplier', 'pengirim', 'brand'],
 }
 
-function mapDariHeader(keys: string[]): Record<string, string> {
-  const out: Record<string, string> = {}
-  keys.forEach((k, idx) => {
-    const kn = NORM(String(k))
-    if (!kn) return
-    for (const [field, alias] of Object.entries(DAFTAR_ALIAS)) {
-      const daftar = (alias as string[]).map(NORM)
-      // simpan NAMA HEADER asli (sheet_to_json memakai header sbg key baris)
-      if (daftar.includes(kn)) { out[field] = out[field] || String(keys[idx]); break }
-    }
-  })
-  return out
+/**
+ * Cari baris kepala tabel (header) di matriks sheet (array-of-array): baris
+ * pertama yang salah satu selnya = alias kolom kode part. Kembalikan index
+ * baris + pemetaan KOLOM INDEKS → FIELD untuk semua alias di baris itu.
+ */
+function cariBarisHeader(matriks: unknown[][]): { idx: number; map: Map<number, string> } | null {
+  for (let i = 0; i < Math.min(matriks.length, 30); i++) {
+    const baris = matriks[i] ?? []
+    const map = new Map<number, string>()
+    baris.forEach((sel, kol) => {
+      const kn = NORM(String(sel))
+      if (!kn) return
+      for (const [field, alias] of Object.entries(DAFTAR_ALIAS)) {
+        if ((alias as string[]).map(NORM).includes(kn)) { map.set(kol, map.get(kol) ?? field); break }
+      }
+    })
+    if (Array.from(map.values()).includes('kodePart')) return { idx: i, map }
+  }
+  return null
 }
 
 export interface HasilTabsheet {
@@ -238,16 +248,18 @@ export interface HasilTabsheet {
 export function parseTabsheet(buffer: Buffer): HasilTabsheet {
   const wb = XLSX.read(buffer, { type: 'buffer', cellDates: true })
   if (!wb.SheetNames.length) throw new Error('File Excel/CSV tidak memiliki sheet')
-  // Cari sheet pertama yang berisi data part (≥1 baris dgn kolom kode)
-  let rowsRaw: Record<string, unknown>[] = []
-  let map: Record<string, string> = {}
+  // Cari sheet pertama yang punya baris kepala tabel berkolom kode part
+  // (kepala boleh bukan baris ke-1 — file produsen sering ada judul/logo di atasnya).
+  let matriks: unknown[][] = []
+  let kepalaIdx = 0
+  let map: Map<number, string> = new Map()
   for (const nama of wb.SheetNames) {
-    const json = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[nama], { defval: '' })
-    map = mapDariHeader(json.length ? Object.keys(json[0]) : [])
-    if (map.kodePart) { rowsRaw = json; break }
+    const raw = XLSX.utils.sheet_to_json<unknown[]>(wb.Sheets[nama], { header: 1, defval: '' })
+    const kepala = cariBarisHeader(raw)
+    if (kepala) { matriks = raw; kepalaIdx = kepala.idx; map = kepala.map; break }
   }
-  if (!rowsRaw.length) {
-    throw new Error('Kolom kode part tidak terbaca — pastikan header Excel berisi "kode" (dan "nama"/"qty"/"sn" bila ada)')
+  if (!matriks.length) {
+    throw new Error('Kolom kode part tidak terbaca — pastikan ada baris berisi judul kolom (cth "KODE PART / NAMA PART / QTY / SN UNIT") di ±30 baris pertama, atau unduh Templat Excel di dialog dan isi menurut formatnya')
   }
 
   const rows: BarisSuratJalan[] = []
@@ -266,10 +278,15 @@ export function parseTabsheet(buffer: Buffer): HasilTabsheet {
     return null
   }
 
-  for (const r of rowsRaw) {
-    const get = (field: string) => (map[field] !== undefined ? r[map[field]] : undefined)
+  // Item = baris SETELAH baris kepala tabel (judul/logo/dsb. di atas kepala dilewati).
+  for (const r of matriks.slice(kepalaIdx + 1)) {
+    const get = (field: string) => {
+      for (const [kol, f] of map) if (f === field) return r[kol] ?? undefined
+      return undefined
+    }
     const kode = String(get('kodePart') ?? '').trim()
-    if (!kode) { terlewati++; continue }
+    const punyaSerpih = (r as unknown[]).some((s) => String(s ?? '').trim() !== '')
+    if (!kode || !punyaSerpih) { if (punyaSerpih) terlewati++; continue }
     const qtyN = Number(get('qty'))
     rows.push({
       kodePart: kode,
