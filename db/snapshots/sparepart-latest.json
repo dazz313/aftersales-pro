@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-17T22:51:35.909Z",
-  "aksi": "RETURN",
-  "kodePart": "TEST-KOR-B",
-  "aktor": "ADMIN",
-  "total": 114,
+  "generatedAt": "2026-10-18T08:08:41.155Z",
+  "aksi": "TERIMA_PART",
+  "kodePart": "SV-20260804-0006",
+  "aktor": "Admin Workshop",
+  "total": 123,
   "spareparts": [
     {
       "kodePart": "1P90257A",
@@ -16,7 +16,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "1P90265A",
@@ -26,10 +26,36 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.153Z"
+    },
+    {
+      "kodePart": "1P90273A",
+      "namaPart": "Casing PS 135 E",
+      "brandKompatibel": "Shimizu",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.153Z"
+    },
+    {
+      "kodePart": "2M90061 A",
+      "namaPart": "FAN COVER PS 226",
+      "brandKompatibel": "SHIMIZU",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3KG0034B",
@@ -42,7 +68,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3M90119D",
@@ -52,10 +78,10 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 2,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P10022C",
@@ -68,7 +94,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P10030D",
@@ -81,7 +107,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P10030E",
@@ -94,7 +120,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P10799C",
@@ -104,10 +130,10 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P10815A",
@@ -120,7 +146,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P90028D",
@@ -133,7 +159,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P90053F",
@@ -146,7 +172,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P90143B",
@@ -159,7 +185,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P90145B",
@@ -172,7 +198,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P90502B",
@@ -185,7 +211,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "3P90503B",
@@ -198,7 +224,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "4M90038A",
@@ -211,7 +237,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "4P10974A",
@@ -224,7 +250,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "B2A76-2",
@@ -237,7 +263,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "B2A78-2",
@@ -250,7 +276,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "B2A99-1",
@@ -263,7 +289,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "B2A99-8X02",
@@ -276,7 +302,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "B74-TF23-153-BB",
@@ -289,7 +315,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-AX001-WH-KGX",
@@ -302,7 +328,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-AX143-BK-KGX",
@@ -315,7 +341,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-AX183-WH-KGX",
@@ -328,7 +354,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-AX245-WH-KGX",
@@ -341,7 +367,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-EA009-XX-KGX",
@@ -354,7 +380,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-EA075-XX-KGX",
@@ -367,7 +393,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-EA076-XX-KGX",
@@ -380,7 +406,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "BLXX-PX295-BK-KGX",
@@ -393,7 +419,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "C5Q-1-2-TAX02-0.88",
@@ -406,7 +432,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "C5Q-2-1-TA-1-0.95/0.35",
@@ -419,7 +445,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "C5Q-3-1-TA-2X01-0.95",
@@ -432,7 +458,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "C5Q-4-1-TATX01-0.95/0.35",
@@ -445,7 +471,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "EXXX-AX448-XX-KGX",
@@ -458,7 +484,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "EXXX-AX506-KH-KGX",
@@ -471,7 +497,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "EXXX-AX506-TP-KGX",
@@ -484,7 +510,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "GCXX-MX216-PN-KGX",
@@ -497,7 +523,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "GCXX-MX218-CW-KGX",
@@ -510,7 +536,20 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
+    },
+    {
+      "kodePart": "GCXX-MX218-CX-KGX",
+      "namaPart": "TOP BODY 502C PRINTING",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-207-2-2-1-PR",
@@ -523,7 +562,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-AX027-XX-KGX",
@@ -536,7 +575,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-AX047-XX-KGX",
@@ -549,7 +588,20 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
+    },
+    {
+      "kodePart": "MCMX-AX219-RG-KGX",
+      "namaPart": "Out Case 508 ROSE GOLD",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-AX354-HF-KGX",
@@ -559,10 +611,10 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-AX435-RH-KGX",
@@ -575,7 +627,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-AX435-SH-KGX",
@@ -588,7 +640,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-EA092-XX-KGX",
@@ -601,7 +653,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-EA101-XX-KGX",
@@ -614,7 +666,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MCMX-PX562-WH-KGX",
@@ -627,7 +679,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MJXX-AX017-XX-KGX",
@@ -637,10 +689,10 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "MX251-GY-KGX",
@@ -653,7 +705,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "RI-52-201-1-2X01-PR",
@@ -666,7 +718,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "RI-602-110-3X01-SUS",
@@ -679,7 +731,7 @@
       "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "RI-602-110X01-EG",
@@ -692,7 +744,7 @@
       "totalTerpakai": 9,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "RI-602-132-26X03-PR",
@@ -705,7 +757,7 @@
       "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.153Z"
     },
     {
       "kodePart": "RI-602-141-9-1-P",
@@ -718,7 +770,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI-602-142-10-1-P",
@@ -731,7 +783,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI-602-142-10-I-P",
@@ -744,7 +796,20 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
+    },
+    {
+      "kodePart": "RI-602-150-5X02",
+      "namaPart": "REAL PANEL (BODY BELAKANG) RI-602AG",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI202-001-2-1X02-PR",
@@ -757,7 +822,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI52-201-1-1X01-PR",
@@ -770,7 +835,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI52-201-1-2X01-PR",
@@ -783,7 +848,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI52-201-2-4-3X01-PR",
@@ -796,7 +861,7 @@
       "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI52-201-2-5-1X01-PR",
@@ -809,7 +874,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI52-201-2-6-1X01-PR",
@@ -819,10 +884,10 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI52-277-1 / RI7-211-T",
@@ -835,7 +900,20 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
+    },
+    {
+      "kodePart": "RI7-207-2-2-1-PR",
+      "namaPart": "FRONT PANEL ASSY712 GA",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI7-211-1",
@@ -848,7 +926,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI7-310-1-P",
@@ -861,7 +939,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RI7-312-1X01-P",
@@ -874,7 +952,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RIT-0013-3-PL",
@@ -887,7 +965,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RT-570-128",
@@ -900,7 +978,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "RT-570-131",
@@ -913,7 +991,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-AX022-XX-KGX",
@@ -926,7 +1004,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-AX156-BL-KGX",
@@ -939,7 +1017,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-AX280-BL-KGX",
@@ -952,7 +1030,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-AX298-XX-KGX",
@@ -965,7 +1043,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA200-XX-KGX",
@@ -978,7 +1056,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA404-XX-KGX",
@@ -991,7 +1069,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA421-XX-KGX",
@@ -1004,7 +1082,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA426-XX-KGX",
@@ -1017,7 +1095,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA429-XX-KGX",
@@ -1030,7 +1108,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA434-XX-KGX",
@@ -1043,7 +1121,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-EA434-XXKGX",
@@ -1056,7 +1134,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-MX220-XX-KGX",
@@ -1069,7 +1147,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-MX433-XX-KGX",
@@ -1082,7 +1160,20 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
+    },
+    {
+      "kodePart": "SFMX-PX022-AS-KGX",
+      "namaPart": "BLADE (AS)1697 DRW",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX022-DB-KGX",
@@ -1095,7 +1186,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX029-WC-KGX",
@@ -1108,7 +1199,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX064-DB-KGX",
@@ -1121,7 +1212,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX121-WC-KGX",
@@ -1134,7 +1225,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX299-DB-KGX",
@@ -1147,7 +1238,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX407-WC-KGX",
@@ -1160,7 +1251,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX478-WH-KGX",
@@ -1173,7 +1264,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX480-BK-KGX",
@@ -1186,7 +1277,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX480-WH-KGX",
@@ -1199,7 +1290,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SFMX-PX486-WC-KGX",
@@ -1212,7 +1303,20 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
+    },
+    {
+      "kodePart": "SFMX-PX494-BK-KGX",
+      "namaPart": "BIG PIPE LOCK BLACK",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SMXX-AX069-XX-KGX",
@@ -1225,7 +1329,7 @@
       "totalTerpakai": 1,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "SMXX-PX108-WH-KGX",
@@ -1238,33 +1342,20 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
-      "kodePart": "TEST-KOR-A",
-      "namaPart": "Part A Uji Coba",
-      "brandKompatibel": "",
-      "supplier": "",
-      "stokJual": 7,
-      "stokGaransi": 0,
-      "stokInventory": 7,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
-    },
-    {
-      "kodePart": "TEST-KOR-B",
-      "namaPart": "Part B Uji Coba",
+      "kodePart": "UP-LANJUT",
+      "namaPart": "Part Lanjut Uji",
       "brandKompatibel": "UJI",
       "supplier": "",
-      "stokJual": 2,
+      "stokJual": 0,
       "stokGaransi": 0,
-      "stokInventory": 2,
+      "stokInventory": 0,
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "V569-00-100",
@@ -1277,7 +1368,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "V569-00-300",
@@ -1290,7 +1381,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-AX218-BL-KGX",
@@ -1303,7 +1394,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-AX218-RD-KGX",
@@ -1316,7 +1407,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-AX222-XX-KGX",
@@ -1329,7 +1420,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-AX273-XX-KGX",
@@ -1342,7 +1433,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-AX311-BL-KGX",
@@ -1355,7 +1446,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-AX311-RD-KGX",
@@ -1368,7 +1459,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-EA337-KH-KGX",
@@ -1381,7 +1472,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-EA354-XX-KGX",
@@ -1394,7 +1485,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-EX050-XX-KGX",
@@ -1407,7 +1498,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-EX068-XX-KGX",
@@ -1420,7 +1511,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-MX196-PN-KGX",
@@ -1433,7 +1524,33 @@
       "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
+    },
+    {
+      "kodePart": "WDXX-PX317-WH-KGX",
+      "namaPart": "RESERVOIR GRILL186 WHITE",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.154Z"
+    },
+    {
+      "kodePart": "WDXX-PX318-WH-KGX",
+      "namaPart": "RESERVOIR GRILL186",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "WDXX-PX331-XX-KGX",
@@ -1446,7 +1563,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 0,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "ZL009032",
@@ -1459,7 +1576,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "ZX386683",
@@ -1472,7 +1589,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     },
     {
       "kodePart": "ZX389116",
@@ -1485,7 +1602,7 @@
       "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
-      "updatedAt": "2026-10-17T22:51:35.908Z"
+      "updatedAt": "2026-10-18T08:08:41.154Z"
     }
   ]
 }

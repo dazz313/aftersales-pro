@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T08:07:12.838Z",
+  "generatedAt": "2026-10-18T08:08:41.197Z",
   "masterToko": [
     {
       "id": 216,
@@ -1650,7 +1650,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T07:00:59.251Z"
@@ -2228,20 +2228,6 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
-    },
-    {
-      "id": 339,
-      "kodePart": "TST-B2",
-      "namaPart": "Part Uji SJ",
-      "brandKompatibel": "Miyako",
-      "supplier": "PRODUSEN",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-18T08:07:12.721Z"
     },
     {
       "id": 326,
@@ -3790,50 +3776,6 @@
   ],
   "serviceRequest": [
     {
-      "id": 60,
-      "noTiket": "SV-EM-20261018-0002",
-      "unitAssetId": 199,
-      "status": "REQUEST_EMAIL",
-      "noSttb": null,
-      "sumberLaporan": "MANUAL",
-      "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
-      "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "uji surat jalan",
-      "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
-      "tandaTanganDigital": null,
-      "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
-      "biayaJasa": 0,
-      "tglFinish": null,
-      "tglTiket": "2026-10-18T08:07:12.746Z",
-      "createdAt": "2026-10-18T08:07:12.746Z",
-      "updatedAt": "2026-10-18T08:07:12.746Z",
-      "editedAt": null,
-      "editedBy": null,
-      "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
-      "lampiranEmail": null,
-      "parts": [
-        {
-          "id": 75,
-          "serviceRequestId": 60,
-          "sparepartId": 339,
-          "qty": 3,
-          "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        }
-      ]
-    },
-    {
       "id": 59,
       "noTiket": "SV-20260804-0006",
       "unitAssetId": 159,
@@ -3869,7 +3811,7 @@
           "serviceRequestId": 59,
           "sparepartId": 338,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "editedAt": null,
@@ -6173,6 +6115,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 669,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0006",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T08:08:41.140Z"
+    },
+    {
+      "id": 668,
+      "aksi": "SURAT_JALAN_MASUK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUMMY-TEST",
+      "deskripsi": "Surat jalan produsen diterapkan: 1 item cocok · 0 tanpa tiket · 1 tiket naik PROSES· file: uji.csv",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T08:07:13.383Z"
+    },
     {
       "id": 667,
       "aksi": "SUBMIT",
