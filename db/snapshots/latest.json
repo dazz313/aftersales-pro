@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T05:07:26.790Z",
+  "generatedAt": "2026-10-18T05:08:03.491Z",
   "masterToko": [
     {
       "id": 216,
@@ -281,7 +281,7 @@
       "kontak": "085242151110",
       "frekuensiVisit": 14,
       "aktif": true,
-      "modeSiklus": "REGULER",
+      "modeSiklus": "BY_REQUEST",
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-018",
       "jarakKm": null,
@@ -770,7 +770,7 @@
       "longitude": null
     },
     {
-      "id": 264,
+      "id": 265,
       "kodeToko": "TOK-UJI",
       "namaToko": "Toko Uji Indikator",
       "alamat": null,
@@ -781,7 +781,7 @@
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-UJI",
       "jarakKm": null,
-      "createdAt": "2026-10-18T05:07:26.749Z",
+      "createdAt": "2026-10-18T05:08:03.452Z",
       "latitude": null,
       "longitude": null
     }
@@ -5623,6 +5623,51 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 642,
+      "aksi": "CREATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Toko baru ditambahkan: Toko Uji Indikator — barcode kunjungan BC-TOK-UJI",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:08:03.469Z"
+    },
+    {
+      "id": 641,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-018",
+      "deskripsi": "Data toko diperbarui: modeSiklus",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T05:07:43.654Z"
+    },
+    {
+      "id": 640,
+      "aksi": "DELETE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Toko dihapus: Toko Uji Indikator",
+      "aktor": "SYSTEM",
+      "createdAt": "2026-10-18T05:07:27.878Z"
+    },
+    {
+      "id": 639,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Data toko diperbarui: aktif, modeSiklus",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:07:27.242Z"
+    },
+    {
+      "id": 638,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Data toko diperbarui: aktif",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:07:27.056Z"
+    },
     {
       "id": 637,
       "aksi": "CREATE_MASTER_TOKO",
