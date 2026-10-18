@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T23:25:59.970Z",
+  "generatedAt": "2026-10-18T23:30:06.958Z",
   "masterToko": [
     {
       "id": 216,
@@ -2291,9 +2291,9 @@
       "namaPart": "BACK COVER MOTOR HOUSING (B) WHITE CR",
       "brandKompatibel": "Miyako",
       "supplier": "PT BHAKTI IDOLA TAMA",
-      "stokJual": 1,
+      "stokJual": 2,
       "stokGaransi": 0,
-      "stokInventory": 1,
+      "stokInventory": 2,
       "totalTerpakai": 1,
       "reorderLimit": 0,
       "hargaKlaim": 0,
@@ -2620,20 +2620,6 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T04:28:45.519Z"
-    },
-    {
-      "id": 350,
-      "kodePart": "ZZTEST-REORDER-UJI",
-      "namaPart": "Part Uji Reorder",
-      "brandKompatibel": "Miyako",
-      "supplier": "",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-18T23:25:59.878Z"
     }
   ],
   "unitAsset": [
@@ -4027,61 +4013,6 @@
     }
   ],
   "serviceRequest": [
-    {
-      "id": 77,
-      "noTiket": "SV-20261019-0001",
-      "unitAssetId": 126,
-      "status": "PROSES",
-      "noSttb": "STTB-20261019-0001",
-      "sumberLaporan": "MANUAL",
-      "tipeCustomer": "PERORANGAN",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
-      "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "UJI E2E — 2 part rusak: 1 ready stok, 1 inden (akan diorder email)",
-      "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
-      "tandaTanganDigital": null,
-      "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
-      "biayaJasa": 0,
-      "tglFinish": null,
-      "tglTiket": "2026-10-18T23:25:59.853Z",
-      "createdAt": "2026-10-18T23:25:59.896Z",
-      "updatedAt": "2026-10-18T23:25:59.896Z",
-      "editedAt": null,
-      "editedBy": null,
-      "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
-      "lampiranEmail": null,
-      "parts": [
-        {
-          "id": 86,
-          "serviceRequestId": 77,
-          "sparepartId": 233,
-          "qty": 1,
-          "statusPart": "READY",
-          "statusKonfirmasi": "READY",
-          "sumberPart": "KATALOG",
-          "editedAt": null,
-          "editedBy": null
-        },
-        {
-          "id": 87,
-          "serviceRequestId": 77,
-          "sparepartId": 350,
-          "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        }
-      ]
-    },
     {
       "id": 76,
       "noTiket": "SV-20261002-0001",
@@ -6766,6 +6697,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 23,
+      "kodePart": "MCMX-PX562-WH-KGX",
+      "namaPart": "OUT CASE ASSY 602",
+      "brand": "Miyako",
+      "qty": 1,
+      "unitAssetId": 156,
+      "serialNumber": "42110363216",
+      "modelUnit": "MCM-528",
+      "tokoKode": "TOK-042",
+      "tokoNama": "Toko Semeru Ahmad Yani",
+      "catatan": "Reorder part inden — tiket SV-20261018-0001",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-10-18T23:30:06.919Z",
+      "updatedAt": "2026-10-18T23:30:06.919Z",
+      "serviceRequestId": 55
+    },
+    {
       "id": 14,
       "kodePart": "WDXX-PX317-WH-KGX",
       "namaPart": "RESERVOIR GRILL186 WHITE",
@@ -7502,13 +7456,13 @@
   ],
   "auditLog": [
     {
-      "id": 741,
-      "aksi": "CREATE_SERVICE_REQUEST",
+      "id": 746,
+      "aksi": "ORDER_EMAIL_REORDER",
       "entitas": "service_request",
-      "entitasId": "SV-20261019-0001",
-      "deskripsi": "Tiket manual dibuat untuk unit 03050072922 (KAS-1607, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20261019-0001 terbit sejak request part — part READY → otomatis PROSES",
-      "aktor": "SYSTEM",
-      "createdAt": "2026-10-18T23:25:59.916Z"
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Reorder 1 part inden via email: MCMX-PX562-WH-KGX ×1 — item menempel ke tiket SV-20261018-0001, siap dikirim ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T23:30:06.930Z"
     },
     {
       "id": 740,
