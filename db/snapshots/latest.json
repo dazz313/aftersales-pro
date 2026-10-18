@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T03:49:28.053Z",
+  "generatedAt": "2026-10-18T04:20:19.286Z",
   "masterToko": [
     {
       "id": 216,
@@ -2050,6 +2050,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 332,
+      "kodePart": "TST-A1",
+      "namaPart": "Reservoir Uji",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T04:20:19.245Z"
+    },
+    {
       "id": 326,
       "kodePart": "UP-LANJUT",
       "namaPart": "Part Lanjut Uji",
@@ -3498,8 +3512,50 @@
   ],
   "serviceRequest": [
     {
+      "id": 51,
+      "noTiket": "SV-EM-20261018-0002",
+      "unitAssetId": 199,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "uji SV-EM",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T04:20:19.247Z",
+      "createdAt": "2026-10-18T04:20:19.247Z",
+      "updatedAt": "2026-10-18T04:20:19.247Z",
+      "editedAt": null,
+      "editedBy": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 66,
+          "serviceRequestId": 51,
+          "sparepartId": 332,
+          "qty": 2,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 48,
-      "noTiket": "SV-20261018-0001-02100056000",
+      "noTiket": "SV-EM-20261018-0001",
       "unitAssetId": 205,
       "status": "REQUEST_EMAIL",
       "noSttb": null,
@@ -3521,7 +3577,7 @@
       "tglFinish": null,
       "tglTiket": "2026-10-18T03:22:37.961Z",
       "createdAt": "2026-10-18T03:22:37.961Z",
-      "updatedAt": "2026-10-18T03:40:52.778Z",
+      "updatedAt": "2026-10-18T04:17:24.215Z",
       "editedAt": null,
       "editedBy": null,
       "lampiranEmail": null,
@@ -5401,6 +5457,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 612,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-EM-20261018-0002",
+      "deskripsi": "Input part kurang unit .: TST-A1 ×2 — tiket SV-EM-20261018-0002 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T04:20:19.263Z"
+    },
+    {
+      "id": 611,
+      "aksi": "RENAME",
+      "entitas": "service_request",
+      "entitasId": "SV-EM-20261018-0001",
+      "deskripsi": "Nomor tiket REQUEST EMAIL disederhanakan: SV-20261018-0001-02100056000 → SV-EM-20261018-0001 (prefix SV-EM pengganti suffix kode unit)",
+      "aktor": "MIGRASI",
+      "createdAt": "2026-10-18T04:17:24.231Z"
+    },
+    {
+      "id": 610,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001-02100056000",
+      "deskripsi": "Draf email order part 2 item dibuka (SMTP belum diset) — tiket SV-20261018-0001-02100056000",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T04:14:43.176Z"
+    },
     {
       "id": 609,
       "aksi": "BACKUP_DATA",
