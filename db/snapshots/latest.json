@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T22:44:12.763Z",
+  "generatedAt": "2026-10-18T23:09:43.950Z",
   "masterToko": [
     {
       "id": 216,
@@ -3246,6 +3246,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-06T16:00:00.000Z"
+    },
+    {
+      "id": 214,
+      "serialNumber": "43110300584",
+      "modelUnit": "MCM-512 C",
+      "merk": "Miyako",
+      "nama": "",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-09-28T00:00:00.000Z"
     },
     {
       "id": 167,
@@ -7408,6 +7420,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 737,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "43110300584",
+      "deskripsi": "Unit baru teregistrasi: MCM-512 C (GARANSI) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T23:09:43.921Z"
+    },
     {
       "id": 736,
       "aksi": "CREATE_UNIT_ASSET",
