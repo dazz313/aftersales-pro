@@ -12,7 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import HistoryInput from '@/components/history-input'
-import { Sparkles, Loader2, X, CalendarDays, SearchCheck, FileText } from 'lucide-react'
+import { Sparkles, Loader2, X, CalendarDays, SearchCheck, FileText, Truck } from 'lucide-react'
+import SuratJalanMasukDialog from '@/components/surat-jalan-masuk-dialog'
 import { cn } from '@/lib/utils'
 
 interface AiRencana {
@@ -51,6 +52,8 @@ interface RingkasanHasil {
 export default function AnalisaAiView() {
   const { toast } = useToast()
   const { setView, navigateTo } = useAppStore()
+  // ===== 4. Surat jalan masuk (dialog mandiri) =====
+  const [sjMasukOpen, setSjMasukOpen] = useState(false)
 
   // ===== 1. Ringkasan operasional =====
   const [ringkasan, setRingkasan] = useState<RingkasanHasil | null>(null)
@@ -327,6 +330,29 @@ export default function AnalisaAiView() {
           )}
         </CardContent>
       </Card>
+
+      {/* ===== 4. Surat jalan masuk — penerimaan part dari produsen (cek berlapis + pencocokan AI) ===== */}
+      <Card className="border-indigo-200">
+        <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Truck className="h-4 w-4 text-indigo-700" /> Surat Jalan Masuk — Penerimaan Part Produsen
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Uraikan Excel hasil scan → pencocokan otomatis (+ bantuan AI) ke tiket SV-EM/candidate part siap → <b>Simpan Draft → Cek Berlapis (+ opsi Cek Manual per baris) → Cek Akhir → Terapkan Permanen</b>.
+            </CardDescription>
+          </div>
+          <Button size="sm" className="h-7 shrink-0 bg-indigo-600 px-2 text-[11px] hover:bg-indigo-700" onClick={() => setSjMasukOpen(true)}>
+            <Truck className="mr-1 h-3.5 w-3.5" /> Buka
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="rounded-lg border border-dashed p-3 text-center text-xs text-slate-400">
+            Barang dari produsen sudah datang? Unggah surat jalan Excel/CSV — baris yang cocok otomatis <b>siap di tiket</b>, tiket part-lengkap naik <b>PROSES</b>; barang tanpa tiket tetap tercatat tanpa masuk stok.
+          </p>
+        </CardContent>
+      </Card>
+      <SuratJalanMasukDialog open={sjMasukOpen} onOpenChange={setSjMasukOpen} />
 
       <p className="text-center text-[11px] text-slate-400">
         Ditenagai 9router di mesin ini · atur model & kunci di Pengaturan → AI Suggest · data yang dikirim hanya ringkasan operasional.
