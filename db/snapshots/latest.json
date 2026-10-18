@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:43:53.197Z",
+  "generatedAt": "2026-10-18T04:45:13.926Z",
   "masterToko": [
     {
       "id": 216,
@@ -8,7 +8,7 @@
       "alamat": "Jl. Makmur, Watampone",
       "kontak": "081245609649",
       "frekuensiVisit": 7,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-15T04:44:00.000Z",
       "barcodeToko": "BC-TOK-001",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3316,6 +3316,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 56,
+      "tokoId": 216,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-15T04:44:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 37,
       "tokoId": 220,
       "teknisiId": 27,
@@ -5401,6 +5411,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 619,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "56",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Sinar Logam (TOK-001) · tgl 15/10/2026, 12.44.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:45:13.907Z"
+    },
     {
       "id": 618,
       "aksi": "INBOX_REJECT",
