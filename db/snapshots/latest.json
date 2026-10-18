@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T01:08:18.474Z",
+  "generatedAt": "2026-10-18T01:21:40.559Z",
   "masterToko": [
     {
       "id": 216,
@@ -3118,6 +3118,18 @@
       "createdAt": "2026-09-21T16:00:00.000Z"
     },
     {
+      "id": 204,
+      "serialNumber": "UJILANJUT-001",
+      "modelUnit": "UJI Lanjut Model",
+      "merk": "UJI",
+      "nama": "Unit Uji Lanjut",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-18T01:21:40.527Z"
+    },
+    {
       "id": 168,
       "serialNumber": "ZD152841",
       "modelUnit": "PS-230 BIT",
@@ -5184,12 +5196,12 @@
     {
       "id": 57,
       "kunci": "email_perusahaan",
-      "nilai": "eracoolteknik@gmail.com"
+      "nilai": ""
     },
     {
       "id": 82,
       "kunci": "email_produsen",
-      "nilai": "produsen@uji.test"
+      "nilai": ""
     },
     {
       "id": 73,
@@ -5224,12 +5236,12 @@
     {
       "id": 95,
       "kunci": "smtp_dari",
-      "nilai": "Workshop <uji@test>"
+      "nilai": ""
     },
     {
       "id": 91,
       "kunci": "smtp_host",
-      "nilai": "smtp.uji-tidaknyata.invalid"
+      "nilai": ""
     },
     {
       "id": 94,
@@ -5239,20 +5251,65 @@
     {
       "id": 92,
       "kunci": "smtp_port",
-      "nilai": "465"
+      "nilai": ""
     },
     {
       "id": 96,
       "kunci": "smtp_secure",
-      "nilai": "1"
+      "nilai": ""
     },
     {
       "id": 93,
       "kunci": "smtp_user",
-      "nilai": "uji@test"
+      "nilai": ""
     }
   ],
   "auditLog": [
+    {
+      "id": 584,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "UJILANJUT-001",
+      "deskripsi": "Unit baru teregistrasi: UJI Lanjut Model (GARANSI)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:21:40.540Z"
+    },
+    {
+      "id": 583,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:08:19.890Z"
+    },
+    {
+      "id": 582,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-DRAF1",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (Part Draf Uji)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:08:18.949Z"
+    },
+    {
+      "id": 581,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-GAGAL1",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (Part Gagal Uji)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:08:18.846Z"
+    },
+    {
+      "id": 580,
+      "aksi": "DELETE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-TEK",
+      "deskripsi": "Item kekurangan part dihapus dari daftar email produsen (Part Teknisi)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:08:18.757Z"
+    },
     {
       "id": 579,
       "aksi": "CREATE_ORDER_EMAIL",
