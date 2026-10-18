@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T05:08:24.300Z",
+  "generatedAt": "2026-10-18T05:08:52.383Z",
   "masterToko": [
     {
       "id": 216,
@@ -766,22 +766,6 @@
       "barcodeToko": "BC-TOK-048",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
-    },
-    {
-      "id": 266,
-      "kodeToko": "TOK-UJI",
-      "namaToko": "Toko Uji Indikator",
-      "alamat": null,
-      "kontak": null,
-      "frekuensiVisit": 1,
-      "aktif": true,
-      "modeSiklus": "REGULER",
-      "tglVisitTerakhir": null,
-      "barcodeToko": "BC-TOK-UJI",
-      "jarakKm": null,
-      "createdAt": "2026-10-18T05:08:24.219Z",
       "latitude": null,
       "longitude": null
     }
@@ -5624,6 +5608,42 @@
   ],
   "auditLog": [
     {
+      "id": 650,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T05-08-52.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-18T05:08:52.361Z"
+    },
+    {
+      "id": 649,
+      "aksi": "DELETE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Toko dihapus: Toko Uji Indikator",
+      "aktor": "SYSTEM",
+      "createdAt": "2026-10-18T05:08:26.350Z"
+    },
+    {
+      "id": 648,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Data toko diperbarui: aktif",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:08:24.996Z"
+    },
+    {
+      "id": 647,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Data toko diperbarui: aktif",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:08:24.816Z"
+    },
+    {
       "id": 646,
       "aksi": "CREATE_MASTER_TOKO",
       "entitas": "master_toko",
@@ -9567,6 +9587,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 18,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 326,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T05-08-52.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-18T05:08:52.350Z"
+    },
     {
       "id": 17,
       "status": "LOCAL",
