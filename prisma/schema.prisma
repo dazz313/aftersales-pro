@@ -106,6 +106,10 @@ model UnitAsset {
   modelUnit       String
   merk            String           @default("") // merk/brand unit (mis. Miyako, Shimizu)
   nama            String           @default("") // nama panggilan unit (mis. "Kipas Ruang Tamu")
+  // Kerusakan unit sebagai DIAGNOSA AWAL (bahasa awam utk customer) — dicatat
+  // saat registrasi SEBELUM kode part terbit, agar unit yang lama menunggu
+  // tetap punya catatan kelengkel & tidak "lost" tanpa dokumentasi kerusakan.
+  kerusakanAwal   String?
   tokoId          Int?
   customerId      Int?
   statusGaransi   String           @default("GARANSI") // GARANSI | NON_GARANSI

@@ -251,6 +251,15 @@ export interface ServicePart {
   sparepart?: Sparepart & { reorderLimit?: number }
 }
 
+/** Ref kecil: item order-email yang menempel tiket (alur REQUEST_EMAIL / Reorder Email part inden). */
+export interface OrderEmailRef {
+  id: number
+  kodePart: string
+  qty: number
+  status: string
+  createdAt: string
+}
+
 export type OrderStatus = 'BARU' | 'DITERUSKAN' | 'DATANG' | 'SELESAI' | 'BATAL'
 
 export interface PermintaanOrder {
@@ -312,6 +321,8 @@ export interface ServiceTicket {
     customer?: Customer | null
   }
   parts: ServicePart[]
+  /** Item order-email pada tiket ini — indikator part inden sudah diorder via email apa belum. */
+  orderEmailParts?: OrderEmailRef[]
   umurTiketJam?: number
   /** True bila selisih upload vs tgl kejadian > batas (umur dinonaktifkan di UI). */
   isDataLama?: boolean

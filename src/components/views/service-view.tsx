@@ -23,7 +23,7 @@ import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +39,16 @@ const KLAIM_STYLES: Record<string, { label: string; cls: string }> = {
   SUBMITTED: { label: 'SUBMITTED', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
   PAID: { label: 'PAID', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
 }
+
+/** Normalisasi kode part — sama dgn server utk mencocokkan baris part → item order-email. */
+const KODE_NORM = (s?: string | null) => (s ?? '').toUpperCase().replace(/[^A-Z0-9#]/g, '')
+
+/** Item order-email AKTIF (PENDING/TERKIRIM) untuk satu kode part pada tiket — null bila belum diorder. */
+const emailAktifUntuk = (
+  list: ServiceTicket['orderEmailParts'],
+  kode?: string | null
+): NonNullable<ServiceTicket['orderEmailParts']>[number] | null =>
+  list?.find((e) => KODE_NORM(e.kodePart) === KODE_NORM(kode) && (e.status === 'PENDING' || e.status === 'TERKIRIM')) ?? null
 
 /** Badge kecil "(edited)" — penanda koreksi data untuk kepentingan pemeriksaan kelak. */
 function BadgeEdited({ waktu, oleh }: { waktu: string; oleh?: string | null }) {
@@ -145,30 +155,48 @@ export default function ServiceView() {
     onError: (e: Error) => toast({ title: 'Aksi ditolak', description: e.message, variant: 'destructive' }),
   })
 
-  // ===== Tiket REQUEST EMAIL: kirim email order part ke produsen =====
+  // ===== Email order part ke produsen (Kekurangan Part) =====
   // SMTP tersedia → kirim sungguhan (+ lampiran bila sudah diunggah via modul email)
-  // & part jadi TERKIRIM; SMTP belum diset → draf mailto dibuka di aplikasi email
+  // & item jadi TERKIRIM; SMTP belum diset → draf mailto dibuka di aplikasi email
   // (item tetap PENDING). Upload lampiran memakai antre modul email — bukan dari tabel.
+  // Dipakai 2 mutation: tiket REQUEST_EMAIL (Kirim Email), dan Reorder part inden
+  // (Email Order → daftarkan baris ORDER_PRODUSEN dulu, lalu langsung kirim).
+  const kirimEmailOrder = (id: number) =>
+    postJson<{ ok: true; mode: 'SMTP' | 'MAILTO'; terkirim?: number; ke?: string; mailto?: string; noTiket: string }>(
+      `/api/service/${id}`,
+      { aksi: 'KIRIM_EMAIL_PRODUSEN', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' },
+      'PATCH'
+    )
+  const notifikasiEmailOrder = (r: { ok: true; mode: 'SMTP' | 'MAILTO'; terkirim?: number; ke?: string; mailto?: string; noTiket: string }) => {
+    invalidateAll()
+    if (r.mode === 'SMTP') {
+      toast({ title: `Email order terkirim (${r.terkirim} part)`, description: `Tiket ${r.noTiket} → ${r.ke}. Part inden ditandai TERKIRIM — tunggu barang masuk, lalu klik Part Datang.` })
+    } else {
+      if (r.mailto) bukaLinkEksternal(r.mailto)
+      toast({
+        title: 'Draf email dibuka',
+        description: `Tiket ${r.noTiket} — SMTP belum dikonfigurasi; lampirkan PDF Detail Unit manual di aplikasi email, atau set SMTP di Pengaturan → Email Produsen.`,
+      })
+    }
+  }
   const kirimEmailTiket = useMutation({
-    mutationFn: (id: number) =>
-      postJson<{ ok: true; mode: 'SMTP' | 'MAILTO'; terkirim?: number; ke?: string; mailto?: string; noTiket: string; error?: string }>(
-        `/api/service/${id}`,
-        { aksi: 'KIRIM_EMAIL_PRODUSEN', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' },
-        'PATCH'
-      ),
-    onSuccess: (r) => {
-      invalidateAll()
-      if (r.mode === 'SMTP') {
-        toast({ title: `Email order terkirim (${r.terkirim} part)`, description: `Tiket ${r.noTiket} → ${r.ke}. Part di tiket ini ditandai TERKIRIM.` })
-      } else {
-        if (r.mailto) bukaLinkEksternal(r.mailto)
-        toast({
-          title: 'Draf email dibuka',
-          description: `Tiket ${r.noTiket} — SMTP belum dikonfigurasi; lampirkan PDF Detail Unit manual di aplikasi email, atau set SMTP di Pengaturan → Email Produsen.`,
-        })
-      }
-    },
+    mutationFn: kirimEmailOrder,
+    onSuccess: (r) => notifikasiEmailOrder(r),
     onError: (e: Error) => toast({ title: 'Gagal mengirim email', description: e.message, variant: 'destructive' }),
+  })
+
+  // ===== Reorder part inden dari tiket biasa (REQUEST/PROSES) =====
+  // Satu klik: daftarkan baris part ORDER_PRODUSEN yang belum diorder jadi item
+  // email (server idempoten — baris yang sudah ada dilewati), lalu langsung
+  // kirim email order ke produsen. Identifikasi READY vs INDEN per baris tetap
+  // terlihat dari chip/marker per part.
+  const orderEmailTiket = useMutation({
+    mutationFn: async (id: number) => {
+      await postJson(`/api/service/${id}`, { aksi: 'ORDER_EMAIL_REORDER', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH')
+      return kirimEmailOrder(id)
+    },
+    onSuccess: (r) => notifikasiEmailOrder(r),
+    onError: (e: Error) => toast({ title: 'Gagal reorder part inden', description: e.message, variant: 'destructive' }),
   })
 
   const filtered = useMemo(() => {
@@ -598,6 +626,17 @@ export default function ServiceView() {
                     const st = STATUS_STYLES[t.status]
                     const kl = KLAIM_STYLES[t.statusKlaimProdusen]
                     const hasOrderPart = t.parts.some((p) => p.statusPart === 'ORDER_PRODUSEN')
+                    // Identifikasi Ready vs Inden per part + status item order-email
+                    const readyCnt = t.parts.filter((p) => p.statusPart === 'READY').length
+                    const indenCnt = t.parts.length - readyCnt
+                    // Part inden belum dipesan via email → perlu aksi "Email Order"
+                    const butuhOrderEmail =
+                      hasOrderPart &&
+                      (t.parts.some(
+                        (p) =>
+                          p.statusPart === 'ORDER_PRODUSEN' &&
+                          !emailAktifUntuk(t.orderEmailParts, p.sparepart?.kodePart)
+                      ) || !t.orderEmailParts)
                     return (
                       <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60', selectedIds.has(t.id) && 'bg-teal-50/60')}>
                         <TableCell className="pr-0">
@@ -625,6 +664,19 @@ export default function ServiceView() {
                         <TableCell>
                           <div className="flex flex-wrap items-center gap-1">
                             <Badge variant="outline" className={st.cls}>{st.label}</Badge>
+                            {/* Ringkasan part: ✔ READY vs ● INDEN — identifikasi sekilas tanpa buka detail */}
+                            {t.parts.length > 0 && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[9px]',
+                                  indenCnt > 0 ? 'border-rose-200 bg-rose-50/50 text-rose-700' : 'border-emerald-200 bg-emerald-50/50 text-emerald-700'
+                                )}
+                                title={`Part READY: ${readyCnt} · Part inden (order produsen): ${indenCnt}`}
+                              >
+                                {readyCnt} ready · {indenCnt} inden
+                              </Badge>
+                            )}
                             {t.slaFlag && <Badge variant="destructive" className="gap-0.5 text-[9px]"><AlertOctagon className="h-2.5 w-2.5" /> SLA</Badge>}
                             {t.status === 'FINISH' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
                             {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
@@ -707,6 +759,23 @@ export default function ServiceView() {
                               </Button>
                             )}
                             {hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES') && (
+                              butuhOrderEmail ? (
+                                <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-violet-700"
+                                  disabled={orderEmailTiket.isPending}
+                                  title="Reorder: daftarkan part inden (ORDER) ke order email lalu kirim ke produsen — part READY tidak ikut"
+                                  onClick={() => orderEmailTiket.mutate(t.id)}>
+                                  <MailPlus className="mr-1 h-3 w-3" /> Email Order
+                                </Button>
+                              ) : (
+                                <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-violet-700"
+                                  disabled={kirimEmailTiket.isPending}
+                                  title="Kirim email order part inden yang belum terkirim"
+                                  onClick={() => kirimEmailTiket.mutate(t.id)}>
+                                  <Send className="mr-1 h-3 w-3" /> Kirim Email
+                                </Button>
+                              )
+                            )}
+                            {hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES') && (
                               <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-teal-700"
                                 onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'TERIMA_PART_PRODUSEN' } })}>
                                 <PackageCheck className="mr-1 h-3 w-3" /> Part Datang
@@ -762,6 +831,19 @@ export default function ServiceView() {
                 <DialogTitle className="flex flex-wrap items-center gap-2 font-mono text-base">
                   {detail.noTiket}
                   <Badge variant="outline" className={STATUS_STYLES[detail.status].cls}>{STATUS_STYLES[detail.status].label}</Badge>
+                  {detail.parts.length > 0 && (() => {
+                    const r = detail.parts.filter((p) => p.statusPart === 'READY').length
+                    const o = detail.parts.length - r
+                    return (
+                      <Badge
+                        variant="outline"
+                        className={cn('text-[10px]', o > 0 ? 'border-rose-200 bg-rose-50/50 text-rose-700' : 'border-emerald-200 bg-emerald-50/50 text-emerald-700')}
+                        title={`Part READY: ${r} · Part inden (order produsen): ${o}`}
+                      >
+                        {r} ready · {o} inden
+                      </Badge>
+                    )
+                  })()}
                   {detail.editedAt && <BadgeEdited waktu={detail.editedAt} oleh={detail.editedBy} />}
                   {detail.slaFlag && <Badge variant="destructive">SLA TERLAMBAT</Badge>}
                 </DialogTitle>
@@ -824,6 +906,21 @@ export default function ServiceView() {
                 </div>
                 <div>
                   <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Sparepart</p>
+                  {detail.parts.length > 0 && (() => {
+                    const r = detail.parts.filter((p) => p.statusPart === 'READY').length
+                    const o = detail.parts.length - r
+                    const em = detail.orderEmailParts?.filter((e) => e.status === 'PENDING' || e.status === 'TERKIRIM').length ?? 0
+                    return (
+                      <p className="mb-2 text-[11px] text-slate-600">
+                        <span className="font-semibold text-emerald-700">{r} part ready (stok direserve)</span>
+                        {' · '}
+                        <span className={cn('font-semibold', o > 0 ? 'text-rose-600' : 'text-slate-400')}>{o} inden (ORDER PRODUSEN)</span>
+                        {em > 0 && (
+                          <> · <span className="font-semibold text-indigo-600">{em} diorder via email</span></>
+                        )}
+                      </p>
+                    )
+                  })()}
                   {detail.parts.length === 0 ? (
                     <p className="text-xs text-slate-400">Tidak ada part tercatat.</p>
                   ) : (
@@ -850,6 +947,18 @@ export default function ServiceView() {
                                   dari Produsen
                                 </Badge>
                               )}
+                              {p.statusPart === 'ORDER_PRODUSEN' && (() => {
+                                const em = emailAktifUntuk(detail.orderEmailParts, p.sparepart?.kodePart)
+                                return em ? (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-indigo-300 bg-indigo-50 text-[9px] text-indigo-700"
+                                    title={`Item order email aktif (${em.qty} pcs, ${em.status}) — part datang ditandai lewat "Part Datang" / Surat Jalan Masuk`}
+                                  >
+                                    Email: {em.status}
+                                  </Badge>
+                                ) : null
+                              })()}
                               {p.statusKonfirmasi !== 'MENUNGGU' && (
                                 <Badge variant="outline" className={cn('text-[9px]', p.statusKonfirmasi === 'READY' ? 'border-teal-300 text-teal-700' : 'border-rose-300 text-rose-700')}>
                                   Produsen: {p.statusKonfirmasi === 'READY' ? 'READY' : 'TIDAK READY'}
@@ -864,6 +973,16 @@ export default function ServiceView() {
                                       onClick={() => setPartEdit({ id: p.id, kode: p.sparepart?.kodePart ?? '', nama: p.sparepart?.namaPart ?? '', qty: String(p.qty) })}
                                     >
                                       <Pencil className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                  {p.statusPart === 'ORDER_PRODUSEN' && detail.status !== 'FINISH' && !emailAktifUntuk(detail.orderEmailParts, p.sparepart?.kodePart) && (
+                                    <Button
+                                      size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-violet-700"
+                                      title="Reorder part inden ini: daftarkan ke order email & kirim ke produsen (SMTP aktif → kirim; belum → draf mailto)"
+                                      disabled={orderEmailTiket.isPending}
+                                      onClick={() => orderEmailTiket.mutate(detail.id)}
+                                    >
+                                      <MailPlus className="mr-0.5 h-3 w-3" /> Email Order
                                     </Button>
                                   )}
                                   <Button

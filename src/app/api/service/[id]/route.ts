@@ -22,6 +22,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           },
         },
         parts: { include: { sparepart: true } },
+        // Item order-email menempel tiket (REQUEST_EMAIL / Reorder Email) —
+        // dipakai UI utk badge "Email: PENDING/TERKIRIM" per baris part inden.
+        orderEmailParts: { select: { id: true, kodePart: true, qty: true, status: true, createdAt: true } },
       },
     })
     if (!ticket) {
@@ -42,12 +45,16 @@ function bolehKoreksiSelesai(flag: unknown, session: SessionPayload | null) {
   return Boolean(flag) && !!session && ['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)
 }
 
+/** Normalisasi kode part untuk pencocokan item order-email — sama dgn matcher surat jalan masuk. */
+const NORM_KODE = (s: string | null | undefined) => (s || '').toString().toUpperCase().replace(/[^A-Z0-9#]/g, '')
+
 /**
  * PATCH /api/service/[id] - Transisi workflow tiket
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
  *   | TAMBAH_PART | HAPUS_PART | UBAH_QTY_PART | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
+ *   | ORDER_EMAIL_REORDER (daftarkan baris inden ORDER_PRODUSEN sebagai item email)
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
  * → TIDAK_READY: terdaftar & simpan di toko | READY: kerjakan di toko / tarik workshop+STTB
@@ -63,7 +70,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const ticketId = Number(id)
     const existing = await db.serviceRequest.findUnique({
       where: { id: ticketId },
-      include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      include: {
+        unitAsset: { include: { toko: true } },
+        parts: { include: { sparepart: true } },
+      },
     })
     if (!existing) {
       return NextResponse.json({ error: 'Tiket tidak ditemukan' }, { status: 404 })
@@ -100,15 +110,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json(updated)
     }
 
-    // ---- Aksi tiket REQUEST EMAIL: kirim email order part (Kekurangan Part) ke produsen ----
+    // ---- Aksi kirim email order part (Kekurangan Part) ke produsen ----
+    // Tiket REQUEST_EMAIL (order email biasa, SV-EM) ATAU tiket biasa
+    // (REQUEST/PROSES) yang baris inden-nya sudah didaftarkan sebagai item
+    // email via aksi ORDER_EMAIL_REORDER — dua pintu masuk, satu pengirim.
     if (aksi === 'KIRIM_EMAIL_PRODUSEN') {
-      if (existing.status !== 'REQUEST_EMAIL') {
-        return NextResponse.json({ error: 'Hanya tiket berstatus REQUEST EMAIL yang bisa kirim email order part' }, { status: 409 })
-      }
       const items = await db.orderEmailPart.findMany({
         where: { serviceRequestId: ticketId, status: 'PENDING' },
         orderBy: { createdAt: 'asc' },
       })
+      if (existing.status !== 'REQUEST_EMAIL' && items.length === 0) {
+        return NextResponse.json({ error: 'Tidak ada part menunggu email di tiket ini — daftarkan part inden dulu via Email Order (ORDER_EMAIL_REORDER)' }, { status: 409 })
+      }
       if (items.length === 0) {
         return NextResponse.json({ error: 'Tidak ada part menunggu email di tiket ini (semua sudah terkirim)' }, { status: 409 })
       }
@@ -175,6 +188,78 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         aktor,
       })
       return NextResponse.json({ ok: true, mode: 'MAILTO', ke: cfg.ke || '', mailto, noTiket: existing.noTiket })
+    }
+
+    // ---- Reorder part inden (ORDER_PRODUSEN) → daftarkan sebagai item order email (PENDING) ----
+    // Dari tiket biasa (REQUEST/PROSES) — untuk unit dengan beberapa part rusak,
+    // sebagian READY dari stok dan sisanya inden. Baris inden TIDAK membuat tiket
+    // SV-EM baru: item menempel ke TIKET INI (serviceRequestId) sehingga aksi
+    // Kirim Email di atas & matcher Surat Jalan Masuk tetap mengenalinya.
+    // Idempoten: baris inden yang sudah punya item PENDING/TERKIRIM dilewati —
+    // aman diklik ulang tanpa menciptakan order ganda.
+    if (aksi === 'ORDER_EMAIL_REORDER') {
+      if (existing.status === 'FINISH') {
+        return NextResponse.json({ error: 'Tiket sudah FINISH — koreksi part lebih dulu via Admin/Manager' }, { status: 409 })
+      }
+      const inden = existing.parts.filter((p) => p.statusPart === 'ORDER_PRODUSEN')
+      if (inden.length === 0) {
+        return NextResponse.json({ error: 'Tidak ada part inden (ORDER_PRODUSEN) di tiket ini — semua part sudah ready' }, { status: 409 })
+      }
+      const sudah = await db.orderEmailPart.findMany({
+        where: { serviceRequestId: ticketId, status: { in: ['PENDING', 'TERKIRIM'] } },
+      })
+      const sudahKode = new Set(
+        sudah.map((o) => NORM_KODE(o.kodePart))
+      )
+      const baru = inden.filter((p) => !sudahKode.has(NORM_KODE(p.sparepart.kodePart)))
+      if (baru.length === 0) {
+        await logAudit({
+          aksi: 'ORDER_EMAIL_REORDER',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Semua part inden sudah terdaftar di order email — tidak ada order ganda dibuat (tiket ${existing.noTiket})`,
+          aktor,
+        })
+        return NextResponse.json({ ok: true, dibuat: 0, noTiket: existing.noTiket })
+      }
+      const dibuatItems: string[] = []
+      for (const p of baru) {
+        await db.orderEmailPart.create({
+          data: {
+            kodePart: p.sparepart.kodePart,
+            namaPart: p.sparepart.namaPart,
+            brand: existing.unitAsset.merk || null,
+            qty: p.qty,
+            unitAssetId: existing.unitAssetId,
+            serialNumber: existing.unitAsset.serialNumber || null,
+            modelUnit: existing.unitAsset.modelUnit || null,
+            tokoKode: existing.unitAsset.toko?.kodeToko ?? null,
+            tokoNama: existing.unitAsset.toko?.namaToko ?? null,
+            catatan: `Reorder part inden — tiket ${existing.noTiket}`,
+            diinputOleh: aktor,
+            status: 'PENDING',
+            serviceRequestId: ticketId,
+          },
+        })
+        dibuatItems.push(`${p.sparepart.kodePart} ×${p.qty}`)
+      }
+      await logAudit({
+        aksi: 'ORDER_EMAIL_REORDER',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Reorder ${baru.length} part inden via email: ${dibuatItems.join(', ')} — item menempel ke tiket ${existing.noTiket}, siap dikirim ke produsen`,
+        aktor,
+      })
+      await autoGitBackup('ORDER_EMAIL_REORDER', 'service_request', existing.noTiket, aktor)
+      const updated = await db.serviceRequest.findUnique({
+        where: { id: ticketId },
+        include: {
+          unitAsset: { include: { toko: { select: { id: true, kodeToko: true, namaToko: true } }, customer: { select: { id: true, nama: true, noWa: true } } } },
+          parts: { include: { sparepart: true } },
+          orderEmailParts: { select: { id: true, kodePart: true, qty: true, status: true, createdAt: true } },
+        },
+      })
+      return NextResponse.json({ ok: true, dibuat: baru.length, noTiket: existing.noTiket, ticket: updated })
     }
 
     // ---- Alur service lapangan ----
@@ -1056,11 +1141,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           data: { totalTerpakai: { increment: p.qty } },
         })
       }
+      // Item order-email yang menempel ke tiket ini (Reorder Email / alur SV-EM)
+      // ikut ditandai DATANG — part fisik datang & dipasang, tidak lagi menunggu.
+      const emailKena = await db.orderEmailPart.updateMany({
+        where: { serviceRequestId: ticketId, status: { in: ['PENDING', 'TERKIRIM'] } },
+        data: { status: 'DATANG' },
+      })
       await logAudit({
         aksi: 'TERIMA_PART_PRODUSEN',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `${parts.length} part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +${parts.reduce((n, p) => n + p.qty, 0)})`,
+        deskripsi: `${parts.length} part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +${parts.reduce((n, p) => n + p.qty, 0)})${emailKena.count > 0 ? ` — ${emailKena.count} item order email ikut DATANG` : ''}`,
         aktor,
       })
       await backupSparepartToGit('TERIMA_PART', existing.noTiket, aktor)

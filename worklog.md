@@ -1,7 +1,28 @@
 # Worklog
 
 ---
+Task ID: 14
+Agent: GLM (opencode)
+Task: Identifikasi READY vs INDEN per part + tombol Reorder Email untuk part belum ready (kasus: 3 part rusak — 2 ready, 1 inden)
+
+Work Log:
+- Latar: status kesiapan part sudah tersimpan per-baris (ServiceRequestPart.statusPart READY|ORDER_PRODUSEN) — dasar identifikasi benar; gap: tidak ada ringkasan sekilas per tiket, dan part inden di tiket biasa (REQUEST/PROSES) tidak punya jalur reorder langsung (harus lewat modul Input Part Kurang → tiket SV-EM baru)
+- API service/[id]/route.ts: aksi baru ORDER_EMAIL_REORDER — daftarkan baris part ORDER_PRODUSEN sebagai OrderEmailPart PENDING yang menempel ke TIKET YANG SAMA (tanpa tiket SV-EM baru); idempoten (baris inden yang sudah punya item PENDING/TERKIRIM dilewati — klik ulang aman, tidak ada order ganda); loader PATCH include unitAsset.toko untuk snapshot item; guard KIRIM_EMAIL_PRODUSEN diperlonggar (tiket REQUEST_EMAIL ATAU tiket biasa dengan item PENDING); TERIMA_PART_PRODUSEN kini ikut menandai item order-email tiket → DATANG (konsisten dengan modul surat jalan masuk)
+- API service/route.ts GET list + GET detail: include orderEmailParts (id, kodePart, qty, status, createdAt) agar UI tahu part inden mana yang sudah/belum diorder
+- types.ts: tambah OrderEmailRef + field opsional ServiceTicket.orderEmailParts (kompatibel respons lama)
+- service-view.tsx: chip ringkasan per tiket di kolom Status "N ready · M inden" (border rose saat ada inden, emerald saat semua ready) — juga di judul + bagian Sparepart dialog detail; tombol aksi per tiket: hasOrderPart + tiket aktif → "Email Order" (ada inden belum didaftarkan) dibanding "Kirim Email" (sudah); badge per-baris "Email: PENDING/TERKIRIM" pada part inden yang sudah diorder; tombol Email Order juga tersedia per baris part di detail; helper KODE_NORM + emailAktifUntuk (pencocokan kode sama gaya dengan matcher surat jalan)
+- Alur satu klik: Email Order → ORDER_EMAIL_REORDER (buat item) → KIRIM_EMAIL_PRODUSEN → SMTP terkirim ATAU draf mailto dibuka (toast hasil); penerimaan part tetap via "Part Datang" / Surat Jalan Masuk
+- E2E (dev :3000, token admin lokal): tiket uji 2 part (1 katalog READY stok direserve, 1 kode manual → ORDER_PRODUSEN) → tiket langsung PROSES; REORDER #1 dibuat=1, #2 dibuat=0 (idempoten); KIRIM → MAILTO (SMTP belum diset) dan item tetap PENDING; TERIMA_PART_PRODUSEN → kedua part READY + item email DATANG; stok brand tidak tersentuh oleh penerimaan per-unit
+- Pembersihan uji: restore stok SFMX (2/2), hapus tiket/part/item/audit uji, hapus katalog ZZTEST-REORDER-UJI, skrip sementara dihapus; server :3000 (dev) tetap jalan — fitur langsung aktif via hot-reload; build produksi standalone cukup dijalankan saat mau deploy via PM2
+
+Stage Summary:
+- Part inden di tiket kini teridentifikasi sekilas lewat chip "N ready · M inden" dan bisa di-order email satu klik dari daftar tiket maupun dialog detail — tanpa tiket ganda; penerimaan part ikut menutup item email-nya
+- File berubah: src/app/api/service/[id]/route.ts, src/app/api/service/route.ts, src/components/views/service-view.tsx, src/lib/types.ts
+- tsc --noEmit bersih; eslint 4 file bersih; E2E API lulus & data uji dibersihkan
+
+---
 Task ID: 13
+
 Agent: Muse Spark (opencode)
 Task: Settings jadi dropdown + perbaiki trigger dropdown Inventory
 
