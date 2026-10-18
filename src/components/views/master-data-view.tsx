@@ -26,7 +26,7 @@ import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import UnitBarcodeSticker from '@/components/unit-barcode-sticker'
 import { GARANSI_LABEL } from '@/lib/types'
-import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, FileDown, ChevronDown, X, Trash2, AlertTriangle } from 'lucide-react'
+import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, PackageOpen, FileDown, ChevronDown, X, Trash2, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // Peringatan nomor seri ganda — tampil live saat mengetik (sebelum tombol ditekan),
@@ -249,6 +249,33 @@ export default function MasterDataView() {
   const partFormValid =
     partForm.deskripsi.trim() !== '' && partsLengkap.length > 0 && !partRowSetengah && dupPartKode.size === 0
 
+  // ===== Modul Input Part Kurang (kekurangan sparepart) =====
+  // Data tersimpan saja (PENDING) — lengkapi tabel "Daftar Part yang Kurang" di PDF Detail
+  // Unit. Pengiriman email ke produsen menyusul di tahap berikutnya.
+  const [partKurangUnit, setPartKurangUnit] = useState<UnitAsset | null>(null)
+  const [formKurang, setFormKurang] = useState({
+    catatan: '',
+    rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1' }] as PartUnitRow[],
+  })
+  const updateKurangRow = (key: number, patch: Partial<PartUnitRow>) =>
+    setFormKurang((f) => ({ ...f, rows: f.rows.map((r) => (r.key === key ? { ...r, ...patch } : r)) }))
+  const openPartKurang = (u: UnitAsset) => {
+    setPartKurangUnit(u)
+    setFormKurang({ catatan: '', rows: [{ key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }] })
+  }
+  const kurangLengkap = formKurang.rows.filter((r) => r.kodePart.trim() && r.namaPart.trim())
+  const kurangDup = useMemo(() => {
+    const ks = formKurang.rows.map((r) => r.kodePart.trim().toUpperCase())
+    const c = new Map<string, number>()
+    for (const k of ks) if (k) c.set(k, (c.get(k) ?? 0) + 1)
+    return new Set(ks.filter((k) => k && (c.get(k) ?? 0) > 1))
+  }, [formKurang.rows])
+  const kurangSetengah = formKurang.rows.some(
+    (r) => (r.kodePart.trim() && !r.namaPart.trim()) || (!r.kodePart.trim() && r.namaPart.trim())
+  )
+  const kurangValid =
+    kurangLengkap.length > 0 && !kurangSetengah && kurangDup.size === 0 && !formKurang.rows.some((r) => Number(r.qty) < 1)
+
   const createTiketPart = useMutation({
     mutationFn: () => {
       const isToko = !!partUnit!.tokoId
@@ -306,6 +333,30 @@ export default function MasterDataView() {
       setPdfLoading(false)
     }
   }
+  // Simpan modul Input Part Kurang → POST /api/order-email: langsung terbit kode service
+  // (tiket berstatus REQUEST EMAIL di daftar tiket service). Kirim email → aksi di tiket.
+  const simpanPartKurang = useMutation({
+    mutationFn: () =>
+      postJson<{ ok: true; noTiket: string; tersimpan: number; items: { kodePart: string; qty: number }[] }>('/api/order-email', {
+        unitAssetId: partKurangUnit!.id,
+        catatan: formKurang.catatan.trim(),
+        aktor: role,
+        rows: kurangLengkap.map((r) => ({
+          kodePart: r.kodePart.trim().toUpperCase(),
+          namaPart: r.namaPart.trim(),
+          qty: Number(r.qty) || 1,
+        })),
+      }),
+    onSuccess: (r) => {
+      invalidate(['service-tickets', 'units', 'spareparts', 'dashboard', 'alerts'])
+      setPartKurangUnit(null)
+      toast({
+        title: `Tiket ${r.noTiket} terbit (REQUEST EMAIL)`,
+        description: `${r.tersimpan} part kurang tersimpan. Lanjut di Daftar Tiket Service → aksi: Kirim Email / Upload Lampiran. PDF Detail Unit otomatis berisi part tsb.`,
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menyimpan part kurang', description: e.message, variant: 'destructive' }),
+  })
   const updateUnit = useMutation({
     mutationFn: () => {
       // Tanggal input hanya dikirim bila benar-benar diubah (agar jam aslinya tidak terpotong)
@@ -501,7 +552,10 @@ export default function MasterDataView() {
           ) : list.map((u) => {
             const info = partInfoByUnit.get(u.id) ?? { count: 0, countAktif: 0, codes: [] as string[] }
             // Unit finish (punya tiket tapi tak ada yang aktif) → abu-abu + label FINISH
-            const finish = (u.serviceRequests ?? []).length > 0 && !(u.serviceRequests ?? []).some((t) => t.status === 'REQUEST' || t.status === 'PROSES')
+            // Tiket REQUEST EMAIL (kekurangan part → email produsen) ikut dihitung masih berproses
+            const finish =
+              (u.serviceRequests ?? []).length > 0 &&
+              !(u.serviceRequests ?? []).some((t) => t.status === 'REQUEST' || t.status === 'PROSES' || t.status === 'REQUEST_EMAIL')
             const aktifTiket = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST' || t.status === 'PROSES')
             return (
               <TableRow key={u.id} className={cn(finish && 'bg-slate-100/80 opacity-70', unitDipilih.has(u.id) && 'bg-red-50/50 opacity-100')}>
@@ -597,25 +651,25 @@ export default function MasterDataView() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuItem
-                          disabled={!!aktifTiket || finish}
-                          onSelect={() => openInputPart(u)}
-                        >
-                          <PackagePlus className="mr-2 h-3.5 w-3.5 text-teal-600" /> Input Kode &amp; Sparepart
+                        <DropdownMenuItem onSelect={() => openPartKurang(u)} data-testid="aksi-part-kurang">
+                          <PackageOpen className="mr-2 h-3.5 w-3.5 text-violet-600" /> Input Part Kurang
                         </DropdownMenuItem>
-                        {aktifTiket ? (
-                          <p className="px-2 pb-1.5 text-[10px] text-slate-400">Tiket aktif {aktifTiket.noTiket} — tambah part lewat panel Service.</p>
-                        ) : finish ? (
-                          <p className="px-2 pb-1.5 text-[10px] text-slate-400">Unit FINISH — tiket baru tidak bisa dibuat.</p>
-                        ) : (
-                          <p className="px-2 pb-1.5 text-[10px] text-slate-400">Kode + nama part tersimpan → tiket dibuat.</p>
-                        )}
+                        <p className="px-2 pb-1.5 text-[10px] text-slate-400">
+                          Simpan → kode service terbit (REQUEST EMAIL) · kirim email &amp; upload lampiran di Daftar Tiket Service.
+                        </p>
                         <DropdownMenuItem onSelect={() => unduhPdfDetail(u)} data-testid="aksi-pdf-detail">
                           <FileDown className="mr-2 h-3.5 w-3.5 text-violet-600" /> PDF Detail Unit
                         </DropdownMenuItem>
-                        <p className="border-t px-2 pb-1.5 pt-1.5 text-[10px] leading-snug text-slate-400">
-                          PDF berisi detail unit + daftar part yang kurang — lampirkan saat email ke produsen.
-                        </p>
+                        <DropdownMenuItem disabled={!!aktifTiket || finish} onSelect={() => openInputPart(u)}>
+                          <PackagePlus className="mr-2 h-3.5 w-3.5 text-teal-600" /> Input Kode &amp; Sparepart
+                        </DropdownMenuItem>
+                        {aktifTiket ? (
+                          <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">Tiket aktif {aktifTiket.noTiket} — tambah part lewat panel Service.</p>
+                        ) : finish ? (
+                          <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">Unit FINISH — tiket baru tidak bisa dibuat.</p>
+                        ) : (
+                          <p className="border-t border-dashed px-2 pb-1.5 pt-1.5 text-[10px] text-slate-400">Kode + nama part tersimpan → tiket dibuat.</p>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                     <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500 hover:text-emerald-700" onClick={() => openEditUnit(u)} aria-label={`Edit ${u.serialNumber}`} title="Edit unit">
@@ -1409,6 +1463,109 @@ export default function MasterDataView() {
               onClick={() => createTiketPart.mutate()}
             >
               <PackagePlus className="mr-1 h-4 w-4" /> Simpan &amp; Proses
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Input Part Kurang — data tersimpan (PENDING), kirim email ke produsen
+          menyusul di tahap berikutnya; data ini melengkapi PDF Detail Unit */}
+      <Dialog open={!!partKurangUnit} onOpenChange={(o) => !o && setPartKurangUnit(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Input Part Kurang</DialogTitle>
+            <DialogDescription>
+              {partKurangUnit && (
+                <span>
+                  {partKurangUnit.modelUnit} · <span className="font-mono">{partKurangUnit.serialNumber}</span> — simpan → <b>kode service otomatis terbit</b> (status REQUEST EMAIL di Daftar Tiket Service).
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label>Sparepart yang Kurang — kode &amp; nama wajib (boleh lebih satu part)</Label>
+              {formKurang.rows.map((row, i) => {
+                const kodeRow = row.kodePart.trim().toUpperCase()
+                const dup = kodeRow !== '' && kurangDup.has(kodeRow)
+                const setengah = (row.kodePart.trim() && !row.namaPart.trim()) || (!row.kodePart.trim() && row.namaPart.trim())
+                return (
+                  <div key={row.key} className="space-y-1.5 rounded-md border border-violet-200 bg-violet-50/50 p-2">
+                    <div className="flex items-center gap-1.5">
+                      <Input
+                        value={row.kodePart}
+                        onChange={(e) => updateKurangRow(row.key, { kodePart: e.target.value.toUpperCase() })}
+                        placeholder="PRT-XXX-00"
+                        className={`h-9 min-w-0 flex-1 font-mono ${dup ? 'border-red-400' : ''}`}
+                        aria-label={`Kode part kurang baris ${i + 1}`}
+                      />
+                      <Input
+                        type="number"
+                        min="1"
+                        value={row.qty}
+                        onChange={(e) => updateKurangRow(row.key, { qty: e.target.value })}
+                        className="h-9 w-14 shrink-0 text-center"
+                        aria-label={`Qty part kurang baris ${i + 1}`}
+                      />
+                      {formKurang.rows.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-8 shrink-0 text-slate-400 hover:text-red-600"
+                          onClick={() => setFormKurang((f) => ({ ...f, rows: f.rows.filter((x) => x.key !== row.key) }))}
+                          aria-label={`Hapus part kurang baris ${i + 1}`}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <Input
+                      value={row.namaPart}
+                      onChange={(e) => updateKurangRow(row.key, { namaPart: e.target.value })}
+                      placeholder="cth: Dinamo 16 inch"
+                      aria-label={`Nama part kurang baris ${i + 1}`}
+                    />
+                    {dup && (
+                      <p className="text-[11px] font-medium text-red-600">Kode {kodeRow} sudah terisi di baris lain — gabungkan jumlahnya jadi satu baris.</p>
+                    )}
+                    {setengah && <p className="text-[11px] font-medium text-red-600">Kode dan nama wajib diisi bersamaan.</p>}
+                  </div>
+                )
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full border-dashed"
+                onClick={() => setFormKurang((f) => ({ ...f, rows: [...f.rows, { key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }] }))}
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" /> Tambah Part
+              </Button>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Catatan (opsional)</Label>
+              <Input
+                value={formKurang.catatan}
+                onChange={(e) => setFormKurang({ ...formKurang, catatan: e.target.value })}
+                placeholder="cth: stok lokal kosong, mohon order ke pabrik"
+                aria-label="Catatan kekurangan part"
+              />
+            </div>
+            {(!kurangValid && !kurangDup.size && !kurangSetengah) && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Lengkapi kode + nama part dulu — tombol Simpan aktif setelah lengkap.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPartKurangUnit(null)}>Batal</Button>
+            <Button
+              className="bg-violet-600 hover:bg-violet-700"
+              disabled={!partKurangUnit || !kurangValid || simpanPartKurang.isPending}
+              onClick={() => simpanPartKurang.mutate()}
+            >
+              <PackageOpen className="mr-1 h-4 w-4" /> Simpan Part Kurang
             </Button>
           </DialogFooter>
         </DialogContent>

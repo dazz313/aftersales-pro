@@ -16,7 +16,7 @@ model Pengguna {
   email        String      @unique
   username     String?     @unique // login alternatif selain email
   kodeTeknisi  String?     @unique // kode teknisi/karyawan (mis. TKN-001), opsional & unik
-  passwordHash String?     // scrypt: scrypt$<salt>$<hash> (null = belum bisa login)
+  passwordHash String? // scrypt: scrypt$<salt>$<hash> (null = belum bisa login)
   role         String      @default("TEKNISI") // ADMIN_WORKSHOP | TEKNISI | MANAGER | PRODUSEN
   noWa         String?
   wilayahKerja String? // pemetaan wilayah kerja teknisi
@@ -29,16 +29,16 @@ model Pengguna {
 // 1. Master Store Table (master_toko)
 // ==========================================
 model MasterToko {
-  id               Int         @id @default(autoincrement())
-  kodeToko         String      @unique
+  id               Int               @id @default(autoincrement())
+  kodeToko         String            @unique
   namaToko         String
   alamat           String?
   kontak           String?
-  frekuensiVisit   Int         @default(14) // siklus kunjungan dalam hari
+  frekuensiVisit   Int               @default(14) // siklus kunjungan dalam hari
   tglVisitTerakhir DateTime?
-  barcodeToko      String      @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
+  barcodeToko      String            @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
   jarakKm          Float? // jarak toko dari workshop (km) — diisi manual; otomatis setelah maps terintegrasi
-  createdAt        DateTime    @default(now())
+  createdAt        DateTime          @default(now())
   // Koordinat posisi toko — diisi otomatis via Nominatim/OpenStreetMap (gratis,
   // tanpa API key) dari alamat saat peta pertama kali dibuka, atau diset manual
   // dengan klik di peta oleh Admin/Manager. Null = belum ditetapkan.
@@ -53,11 +53,11 @@ model MasterToko {
 // 2. Master Customer Table (master_customer)
 // ==========================================
 model MasterCustomer {
-  id         Int         @id @default(autoincrement())
+  id         Int               @id @default(autoincrement())
   nama       String
   noWa       String?
   alamat     String?
-  createdAt  DateTime    @default(now())
+  createdAt  DateTime          @default(now())
   unitAssets UnitAsset[]
   orders     PermintaanOrder[]
 }
@@ -66,28 +66,28 @@ model MasterCustomer {
 // 3. Master Sparepart Table (master_sparepart)
 // ==========================================
 model MasterSparepart {
-  id             Int                  @id @default(autoincrement())
-  kodePart       String               @unique
-  namaPart       String
+  id              Int                  @id @default(autoincrement())
+  kodePart        String               @unique
+  namaPart        String
   // 5 komponen utama sparepart:
   // 1. kodePart (kode sparepart) · 2. namaPart (nama sparepart)
   // 3. brandKompatibel (brand kompatibel, koma-dipisah mis. "Miyako, Rinnai")
   // 4. stokJual (bisa dijual) + stokGaransi (stok garansi/klaim) — stokInventory = total
   // 5. supplier (nama supplier)
-  brandKompatibel String              @default("")
-  supplier        String              @default("")
+  brandKompatibel String               @default("")
+  supplier        String               @default("")
   // Stok BRAND (fisik di gudang) — hanya bergerak saat stok masuk/keluar gudang.
-  stokJual       Int                  @default(0)
-  stokGaransi    Int                  @default(0)
-  stokInventory Int                  @default(0)
+  stokJual        Int                  @default(0)
+  stokGaransi     Int                  @default(0)
+  stokInventory   Int                  @default(0)
   // Pemakaian per unit — part ORDER khusus unit TIDAK menyentuh stok brand,
   // hanya dicatat di sini agar "banyaknya part terpakai" tetap terlihat.
-  totalTerpakai  Int                  @default(0)
-  reorderLimit   Int                  @default(5)
-  hargaKlaim     Float                @default(0) // nilai klaim per unit ke produsen
-  createdAt      DateTime             @default(now())
-  serviceParts   ServiceRequestPart[]
-  orders         PermintaanOrder[]
+  totalTerpakai   Int                  @default(0)
+  reorderLimit    Int                  @default(5)
+  hargaKlaim      Float                @default(0) // nilai klaim per unit ke produsen
+  createdAt       DateTime             @default(now())
+  serviceParts    ServiceRequestPart[]
+  orders          PermintaanOrder[]
 }
 
 // ==========================================
@@ -120,7 +120,7 @@ model Kunjungan {
   teknisiId        Int
   tglKunjungan     DateTime   @default(now())
   metodeCheckin    String     @default("MANUAL") // SCAN_BARCODE (scan barcode toko) | MANUAL
-  barcodeTerscan   String?    // nilai barcode toko yang dipindai
+  barcodeTerscan   String? // nilai barcode toko yang dipindai
   fotoOnsite       String?
   catatanStokRusak String?
   toko             MasterToko @relation(fields: [tokoId], references: [id])
@@ -161,7 +161,7 @@ model ServiceRequest {
   tglKlaim            DateTime?
   biayaJasa           Float                @default(0)
   tglFinish           DateTime?
-  tglTiket            DateTime            @default(now()) // tanggal kejadian/laporan — boleh backdated (data historis)
+  tglTiket            DateTime             @default(now()) // tanggal kejadian/laporan — boleh backdated (data historis)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   // Tanda koreksi (mis. salah input part baru ditemukan setelah FINISH) —
@@ -170,6 +170,10 @@ model ServiceRequest {
   editedBy            String?
   unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])
   parts               ServiceRequestPart[]
+  // Lampiran (PDF/foto) untuk tiket REQUEST EMAIL — dilampirkan saat kirim email ke produsen
+  lampiranEmail       String?
+  // Item kekurangan part (OrderEmailPart) yang menempuh alur email produsen
+  orderEmailParts     OrderEmailPart[]
 }
 
 // ==========================================
@@ -263,7 +267,7 @@ model BackupLog {
   trigger       String   @default("MANUAL")
   sheetsWritten Int      @default(0)
   rowsTotal     Int      @default(0)
-  tabel         String?  // daftar tabel yang dibackup
+  tabel         String? // daftar tabel yang dibackup
   message       String?
   createdAt     DateTime @default(now())
 }
@@ -350,25 +354,28 @@ model InboxItem {
 // Status: PENDING (menunggu email) → TERKIRIM (email terkirim ke produsen) → SELESAI (sudah ditangani).
 // ==========================================
 model OrderEmailPart {
-  id              Int        @id @default(autoincrement())
-  kodePart        String
-  namaPart        String
-  brand           String?
-  qty             Int        @default(1)
-  unitAssetId     Int?
-  serialNumber    String? // snapshot unit saat input
-  modelUnit       String?
-  tokoKode        String?
-  tokoNama        String?
-  catatan         String?
-  status          String     @default("PENDING") // PENDING | TERKIRIM | SELESAI
-  emailTujuan     String?
-  emailKirimAt    DateTime?
-  emailOleh       String?
-  emailMode       String? // SMTP | MANUAL
-  emailPesanGagal String?
-  diinputOleh     String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  unit            UnitAsset? @relation(fields: [unitAssetId], references: [id], onDelete: SetNull)
+  id               Int             @id @default(autoincrement())
+  kodePart         String
+  namaPart         String
+  brand            String?
+  qty              Int             @default(1)
+  unitAssetId      Int?
+  serialNumber     String? // snapshot unit saat input
+  modelUnit        String?
+  tokoKode         String?
+  tokoNama         String?
+  catatan          String?
+  status           String          @default("PENDING") // PENDING | TERKIRIM | SELESAI
+  emailTujuan      String?
+  emailKirimAt     DateTime?
+  emailOleh        String?
+  emailMode        String? // SMTP | MANUAL
+  emailPesanGagal  String?
+  diinputOleh      String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  unit             UnitAsset?      @relation(fields: [unitAssetId], references: [id], onDelete: SetNull)
+  // Tiket "REQUEST EMAIL" (kode service) yang terbit otomatis saat part kurang disimpan.
+  serviceRequestId Int?
+  service          ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
 }

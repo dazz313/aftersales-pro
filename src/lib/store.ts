@@ -23,7 +23,7 @@ export type RoleKey = 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN'
  * yang dikirim berulang tetap memicu efek di view tujuan.
  */
 export interface NavIntent {
-  serviceStatus?: 'REQUEST' | 'PROSES' | 'FINISH' | 'SEMUA'
+  serviceStatus?: 'REQUEST' | 'REQUEST_EMAIL' | 'PROSES' | 'FINISH' | 'SEMUA'
   serviceGaransi?: 'GARANSI' | 'NON_GARANSI'
   serviceModel?: string
   serviceToko?: string

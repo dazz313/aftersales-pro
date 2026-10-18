@@ -3,11 +3,10 @@ import { db } from '@/lib/db'
 import { getActiveSession } from '@/lib/auth-server'
 
 // GET /api/unit/[id]/pdf — PDF "DETAIL UNIT" untuk PERSIAPAN EMAIL order part yang
-// kurang ke produsen. Isi: kop perusahaan, detail unit + pemilik, tiket berjalan,
-// dan DAFTAR PART YANG KURANG yang diambil dari (a) part tiket berjalan berstatus
-// ORDER (part dari stok yang READY tidak dihitung) serta (b) item OrderEmailPart
-// aktif (PENDING/TERKIRIM) bila pernah dicatat. Tombol: Master Barcode/Unit →
-// kolom aksi → dropdown "Aksi" → "PDF Detail Unit".
+// kurang ke produsen. Isi: merk, model/tipe, nomor seri, status garansi (+ pemilik/
+// alamat/kontak) dan DAFTAR PART YANG KURANG yang diambil dari modul input
+// "Input Part Kurang" (item OrderEmailPart aktif: PENDING/TERKIRIM). Tombol:
+// Master Barcode/Unit Asset → kolom aksi → dropdown "Aksi" → "PDF Detail Unit".
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getActiveSession(request)
@@ -26,8 +25,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         toko: true,
         customer: true,
         serviceRequests: {
-          where: { status: { in: ['REQUEST', 'PROSES'] } },
-          include: { parts: { include: { sparepart: true } } },
+          where: { status: { in: ['REQUEST', 'REQUEST_EMAIL', 'PROSES'] } },
           orderBy: { createdAt: 'desc' },
         },
       },
@@ -35,26 +33,18 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!unit) return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
 
     type Baris = { kode: string; nama: string; qty: number; status: string; sumber: string }
-    const mentah: Baris[] = []
-    for (const t of unit.serviceRequests) {
-      for (const p of t.parts) {
-        if (p.statusPart === 'READY') continue // part yang sudah didapat tidak perlu diorder
-        mentah.push({
-          kode: p.sparepart?.kodePart ?? '-',
-          nama: p.sparepart?.namaPart ?? '-',
-          qty: p.qty,
-          status: p.statusPart,
-          sumber: t.noTiket,
-        })
-      }
-    }
+    // Part yang kurang diambil dari modul input "Input Part Kurang" (item aktif saja).
     const orderEmailAktif = await db.orderEmailPart.findMany({
       where: { unitAssetId: unitId, status: { in: ['PENDING', 'TERKIRIM'] } },
       orderBy: { createdAt: 'asc' },
     })
-    for (const o of orderEmailAktif) {
-      mentah.push({ kode: o.kodePart, nama: o.namaPart, qty: o.qty, status: o.status, sumber: 'Kekurangan (email)' })
-    }
+    const mentah: Baris[] = orderEmailAktif.map((o) => ({
+      kode: o.kodePart,
+      nama: o.namaPart,
+      qty: o.qty,
+      status: o.status,
+      sumber: o.catatan || '',
+    }))
     // Gabung kode sama → qty dijumlah (part bisa tercatat di tiket sekaligus daftar kekurangan)
     const baris: Baris[] = []
     for (const b of mentah) {
@@ -119,10 +109,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const alamat = unit.toko?.alamat || unit.customer?.alamat || '-'
     const kontak = unit.toko?.kontak || unit.customer?.noWa || '-'
     const infoPairs: [string, string][] = [
-      ['Nomor Seri', unit.serialNumber],
-      ['Model / Tipe', unit.modelUnit + (unit.nama ? ` — ${unit.nama}` : '')],
       ['Merk', unit.merk || '-'],
-      ['Status Garansi', unit.statusGaransi === 'STOK_TOKO' ? 'STOK TOKO' : unit.statusGaransi],
+      ['Model / Tipe', unit.modelUnit + (unit.nama ? ` — ${unit.nama}` : '')],
+      ['Nomor Seri', unit.serialNumber || '-'],
+      ['Status', unit.statusGaransi === 'STOK_TOKO' ? 'STOK TOKO' : unit.statusGaransi],
       ['Tgl Pembelian', unit.tglPembelian ? new Date(unit.tglPembelian).toLocaleDateString('id-ID') : '-'],
       ['Pemilik', pemilik],
       ['Alamat', alamat],
@@ -177,7 +167,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       doc.text('Nama Part', colX[2] + 1, y)
       doc.text('Qty', colX[3] + 1, y)
       doc.text('Status', colX[4] + 1, y)
-      doc.text('Sumber', colX[5] + 1, y)
+      doc.text('Catatan', colX[5] + 1, y)
       doc.setFont('helvetica', 'normal')
       y += 7
     }
@@ -185,9 +175,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (baris.length === 0) {
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(9.5)
-      doc.text('Belum ada part yang dicatat kurang / diorder ke produsen untuk unit ini.', mL, y)
+      doc.text('Belum ada part yang diinput kurang untuk unit ini.', mL, y)
       y += 5
-      doc.text('Input lewat: Master Barcode/Unit Asset → tombol "Aksi" → "Input Kode & Sparepart".', mL, y)
+      doc.text('Input lewat: Master Barcode/Unit Asset → tombol "Aksi" → "Input Part Kurang".', mL, y)
       y += 6
     } else {
       gambarHeader()

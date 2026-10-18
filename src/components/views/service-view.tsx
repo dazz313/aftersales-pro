@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,12 +23,13 @@ import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, Paperclip,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
   REQUEST: { label: 'REQUEST', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
+  REQUEST_EMAIL: { label: 'REQUEST EMAIL', cls: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
   PROSES: { label: 'PROSES', cls: 'bg-violet-100 text-violet-800 border-violet-300' },
   FINISH: { label: 'FINISH', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
 }
@@ -143,6 +144,54 @@ export default function ServiceView() {
     onError: (e: Error) => toast({ title: 'Aksi ditolak', description: e.message, variant: 'destructive' }),
   })
 
+  // ===== Tiket REQUEST EMAIL: kirim email order part ke produsen =====
+  // SMTP tersedia → kirim sungguhan (+ lampiran) & part jadi TERKIRIM;
+  // SMTP belum diset → draf mailto dibuka di aplikasi email (item tetap PENDING).
+  const kirimEmailTiket = useMutation({
+    mutationFn: (id: number) =>
+      postJson<{ ok: true; mode: 'SMTP' | 'MAILTO'; terkirim?: number; ke?: string; mailto?: string; noTiket: string; error?: string }>(
+        `/api/service/${id}`,
+        { aksi: 'KIRIM_EMAIL_PRODUSEN', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' },
+        'PATCH'
+      ),
+    onSuccess: (r) => {
+      invalidateAll()
+      if (r.mode === 'SMTP') {
+        toast({ title: `Email order terkirim (${r.terkirim} part)`, description: `Tiket ${r.noTiket} → ${r.ke}. Part di tiket ini ditandai TERKIRIM.` })
+      } else {
+        if (r.mailto) bukaLinkEksternal(r.mailto)
+        toast({
+          title: 'Draf email dibuka',
+          description: `Tiket ${r.noTiket} — SMTP belum dikonfigurasi; lampirkan PDF Detail Unit manual di aplikasi email, atau set SMTP di Pengaturan → Email Produsen.`,
+        })
+      }
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mengirim email', description: e.message, variant: 'destructive' }),
+  })
+
+  // ===== Tiket REQUEST EMAIL: upload lampiran (PDF/foto) =====
+  const [lampiranTarget, setLampiranTarget] = useState<ServiceTicket | null>(null)
+  const [lampiranFile, setLampiranFile] = useState<File | null>(null)
+  const uploadLampiran = useMutation({
+    mutationFn: (f: { id: number; file: File }) => {
+      const fd = new FormData()
+      fd.append('file', f.file)
+      fd.append('serviceRequestId', String(f.id))
+      return fetch('/api/order-email/lampiran', { method: 'POST', headers: authHeaders(), body: fd }).then(async (res) => {
+        const j = (await res.json().catch(() => ({}))) as { error?: string; lampiranEmail?: string }
+        if (!res.ok) throw new Error(j.error || `Gagal mengunggah lampiran (${res.status})`)
+        return j as { lampiranEmail: string }
+      })
+    },
+    onSuccess: (j) => {
+      invalidateAll()
+      setLampiranTarget(null)
+      setLampiranFile(null)
+      toast({ title: 'Lampiran terunggah', description: `${j.lampiranEmail} — dilampirkan otomatis saat "Kirim Email" berikutnya.` })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal mengunggah lampiran', description: e.message, variant: 'destructive' }),
+  })
+
   const filtered = useMemo(() => {
     if (!tickets) return []
     let list = tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
@@ -234,10 +283,10 @@ export default function ServiceView() {
   }
 
   const counts = useMemo(() => {
-    const c = { SEMUA: 0, REQUEST: 0, PROSES: 0, FINISH: 0 }
+    const c = { SEMUA: 0, REQUEST: 0, REQUEST_EMAIL: 0, PROSES: 0, FINISH: 0 }
     for (const t of tickets ?? []) {
       c.SEMUA++
-      c[t.status]++
+      if (t.status in c) c[t.status as keyof typeof c]++
     }
     return c
   }, [tickets])
@@ -428,6 +477,7 @@ export default function ServiceView() {
             <TabsList>
               <TabsTrigger value="SEMUA">Semua ({counts.SEMUA})</TabsTrigger>
               <TabsTrigger value="REQUEST">REQ ({counts.REQUEST})</TabsTrigger>
+              <TabsTrigger value="REQUEST_EMAIL">EMAIL ({counts.REQUEST_EMAIL})</TabsTrigger>
               <TabsTrigger value="PROSES">PROSES ({counts.PROSES})</TabsTrigger>
               <TabsTrigger value="FINISH">FINISH ({counts.FINISH})</TabsTrigger>
             </TabsList>
@@ -598,6 +648,11 @@ export default function ServiceView() {
                             <Badge variant="outline" className={st.cls}>{st.label}</Badge>
                             {t.slaFlag && <Badge variant="destructive" className="gap-0.5 text-[9px]"><AlertOctagon className="h-2.5 w-2.5" /> SLA</Badge>}
                             {t.status === 'FINISH' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
+                            {t.status === 'REQUEST_EMAIL' && t.lampiranEmail && (
+                              <Badge variant="outline" className="border-indigo-300 bg-indigo-50 text-[9px] text-indigo-700" title={`Lampiran: ${t.lampiranEmail}`}>
+                                <Paperclip className="mr-0.5 h-2.5 w-2.5" /> lampiran
+                              </Badge>
+                            )}
                             {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
                           </div>
                         </TableCell>
@@ -666,6 +721,28 @@ export default function ServiceView() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex flex-wrap items-center justify-end gap-1.5">
+                            {t.status === 'REQUEST_EMAIL' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700"
+                                  disabled={kirimEmailTiket.isPending}
+                                  onClick={() => kirimEmailTiket.mutate(t.id)}
+                                  title="Kirim email order part ke produsen (butuh SMTP di Pengaturan → Email Produsen)"
+                                >
+                                  <Send className="mr-1 h-3 w-3" /> Kirim Email
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-7 border-indigo-300 px-2 text-[11px] text-indigo-700"
+                                  onClick={() => { setLampiranTarget(t); setLampiranFile(null) }}
+                                  title="Upload lampiran (PDF detail unit / foto) — dilampirkan saat Kirim Email"
+                                >
+                                  <Paperclip className="mr-1 h-3 w-3" /> Upload Lampiran
+                                </Button>
+                              </>
+                            )}
                             {hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES') && (
                               <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-teal-700"
                                 onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'TERIMA_PART_PRODUSEN' } })}>
@@ -712,6 +789,45 @@ export default function ServiceView() {
           )}
         </CardContent>
       </Card>
+
+      {/* ===== Dialog Upload Lampiran (tiket REQUEST EMAIL) ===== */}
+      <Dialog open={!!lampiranTarget} onOpenChange={(o) => !o && setLampiranTarget(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Upload Lampiran</DialogTitle>
+            <DialogDescription>
+              {lampiranTarget && (
+                <span>
+                  Tiket <b className="font-mono">{lampiranTarget.noTiket}</b> — lampirkan <b>PDF Detail Unit</b> / foto. File otomatis dilampirkan saat tombol <b>Kirim Email</b>ditekan.
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {lampiranTarget?.lampiranEmail && (
+              <p className="rounded-md bg-indigo-50 p-2 text-[11px] text-indigo-800">Lampiran saat ini: <span className="font-mono">{lampiranTarget.lampiranEmail}</span> — unggah ulang untuk menimpa.</p>
+            )}
+            <input
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png,.webp"
+              onChange={(e) => setLampiranFile(e.target.files?.[0] ?? null)}
+              aria-label="Pilih file lampiran"
+              className="w-full cursor-pointer rounded-md border border-dashed border-slate-300 p-2 text-xs file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs"
+            />
+            {lampiranFile && <p className="text-[11px] text-slate-500">{lampiranFile.name} ({(lampiranFile.size / 1024).toFixed(0)} KB)</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLampiranTarget(null)}>Batal</Button>
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700"
+              disabled={!lampiranFile || !lampiranTarget || uploadLampiran.isPending}
+              onClick={() => { if (lampiranFile && lampiranTarget) uploadLampiran.mutate({ id: lampiranTarget.id, file: lampiranFile }) }}
+            >
+              <Paperclip className="mr-1 h-4 w-4" /> Unggah Lampiran
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ===== Dialog Detail Tiket ===== */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>

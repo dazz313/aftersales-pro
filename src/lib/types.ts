@@ -155,7 +155,7 @@ export interface ServiceTicket {
   id: number
   noTiket: string
   unitAssetId: number
-  status: 'REQUEST' | 'PROSES' | 'FINISH'
+  status: 'REQUEST' | 'REQUEST_EMAIL' | 'PROSES' | 'FINISH'
   noSttb: string | null
   sumberLaporan: SumberLaporan
   tipeCustomer: TipeCustomer
@@ -167,6 +167,8 @@ export interface ServiceTicket {
   deskripsiKerusakan: string | null
   fotoKerusakanWa: string | null
   fotoNotaStempel: string | null
+  // Lampiran tiket REQUEST EMAIL (PDF/foto) — dilampirkan saat Kirim Email
+  lampiranEmail?: string | null
   slaFlag: boolean
   statusKlaimProdusen: 'DRAFT' | 'SUBMITTED' | 'PAID'
   tglKlaim: string | null

@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
+import { join, basename } from 'node:path'
 import { db } from '@/lib/db'
 import { logAudit, generateNoSttb } from '@/lib/audit'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 import type { SessionPayload } from '@/lib/auth'
 import { catatBankKode } from '@/lib/bank-kode'
+import { konfigurasiEmail, kirimSmtp, susunEmailOrder } from '@/lib/order-email'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -96,6 +98,83 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
       return NextResponse.json(updated)
+    }
+
+    // ---- Aksi tiket REQUEST EMAIL: kirim email order part (Kekurangan Part) ke produsen ----
+    if (aksi === 'KIRIM_EMAIL_PRODUSEN') {
+      if (existing.status !== 'REQUEST_EMAIL') {
+        return NextResponse.json({ error: 'Hanya tiket berstatus REQUEST EMAIL yang bisa kirim email order part' }, { status: 409 })
+      }
+      const items = await db.orderEmailPart.findMany({
+        where: { serviceRequestId: ticketId, status: 'PENDING' },
+        orderBy: { createdAt: 'asc' },
+      })
+      if (items.length === 0) {
+        return NextResponse.json({ error: 'Tidak ada part menunggu email di tiket ini (semua sudah terkirim)' }, { status: 409 })
+      }
+      const it0 = items[0]
+      const { subjek, isi } = susunEmailOrder({
+        noTiket: existing.noTiket,
+        serialNumber: it0.serialNumber,
+        modelUnit: it0.modelUnit,
+        merk: existing.unitAsset?.merk ?? null,
+        tokoNama: it0.tokoNama,
+        catatan: it0.catatan,
+        lampiranNama: existing.lampiranEmail,
+        items: items.map((i) => ({ kodePart: i.kodePart, namaPart: i.namaPart, qty: i.qty })),
+      })
+      const cfg = await konfigurasiEmail()
+      const smtpLengkap = Boolean(cfg.ke && cfg.host && cfg.user && cfg.pass && cfg.dari)
+      if (smtpLengkap) {
+        const lampiran = existing.lampiranEmail
+          ? {
+              path: join(process.cwd(), 'upload', 'lampiran-email', basename(existing.lampiranEmail)),
+              filename: existing.lampiranEmail,
+            }
+          : undefined
+        try {
+          await kirimSmtp(cfg, subjek, isi, lampiran)
+        } catch (e) {
+          const pesan = e instanceof Error ? e.message : String(e)
+          await db.orderEmailPart.updateMany({
+            where: { serviceRequestId: ticketId, status: 'PENDING' },
+            data: { emailPesanGagal: pesan, emailMode: 'SMTP' },
+          })
+          return NextResponse.json({ error: `Kirim SMTP gagal: ${pesan}` }, { status: 502 })
+        }
+        await db.orderEmailPart.updateMany({
+          where: { serviceRequestId: ticketId, status: 'PENDING' },
+          data: {
+            status: 'TERKIRIM',
+            emailTujuan: cfg.ke,
+            emailKirimAt: new Date(),
+            emailOleh: aktor,
+            emailMode: 'SMTP',
+            emailPesanGagal: null,
+          },
+        })
+        await logAudit({
+          aksi: 'ORDER_EMAIL_TERKIRIM',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Email order part ${items.length} item dikirim ke ${cfg.ke} (tiket ${existing.noTiket})${lampiran ? ' + lampiran ' + existing.lampiranEmail : ''}`,
+          aktor,
+        })
+        await autoGitBackup('KIRIM_EMAIL_PRODUSEN', 'service_request', existing.noTiket, aktor)
+        return NextResponse.json({ ok: true, mode: 'SMTP', terkirim: items.length, ke: cfg.ke, noTiket: existing.noTiket })
+      }
+      // SMTP belum diset → draf mailto (isi lengkap; item tetap PENDING)
+      const mailto =
+        `mailto:${encodeURIComponent(cfg.ke || '')}` +
+        `?subject=${encodeURIComponent(subjek)}&body=${encodeURIComponent(isi)}`
+      await logAudit({
+        aksi: 'ORDER_EMAIL_DRAF',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Draf email order part ${items.length} item dibuka (SMTP belum diset) — tiket ${existing.noTiket}`,
+        aktor,
+      })
+      return NextResponse.json({ ok: true, mode: 'MAILTO', ke: cfg.ke || '', mailto, noTiket: existing.noTiket })
     }
 
     // ---- Alur service lapangan ----

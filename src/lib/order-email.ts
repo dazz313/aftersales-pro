@@ -33,8 +33,13 @@ export async function konfigurasiEmail(): Promise<KonfigurasiEmail> {
   }
 }
 
-/** Kirim email lewat SMTP yang dikonfigurasi (dipakai uji kirim & pengiriman manual). */
-export async function kirimSmtp(cfg: KonfigurasiEmail, subjek: string, isi: string): Promise<{ messageId?: string }> {
+/** Kirim email lewat SMTP yang dikonfigurasi (dipakai uji kirim & aksi Kirim Email tiket REQUEST EMAIL). */
+export async function kirimSmtp(
+  cfg: KonfigurasiEmail,
+  subjek: string,
+  isi: string,
+  lampiran?: { path: string; filename: string }
+): Promise<{ messageId?: string }> {
   if (!cfg.host || !cfg.user || !cfg.pass) {
     throw new Error('SMTP belum dikonfigurasi — isi SMTP Host, User & Password di Pengaturan → Email Produsen')
   }
@@ -51,6 +56,41 @@ export async function kirimSmtp(cfg: KonfigurasiEmail, subjek: string, isi: stri
     to: cfg.ke,
     subject: subjek,
     text: isi,
+    ...(lampiran ? { attachments: [{ path: lampiran.path, filename: lampiran.filename }] } : {}),
   })
   return { messageId: info?.messageId }
 }
+
+/** Susun subjek + isi email order part kurang untuk tiket REQUEST EMAIL (dipakai aksi Kirim Email). */
+export function susunEmailOrder(params: {
+  noTiket: string
+  serialNumber: string | null
+  modelUnit: string | null
+  merk: string | null
+  tokoNama: string | null
+  catatan: string | null
+  lampiranNama: string | null
+  items: { kodePart: string; namaPart: string; qty: number; status?: string }[]
+}): { subjek: string; isi: string } {
+  const { noTiket, serialNumber, modelUnit, merk, tokoNama, catatan, lampiranNama, items } = params
+  const subjek = `ORDER SPAREPART ${noTiket} — Kekurangan Part (${items.length} item)`
+  const baris = items.map((it, i) => `${i + 1}. ${it.kodePart} — ${it.namaPart} ×${it.qty}${it.status ? ` (${it.status})` : ''}`)
+  const isi = [
+    `Order kekurangan sparepart ${noTiket}.`,
+    '',
+    'DETAIL UNIT:',
+    `- Merk     : ${merk || '-'}`,
+    `- Model    : ${modelUnit || '-'}`,
+    `- No. Seri : ${serialNumber || '-'}`,
+    `- Toko     : ${tokoNama || '-'}`,
+    '',
+    'PART YANG KURANG:',
+    ...baris,
+    ...(catatan ? ['', `Catatan: ${catatan}`] : []),
+    ...(lampiranNama ? ['', `Lampiran terlampir: ${lampiranNama}`] : ['', 'Lampiran: PDF detail unit (dapat di-upload pada tiket).']),
+    '',
+    'Mohon konfirmasi harga & ketersediaan. Terima kasih.',
+  ].join('\n')
+  return { subjek, isi }
+}
+
