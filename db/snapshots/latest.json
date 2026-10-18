@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T10:55:33.582Z",
+  "generatedAt": "2026-10-18T11:08:01.176Z",
   "masterToko": [
     {
       "id": 216,
@@ -3412,6 +3412,18 @@
       "createdAt": "2026-07-30T00:00:00.000Z"
     },
     {
+      "id": 209,
+      "serialNumber": "AZ047009",
+      "modelUnit": "PS-135 E",
+      "merk": "Shimizu",
+      "nama": "",
+      "tokoId": 235,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-07-29T00:00:00.000Z"
+    },
+    {
       "id": 206,
       "serialNumber": "AZ107840",
       "modelUnit": "PS-135 E",
@@ -3448,16 +3460,16 @@
       "createdAt": "2026-09-21T16:00:00.000Z"
     },
     {
-      "id": 208,
-      "serialNumber": "TST-PERP-01",
-      "modelUnit": "Unit Uji Perbaiki",
+      "id": 210,
+      "serialNumber": "TST-IMPEL-01",
+      "modelUnit": "Unit Uji Impeller",
       "merk": "TST",
       "nama": "Unit Uji",
       "tokoId": null,
       "customerId": null,
-      "statusGaransi": "NON_GARANSI",
+      "statusGaransi": "GARANSI",
       "tglPembelian": null,
-      "createdAt": "2026-10-18T10:55:33.187Z"
+      "createdAt": "2026-10-18T11:08:01.107Z"
     },
     {
       "id": 168,
@@ -3896,30 +3908,30 @@
   ],
   "serviceRequest": [
     {
-      "id": 69,
-      "noTiket": "SV-20261018-0002",
-      "unitAssetId": 208,
+      "id": 70,
+      "noTiket": "SV-20260730-0002",
+      "unitAssetId": 209,
       "status": "REQUEST",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
-      "tipeCustomer": "PERORANGAN",
+      "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
       "penanganan": "BELUM",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "uji perbaiki tanpa sparepart — bersihkan mesin",
+      "deskripsiKerusakan": "STEL ULANG IMPELLER",
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
-      "biayaJasa": 25000,
+      "biayaJasa": 0,
       "tglFinish": null,
-      "tglTiket": "2026-10-18T10:55:33.529Z",
-      "createdAt": "2026-10-18T10:55:33.542Z",
-      "updatedAt": "2026-10-18T10:55:33.542Z",
+      "tglTiket": "2026-07-30T00:00:00.000Z",
+      "createdAt": "2026-10-18T11:01:32.727Z",
+      "updatedAt": "2026-10-18T11:01:32.727Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -6580,6 +6592,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 717,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "TST-IMPEL-01",
+      "deskripsi": "Unit baru teregistrasi: Unit Uji Impeller (GARANSI)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T11:08:01.125Z"
+    },
+    {
+      "id": 716,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260730-0002",
+      "deskripsi": "Tiket manual dibuat untuk unit AZ047009 (PS-135 E, stok toko → GARANSI otomatis)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T11:01:32.740Z"
+    },
+    {
+      "id": 715,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AZ047009",
+      "deskripsi": "Unit baru teregistrasi: PS-135 E (STOK_TOKO) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T11:00:33.707Z"
+    },
     {
       "id": 714,
       "aksi": "CREATE_SERVICE_REQUEST",
