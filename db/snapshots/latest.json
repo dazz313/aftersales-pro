@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T22:38:03.172Z",
+  "generatedAt": "2026-10-18T22:44:12.763Z",
   "masterToko": [
     {
       "id": 216,
@@ -2958,6 +2958,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-23T16:00:00.000Z"
+    },
+    {
+      "id": 213,
+      "serialNumber": "2602557019",
+      "modelUnit": "RI-522E",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-09-28T00:00:00.000Z"
     },
     {
       "id": 131,
@@ -7396,6 +7408,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 736,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2602557019",
+      "deskripsi": "Unit baru teregistrasi: RI-522E (GARANSI) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T22:44:12.743Z"
+    },
     {
       "id": 735,
       "aksi": "CREATE_SERVICE_REQUEST",
