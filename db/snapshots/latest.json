@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:49:54.979Z",
+  "generatedAt": "2026-10-18T04:50:30.872Z",
   "masterToko": [
     {
       "id": 216,
@@ -498,7 +498,7 @@
       "alamat": "Pasar Sentral Palakka",
       "kontak": "085244772686",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-12T04:50:00.000Z",
       "barcodeToko": "BC-TOK-036",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3426,6 +3426,16 @@
       "catatanStokRusak": null
     },
     {
+      "id": 66,
+      "tokoId": 251,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-12T04:50:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 39,
       "tokoId": 223,
       "teknisiId": 27,
@@ -5501,6 +5511,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 629,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "66",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Rejeki Baru (TOK-036) · tgl 12/10/2026, 12.50.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:50:30.849Z"
+    },
     {
       "id": 628,
       "aksi": "CREATE_KUNJUNGAN",
