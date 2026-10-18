@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T03:24:34.266Z",
+  "generatedAt": "2026-10-18T03:25:18.082Z",
   "masterToko": [
     {
       "id": 216,
@@ -2050,34 +2050,6 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
-      "id": 329,
-      "kodePart": "TST-A1",
-      "namaPart": "Reservoir Uji",
-      "brandKompatibel": "Miyako",
-      "supplier": "PRODUSEN",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-18T03:24:34.217Z"
-    },
-    {
-      "id": 330,
-      "kodePart": "TST-B2",
-      "namaPart": "Karet Uji",
-      "brandKompatibel": "Miyako",
-      "supplier": "PRODUSEN",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-18T03:24:34.220Z"
-    },
-    {
       "id": 326,
       "kodePart": "UP-LANJUT",
       "namaPart": "Part Lanjut Uji",
@@ -3525,59 +3497,6 @@
     }
   ],
   "serviceRequest": [
-    {
-      "id": 49,
-      "noTiket": "SV-20261018-0002",
-      "unitAssetId": 199,
-      "status": "REQUEST_EMAIL",
-      "noSttb": null,
-      "sumberLaporan": "MANUAL",
-      "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
-      "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "uji otomatis",
-      "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
-      "tandaTanganDigital": null,
-      "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
-      "biayaJasa": 0,
-      "tglFinish": null,
-      "tglTiket": "2026-10-18T03:24:34.222Z",
-      "createdAt": "2026-10-18T03:24:34.222Z",
-      "updatedAt": "2026-10-18T03:24:34.222Z",
-      "editedAt": null,
-      "editedBy": null,
-      "lampiranEmail": null,
-      "parts": [
-        {
-          "id": 63,
-          "serviceRequestId": 49,
-          "sparepartId": 329,
-          "qty": 2,
-          "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        },
-        {
-          "id": 64,
-          "serviceRequestId": 49,
-          "sparepartId": 330,
-          "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        }
-      ]
-    },
     {
       "id": 48,
       "noTiket": "SV-20261018-0001",
@@ -5482,6 +5401,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 603,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T03-25-18.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-18T03:25:18.059Z"
+    },
+    {
+      "id": 602,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0001",
+      "deskripsi": "Draf email order part 2 item dibuka (SMTP belum diset) — tiket SV-20261018-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T03:24:45.215Z"
+    },
+    {
+      "id": 601,
+      "aksi": "UPLOAD_LAMPIRAN",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0002",
+      "deskripsi": "Lampiran lampiran-SV-20261018-0002-detail-unit-uji-826967b3.pdf diunggah untuk tiket REQUEST EMAIL SV-20261018-0002 (0 KB)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T03:24:35.945Z"
+    },
+    {
+      "id": 600,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-20261018-0002",
+      "deskripsi": "Draf email order part 2 item dibuka (SMTP belum diset) — tiket SV-20261018-0002",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T03:24:35.661Z"
+    },
     {
       "id": 599,
       "aksi": "SUBMIT",
@@ -9003,6 +8958,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 14,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 315,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T03-25-18.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-18T03:25:18.042Z"
+    },
     {
       "id": 13,
       "status": "LOCAL",
