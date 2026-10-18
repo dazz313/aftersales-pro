@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T03:49:07.820Z",
+  "generatedAt": "2026-10-18T03:49:28.053Z",
   "masterToko": [
     {
       "id": 216,
@@ -2050,20 +2050,6 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
-      "id": 331,
-      "kodePart": "TST-A1",
-      "namaPart": "Reservoir Uji",
-      "brandKompatibel": "Miyako",
-      "supplier": "PRODUSEN",
-      "stokJual": 0,
-      "stokGaransi": 0,
-      "stokInventory": 0,
-      "totalTerpakai": 0,
-      "reorderLimit": 5,
-      "hargaKlaim": 0,
-      "createdAt": "2026-10-18T03:49:07.764Z"
-    },
-    {
       "id": 326,
       "kodePart": "UP-LANJUT",
       "namaPart": "Part Lanjut Uji",
@@ -3511,48 +3497,6 @@
     }
   ],
   "serviceRequest": [
-    {
-      "id": 50,
-      "noTiket": "SV-20261018-0002-U199",
-      "unitAssetId": 199,
-      "status": "REQUEST_EMAIL",
-      "noSttb": null,
-      "sumberLaporan": "MANUAL",
-      "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
-      "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "uji format nomor",
-      "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
-      "tandaTanganDigital": null,
-      "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
-      "biayaJasa": 0,
-      "tglFinish": null,
-      "tglTiket": "2026-10-18T03:49:07.766Z",
-      "createdAt": "2026-10-18T03:49:07.766Z",
-      "updatedAt": "2026-10-18T03:49:07.766Z",
-      "editedAt": null,
-      "editedBy": null,
-      "lampiranEmail": null,
-      "parts": [
-        {
-          "id": 65,
-          "serviceRequestId": 50,
-          "sparepartId": 331,
-          "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
-          "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
-        }
-      ]
-    },
     {
       "id": 48,
       "noTiket": "SV-20261018-0001-02100056000",
@@ -5457,6 +5401,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 609,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T03-49-27.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-18T03:49:28.024Z"
+    },
     {
       "id": 608,
       "aksi": "SUBMIT",
@@ -9059,6 +9012,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 15,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 315,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-18T03-49-27.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-18T03:49:27.783Z"
+    },
     {
       "id": 14,
       "status": "LOCAL",
