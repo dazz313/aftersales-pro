@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:46:57.158Z",
+  "generatedAt": "2026-10-18T04:47:27.618Z",
   "masterToko": [
     {
       "id": 216,
@@ -162,7 +162,7 @@
       "alamat": "Jl. Agus Salim No. 57",
       "kontak": "08114101819",
       "frekuensiVisit": 14,
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-09-25T04:47:00.000Z",
       "barcodeToko": "BC-TOK-012",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -3544,6 +3544,16 @@
       "barcodeTerscan": null,
       "fotoOnsite": null,
       "catatanStokRusak": null
+    },
+    {
+      "id": 61,
+      "tokoId": 227,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-09-25T04:47:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
     }
   ],
   "serviceRequest": [
@@ -5451,6 +5461,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 624,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "61",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Duta Logam (TOK-012) · tgl 25/9/2026, 12.47.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-18T04:47:27.599Z"
+    },
     {
       "id": 623,
       "aksi": "CREATE_KUNJUNGAN",
