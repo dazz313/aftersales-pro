@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T00:20:33.976Z",
+  "generatedAt": "2026-10-18T01:06:52.621Z",
   "masterToko": [
     {
       "id": 216,
@@ -5218,6 +5218,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 569,
+      "aksi": "CREATE_ORDER_EMAIL",
+      "entitas": "order_email_part",
+      "entitasId": "UP-UJI1,UP-UJI2",
+      "deskripsi": "Kekurangan sparepart unit . dicatat & mengantre email ke produsen (2 item)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T01:06:52.578Z"
+    },
     {
       "id": 568,
       "aksi": "UPDATE_UNIT_ASSET",
