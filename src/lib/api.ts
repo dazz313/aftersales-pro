@@ -183,6 +183,6 @@ export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewaySt
 export type {
   Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
   Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus, BankKode,
-  SJKandidat, SJBaris, SJPreview, SJRingkasan, SJRiwayat,
+  SJKandidat, SJBaris, SJPreview, SJRingkasan, SJRiwayat, SJCek, SJCekHasil, SJDraftDetail,
 } from '@/lib/types'
 

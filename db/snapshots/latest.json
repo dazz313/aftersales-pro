@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T09:48:48.160Z",
+  "generatedAt": "2026-10-18T09:50:17.319Z",
   "masterToko": [
     {
       "id": 216,
@@ -3863,7 +3863,7 @@
       "id": 67,
       "noTiket": "SV-EM-20261018-0002",
       "unitAssetId": 199,
-      "status": "REQUEST_EMAIL",
+      "status": "PROSES",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
@@ -3883,11 +3883,11 @@
       "tglFinish": null,
       "tglTiket": "2026-10-18T09:48:48.122Z",
       "createdAt": "2026-10-18T09:48:48.122Z",
-      "updatedAt": "2026-10-18T09:48:48.122Z",
+      "updatedAt": "2026-10-18T09:48:48.549Z",
       "editedAt": null,
       "editedBy": null,
-      "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
+      "noSuratJalanProdusen": "SJ-DUM-C",
+      "tglPartDatang": "2026-10-18T09:48:48.481Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -3895,8 +3895,8 @@
           "serviceRequestId": 67,
           "sparepartId": 346,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusPart": "READY",
+          "statusKonfirmasi": "READY",
           "sumberPart": "PRODUSEN",
           "editedAt": null,
           "editedBy": null
@@ -6359,29 +6359,6 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
-      "id": 21,
-      "kodePart": "TST-B4",
-      "namaPart": "Part Uji Lapis 2",
-      "brand": null,
-      "qty": 1,
-      "unitAssetId": 199,
-      "serialNumber": ".",
-      "modelUnit": "KG-502C",
-      "tokoKode": "TOK-022",
-      "tokoNama": "Toko Surya Indah",
-      "catatan": "uji lapis 2",
-      "status": "PENDING",
-      "emailTujuan": null,
-      "emailKirimAt": null,
-      "emailOleh": null,
-      "emailMode": null,
-      "emailPesanGagal": null,
-      "diinputOleh": "DAZZ",
-      "createdAt": "2026-10-18T09:48:48.124Z",
-      "updatedAt": "2026-10-18T09:48:48.124Z",
-      "serviceRequestId": 67
-    },
-    {
       "id": 14,
       "kodePart": "WDXX-PX317-WH-KGX",
       "namaPart": "RESERVOIR GRILL186 WHITE",
@@ -6535,6 +6512,60 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 709,
+      "aksi": "HAPUS",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-D",
+      "deskripsi": "Draft surat jalan dihapus (status DIPERIKSA)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.925Z"
+    },
+    {
+      "id": 708,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-D",
+      "deskripsi": "Cek berlapis: 0 blokir · 1 peringatan · 0 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.855Z"
+    },
+    {
+      "id": 707,
+      "aksi": "SURAT_JALAN_DRAFT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-D",
+      "deskripsi": "Draft surat jalan masuk disimpan: 1 baris · 0 cocok (belum diterapkan)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.672Z"
+    },
+    {
+      "id": 706,
+      "aksi": "SURAT_JALAN_TERAPKAN",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-C",
+      "deskripsi": "Surat jalan DITERAPKAN setelah cek akhir bersih: 1 item cocok · 0 tanpa tiket · 1 tiket naik PROSES",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.598Z"
+    },
+    {
+      "id": 705,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-C",
+      "deskripsi": "Cek berlapis: 0 blokir · 0 peringatan · 0 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.395Z"
+    },
+    {
+      "id": 704,
+      "aksi": "SURAT_JALAN_DRAFT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-C",
+      "deskripsi": "Draft surat jalan masuk disimpan: 1 baris · 1 cocok (belum diterapkan)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.242Z"
+    },
     {
       "id": 703,
       "aksi": "SUBMIT",

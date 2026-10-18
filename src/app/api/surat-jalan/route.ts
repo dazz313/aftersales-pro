@@ -3,12 +3,12 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
-import { ambilKandidat, cocokkan, terapkanCocok, type BarisSuratJalan, type HasilBaris } from '@/lib/surat-jalan'
+import { ambilKandidat, cocokkan, type BarisSuratJalan, type Kandidat } from '@/lib/surat-jalan'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// GET /api/surat-jalan — riwayat surat jalan masuk terakhir (8) + item-nya
+// GET /api/surat-jalan — riwayat surat jalan masuk (8 terakhir, termasuk DRAFT)
 export async function GET() {
   try {
     const list = await db.suratJalanMasuk.findMany({
@@ -37,6 +37,12 @@ export async function GET() {
         totalItem: s.totalItem,
         cocokCount: s.cocokCount,
         tanpaTiket: s.tanpaTiket,
+        status: s.status,
+        cekManual: s.cekManual,
+        diperiksaAt: s.diperiksaAt,
+        diperiksaOleh: s.diperiksaOleh,
+        diterapkanAt: s.diterapkanAt,
+        diterapkanOleh: s.diterapkanOleh,
         createdAt: s.createdAt,
         createdBy: s.createdBy,
         items: s.items.map((i) => ({
@@ -58,10 +64,9 @@ export async function GET() {
   }
 }
 
-// POST /api/surat-jalan — TERAPKAN surat jalan (commit) + efek otomatis:
-// part tiket → READY · item email SV-EM → DATANG · no/tgl surat jalan tercatat
-// · tiket yang part-nya lengkap otomatis naik ke PROSES. Per row client dapat
-// memilih key kandidat (pilihKey) utk baris yang di-preview tadi ambigu.
+// POST /api/surat-jalan — SIMPAN DRAFT (belum ada efek apa pun ke tiket/unit).
+// items: hasil parse Excel dari /match; pilihKey per baris = pilihan user
+// (baris ambigu). Status awal DRAFT → lalu /periksa → /terapkan.
 export async function POST(request: Request) {
   try {
     const { denied } = await requireActiveSession(request)
@@ -76,23 +81,18 @@ export async function POST(request: Request) {
     }
     const noSuratJalan = (body.noSuratJalan ?? '').trim()
     if (!noSuratJalan) return NextResponse.json({ error: 'Nomor surat jalan wajib diisi' }, { status: 400 })
+    const kembar = await db.suratJalanMasuk.findFirst({ where: { noSuratJalan, status: 'DITERAPKAN' }, select: { id: true } })
+    if (kembar) return NextResponse.json({ error: `Nomor surat jalan sudah dipakai (diterapkan)` }, { status: 409 })
     const rows = Array.isArray(body.rows) ? body.rows.filter((r) => r && typeof r.kodePart === 'string' && r.kodePart.trim()) : []
     if (!rows.length) return NextResponse.json({ error: 'Tidak ada baris part untuk diproses' }, { status: 400 })
     if (rows.length > 200) return NextResponse.json({ error: 'Maksimal 200 baris per surat jalan' }, { status: 400 })
     const aktor = body.aktor || 'SYSTEM'
     const tglSurat = body.tglSurat ? new Date(body.tglSurat) : null
-    const meta = {
-      noSuratJalan,
-      tglSurat: tglSurat && !Number.isNaN(tglSurat.getTime()) ? tglSurat : null,
-      produsen: (body.produsen ?? '').trim() || null,
-      namaFile: (body.namaFile ?? '').slice(0, 200) || undefined,
-      aktor,
-    }
 
-    // Cocokkan ulang sisi server (kebal keutamaan data); pilihKey client dihormati.
+    // Cocokkan sisi server (kebal klien); pilihKey preview dihormati bila valid.
     const kandidat = await ambilKandidat()
-    const kandidatByKey = new Map(kandidat.map((c) => [c.key, c]))
-    let hasil: HasilBaris[] = cocokkan(
+    const kandidatByKey = new Map<string, Kandidat>(kandidat.map((c) => [c.key, c]))
+    let hasil = cocokkan(
       rows.map((r) => ({ kodePart: r.kodePart, namaPart: r.namaPart, qty: r.qty, serialNumber: r.serialNumber })),
       kandidat
     )
@@ -101,33 +101,46 @@ export async function POST(request: Request) {
       if (pilih) {
         const cand = kandidatByKey.get(pilih)
         if (cand && NORM(cand.kodePart) === NORM(h.kodePart)) {
-          return { ...h, statusMatch: 'COCOK' as const, cocokKandidat: cand, keterangan: `Dipilih manual oleh ${aktor} — tiket ${cand.noTiket}` }
+          return { ...h, statusMatch: 'COCOK' as const, cocokKandidat: cand, keterangan: `Dipilih manual — tiket ${cand.noTiket}` }
         }
       }
       return h
     })
 
-    const terapis = await terapkanCocok(hasil, meta)
-    await logAudit({
-      aksi: 'SURAT_JALAN_MASUK',
-      entitas: 'surat_jalan_masuk',
-      entitasId: noSuratJalan,
-      deskripsi: `Surat jalan produsen diterapkan: ${terapis.cocokCount} item cocok · ${terapis.tanpaTiket} tanpa tiket · ${terapis.naikProses} tiket naik PROSES· file: ${meta.namaFile ?? 'manual'}`,
-      aktor,
+    const cocok = hasil.filter((h) => h.statusMatch === 'COCOK').length
+    const sj = await db.suratJalanMasuk.create({
+      data: {
+        noSuratJalan,
+        tglSurat: tglSurat && !Number.isNaN(tglSurat.getTime()) ? tglSurat : null,
+        produsen: (body.produsen ?? '').trim() || null,
+        namaFile: (body.namaFile ?? '').slice(0, 200) || undefined,
+        totalItem: hasil.length,
+        cocokCount: cocok,
+        tanpaTiket: hasil.length - cocok,
+        status: 'DRAFT',
+        createdBy: aktor,
+        items: {
+          create: hasil.map((h) => ({
+            kodePart: h.kodePart,
+            namaPart: h.namaPart ?? null,
+            qty: h.qty,
+            serialNumber: h.serialNumber ?? null,
+            statusMatch: h.statusMatch,
+            cocokTipe: h.cocokKandidat?.emailPartId ? 'TIKET_EMAIL' : h.cocokKandidat ? 'TIKET_PART' : h.serialNumber ? 'UNIT_TANPA_PART' : null,
+            cocokTiketId: h.cocokKandidat?.serviceRequestId ?? null,
+            cocokUnitId: h.cocokKandidat?.unitId ?? null,
+            cocokPartId: h.cocokKandidat?.partId ?? null,
+            alasan: h.keterangan,
+          })),
+        },
+      },
     })
-    await autoGitBackup('CREATE', 'surat_jalan_masuk', noSuratJalan, aktor)
-
-    return NextResponse.json({
-      ok: true,
-      noSuratJalan,
-      totalItem: terapis.totalItem,
-      cocokCount: terapis.cocokCount,
-      tanpaTiket: terapis.tanpaTiket,
-      naikProses: terapis.naikProses,
-    })
+    await logAudit({ aksi: 'SURAT_JALAN_DRAFT', entitas: 'surat_jalan_masuk', entitasId: noSuratJalan, deskripsi: `Draft surat jalan masuk disimpan: ${hasil.length} baris · ${cocok} cocok (belum diterapkan)`, aktor })
+    await autoGitBackup('CREATE', 'surat_jalan_masuk_draft', noSuratJalan, aktor)
+    return NextResponse.json({ ok: true, id: sj.id, status: 'DRAFT', totalItem: hasil.length, cocokCount: cocok, tanpaTiket: hasil.length - cocok })
   } catch (error) {
-    console.error('Surat jalan POST error:', error)
-    return NextResponse.json({ error: 'Gagal menerapkan surat jalan' }, { status: 500 })
+    console.error('Surat jalan DRAFT error:', error)
+    return NextResponse.json({ error: 'Gagal menyimpan draft surat jalan' }, { status: 500 })
   }
 }
 

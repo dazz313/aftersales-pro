@@ -85,6 +85,56 @@ export interface SJRingkasan {
   naikProses: number
 }
 
+/** Hasil cek berlapis satu aspek (OK / INFO / PERINGATAN / BLOKIR). */
+export interface SJCek {
+  tingkat: 'OK' | 'INFO' | 'PERINGATAN' | 'BLOKIR'
+  itemId?: number
+  kode?: string
+  pesan: string
+}
+
+/** Hasil POST /api/surat-jalan/[id]/periksa — cek otomatis + validasi silang. */
+export interface SJCekHasil {
+  items: SJCek[]
+  header: SJCek[]
+  blokir: number
+  peringatan: number
+  info: number
+  bisaTerapkan: boolean
+}
+
+/** Detail draft surat jalan (GET /api/surat-jalan/[id]). */
+export interface SJDraftDetail {
+  id: number
+  noSuratJalan: string
+  tglSurat: string | null
+  produsen: string | null
+  namaFile: string | null
+  createdAt: string
+  createdBy: string | null
+  status: string
+  cekManual: boolean
+  diperiksaAt: string | null
+  diperiksaOleh: string | null
+  diterapkanAt: string | null
+  diterapkanOleh: string | null
+  totalItem: number
+  cocokCount: number
+  tanpaTiket: number
+  items: {
+    id: number
+    kodePart: string
+    namaPart: string | null
+    qty: number
+    serialNumber: string | null
+    statusMatch: string
+    cocokTipe: string | null
+    tiket: { id: number; noTiket: string; status: string; serial: string; model: string } | null
+    alasan: string | null
+  }[]
+  kandidat: SJKandidat[]
+}
+
 /** Riwayat surat jalan masuk (GET /api/surat-jalan). */
 export interface SJRiwayat {
   id: number
@@ -95,6 +145,12 @@ export interface SJRiwayat {
   totalItem: number
   cocokCount: number
   tanpaTiket: number
+  status: string
+  cekManual: boolean
+  diperiksaAt: string | null
+  diperiksaOleh: string | null
+  diterapkanAt: string | null
+  diterapkanOleh: string | null
   createdAt: string
   createdBy: string | null
   items: { id: number; kodePart: string; namaPart: string | null; qty: number; serialNumber: string | null; statusMatch: string; tiket: string | null; unit: string | null; alasan: string | null }[]

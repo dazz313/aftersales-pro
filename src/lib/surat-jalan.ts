@@ -291,95 +291,218 @@ export function parseTabsheet(buffer: Buffer): HasilTabsheet {
   return { rows, noSuratJalan, tglSurat, produsen, terlewati }
 }
 
-// ===== Efek commit: part → READY dst =====
-export async function terapkanCocok(
-  hasil: HasilBaris[],
-  meta: { noSuratJalan: string; tglSurat: Date | null; produsen: string | null; namaFile?: string; aktor: string }
-): Promise<RingkasanSuratJalan> {
-  const cocok = hasil.filter((h) => h.statusMatch === 'COCOK' && h.cocokKandidat)
-  const tanpaTiket = hasil.length - cocok.length
-  const gridDate = meta.tglSurat ?? new Date()
+// ===== CEK BERLAPIS — validasi draft (TIDAK menulis efek apa pun) =====
+// Lapisan 1: header (duplikat nomor) · Lapisan 2: tiap baris (tiket aktif,
+// penerimaan ganda, status email, baris part tiket, SN unit, katalog).
+export interface MasalahCek {
+  tingkat: 'OK' | 'INFO' | 'PERINGATAN' | 'BLOKIR'
+  itemId?: number
+  kode?: string
+  pesan: string
+}
+export interface HasilCekDraft {
+  items: MasalahCek[]
+  header: MasalahCek[]
+  blokir: number
+  peringatan: number
+  info: number
+  bisaTerapkan: boolean
+}
 
-  // 1) Rekam header + item surat jalan
-  const sj = await db.suratJalanMasuk.create({
-    data: {
-      noSuratJalan: meta.noSuratJalan,
-      tglSurat: meta.tglSurat,
-      produsen: meta.produsen,
-      namaFile: meta.namaFile,
-      totalItem: hasil.length,
-      cocokCount: cocok.length,
-      tanpaTiket,
-      createdBy: meta.aktor,
-      items: {
-        create: hasil.map((h) => ({
-          kodePart: h.kodePart,
-          namaPart: h.namaPart ?? null,
-          qty: h.qty,
-          serialNumber: h.serialNumber ?? null,
-          statusMatch: h.statusMatch,
-          cocokTipe: h.cocokKandidat?.emailPartId ? 'TIKET_EMAIL' : h.cocokKandidat ? 'TIKET_PART' : h.serialNumber ? 'UNIT_TANPA_PART' : null,
-          cocokTiketId: h.cocokKandidat?.serviceRequestId ?? null,
-          cocokUnitId: h.cocokKandidat?.unitId ?? null,
-          cocokPartId: h.cocokKandidat?.partId ?? null,
-          alasan: h.keterangan,
-        })),
-      },
-    },
+export async function cekDraft(sjId: number): Promise<HasilCekDraft> {
+  const sj = await db.suratJalanMasuk.findUnique({ where: { id: sjId }, include: { items: { orderBy: { id: 'asc' } } } })
+  if (!sj) throw new Error('Draft surat jalan tidak ditemukan')
+  const header: MasalahCek[] = []
+  const hasilItem: MasalahCek[] = []
+
+  // --- Lapisan 1: duplikat nomor surat jalan
+  const kembar = await db.suratJalanMasuk.findMany({
+    where: { noSuratJalan: sj.noSuratJalan, id: { not: sj.id } },
+    select: { id: true, status: true },
+  })
+  const kembarTerapkan = kembar.filter((k) => k.status === 'DITERAPKAN')
+  if (kembarTerapkan.length > 0) header.push({ tingkat: 'BLOKIR', pesan: `Nomor surat jalan sudah dipakai surat jalan yang DITERAPKAN — ganti nomor` })
+  else if (kembar.length > 0) header.push({ tingkat: 'PERINGATAN', pesan: `Nomor surat jalan sama dipakai ${kembar.length} draft lain — rawan diterima dua kali` })
+
+  // --- Bahan cek per baris
+  const tiketIds = [...new Set(sj.items.filter((i) => i.cocokTiketId != null).map((i) => i.cocokTiketId as number))]
+  const tiketList = tiketIds.length
+    ? await db.serviceRequest.findMany({
+        where: { id: { in: tiketIds } },
+        include: {
+          parts: { include: { sparepart: { select: { id: true, kodePart: true } } } },
+          unitAsset: { select: { id: true, serialNumber: true, modelUnit: true } },
+        },
+      })
+    : []
+  const tiketMap = new Map(tiketList.map((t) => [t.id, t]))
+  const oepList = tiketIds.length ? await db.orderEmailPart.findMany({ where: { serviceRequestId: { in: tiketIds } } }) : []
+  const oepByTiket = new Map<number, typeof oepList>()
+  for (const o of oepList) {
+    if (o.serviceRequestId == null) continue
+    const arr = oepByTiket.get(o.serviceRequestId) ?? []
+    arr.push(o)
+    oepByTiket.set(o.serviceRequestId, arr)
+  }
+  const katalog = await db.masterSparepart.findMany({ select: { id: true, kodePart: true } })
+  const katalogSet = new Set(katalog.map((k) => NORM(k.kodePart)))
+  const unitList = await db.unitAsset.findMany({ select: { id: true, serialNumber: true } })
+  const unitMap = new Map(unitList.filter((u) => u.serialNumber).map((u) => [NORM(u.serialNumber as string), u.id]))
+  const sjsLain = await db.suratJalanMasuk.findMany({
+    where: { id: { not: sj.id }, status: { in: ['DRAFT', 'DIPERIKSA', 'DITERAPKAN'] } },
+    select: { noSuratJalan: true, status: true, items: { select: { cocokTiketId: true, kodePart: true } } },
   })
 
-  // 2) Efek per kandidat: part tiket → READY, item email → DATANG, tiket di-catat,
-  //    dan (bila part belum pernah diinput) baris part DIBUAT langsung di tiket.
+  // Petunjuk cek ulang aturan untuk baris TANPA tiket (kandidat baru bisa muncul kapan pun)
+  const fresh = cocokkan(
+    sj.items.map((i) => ({ kodePart: i.kodePart, namaPart: i.namaPart ?? undefined, qty: i.qty, serialNumber: i.serialNumber ?? undefined })),
+    await ambilKandidat()
+  )
+
+  let blokir = 0
+  let peringatan = 0
+  let info = 0
+  sj.items.forEach((it, idx) => {
+    const t = it.cocokTiketId != null ? tiketMap.get(it.cocokTiketId) : undefined
+    const dorong = (tingkat: MasalahCek['tingkat'], pesan: string) => {
+      hasilItem.push({ tingkat, itemId: it.id, kode: it.kodePart, pesan })
+      if (tingkat === 'BLOKIR') blokir++
+      else if (tingkat === 'PERINGATAN') peringatan++
+      else if (tingkat === 'INFO') info++
+    }
+    if (it.statusMatch === 'COCOK' && t) {
+      if (t.status === 'FINISH' || t.status === 'BATAL') { dorong('BLOKIR', `Tiket ${t.noTiket} sudah ${t.status} — lepas baris ini atau pilih tiket lain`); return }
+      // Penerimaan ganda via surat jalan lain
+      const dobelLain = sjsLain.filter((s) =>
+        s.items.some((li) => li.cocokTiketId === t.id && NORM(li.kodePart) === NORM(it.kodePart))
+      )
+      if (dobelLain.some((s) => s.status === 'DITERAPKAN')) { dorong('BLOKIR', `Part pernah diterima via surat jalan ${dobelLain.find((s) => s.status === 'DITERAPKAN')!.noSuratJalan} — lepaskan baris ini`); return }
+      const oep = (oepByTiket.get(t.id) ?? []).find((o) => NORM(o.kodePart) === NORM(it.kodePart))
+      if (oep && (oep.status === 'DATANG' || oep.status === 'SELESAI')) { dorong('BLOKIR', 'Item email sudah ditandai DATANG sebelumnya — indikasi diterima dua kali'); return }
+      if (dobelLain.length > 0) { dorong('PERINGATAN', `${dobelLain.length} draft lain juga mencatat part ini untuk tiket ${t.noTiket}`) }
+      const srp = t.parts.find((p) => NORM(p.sparepart.kodePart) === NORM(it.kodePart) && p.statusPart === 'ORDER_PRODUSEN')
+      if (srp?.statusKonfirmasi === 'READY') { dorong('PERINGATAN', `Part di ${t.noTiket} sudah READY (pernah dikonfirmasi) — diterapkan akan mengulang tandai`) }
+      else if (!srp) { dorong('PERINGATAN', `Baris part ${it.kodePart} tidak (lagi) ada dlm ORDER_PRODUSEN tiket ${t.noTiket} — bila kode ada di katalog, baris part baru dibuat otomatis`) }
+      if (it.serialNumber) {
+        const unitId = unitMap.get(NORM(it.serialNumber))
+        if (unitId == null) dorong('PERINGATAN', `SN ${it.serialNumber} tidak dikenal di unit asset`)
+        else if (t.unitAsset.id !== unitId) dorong('PERINGATAN', `SN ${it.serialNumber} milik unit lain — tiket ${t.noTiket} milik unit ${t.unitAsset.serialNumber || t.unitAsset.modelUnit}`)
+      }
+      if (!katalogSet.has(NORM(it.kodePart)) && !srp) { dorong('INFO', `Kode ${it.kodePart} tidak ada di katalog — baris part tiket tidak dapat dibuat otomatis`) }
+      dorong('OK', `Siap: ${srp ? 'part tiket di-update READY' : 'part dibuat baru'}${oep ? ' + item email DATANG' : ''} di ${t.noTiket}`)
+      return
+    }
+    if (it.statusMatch === 'COCOK') { dorong('PERINGATAN', 'Berlabel COCOK tanpa tiket tujuan — akan diterapkan tanpa efek tiket'); return }
+    // TANPA tiket: petunjuk cek ulang
+    if (it.serialNumber && !unitMap.has(NORM(it.serialNumber))) dorong('PERINGATAN', `SN ${it.serialNumber} tidak dikenal di unit asset`)
+    if (!katalogSet.has(NORM(it.kodePart))) dorong('INFO', `Kode ${it.kodePart} tidak ada di katalog (part tak dikenal)`)
+    const pernahTerima = sjsLain.filter((s) => s.status === 'DITERAPKAN' && s.items.some((li) => NORM(li.kodePart) === NORM(it.kodePart)))
+    if (pernahTerima.length > 0) {
+      dorong('PERINGATAN', `Kode ini pernah diterima lewat ${[...new Set(pernahTerima.map((s) => s.noSuratJalan))].join(', ')} — pastikan bukan dokumen ganda`)
+    }
+    const f = fresh[idx]
+    if (f && f.statusMatch === 'COCOK' && f.cocokKandidat) {
+      dorong('INFO', `Cek ulang menemukan kandidat baru: ${f.cocokKandidat.noTiket} (${f.cocokKandidat.serial || f.cocokKandidat.model}) — pilih lewat dropdown`)
+    } else if (hasilItem.every((m) => m.itemId !== it.id)) {
+      dorong('OK', 'Terpakai sebagai catatan menerima barang (tanpa efek tiket)')
+    }
+  })
+
+  return { items: hasilItem, header, blokir, peringatan, info, bisaTerapkan: blokir === 0 }
+}
+
+// ===== TERAPKAN PERMANEN — dipanggil HANYA setelah cek akhir bersih =====
+export interface RingkasanTerapkan {
+  noSuratJalan: string
+  totalItem: number
+  cocokCount: number
+  tanpaTiket: number
+  naikProses: number
+}
+
+export async function terapkanDariDb(sjId: number, aktor: string): Promise<RingkasanTerapkan> {
+  const sj = await db.suratJalanMasuk.findUnique({ where: { id: sjId }, include: { items: { orderBy: { id: 'asc' } } } })
+  if (!sj) throw new Error('Draft surat jalan tidak ditemukan')
+  if (sj.status === 'DITERAPKAN') throw new Error('Surat jalan sudah diterapkan — tidak dapat diulang')
+  // Pertahanan terakhir di server: cek ulang wajib bersih.
+  const cek = await cekDraft(sjId)
+  if (!cek.bisaTerapkan) throw new Error(`Cek akhir menemukan ${cek.blokir} masalah blokir — perbaiki dulu sebelum menerapkan`)
+
+  const gridDate = sj.tglSurat ?? new Date()
   const tiketKena = new Set<number>()
-  for (const h of cocok) {
-    const c = h.cocokKandidat!
-    tiketKena.add(c.serviceRequestId)
-    let partId = c.partId
-    if (c.unitPartId) {
+  let naikProses = 0
+
+  for (const it of sj.items.filter((i) => i.statusMatch === 'COCOK' && i.cocokTiketId != null)) {
+    const tiketId = it.cocokTiketId as number
+    tiketKena.add(tiketId)
+    await db.serviceRequest.update({
+      where: { id: tiketId },
+      data: { noSuratJalanProdusen: sj.noSuratJalan, tglPartDatang: gridDate },
+    })
+    const tiket = await db.serviceRequest.findUnique({
+      where: { id: tiketId },
+      include: { parts: { include: { sparepart: { select: { id: true, kodePart: true } } } } },
+    })
+    const srp = tiket?.parts.find((p) => NORM(p.sparepart.kodePart) === NORM(it.kodePart))
+    if (srp) {
       await db.serviceRequestPart.update({
-        where: { id: c.unitPartId },
+        where: { id: srp.id },
         data: { statusPart: 'READY', statusKonfirmasi: 'READY', sumberPart: 'PRODUSEN' },
       })
-    } else if (!partId) {
-      // Baris email belum pernah diinput manual → cari di katalog & buat baris part.
-      const ms = await db.masterSparepart.findFirst({ where: { kodePart: c.kodePart } })
-      if (ms) {
-        partId = ms.id
+      if (!it.cocokPartId) {
+        await db.suratJalanMasukItem.update({ where: { id: it.id }, data: { cocokPartId: srp.sparepart.id } })
+      }
+    } else {
+      // Part belum pernah diinput di tiket — buat otomatis bila ada di katalog.
+      const katalogPasukan = await db.masterSparepart.findMany({ select: { id: true, kodePart: true } })
+      const msNorm = katalogPasukan.find((m) => NORM(m.kodePart) === NORM(it.kodePart))
+      if (msNorm) {
         await db.serviceRequestPart.create({
           data: {
-            serviceRequestId: c.serviceRequestId,
-            sparepartId: ms.id,
-            qty: c.qty,
+            serviceRequestId: tiketId,
+            sparepartId: msNorm.id,
+            qty: it.qty,
             statusPart: 'READY',
             statusKonfirmasi: 'READY',
             sumberPart: 'PRODUSEN',
           },
         })
+        await db.suratJalanMasukItem.update({ where: { id: it.id }, data: { cocokPartId: msNorm.id } })
       }
     }
-    if (c.emailPartId) {
-      await db.orderEmailPart.update({ where: { id: c.emailPartId }, data: { status: 'DATANG' } })
+    const oep = (await db.orderEmailPart.findMany({ where: { serviceRequestId: tiketId } })).find(
+      (o) => NORM(o.kodePart) === NORM(it.kodePart)
+    )
+    if (oep && (oep.status === 'PENDING' || oep.status === 'TERKIRIM')) {
+      await db.orderEmailPart.update({ where: { id: oep.id }, data: { status: 'DATANG' } })
     }
-    await db.serviceRequest.update({
-      where: { id: c.serviceRequestId },
-      data: { noSuratJalanProdusen: meta.noSuratJalan, tglPartDatang: gridDate },
-    })
   }
 
-  // 3) Tiket yang part-nya lengkap READY otomatis naik ke PROSES (alur tanpa menekan "part datang")
-  let naikProses = 0
+  // Tiket yang part-nya seluruh READY naik ke PROSES
   for (const id of tiketKena) {
     const t = await db.serviceRequest.findFirst({
       where: { id, status: { in: ['REQUEST', 'REQUEST_EMAIL'] } },
-      select: { id: true, noTiket: true, parts: { select: { statusPart: true } } },
+      select: { id: true, parts: { select: { statusPart: true } } },
     })
     if (!t) continue
-    const parts = t.parts
-    if (parts.length > 0 && parts.every((p) => p.statusPart === 'READY')) {
+    if (t.parts.length > 0 && t.parts.every((p) => p.statusPart === 'READY')) {
       await db.serviceRequest.update({ where: { id: t.id }, data: { status: 'PROSES' } })
       naikProses++
     }
   }
 
-  return { noSuratJalan: meta.noSuratJalan, tglSurat: meta.tglSurat, produsen: meta.produsen, totalItem: hasil.length, cocokCount: cocok.length, tanpaTiket, naikProses }
+  const cocok = sj.items.filter((i) => i.statusMatch === 'COCOK').length
+  await db.suratJalanMasuk.update({
+    where: { id: sj.id },
+    data: {
+      status: 'DITERAPKAN',
+      diterapkanAt: new Date(),
+      diterapkanOleh: aktor,
+      cocokCount: cocok,
+      tanpaTiket: sj.items.length - cocok,
+      totalItem: sj.items.length,
+    },
+  })
+
+  return { noSuratJalan: sj.noSuratJalan, totalItem: sj.items.length, cocokCount: cocok, tanpaTiket: sj.items.length - cocok, naikProses }
 }
