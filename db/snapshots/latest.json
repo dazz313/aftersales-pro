@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T05:06:39.478Z",
+  "generatedAt": "2026-10-18T05:07:26.790Z",
   "masterToko": [
     {
       "id": 216,
@@ -617,7 +617,7 @@
       "kontak": "081343958385",
       "frekuensiVisit": 14,
       "aktif": true,
-      "modeSiklus": "REGULER",
+      "modeSiklus": "BY_REQUEST",
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-039",
       "jarakKm": null,
@@ -766,6 +766,22 @@
       "barcodeToko": "BC-TOK-048",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
+    },
+    {
+      "id": 264,
+      "kodeToko": "TOK-UJI",
+      "namaToko": "Toko Uji Indikator",
+      "alamat": null,
+      "kontak": null,
+      "frekuensiVisit": 1,
+      "aktif": true,
+      "modeSiklus": "REGULER",
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-UJI",
+      "jarakKm": null,
+      "createdAt": "2026-10-18T05:07:26.749Z",
       "latitude": null,
       "longitude": null
     }
@@ -5607,6 +5623,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 637,
+      "aksi": "CREATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-UJI",
+      "deskripsi": "Toko baru ditambahkan: Toko Uji Indikator — barcode kunjungan BC-TOK-UJI",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T05:07:26.768Z"
+    },
+    {
+      "id": 636,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-039",
+      "deskripsi": "Data toko diperbarui: modeSiklus",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-18T05:06:53.120Z"
+    },
     {
       "id": 635,
       "aksi": "UPDATE_MASTER_TOKO",
