@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T08:10:06.258Z",
+  "generatedAt": "2026-10-18T08:16:34.543Z",
   "masterToko": [
     {
       "id": 216,
@@ -1234,6 +1234,20 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 340,
+      "kodePart": "BT71-TF23-132-BX",
+      "namaPart": "BODY SET RH-127 SS",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T08:14:34.755Z"
     },
     {
       "id": 270,
@@ -3776,6 +3790,50 @@
   ],
   "serviceRequest": [
     {
+      "id": 61,
+      "noTiket": "SV-20260804-0007",
+      "unitAssetId": 151,
+      "status": "REQUEST",
+      "noSttb": "STTB-20260804-0007",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-18T08:14:34.826Z",
+      "updatedAt": "2026-10-18T08:14:34.826Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 76,
+          "serviceRequestId": 61,
+          "sparepartId": 340,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 59,
       "noTiket": "SV-20260804-0006",
       "unitAssetId": 159,
@@ -6009,6 +6067,55 @@
     }
   ],
   "permintaanOrder": [],
+  "orderEmailPart": [
+    {
+      "id": 14,
+      "kodePart": "WDXX-PX317-WH-KGX",
+      "namaPart": "RESERVOIR GRILL186 WHITE",
+      "brand": null,
+      "qty": 1,
+      "unitAssetId": 205,
+      "serialNumber": "02100056000",
+      "modelUnit": "WD-186 H",
+      "tokoKode": "TOK-008",
+      "tokoNama": "Toko Sentral Elektric",
+      "catatan": null,
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T03:00:03.561Z",
+      "updatedAt": "2026-10-18T03:22:38.031Z",
+      "serviceRequestId": 48
+    },
+    {
+      "id": 13,
+      "kodePart": "WDXX-PX318-WH-KGX",
+      "namaPart": "RESERVOIR GRILL186",
+      "brand": null,
+      "qty": 1,
+      "unitAssetId": 205,
+      "serialNumber": "02100056000",
+      "modelUnit": "WD-186 H",
+      "tokoKode": "TOK-008",
+      "tokoNama": "Toko Sentral Elektric",
+      "catatan": null,
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T03:00:03.561Z",
+      "updatedAt": "2026-10-18T03:22:37.996Z",
+      "serviceRequestId": 48
+    }
+  ],
+  "suratJalanMasuk": [],
   "pengguna": [
     {
       "id": 26,
@@ -6115,6 +6222,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 671,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20260804-0007",
+      "deskripsi": "Tiket manual dibuat untuk unit 2601008866 (RH-127 SS, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20260804-0007 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T08:14:34.842Z"
+    },
     {
       "id": 670,
       "aksi": "MULAI_PROSES_SERVICE",

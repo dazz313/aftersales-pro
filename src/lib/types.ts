@@ -33,6 +33,73 @@ export interface Customer {
   unitAssets: { id: number; modelUnit: string }[]
 }
 
+// ===== Surat Jalan Masuk dari Produsen (penerimaan part + pencocokan AI) =====
+/** Kandidat part yang diorder (SV-EM / ORDER_PRODUSEN) untuk pencocokan surat jalan. */
+export interface SJKandidat {
+  key: string // p{id} = baris part tiket · e{id} = item email SV-EM
+  serviceRequestId: number
+  noTiket: string
+  statusTiket: string
+  unitId: number
+  serial: string
+  model: string
+  tokoNama?: string
+  kodePart: string
+  namaPart: string
+  qty: number
+  sudahReady: boolean
+}
+
+/** Satu baris hasil pencocokan surat jalan (kebal dibacaubah di preview). */
+export interface SJBaris {
+  kodePart: string
+  namaPart?: string
+  qty: number
+  serialNumber?: string
+  statusMatch: 'COCOK' | 'TANPA_TIKET'
+  cocokKey?: string
+  cocokCand?: SJKandidat
+  opsi: SJKandidat[]
+  keterangan: string
+}
+
+/** Hasil /api/surat-jalan/match — preview sebelum disimpan. */
+export interface SJPreview {
+  noSuratJalan?: string
+  tglSurat: string | null
+  produsen: string | null
+  namaFile?: string
+  terlewati: number
+  dibantuAi: number
+  cocokCount: number
+  items: SJBaris[]
+}
+
+/** Ringkasan commit /api/surat-jalan. */
+export interface SJRingkasan {
+  ok: boolean
+  noSuratJalan: string
+  totalItem: number
+  cocokCount: number
+  tanpaTiket: number
+  naikProses: number
+}
+
+/** Riwayat surat jalan masuk (GET /api/surat-jalan). */
+export interface SJRiwayat {
+  id: number
+  noSuratJalan: string
+  tglSurat: string | null
+  produsen: string | null
+  namaFile: string | null
+  totalItem: number
+  cocokCount: number
+  tanpaTiket: number
+  createdAt: string
+  createdBy: string | null
+  items: { id: number; kodePart: string; namaPart: string | null; qty: number; serialNumber: string | null; statusMatch: string; tiket: string | null; unit: string | null; alasan: string | null }[]
+}
+
 export interface Sparepart {
   id: number
   kodePart: string

@@ -35,13 +35,14 @@ export interface BackupOutcome {
 // ---------- 1. Kumpulkan data ----------
 
 export async function collectBackupData(): Promise<SheetData[]> {
-  const [tokos, customers, spareparts, units, kunjungan, tikets] = await Promise.all([
+  const [tokos, customers, spareparts, units, kunjungan, tikets, suratJalanList] = await Promise.all([
     db.masterToko.findMany({ orderBy: { kodeToko: 'asc' } }),
     db.masterCustomer.findMany({ include: { unitAssets: { select: { modelUnit: true } } }, orderBy: { id: 'asc' } }),
     db.masterSparepart.findMany({ orderBy: { kodePart: 'asc' } }),
     db.unitAsset.findMany({ include: { toko: { select: { kodeToko: true, namaToko: true } }, customer: { select: { nama: true } } }, orderBy: { serialNumber: 'asc' } }),
     db.kunjungan.findMany({ include: { toko: { select: { kodeToko: true, namaToko: true } }, teknisi: { select: { nama: true } } }, orderBy: { tglKunjungan: 'desc' }, take: 1000 }),
     db.serviceRequest.findMany({ include: { unitAsset: { include: { toko: { select: { kodeToko: true, namaToko: true } } } }, parts: { include: { sparepart: { select: { kodePart: true, namaPart: true } } } } }, orderBy: { createdAt: 'desc' }, take: 1000 }),
+    db.suratJalanMasuk.findMany({ include: { items: true }, orderBy: { createdAt: 'desc' }, take: 500 }),
   ])
 
   const fmt = (d: Date | null | undefined) => (d ? new Date(d).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '')
@@ -98,6 +99,30 @@ export async function collectBackupData(): Promise<SheetData[]> {
           fmt(t.tglFinish),
           t.parts.map((p) => `${p.sparepart.kodePart} x${p.qty}`).join(', '),
         ]),
+      ],
+    },
+    {
+      nama: 'Surat Jalan Masuk',
+      rows: [
+        ['No. Surat Jalan', 'Tanggal Surat', 'Produsen', 'Baris Item', 'Kode Part', 'Nama Part', 'Qty', 'SN Unit', 'Hasil Match', 'Keterangan Match', 'Dibuat'],
+        ...suratJalanList.flatMap((s) => {
+          const kepala = `${s.noSuratJalan} — ${s.produsen ?? ''} (${s.cocokCount}/${s.totalItem} cocok)`
+          return s.items.length
+            ? s.items.map((i) => [
+                kepala,
+                fmt(s.tglSurat),
+                s.produsen ?? '',
+                s.totalItem,
+                i.kodePart,
+                i.namaPart ?? '',
+                i.qty,
+                i.serialNumber ?? '',
+                i.statusMatch,
+                i.alasan ?? '',
+                fmt(s.createdAt),
+              ])
+            : [[kepala, fmt(s.tglSurat), s.produsen ?? '', s.totalItem, '', '', '', '', '', '', fmt(s.createdAt)]]
+        }),
       ],
     },
   ]

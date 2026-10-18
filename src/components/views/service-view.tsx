@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer, type SJKandidat, type SJPreview, type SJRingkasan, type SJRiwayat } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -67,6 +67,13 @@ export default function ServiceView() {
   // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [sjOpen, setSjOpen] = useState(false)
+  // Surat jalan masuk (penerimaan part dari produsen — pencocokan AI)
+  const [sjMasukOpen, setSjMasukOpen] = useState(false)
+  const [sjFile, setSjFile] = useState<File | null>(null)
+  const [sjMeta, setSjMeta] = useState({ noSuratJalan: '', tglSurat: '', produsen: '' })
+  const [sjPreview, setSjPreview] = useState<SJPreview | null>(null)
+  const [sjPilih, setSjPilih] = useState<Record<number, string>>({}) // baris → key kandidat pilihan user
+  const [sjGunakanAi, setSjGunakanAi] = useState(true)
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
   const [tiketEdit, setTiketEdit] = useState(false)
   const [tiketDesc, setTiketDesc] = useState('')
@@ -129,7 +136,72 @@ export default function ServiceView() {
     queryClient.invalidateQueries({ queryKey: ['alerts'] })
     queryClient.invalidateQueries({ queryKey: ['audit'] })
     queryClient.invalidateQueries({ queryKey: ['claims'] })
+    queryClient.invalidateQueries({ queryKey: ['surat-jalan'] })
   }
+
+  // ===== Surat Jalan Masuk: uraikan Excel → cocokkan ke tiket SV-EM/part ready → terapkan =====
+  const sjMatchMutation = useMutation({
+    mutationFn: () => {
+      if (!sjFile) throw new Error('Pilih file Excel/CSV surat jalan dulu')
+      const fd = new FormData()
+      fd.append('file', sjFile)
+      fd.append('useAi', String(sjGunakanAi))
+      return fetch('/api/surat-jalan/match', { method: 'POST', headers: authHeaders(), body: fd }).then(async (res) => {
+        const j = (await res.json().catch(() => ({}))) as (SJPreview & { error?: string })
+        if (!res.ok) throw new Error(j.error || `Gagal menguraikan file (${res.status})`)
+        return j
+      })
+    },
+    onSuccess: (p) => {
+      setSjPreview(p)
+      setSjPilih({})
+      setSjMeta((m) => ({
+        noSuratJalan: p.noSuratJalan || m.noSuratJalan,
+        tglSurat: p.tglSurat ? new Date(p.tglSurat).toISOString().slice(0, 10) : m.tglSurat,
+        produsen: p.produsen || m.produsen,
+      }))
+      toast({
+        title: `Surat jalan teruraikan — ${p.cocokCount} dari ${p.items.length} baris otomatis cocok`,
+        description: p.dibantuAi > 0 ? `${p.dibantuAi} baris dicocokkan AI. Periksa preview lalu Terapkan — part langsung READY di tiket.` : 'Periksa preview lalu Terapkan — part langsung READY di tiket tanpa menekan part datang lagi.',
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menguraikan surat jalan', description: e.message, variant: 'destructive' }),
+  })
+  const sjApplyMutation = useMutation({
+    mutationFn: () =>
+      postJson<SJRingkasan>('/api/surat-jalan', {
+        noSuratJalan: sjMeta.noSuratJalan.trim() || new Date().toISOString().slice(0, 10).replace(/-/g, ''),
+        tglSurat: sjMeta.tglSurat || null,
+        produsen: sjMeta.produsen.trim() || null,
+        namaFile: sjPreview?.namaFile,
+        aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop',
+        rows: (sjPreview?.items ?? []).map((b, i) => ({
+          kodePart: b.kodePart,
+          namaPart: b.namaPart,
+          qty: b.qty,
+          serialNumber: b.serialNumber,
+          pilihKey: sjPilih[i] || b.cocokKey || '',
+        })),
+      }),
+    onSuccess: (r) => {
+      invalidateAll()
+      setSjMasukOpen(false)
+      setSjPreview(null)
+      setSjFile(null)
+      setSjPilih({})
+      toast({
+        title: `Surat jalan ${r.noSuratJalan} diterapkan`,
+        description: `${r.cocokCount} dari ${r.totalItem} baris cocok${r.tanpaTiket ? ` · ${r.tanpaTiket} tanpa tiket (tercatat, tanpa dikaitkan)` : ''}${r.naikProses ? ` · ${r.naikProses} tiket otomatis naik PROSES` : ''}.`,
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menerapkan surat jalan', description: e.message, variant: 'destructive' }),
+  })
+  // Riwayat surat jalan masuk (diambil hanya saat dialog terbuka)
+  const { data: sjRiwayat } = useQuery<SJRiwayat[]>({
+    queryKey: ['surat-jalan'],
+    queryFn: () => fetcher<SJRiwayat[]>('/api/surat-jalan'),
+    enabled: sjMasukOpen,
+  })
 
   const aksiMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
@@ -437,9 +509,18 @@ export default function ServiceView() {
           </Card>
         ))}
         <Card className="py-3 border-dashed">
-          <CardContent className="flex h-full items-center justify-center px-4">
+          <CardContent className="flex h-full flex-col items-center justify-center gap-1.5 px-4">
             <Button size="sm" onClick={() => setCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
               <Plus className="mr-1 h-4 w-4" /> Tiket Manual
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-indigo-300 text-[11px] text-indigo-700 hover:bg-indigo-50"
+              onClick={() => { setSjPreview(null); setSjFile(null); setSjPilih({}); setSjMasukOpen(true) }}
+              title="Masukkan surat jalan sparepart dari produsen — dicocokkan otomatis ke tiket SV-EM / part ready produsen & unit asset"
+            >
+              <Truck className="mr-1 h-3.5 w-3.5" /> Surat Jalan Masuk
             </Button>
           </CardContent>
         </Card>
@@ -751,6 +832,132 @@ export default function ServiceView() {
           )}
         </CardContent>
       </Card>
+
+      {/* ===== Dialog Surat Jalan Masuk (penerimaan part dari produsen + pencocokan AI) ===== */}
+      <Dialog
+        open={sjMasukOpen}
+        onOpenChange={(o) => {
+          setSjMasukOpen(o)
+          if (!o) { setSjPreview(null); setSjFile(null); setSjPilih({}) }
+        }}
+      >
+        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Surat Jalan Masuk — Penerimaan Part Produsen</DialogTitle>
+            <DialogDescription>
+              Unggah file <b>Excel/CSV hasil scan manual</b> (kolom: kode, nama, qty, sn). Setiap baris dicocokkan otomatis
+              ke tiket SV-EM / part ready produsen &amp; unit asset — <b>Terapkan</b> langsung menyebabkan part READY di
+              tiket, tanpa perlu menekan "part datang" lagi.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="space-y-1"><Label>No Surat Jalan</Label><Input value={sjMeta.noSuratJalan} onChange={(e) => setSjMeta({ ...sjMeta, noSuratJalan: e.target.value })} placeholder="mis. SJ-20261018-112" /></div>
+              <div className="space-y-1"><Label>Tanggal Surat</Label><Input type="date" value={sjMeta.tglSurat} onChange={(e) => setSjMeta({ ...sjMeta, tglSurat: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Produsen</Label><Input value={sjMeta.produsen} onChange={(e) => setSjMeta({ ...sjMeta, produsen: e.target.value })} placeholder="mis. SANY" /></div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={(e) => { setSjFile(e.target.files?.[0] ?? null); setSjPreview(null) }}
+                aria-label="File surat jalan Excel/CSV"
+                className="w-full cursor-pointer rounded-md border border-dashed border-slate-300 p-2 text-xs file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs sm:flex-1"
+              />
+              <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-600">
+                <Checkbox className="h-3.5 w-3.5" checked={sjGunakanAi} onCheckedChange={(c) => setSjGunakanAi(c === true)} aria-label="Gunakan AI untuk baris yang belum cocok" />
+                Bantuan AI untuk baris belum cocok
+              </label>
+              <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700" disabled={!sjFile || sjMatchMutation.isPending} onClick={() => sjMatchMutation.mutate()}>
+                {sjMatchMutation.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Truck className="mr-1 h-4 w-4" />} Uraikan &amp; Cocokkan
+              </Button>
+            </div>
+            {sjPreview && (
+              <div className="rounded-lg border">
+                <div className="border-b bg-slate-50 px-3 py-1.5 text-[11px] text-slate-600">
+                  {sjPreview.items.length} baris · <b className="text-emerald-700">{sjPreview.cocokCount} cocok</b>
+                  {sjPreview.items.length - sjPreview.cocokCount > 0 && <> · <b className="text-amber-700">{sjPreview.items.length - sjPreview.cocokCount} tanpa tiket (tetap tercatat)</b></>}
+                  {sjPreview.dibantuAi > 0 && <> · {sjPreview.dibantuAi} dibantu AI</>}
+                  {sjPreview.terlewati > 0 && <> · {sjPreview.terlewati} baris dilewati</>}
+                </div>
+                <div className="max-h-72 overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-[11px]">Kode</TableHead>
+                        <TableHead className="text-[11px]">Nama</TableHead>
+                        <TableHead className="text-[11px]">Qty</TableHead>
+                        <TableHead className="text-[11px]">SN Unit</TableHead>
+                        <TableHead className="text-[11px]">Hasil</TableHead>
+                        <TableHead className="text-[11px]">Tiket</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sjPreview.items.map((b, i) => {
+                        const kand: SJKandidat | undefined = [...(b.cocokCand ? [b.cocokCand] : []), ...b.opsi].find((k) => k.key === (sjPilih[i] || b.cocokKey))
+                        return (
+                          <TableRow key={i}>
+                            <TableCell className="font-mono text-[11px]">{b.kodePart}</TableCell>
+                            <TableCell className="max-w-40 truncate text-[11px]" title={b.namaPart}>{b.namaPart || '—'}</TableCell>
+                            <TableCell className="text-[11px]">{b.qty}</TableCell>
+                            <TableCell className="font-mono text-[11px]">{b.serialNumber || '—'}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={b.statusMatch === 'COCOK' ? 'border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700' : 'border-amber-300 bg-amber-50 text-[10px] text-amber-700'}>
+                                {b.statusMatch === 'COCOK' ? 'COCOK' : 'TANPA TIKET'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {kand && b.statusMatch === 'COCOK' ? (
+                                <p className="font-mono text-[10px] text-emerald-700" title={`${kand.model} · ${kand.serial}${kand.sudahReady ? ' · sudah READY' : ''}`}>{kand.noTiket}</p>
+                              ) : (
+                                <select
+                                  value={sjPilih[i] || ''}
+                                  onChange={(e) => setSjPilih({ ...sjPilih, [i]: e.target.value })}
+                                  className="w-44 cursor-pointer rounded border border-slate-200 px-1 py-0.5 text-[10px]"
+                                  aria-label={`Pilih tiket untuk baris ${b.kodePart}`}
+                                >
+                                  <option value="">— biarkan tanpa tiket —</option>
+                                  {b.opsi.map((o) => (
+                                    <option key={o.key} value={o.key}>{o.noTiket} · {o.serial || o.model} · {o.kodePart}</option>
+                                  ))}
+                                  {b.cocokCand && !b.opsi.some((o) => o.key === b.cocokCand!.key) && (
+                                    <option key={b.cocokCand.key} value={b.cocokCand.key}>{b.cocokCand.noTiket} · {b.cocokCand.serial || b.cocokCand.model} · {b.cocokCand.kodePart}</option>
+                                  )}
+                                </select>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+            {sjRiwayat && sjRiwayat.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold text-slate-600">Riwayat surat jalan masuk terakhir</p>
+                {sjRiwayat.slice(0, 4).map((r) => (
+                  <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-slate-200 px-2 py-1 text-[10px] text-slate-500">
+                    <span className="font-mono font-semibold text-slate-700">{r.noSuratJalan}{r.produsen ? ` · ${r.produsen}` : ''}</span>
+                    <span>{formatTanggal(r.createdAt)} · {r.cocokCount}/{r.totalItem} cocok{r.tanpaTiket ? ` · ${r.tanpaTiket} tanpa tiket` : ''}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSjMasukOpen(false)}>Batal</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!sjPreview || sjPreview.items.length === 0 || !sjMeta.noSuratJalan.trim() || sjApplyMutation.isPending}
+              onClick={() => sjApplyMutation.mutate()}
+            >
+              {sjApplyMutation.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-1 h-4 w-4" />} Terapkan Surat Jalan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ===== Dialog Detail Tiket ===== */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>

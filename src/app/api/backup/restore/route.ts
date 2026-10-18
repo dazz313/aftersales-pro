@@ -8,6 +8,9 @@ import { BACKUP_TABLES } from '@/app/api/backup/db/route'
 // Urutan hapus: anak dulu baru induk (aman walau FK tidak dienforce)
 const DELETE_ORDER = [
   'serviceRequestPart',
+  'orderEmailPart',
+  'suratJalanMasukItem',
+  'suratJalanMasuk',
   'permintaanOrder',
   'serviceRequest',
   'kunjungan',

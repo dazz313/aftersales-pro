@@ -174,6 +174,10 @@ model ServiceRequest {
   // ditampilkan sebagai badge kecil "(edited)" untuk kepentingan pemeriksaan.
   editedAt            DateTime?
   editedBy            String?
+  // Nomor surat jalan produsen & tanggal datangnya part — diisi otomatis
+  // oleh modul "Part Masuk (Surat Jalan Produsen)" saat barang cocok diterima.
+  noSuratJalanProdusen String?
+  tglPartDatang        DateTime?
   unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])
   parts               ServiceRequestPart[]
   // Lampiran (PDF/foto) untuk tiket REQUEST EMAIL — dilampirkan saat kirim email ke produsen
@@ -384,4 +388,46 @@ model OrderEmailPart {
   // Tiket "REQUEST EMAIL" (kode service) yang terbit otomatis saat part kurang disimpan.
   serviceRequestId Int?
   service          ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+}
+
+// ==========================================
+// 9x. Surat Jalan Masuk dari Produsen (surat_jalan_masuk)
+// Bukti pengiriman sparepart dari produsen — sumber data hasil scan manual
+// ke Excel. Tiap baris dicocokkan (aturan kode/nama/SN + bantuan AI) ke
+// tiket service & unit asset; saat diterapkan:
+//  - part di tiket → READY (statusKonfirmasi READY, sumberPart PRODUSEN)
+//  - item OrderEmailPart tiket SV-EM → DATANG
+//  - tiket dicatat no surat jalan produsen + tanggal datang, lalu PK status
+//    REQUEST/REQUEST_EMAIL yang part-nya lengkap otomatis naik ke PROSES
+// ==========================================
+model SuratJalanMasuk {
+  id            Int                   @id  @default(autoincrement())
+  noSuratJalan  String
+  tglSurat      DateTime?
+  produsen      String?
+  namaFile      String? // nama file Excel/CSV sumber
+  totalItem     Int                   @default(0)
+  cocokCount    Int                   @default(0)
+  tanpaTiket    Int                   @default(0)
+  catatan       String?
+  createdAt     DateTime              @default(now())
+  createdBy     String?
+  items         SuratJalanMasukItem[]
+}
+
+model SuratJalanMasukItem {
+  id                Int            @id @default(autoincrement())
+  suratJalanMasukId Int
+  kodePart          String
+  namaPart          String?
+  qty               Int            @default(1)
+  serialNumber      String? // SN unit yang tertulis di surat jalan (opsional)
+  // Hasil pencocokan (aturan + AI):
+  statusMatch       String         @default("TANPA_TIKET") // COCOK | TANPA_TIKET
+  cocokTipe         String? // TIKET_PART | UNIT_TANPA_PART
+  cocokTiketId      Int?
+  cocokUnitId       Int?
+  cocokPartId       Int? // MasterSparepart id bila kode terbaca di katalog
+  alasan            String? // penjelasan singkat cara mencocokkan
+  suratJalanMasuk   SuratJalanMasuk @relation(fields: [suratJalanMasukId], references: [id])
 }
