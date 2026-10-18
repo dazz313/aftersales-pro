@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T04:42:48.640Z",
+  "generatedAt": "2026-10-18T04:43:53.197Z",
   "masterToko": [
     {
       "id": 216,
@@ -5401,6 +5401,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 618,
+      "aksi": "INBOX_REJECT",
+      "entitas": "inbox_item",
+      "entitasId": "2",
+      "deskripsi": "Inbox #2 [KUNJUNGAN] ditolak: Ditolak admin",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T04:43:53.174Z"
+    },
     {
       "id": 617,
       "aksi": "CETAK_STTB_KOLEKTIF",
