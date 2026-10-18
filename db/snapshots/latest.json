@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T23:09:43.950Z",
+  "generatedAt": "2026-10-18T23:12:04.631Z",
   "masterToko": [
     {
       "id": 216,
@@ -3006,6 +3006,18 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
+      "id": 215,
+      "serialNumber": "2603170129",
+      "modelUnit": "TL-289RI",
+      "merk": "Rinnai",
+      "nama": "",
+      "tokoId": null,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-19T00:00:00.000Z"
     },
     {
       "id": 185,
@@ -7420,6 +7432,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 738,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2603170129",
+      "deskripsi": "Unit baru teregistrasi: TL-289RI (GARANSI) — input susulan (backdate)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T23:12:04.610Z"
+    },
     {
       "id": 737,
       "aksi": "CREATE_UNIT_ASSET",
