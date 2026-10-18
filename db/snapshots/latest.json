@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T22:36:06.041Z",
+  "generatedAt": "2026-10-18T22:38:03.172Z",
   "masterToko": [
     {
       "id": 216,
@@ -3978,6 +3978,50 @@
   ],
   "serviceRequest": [
     {
+      "id": 76,
+      "noTiket": "SV-20261002-0001",
+      "unitAssetId": 212,
+      "status": "REQUEST",
+      "noSttb": "STTB-20261002-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "PERORANGAN",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-02T00:00:00.000Z",
+      "createdAt": "2026-10-18T22:38:03.135Z",
+      "updatedAt": "2026-10-18T22:38:03.135Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 85,
+          "serviceRequestId": 76,
+          "sparepartId": 312,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 75,
       "noTiket": "SV-20260716-0001",
       "unitAssetId": 154,
@@ -7352,6 +7396,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 735,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261002-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 2603401242 (RI-522C, GARANSI) — ada part ORDER_PRODUSEN — STTB STTB-20261002-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-18T22:38:03.154Z"
+    },
     {
       "id": 734,
       "aksi": "CREATE_UNIT_ASSET",
