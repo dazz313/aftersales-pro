@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T23:12:41.923Z",
+  "generatedAt": "2026-10-18T23:25:59.970Z",
   "masterToko": [
     {
       "id": 216,
@@ -2291,10 +2291,10 @@
       "namaPart": "BACK COVER MOTOR HOUSING (B) WHITE CR",
       "brandKompatibel": "Miyako",
       "supplier": "PT BHAKTI IDOLA TAMA",
-      "stokJual": 2,
+      "stokJual": 1,
       "stokGaransi": 0,
-      "stokInventory": 2,
-      "totalTerpakai": 0,
+      "stokInventory": 1,
+      "totalTerpakai": 1,
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
@@ -2620,6 +2620,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T04:28:45.519Z"
+    },
+    {
+      "id": 350,
+      "kodePart": "ZZTEST-REORDER-UJI",
+      "namaPart": "Part Uji Reorder",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T23:25:59.878Z"
     }
   ],
   "unitAsset": [
@@ -4013,6 +4027,61 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 77,
+      "noTiket": "SV-20261019-0001",
+      "unitAssetId": 126,
+      "status": "PROSES",
+      "noSttb": "STTB-20261019-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "PERORANGAN",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "UJI E2E — 2 part rusak: 1 ready stok, 1 inden (akan diorder email)",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T23:25:59.853Z",
+      "createdAt": "2026-10-18T23:25:59.896Z",
+      "updatedAt": "2026-10-18T23:25:59.896Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 86,
+          "serviceRequestId": 77,
+          "sparepartId": 233,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "READY",
+          "sumberPart": "KATALOG",
+          "editedAt": null,
+          "editedBy": null
+        },
+        {
+          "id": 87,
+          "serviceRequestId": 77,
+          "sparepartId": 350,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 76,
       "noTiket": "SV-20261002-0001",
@@ -7432,6 +7501,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 741,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SV-20261019-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 03050072922 (KAS-1607, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-20261019-0001 terbit sejak request part — part READY → otomatis PROSES",
+      "aktor": "SYSTEM",
+      "createdAt": "2026-10-18T23:25:59.916Z"
+    },
+    {
+      "id": 740,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "budi@teknikjaya.co.id",
+      "deskripsi": "Percobaan login gagal untuk \"budi@teknikjaya.co.id\"",
+      "aktor": "budi@teknikjaya.co.id",
+      "createdAt": "2026-10-18T23:24:30.299Z"
+    },
     {
       "id": 739,
       "aksi": "UPDATE_UNIT_ASSET",
