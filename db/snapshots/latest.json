@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-18T09:47:36.652Z",
+  "generatedAt": "2026-10-18T09:48:48.160Z",
   "masterToko": [
     {
       "id": 216,
@@ -2300,6 +2300,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 346,
+      "kodePart": "TST-B4",
+      "namaPart": "Part Uji Lapis 2",
+      "brandKompatibel": "Miyako",
+      "supplier": "PRODUSEN",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-18T09:48:48.120Z"
+    },
+    {
       "id": 326,
       "kodePart": "UP-LANJUT",
       "namaPart": "Part Lanjut Uji",
@@ -3845,6 +3859,50 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 67,
+      "noTiket": "SV-EM-20261018-0002",
+      "unitAssetId": 199,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "uji lapis 2",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-18T09:48:48.122Z",
+      "createdAt": "2026-10-18T09:48:48.122Z",
+      "updatedAt": "2026-10-18T09:48:48.122Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 82,
+          "serviceRequestId": 67,
+          "sparepartId": 346,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 65,
       "noTiket": "SV-20260804-0010",
@@ -6301,6 +6359,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 21,
+      "kodePart": "TST-B4",
+      "namaPart": "Part Uji Lapis 2",
+      "brand": null,
+      "qty": 1,
+      "unitAssetId": 199,
+      "serialNumber": ".",
+      "modelUnit": "KG-502C",
+      "tokoKode": "TOK-022",
+      "tokoNama": "Toko Surya Indah",
+      "catatan": "uji lapis 2",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.124Z",
+      "updatedAt": "2026-10-18T09:48:48.124Z",
+      "serviceRequestId": 67
+    },
+    {
       "id": 14,
       "kodePart": "WDXX-PX317-WH-KGX",
       "namaPart": "RESERVOIR GRILL186 WHITE",
@@ -6347,57 +6428,7 @@
       "serviceRequestId": 48
     }
   ],
-  "suratJalanMasuk": [
-    {
-      "id": 1,
-      "noSuratJalan": "SJ-LAPIS-UJI",
-      "tglSurat": "2026-10-18T00:00:00.000Z",
-      "produsen": "SANY",
-      "namaFile": null,
-      "totalItem": 2,
-      "cocokCount": 1,
-      "tanpaTiket": 1,
-      "catatan": null,
-      "createdAt": "2026-10-18T09:47:36.590Z",
-      "createdBy": "DAZZ",
-      "status": "DRAFT",
-      "cekManual": false,
-      "diperiksaAt": null,
-      "diperiksaOleh": null,
-      "diterapkanAt": null,
-      "diterapkanOleh": null,
-      "items": [
-        {
-          "id": 2,
-          "suratJalanMasukId": 1,
-          "kodePart": "WDXX-PX318-WH-KGX",
-          "namaPart": "Reservoir",
-          "qty": 1,
-          "serialNumber": "02100056000",
-          "statusMatch": "COCOK",
-          "cocokTipe": "TIKET_EMAIL",
-          "cocokTiketId": 48,
-          "cocokUnitId": 205,
-          "cocokPartId": 327,
-          "alasan": "Cocok dengan tiket SV-EM-20261018-0001 (unit 02100056000)"
-        },
-        {
-          "id": 3,
-          "suratJalanMasukId": 1,
-          "kodePart": "TST-C7",
-          "namaPart": "Fake",
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        }
-      ]
-    }
-  ],
+  "suratJalanMasuk": [],
   "pengguna": [
     {
       "id": 26,
@@ -6504,6 +6535,132 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 703,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-EM-20261018-0002",
+      "deskripsi": "Input part kurang unit .: TST-B4 ×1 — tiket SV-EM-20261018-0002 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:48:48.139Z"
+    },
+    {
+      "id": 702,
+      "aksi": "SURAT_JALAN_TERAPKAN",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-B",
+      "deskripsi": "Surat jalan DITERAPKAN setelah cek akhir bersih: 0 item cocok · 1 tanpa tiket · 0 tiket naik PROSES",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:42.727Z"
+    },
+    {
+      "id": 701,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-B",
+      "deskripsi": "Cek berlapis: 0 blokir · 0 peringatan · 0 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:42.615Z"
+    },
+    {
+      "id": 700,
+      "aksi": "SURAT_JALAN_DRAFT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-B",
+      "deskripsi": "Draft surat jalan masuk disimpan: 1 baris · 0 cocok (belum diterapkan)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:42.546Z"
+    },
+    {
+      "id": 699,
+      "aksi": "SURAT_JALAN_TERAPKAN",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-A",
+      "deskripsi": "Surat jalan DITERAPKAN setelah cek akhir bersih: 1 item cocok · 0 tanpa tiket · 1 tiket naik PROSES (verifikasi manual selesai)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:42.377Z"
+    },
+    {
+      "id": 698,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-A",
+      "deskripsi": "Cek berlapis + verifikasi manual: 0 blokir · 0 peringatan · 0 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:42.249Z"
+    },
+    {
+      "id": 697,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-A",
+      "deskripsi": "Cek berlapis + verifikasi manual: 0 blokir · 0 peringatan · 0 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:41.059Z"
+    },
+    {
+      "id": 696,
+      "aksi": "SURAT_JALAN_DRAFT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-DUM-A",
+      "deskripsi": "Draft surat jalan masuk disimpan: 1 baris · 1 cocok (belum diterapkan)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:40.792Z"
+    },
+    {
+      "id": 695,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-EM-20261018-0002",
+      "deskripsi": "Input part kurang unit .: TST-B3 ×2 — tiket SV-EM-20261018-0002 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:40.714Z"
+    },
+    {
+      "id": 694,
+      "aksi": "HAPUS",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-LAPIS-UJI",
+      "deskripsi": "Draft surat jalan dihapus (status DIPERIKSA)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:40.361Z"
+    },
+    {
+      "id": 693,
+      "aksi": "EDIT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-LAPIS-UJI#item2",
+      "deskripsi": "Taut tiket ke baris surat jalan (p61)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:40.274Z"
+    },
+    {
+      "id": 692,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-LAPIS-UJI",
+      "deskripsi": "Cek berlapis: 0 blokir · 0 peringatan · 2 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:40.176Z"
+    },
+    {
+      "id": 691,
+      "aksi": "EDIT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-LAPIS-UJI#item2",
+      "deskripsi": "Lepas tautan tiket baris surat jalan",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:40.096Z"
+    },
+    {
+      "id": 690,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "SJ-LAPIS-UJI",
+      "deskripsi": "Cek berlapis: 0 blokir · 0 peringatan · 1 info",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-18T09:47:37.996Z"
+    },
     {
       "id": 689,
       "aksi": "SURAT_JALAN_DRAFT",
