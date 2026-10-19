@@ -60,6 +60,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     if (body.merk !== undefined) data.merk = String(body.merk ?? '').trim()
     if (body.nama !== undefined) data.nama = String(body.nama ?? '').trim()
+    // Diagnosa awal kerusakan (bahasa awam) — kosongkan dengan string kosong/null
+    if (body.kerusakanAwal !== undefined) data.kerusakanAwal = String(body.kerusakanAwal ?? '').trim() || null
     if (body.tokoId !== undefined) {
       const tokoId = body.tokoId ? Number(body.tokoId) : null
       if (tokoId && !(await db.masterToko.findUnique({ where: { id: tokoId } }))) {

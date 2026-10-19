@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
-import { umurTiketJam, isDataLama } from '@/lib/umur'
+import { umurTiketJam, isDataLama, formatUmur } from '@/lib/umur'
 
 /**
  * API System Alert Engine (Modul 5.2 + Section 7 PRD)
@@ -80,7 +80,7 @@ export async function GET() {
         nama: 'SLA Sparepart Pending',
         severity: 'critical',
         entitas: t.noTiket,
-        detail: `Tiket status REQUEST sudah ${jamBerlalu} jam (> ${SLA_JAM} jam SLA) tanpa konfirmasi ketersediaan part — reminder otomatis dikirim ke Produsen`,
+        detail: `Tiket status REQUEST sudah ${formatUmur(jamBerlalu)} (> ${SLA_JAM} jam SLA) tanpa konfirmasi ketersediaan part — reminder otomatis dikirim ke Produsen`,
         meta: { tiketId: t.id, noTiket: t.noTiket, jam: jamBerlalu },
       }
     })
@@ -135,7 +135,7 @@ export async function GET() {
           nama: 'Unit Belum Terproses',
           severity: kritis ? 'critical' : 'warning',
           entitas: t.noTiket,
-          detail: `Belum ada kode + nama part yang READY selama ${jamBerlalu >= 24 ? `${Math.floor(jamBerlalu / 24)} hari` : `${jamBerlalu} jam`} — input dari Master Data (tombol Part) atau detail tiket`,
+          detail: `Belum ada kode + nama part yang READY selama ${formatUmur(jamBerlalu)} — input dari Master Data (tombol Part) atau detail tiket`,
           meta: { tiketId: t.id, noTiket: t.noTiket, jam: jamBerlalu },
         }
       })

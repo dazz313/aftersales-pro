@@ -27,33 +27,34 @@ export async function logAudit(params: {
 }
 
 /**
- * Generator nomor tiket service: SV-YYYYMMDD-XXXX
- * Berbasis nomor TERBESAR hari itu (bukan count) agar nomor terhapus
+ * Generator nomor tiket service: SVC-YYMM-XXXX (disederhanakan dari SV-YYYYMMDD —
+ * SVC + tahun 2 digit + bulan 2 digit + nomor urut per bulan).
+ * Berbasis nomor TERBESAR bulan itu (bukan count) agar nomor terhapus
  * tidak dipakai ulang dan tidak bentrok.
- * `tgl` opsional — untuk tiket backdated (data historis), prefix tanggal
- * menyesuaikan tanggal kejadian, sekuens tetap per-hari dari nomor terbesar.
+ * `tgl` opsional — untuk tiket backdated (data historis), prefix tahun-bulan
+ * menyesuaikan tanggal kejadian, sekuens tetap per-bulan dari nomor terbesar.
  */
 export async function generateNoTiket(tgl?: Date): Promise<string> {
   const d = tgl && !Number.isNaN(tgl.getTime()) ? tgl : new Date()
-  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
+  const ym = `${String(d.getFullYear()).slice(-2)}${String(d.getMonth() + 1).padStart(2, '0')}`
   const last = await db.serviceRequest.findFirst({
-    where: { noTiket: { startsWith: `SV-${ymd}-` } },
+    where: { noTiket: { startsWith: `SVC-${ym}-` } },
     orderBy: { noTiket: 'desc' },
     select: { noTiket: true },
   })
   // Parse sekuens via regex — noTiket REQUEST EMAIL punya suffix kode unit
-  // (mis. SV-20261018-0003-02100056000), jadi 4 digit TERAKHIR tidak selalu seq.
-  const m = last?.noTiket.match(/^SV-\d{8}-(\d{4})/)
+  // (mis. SVC-2610-0003-02100056000), jadi 4 digit TERAKHIR tidak selalu seq.
+  const m = last?.noTiket.match(/^SVC-\d{4}-(\d{4})/)
   const seq = m ? parseInt(m[1], 10) + 1 : 1
-  return `SV-${ymd}-${String(Number.isFinite(seq) ? seq : 1).padStart(4, '0')}`
+  return `SVC-${ym}-${String(Number.isFinite(seq) ? seq : 1).padStart(4, '0')}`
 }
 
 /**
- * Generator nomor STTB: STTB-YYYYMMDD-XXXX
+ * Generator nomor STTB: STTB-YYMM-XXXX (mengikuti format tiket)
  */
 export function generateNoSttb(noTiket: string): string {
-  // SV-20261008-0001 -> STTB-20261008-0001
-  return noTiket.replace(/^SV-/, 'STTB-')
+  // SV-20261008-0001 (tiket lama) / SVC-2610-0001 (tiket baru) -> STTB-...
+  return noTiket.replace(/^(SV|SVC)-/, 'STTB-')
 }
 
 /**

@@ -92,6 +92,9 @@ export async function POST(request: Request) {
         modelUnit: model,
         merk: String(body.merk ?? '').trim(),
         nama: String(body.nama ?? '').trim(),
+        // Diagnosa awal (bahasa awam) — boleh kosong; terekam sejak registrasi
+        // tanpa menunggu kode part terbit (lihat komentar kolom di schema).
+        kerusakanAwal: String(body.kerusakanAwal ?? '').trim() || null,
         tokoId: tokoIdBaru,
         customerId: customerIdBaru,
         statusGaransi: body.statusGaransi === 'NON_GARANSI' ? 'NON_GARANSI' : body.statusGaransi === 'STOK_TOKO' ? 'STOK_TOKO' : 'GARANSI',
@@ -103,7 +106,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_UNIT_ASSET',
       entitas: 'unit_asset',
       entitasId: unit.serialNumber,
-      deskripsi: `Unit baru teregistrasi: ${unit.modelUnit} (${unit.statusGaransi})${susulan ? ' — input susulan (backdate)' : ''}`,
+      deskripsi: `Unit baru teregistrasi: ${unit.modelUnit} (${unit.statusGaransi})${susulan ? ' — input susulan (backdate)' : ''}${unit.kerusakanAwal ? ' — diagnosa awal kerusakan tercatat' : ''}`,
       aktor: body.aktor,
     })
     await autoGitBackup('CREATE', 'unit_asset', unit.serialNumber, body.aktor)

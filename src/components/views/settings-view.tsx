@@ -131,8 +131,8 @@ export default function SettingsView() {
   const [brandRows, setBrandRows] = useState<BrandRule[] | null>(null)
   const [brandBaru, setBrandBaru] = useState({ nama: '', garansiBulan: '12' })
   const [desktopInfo, setDesktopInfo] = useState<AsproDesktopInfo | null>(null)
-  // Section dropdown — default: profil & gateway terbuka, sisanya tertutup
-  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: true, merk: true, gateway: true, email: true, ai: false, backup: false, desktop: false, keamanan: false })
+  // Section dropdown — default: SEMUA TERTUTUP agar halaman ringkas; buka sesuai kebutuhan
+  const [secOpen, setSecOpen] = useState<Record<SecKey, boolean>>({ profil: false, merk: false, gateway: false, email: false, ai: false, backup: false, desktop: false, keamanan: false })
   const toggleSec = (k: SecKey) => setSecOpen((s) => ({ ...s, [k]: !s[k] }))
 
   // Deteksi mode desktop (Electron preload) untuk path MCP yang pasti

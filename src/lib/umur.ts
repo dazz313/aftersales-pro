@@ -37,6 +37,18 @@ export function umurTiketJam(
 }
 
 /**
+ * Teks umur yang mudah dibaca: "18 jam", "2 hari 5 jam", "7 hari".
+ * > 24 jam tampil dalam hari (+ sisa jam) agar tidak perlu menghitung ke bawah.
+ */
+export function formatUmur(jam?: number | null): string {
+  const h = Math.max(0, Math.floor(jam ?? 0))
+  if (h < 24) return `${h} jam`
+  const hari = Math.floor(h / 24)
+  const sisa = h % 24
+  return sisa > 0 ? `${hari} hari ${sisa} jam` : `${hari} hari`
+}
+
+/**
  * True bila tiket adalah data lama/backfill: selisih hari upload
  * (createdAt) vs tanggal kejadian (tglTiket) melebihi batas.
  */

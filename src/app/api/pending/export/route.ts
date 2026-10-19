@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
-import { umurTiketJam, isDataLama } from '@/lib/umur'
+import { umurTiketJam, isDataLama, formatUmur } from '@/lib/umur'
 import { requireActiveSession } from '@/lib/auth-server'
 import * as XLSX from 'xlsx'
 import QRCode from 'qrcode'
@@ -22,13 +22,6 @@ interface PendingRow {
   toko: string
   umur: string
   statusPart: string
-}
-
-function umurText(jam: number): string {
-  if (jam < 24) return `${jam} jam`
-  const hari = Math.floor(jam / 24)
-  const sisa = jam % 24
-  return sisa === 0 ? `${hari} hari` : `${hari} hari ${sisa} jam`
 }
 
 export async function GET(request: Request) {
@@ -64,7 +57,7 @@ export async function GET(request: Request) {
         model: t.unitAsset.modelUnit,
         merk: t.unitAsset.merk || '-',
         toko: t.unitAsset.toko ? `${t.unitAsset.toko.namaToko} (${t.unitAsset.toko.kodeToko})` : '-',
-        umur: umurText(jam),
+        umur: formatUmur(jam),
         statusPart: t.parts.length === 0 ? 'BELUM INPUT PART' : 'MENUNGGU READY',
       }
     })

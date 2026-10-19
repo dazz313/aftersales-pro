@@ -23,9 +23,11 @@ import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
-  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus,
+  PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus, ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { formatUmur } from '@/lib/umur'
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
   REQUEST: { label: 'REQUEST', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
@@ -616,8 +618,8 @@ export default function ServiceView() {
                     <TableHead>Status</TableHead>
                     <TableHead>Kode Sparepart</TableHead>
                     <TableHead>Nama Sparepart</TableHead>
-                    {(tab === 'REQUEST' || tab === 'PROSES') && <TableHead>Kerusakan</TableHead>}
                     <TableHead className="hidden sm:table-cell">Umur</TableHead>
+                    <TableHead className="max-w-44">Kerusakan</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -637,6 +639,13 @@ export default function ServiceView() {
                           p.statusPart === 'ORDER_PRODUSEN' &&
                           !emailAktifUntuk(t.orderEmailParts, p.sparepart?.kodePart)
                       ) || !t.orderEmailParts)
+                    // Email jadi tombol ikon; aksi lain dipadatkan ke dropdown agar kolom Aksi hemat ruang
+                    const emailAktif =
+                      t.status === 'REQUEST_EMAIL' || (hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES'))
+                    const adaAksiLain =
+                      t.status === 'REQUEST' ||
+                      t.status === 'PROSES' ||
+                      (t.status === 'FINISH' && (t.statusKlaimProdusen === 'DRAFT' || t.statusKlaimProdusen === 'SUBMITTED'))
                     return (
                       <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60', selectedIds.has(t.id) && 'bg-teal-50/60')}>
                         <TableCell className="pr-0">
@@ -678,7 +687,7 @@ export default function ServiceView() {
                               </Badge>
                             )}
                             {t.slaFlag && <Badge variant="destructive" className="gap-0.5 text-[9px]"><AlertOctagon className="h-2.5 w-2.5" /> SLA</Badge>}
-                            {t.status === 'FINISH' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
+                            {t.status === 'FINISH' && t.statusKlaimProdusen !== 'DRAFT' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
                             {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
                           </div>
                         </TableCell>
@@ -723,13 +732,6 @@ export default function ServiceView() {
                             </div>
                           )}
                         </TableCell>
-                        {(tab === 'REQUEST' || tab === 'PROSES') && (
-                          <TableCell className="max-w-48">
-                            <p className="truncate text-xs text-slate-700" title={t.deskripsiKerusakan ?? ''}>
-                              {t.deskripsiKerusakan?.trim() || <span className="text-slate-400">—</span>}
-                            </p>
-                          </TableCell>
-                        )}
                         <TableCell className="hidden sm:table-cell">
                           {t.isDataLama ? (
                             <>
@@ -740,72 +742,92 @@ export default function ServiceView() {
                             </>
                           ) : (
                             <>
-                              <p className="text-xs text-slate-500">{t.umurTiketJam ?? 0} jam</p>
+                              <p className="text-xs text-slate-500">{formatUmur(t.umurTiketJam)}</p>
                               <p className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
                             </>
                           )}
                         </TableCell>
+                        <TableCell className="max-w-44">
+                          {/* Diagnosa kerusakan unit — utamakan diagnosa awal (sama dgn Master Barcode), fallback deskripsi tiket */}
+                          {t.unitAsset.kerusakanAwal?.trim() ? (
+                            <p className="line-clamp-2 text-[11px] text-slate-700" title={`Diagnosa awal unit (bahasa awam): ${t.unitAsset.kerusakanAwal}`}>{t.unitAsset.kerusakanAwal}</p>
+                          ) : t.deskripsiKerusakan?.trim() ? (
+                            <p className="line-clamp-2 text-[11px] text-slate-500" title={`Deskripsi kerusakan tiket: ${t.deskripsiKerusakan}`}>{t.deskripsiKerusakan}</p>
+                          ) : (
+                            <span className="text-[11px] text-slate-400">–</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex flex-wrap items-center justify-end gap-1.5">
-                            {t.status === 'REQUEST_EMAIL' && (
-                              <Button
-                                size="sm"
-                                className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700"
-                                disabled={kirimEmailTiket.isPending}
-                                onClick={() => kirimEmailTiket.mutate(t.id)}
-                                title="Kirim email order part ke produsen (butuh SMTP di Pengaturan → Email Produsen)"
-                              >
-                                <Send className="mr-1 h-3 w-3" /> Kirim Email
-                              </Button>
-                            )}
-                            {hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES') && (
+                          <div className="flex items-center justify-end gap-1.5">
+                            {emailAktif && (
                               butuhOrderEmail ? (
-                                <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-violet-700"
+                                <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-violet-700"
                                   disabled={orderEmailTiket.isPending}
-                                  title="Reorder: daftarkan part inden (ORDER) ke order email lalu kirim ke produsen — part READY tidak ikut"
+                                  title="Email Order — reorder part inden (ORDER) ke produsen; part READY tidak ikut"
                                   onClick={() => orderEmailTiket.mutate(t.id)}>
-                                  <MailPlus className="mr-1 h-3 w-3" /> Email Order
+                                  <MailPlus className="h-3 w-3" />
+                                  <span className="sr-only">Email Order</span>
                                 </Button>
                               ) : (
-                                <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-violet-700"
+                                <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-violet-700"
                                   disabled={kirimEmailTiket.isPending}
-                                  title="Kirim email order part inden yang belum terkirim"
+                                  title={t.status === 'REQUEST_EMAIL'
+                                    ? 'Kirim email order part ke produsen (butuh SMTP di Pengaturan → Email Produsen)'
+                                    : 'Kirim email order part inden yang belum terkirim'}
                                   onClick={() => kirimEmailTiket.mutate(t.id)}>
-                                  <Send className="mr-1 h-3 w-3" /> Kirim Email
+                                  <Send className="h-3 w-3" />
+                                  <span className="sr-only">Kirim Email</span>
                                 </Button>
                               )
                             )}
-                            {hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES') && (
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-teal-700"
-                                onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'TERIMA_PART_PRODUSEN' } })}>
-                                <PackageCheck className="mr-1 h-3 w-3" /> Part Datang
-                              </Button>
-                            )}
-                            {t.status === 'REQUEST' && (
-                              <Button size="sm" className="h-7 bg-violet-600 px-2 text-[11px] hover:bg-violet-700 disabled:opacity-40"
-                                disabled={!t.parts.some((p) => p.statusPart === 'READY')}
-                                title={t.parts.some((p) => p.statusPart === 'READY') ? 'Tarik + terbitkan STTB' : 'Input kode + nama part dulu (panel Belum Terproses)'}
-                                onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'MULAI_PROSES' } })}>
-                                <PlayCircle className="mr-1 h-3 w-3" /> Proses + STTB
-                              </Button>
-                            )}
-                            {t.status === 'PROSES' && (
-                              <Button size="sm" className="h-7 bg-emerald-600 px-2 text-[11px] hover:bg-emerald-700"
-                                onClick={() => { setFinishTarget(t); setNotaFile(`nota-stempel-${t.noTiket}.jpg`) }}>
-                                <Camera className="mr-1 h-3 w-3" /> Selesaikan
-                              </Button>
-                            )}
-                            {t.status === 'FINISH' && t.statusKlaimProdusen === 'DRAFT' && (
-                              <Button size="sm" className="h-7 bg-amber-600 px-2 text-[11px] hover:bg-amber-700"
-                                onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'SUBMIT_CLAIM' } })}>
-                                <Send className="mr-1 h-3 w-3" /> Ajukan Klaim
-                              </Button>
-                            )}
-                            {t.status === 'FINISH' && t.statusKlaimProdusen === 'SUBMITTED' && (
-                              <Button size="sm" className="h-7 bg-emerald-700 px-2 text-[11px] hover:bg-emerald-800"
-                                onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'MARK_PAID' } })}>
-                                <DollarSign className="mr-1 h-3 w-3" /> Tandai Lunas
-                              </Button>
+                            {adaAksiLain && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" title="Aksi lainnya">
+                                    Aksi <ChevronDown className="ml-0.5 h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                  {t.status === 'REQUEST' && (
+                                    <DropdownMenuItem
+                                      className="gap-1.5 text-[11px] text-violet-700"
+                                      disabled={!t.parts.some((p) => p.statusPart === 'READY')}
+                                      title={t.parts.some((p) => p.statusPart === 'READY') ? 'Tarik + terbitkan STTB' : 'Input kode + nama part dulu (panel Belum Terproses)'}
+                                      onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'MULAI_PROSES' } })}>
+                                      <PlayCircle className="h-3 w-3" /> Proses + STTB
+                                    </DropdownMenuItem>
+                                  )}
+                                  {hasOrderPart && (t.status === 'REQUEST' || t.status === 'PROSES') && (
+                                    <DropdownMenuItem
+                                      className="gap-1.5 text-[11px] text-teal-700"
+                                      title="Part tunggungan dari produsen sudah datang — tandai READY"
+                                      onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'TERIMA_PART_PRODUSEN' } })}>
+                                      <PackageCheck className="h-3 w-3" /> Part Datang
+                                    </DropdownMenuItem>
+                                  )}
+                                  {t.status === 'PROSES' && (
+                                    <DropdownMenuItem
+                                      className="gap-1.5 text-[11px] text-emerald-700"
+                                      onClick={() => { setFinishTarget(t); setNotaFile(`nota-stempel-${t.noTiket}.jpg`) }}>
+                                      <Camera className="h-3 w-3" /> Selesaikan
+                                    </DropdownMenuItem>
+                                  )}
+                                  {t.status === 'FINISH' && t.statusKlaimProdusen === 'DRAFT' && (
+                                    <DropdownMenuItem
+                                      className="gap-1.5 text-[11px] text-amber-700"
+                                      onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'SUBMIT_CLAIM' } })}>
+                                      <Send className="h-3 w-3" /> Ajukan Klaim
+                                    </DropdownMenuItem>
+                                  )}
+                                  {t.status === 'FINISH' && t.statusKlaimProdusen === 'SUBMITTED' && (
+                                    <DropdownMenuItem
+                                      className="gap-1.5 text-[11px] text-emerald-700"
+                                      onClick={() => aksiMutation.mutate({ id: t.id, body: { aksi: 'MARK_PAID' } })}>
+                                      <DollarSign className="h-3 w-3" /> Tandai Lunas
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
                             <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={() => openDetail(t)}>
                               <Eye className="h-3 w-3" />
@@ -848,7 +870,8 @@ export default function ServiceView() {
                   {detail.slaFlag && <Badge variant="destructive">SLA TERLAMBAT</Badge>}
                 </DialogTitle>
                 <DialogDescription>
-                  Tgl kejadian {formatWaktu(detail.tglTiket)} · Diupload {formatWaktu(detail.createdAt)} · Klaim {detail.statusKlaimProdusen}
+                  Tgl kejadian {formatWaktu(detail.tglTiket)} · Diupload {formatWaktu(detail.createdAt)}
+                  {detail.statusKlaimProdusen !== 'DRAFT' && <> · Klaim {detail.statusKlaimProdusen}</>}
                   {detail.isDataLama && ' · DATA LAMA (umur nonaktif)'}
                 </DialogDescription>
               </DialogHeader>

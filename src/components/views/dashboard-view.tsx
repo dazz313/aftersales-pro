@@ -6,6 +6,7 @@ import { fetcher, postJson, authHeaders, formatRupiah, type DashboardData, type 
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore, type NavIntent, type ViewKey } from '@/lib/store'
 import { cn } from '@/lib/utils'
+import { formatUmur } from '@/lib/umur'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Badge } from '@/components/ui/badge'
@@ -78,7 +79,7 @@ export default function DashboardView() {
   const kirimGrup = useMutation({
     mutationFn: () => {
       const list = dash!.belumProses.items.slice(0, 10)
-      const baris = list.map((t, i) => `${i + 1}. ${t.noTiket} — ${t.model} (${t.toko}) — ${t.isDataLama ? 'DATA LAMA' : `pending ${(t.umurJam ?? 0) >= 24 ? `${Math.floor((t.umurJam ?? 0) / 24)} hari` : `${t.umurJam ?? 0} jam`}`} — ${t.adaPart ? 'menunggu READY' : 'belum input part'}`)
+      const baris = list.map((t, i) => `${i + 1}. ${t.noTiket} — ${t.model} (${t.toko}) — ${t.isDataLama ? 'DATA LAMA' : `pending ${formatUmur(t.umurJam)}`} — ${t.adaPart ? 'menunggu READY' : 'belum input part'}`)
       const pesan =
         `*UNIT PENDING* (${dash!.belumProses.count} unit >24 jam belum ada kode+nama part)\n` +
         baris.join('\n') +
@@ -417,7 +418,7 @@ export default function DashboardView() {
                         </Badge>
                       ) : (
                         <Badge variant="outline" className={cn('text-[9px]', (t.umurJam ?? 0) >= 72 ? 'border-rose-300 text-rose-700' : 'border-amber-300 text-amber-700')}>
-                          {(t.umurJam ?? 0) >= 24 ? `${Math.floor((t.umurJam ?? 0) / 24)} hari` : `${t.umurJam ?? 0} jam`}
+                          {formatUmur(t.umurJam)}
                         </Badge>
                       )}
                     </div>

@@ -1,6 +1,123 @@
 # Worklog
 
 ---
+Task ID: 21
+Agent: GLM (opencode)
+Task: Dropdown section di Pengaturan default semua tertutup
+
+Work Log:
+- Motif user: membuka halaman Pengaturan masih memunculkan beberapa dropdown terbuka (profil, merk, gateway, email) — diminta defaultnya tersebut terutup
+- settings-view.tsx secOpen: semua SecKey (profil/merk/gateway/email/ai/backup/desktop/keamanan) default false; chevron + aria-expanded ikut refleksi; klik header tetap membuka
+- tsc + eslint kosong, GET / 200
+
+Stage Summary:
+- Halaman Pengaturan kini desibel bersih — semua dropdown ada di papan ringkas, konten terbuka hanya saat headernya diklik
+- File berubah: src/components/views/settings-view.tsx
+
+---
+Task ID: 20
+Agent: GLM (opencode)
+Task: Migrasi seluruh tiket lama SV-YYYYMMDD → SVC-YYMM (keputusan user: konversi semua)
+
+Work Log:
+- Motif user setelah penjelasan (tiket baru saja yg SVC): memilih konversi tiket lama juga — "GANTI DENGAN FORMAT YG LEBIH SIMPLE SVC-2610-NO SERI TAHUN-BLN-NO SERI"
+- Analisis tabel yang menyimpan nomor tiket: ServiceRequest.noTiket(+noSttb), AuditLog.entitasId, InboxItem.hasilRef; WhatsAppLog.meta & teks email historis dibiarkan (chat log)
+- Backup konsisten via PRAGMA VACUUM INTO → db/backup-sebelum-SVC-20261019.db
+- Migrasi 1 transaksi: 60 tiket SV-YYYYMMDD-XXXX (SV-EM 1 tiket dilewati — itu nomor order) → SVC-YYMM dari tglTiket, urutan per bulan (tanggal kejadian + seq lama); noSttb dipetakan STTB-YYMM; audit entitasId & inbox hasilRef ditulis ulang; 1 audit MIGRASI_NOMOR; pemetaan lama→baru disimpan db/pemetaan-nomor-2026-10-19.json
+- Kontrol pasca: 60 SVC / 0 sisa SV-legacy; API service tampil SVC-2610-0043 dst dgn STTB mengikuti; GET / 200; eslint bersih; generator sambung otomatis dari nomor tertinggi bulan (tiket baru 2026-10 → 0044 dst)
+
+Stage Summary:
+- SEMUA tiket kini format SVC-YYMM-XXXX seragam; riwayat disimpan (backup file DB + json pemetaan) — catat: nomor di STTB kertas/email lama mungkin tak cocok dengan nomor baru
+- Skrip migrasi dihapus setelah selesai
+
+---
+Task ID: 19
+Agent: GLM (opencode)
+Task: Umur tiket > 24 jam tampil dalam hari agar mudah dimengerti
+
+Work Log:
+- Motif user: kolom Umur selama ini selalu "X jam" (mis. 75 jam) — kurang intuitif; lewat 24 jam yth tampilkan hari
+- src/lib/umur.ts + function formatUmur(jam): <24 → "18 jam"; >=24 → "2 hari 5 jam"; tanpa sisa → "2 hari"
+- service-view.tsx kolom Umur: formatUmur(t.umurTiketJam) menggantikan `${jam} jam`
+- dashboard-view.tsx: 2 ekspresi inline (pesan WA pengingat & badge umur) diganti formatUmur — konsisten dgn sisa jam
+- api/alerts route: teks alert ALT-02 ("sudah X jam") & ALT-05 (ternary hari) diganti formatUmur; meta.jam tetap numerik untuk penghitungan
+- api/pending/export: hapus helper lokal umurText, pakai formatUmur (laporan PDF/XLSX ikut terbaca)
+- Verifikasi: tsc + eslint kosong (5 file), GET / 200; fungsi murni tanpa risiko data
+
+Stage Summary:
+- Semua tampilan umur konsisten: jam di bawah 24, di atasnya hari + sisa jam — satu sumber di lib/umur.ts
+- File berubah: src/lib/umur.ts, src/components/views/service-view.tsx, src/components/views/dashboard-view.tsx, src/app/api/alerts/route.ts, src/app/api/pending/export/route.ts
+
+---
+Task ID: 18
+Agent: GLM (opencode)
+Task: Sembunyikan badge klaim DRAFT (keputusan user: "Ajukan Klaim" sudah cukup jelas, DRAFT dihilangkan saja)
+
+Work Log:
+- Pilihan user lewat pertanyaan: "TULISAN AJUKAN KLAIM ITU SUDAH JELAS BLM TERCLAIM JADI RANCU, DRAFT DIHILANGKAN SAJA"
+- service-view.tsx: badge klaim di sel Status tiket FINISH hanya muncul bila statusKlaimProdusen SUBMITTED/PAID (DRAFT disembunyikan); meta bar detail " · Klaim {status}" juga disembunyikan saat DRAFT
+- Alur aksi tetap: dropdown Aksi tampil untuk FINISH dgn klaim DRAFT/SUBMITTED (Ajukan Klaim / Tandai Lunas), pemberitahuan koreksi internal DRAFT tetap
+- tsc + eslint kosong, GET / 200
+
+Stage Summary:
+- Tampilan FINISH lebih bersih: tidak ada lagi badge DRAFT/klaim yang belum diproses — cukup tombol "Ajukan Klaim" dalam dropdown Aksi
+- File berubah: src/components/views/service-view.tsx
+
+---
+Task ID: 17
+Agent: GLM (opencode)
+Task: Sederhanakan nomor tiket SV-YYYYMMDD → SVC-YYMM + penjelasan badge DRAFT
+
+Work Log:
+- Motif user: nomor tiket terlalu panjang — tahun 2 digit (2026→26), lalu bulan + nomor urut, dan prefix SV diganti SVC
+- src/lib/audit.ts generateNoTiket: SVC-YYMM-XXXX; sekuens PER BULAN (query startsWith SVC-{ym}-, take nomor terbesar +1; regex \d{4} tahan suffix kode unit); generateNoSttb: replace /^(SV|SVC)-/ agar tiket lama & baru sama-sama benar menjadi STTB-
+- Generator EM (SV-EM-YYYYMMDD) tidak diubah — nomor order email terpisah dan berhenti dari copy UI
+- Data lama SV-20261019-0001 tetap utuh; tiket baru mulai SVC-2610-0001
+- Uji E2E (skrip temp): unit uji A/B → tiket1 SVC-2610-0001, tiket2 SVC-2610-0002 (urutan per bulan naik), jalur auto STTB saat input part → noSttb STTB-2610-0002 tersimpan, regex legacy SV-... → STTB-20261019-0001; tsc + lint kosong
+- Bersih-bersih: 2 unit uji, 2 tiket uji + partnya, 2 baris audit uji dihapus; skrip temp dihapus
+
+Stage Summary:
+- Tiket baru berformat SVC-YYMM-XXXX (mis. SVC-2610-0001) — nomor tiket lebih pendek, urutan per bulan; data lama tidak berubah; STTB mengikuti format tiket
+- File berubah: src/lib/audit.ts
+- Penjelasan DRAFT diberikan ke user + opsi perubahan label ditanyakan
+
+---
+Task ID: 16
+Agent: GLM (opencode)
+Task: Aksi tiket jadi dropdown + email ikon; kolom Kerusakan di tabel Service samping Umur; backfill diagnosa unit dari tiket lama
+
+Work Log:
+- Motif user: tombol Email/Proses/Part Datang dsb makan banyak ruang → jadikan dropdown, email cukup ikon; tambahkan kolom Kerusakan di samping Umur seperti Master Barcode; unit yg sudah punya kode sparepart seharusnya sudah terdata kerusakannya — tinggal ditampilkan/ditarik agar tidak isi ulang
+- service-view.tsx: sel Aksi ditulis ulang — email jadi tombol ikon 7x7 (MailPlus = Email Order reorder, Send = Kirim ulang); aksi lain dipadatkan DropdownMenu "Aksi" (Proses + STTB dgn konfirmasi part belum siap, Part Datang, Selesaikan, Ajukan Klaim, Tandai Lunas masing2 beri ikon), tombol Eye tetap
+- Header/sel tabel Service: kolom Kerusakan lama (hanya tab REQUEST/PROSES) dihapus; kolom baru max-w-44 setelah Umur untuk semua tab — utamakan kerusakanAwal unit (sama dgn Master Barcode), fallback deskripsi Kerusakan tiket; tooltip menyebut sumber data
+- Backfill (skrip temp dgn audit sekali jalan): 88 unit kosong diperiksa → 57 unit terisi kerusakanAwal dari deskripsi Kerusakan tiket terbaru yg punya part; unit tanpa tiket berpart dibiarkan kosong; 1 row AuditLog BACKFILL unit_asset; sampel SV-20261014-0001 BODY PENYOK dll; data uji SV-EM-20261018-0001 ikut tampil di API
+- Verifikasi: tsc + eslint kosong; GET /api/service 200 (57/61 tiket membawa kerusakanAwal unit); GET / 200 (kompilasi dev); skrip temp dihapus
+
+Stage Summary:
+- Kolom Aksi Service jadi ringkas (email ikon + dropdown), diagnosa kerusakan selalu terlihat di samping Umur semua tab, dan seluruh unit dgn kode sparepart lama sudah otomatis punya isi kolom Kerusakan tanpa input ulang
+- File berubah: src/components/views/service-view.tsx (+ data per unit via backfill)
+- Tidak ada perubahan schema/API; fitur langsung hidup via dev server :3000
+
+---
+Task ID: 15
+Agent: GLM (opencode)
+Task: Kerusakan unit = diagnosa awal (bahasa awam) di registrasi + kolom Kerusakan di Master Barcode tanpa no. tiket
+
+Work Log:
+- Motif user: selama ini kerusakan baru terekam saat kode part terbit (tiket) — unit yang lama menunggu bisa "lost" tanpa catatan kerusakan; dimintakan diagnosa awal sejak registrasi + kolom tampil di Master Barcode / Unit Asset, dan karena ruang sempit nomor tiket tidak usah ditampilkan di Master Unit
+- Schema UnitAsset + kolom nullable kerusakanAwal (komentar: diagnosa awal bahasa awam sebelum kode part terbit); db push sukses — sempat EPERM rename query engine dll (file terkunci dev server) → hentikan next dev, push+generate ulang, hidupkan lagi detached (CM ID/cmd npm run dev, log di output); kolom terverifikasi via client (nilain awil null)
+- API unit POST: simpan kerusakanAwal (trim → null bila kosong) + audit tambah "diagnosa awal kerusakan tercatat" bila diisi; PATCH unit/[id]: koreksi/kosongkan kerusakanAwal
+- types.ts UnitAsset + kerusakanAwal: string | null
+- master-data-view: newUnit/editUnitForm + field kerusakanAwal; dialog Registrasi Unit Asset & Edit Unit menambah field Textarea 2 baris "Kerusakan Unit — Diagnosa Awal (bahasa awam)" lebar sm:col-span-2 dengan penjelasan; updateUnit mengirim kerusakanAwal
+- Tabel Master Barcode: kolom "Kerusakan" setelah kolom Part (search mode) / Kode Part (daftar) — clamp 2 baris + tooltip bahasa awam; colSpan empty-row 9→10 (search 10→11); badge nomor tiket di area aksi Dihapus (aktifTiket & emailTiket) agar hemat ruang — status WAITING PART tetap di kolom Status, tanda tiket aktif di menu dropdown tetap memberi tahu unit sedang diproses
+- E2E (token admin lokal, dev :3000): POST /api/unit dgn kerusakanAwal → 201; GET list bawa kolom; PATCH ubah + path kosongkan → null; DELETE unit tanpa tiket → ok; 4 audit uji + unit uji dihapus dari mongo DB; skrip temp dihapus; halaman / 200
+
+Stage Summary:
+- Registrasi unit kini mencatat kerusakan sejak awal (diagnosa awam) dan Master Barcode menampilkan kolom Kerusakan — no. tiket tidak lagi memakan ruang di tabel unit
+- File berubah: prisma/schema.prisma, src/app/api/unit/route.ts, src/app/api/unit/[id]/route.ts, src/lib/types.ts, src/components/views/master-data-view.tsx (+ db custom.db via prisma push)
+- tsc + eslint bersih; E2E POST/GET/PATCH/DELETE lulus & data uji dibersihkan
+
+---
 Task ID: 14
 Agent: GLM (opencode)
 Task: Identifikasi READY vs INDEN per part + tombol Reorder Email untuk part belum ready (kasus: 3 part rusak — 2 ready, 1 inden)

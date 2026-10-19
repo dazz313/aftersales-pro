@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -93,7 +94,7 @@ export default function MasterDataView() {
   const [custOpen, setCustOpen] = useState(false)
   const [stickerToko, setStickerToko] = useState<Toko | null>(null)
   const [unitOpen, setUnitOpen] = useState(false)
-  const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
+  const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', kerusakanAwal: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
   // Buka dialog registrasi — default tanggal input = hari ini (bisa dimundurkan untuk susulan)
   const openUnitRegistrasi = () => {
     if (!newUnit.tglInput) {
@@ -126,7 +127,7 @@ export default function MasterDataView() {
   const [konfirmasiKoreksiSN, setKonfirmasiKoreksiSN] = useState(false)
   // Hapus unit (koreksi kesalahan input registrasi)
   const [deleteUnit, setDeleteUnit] = useState<UnitAsset | null>(null)
-  const [editUnitForm, setEditUnitForm] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
+  const [editUnitForm, setEditUnitForm] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', kerusakanAwal: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
   // Quick input kode+nama part dari Master Data → tiket + otomatis PROSES
   const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
   // Multi-part: 1 unit bisa butuh >1 kode+nama part berbeda — tiap baris satu
@@ -164,7 +165,7 @@ export default function MasterDataView() {
 
   const addUnit = useMutation({
     mutationFn: () => postJson('/api/unit', { ...newUnit, tokoId: newUnit.tokoId ? Number(newUnit.tokoId) : null, customerId: newUnit.customerId ? Number(newUnit.customerId) : null, tglPembelian: newUnit.tokoId ? null : newUnit.tglPembelian || null, tglInput: newUnit.tglInput ? new Date(newUnit.tglInput).toISOString() : undefined, aktor: role }),
-    onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', merk: '', nama: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' }); setUnitGaransiAuto(true); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
+    onSuccess: () => { invalidate(['units', 'toko', 'dashboard']); setUnitOpen(false); setNewUnit({ serialNumber: '', modelUnit: '', merk: '', nama: '', kerusakanAwal: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' }); setUnitGaransiAuto(true); toast({ title: 'Unit asset teregistrasi', description: 'Stiker barcode/QR dapat dicetak.' }) },
     onError: (e: Error) => toast({ title: 'Gagal', description: e.message, variant: 'destructive' }),
   })
   const addUser = useMutation({
@@ -210,6 +211,7 @@ export default function MasterDataView() {
       modelUnit: u.modelUnit,
       merk: u.merk ?? '',
       nama: u.nama ?? '',
+      kerusakanAwal: u.kerusakanAwal ?? '',
       tokoId: u.tokoId ? String(u.tokoId) : '',
       customerId: u.customerId ? String(u.customerId) : '',
       statusGaransi: u.statusGaransi,
@@ -408,6 +410,7 @@ export default function MasterDataView() {
         modelUnit: editUnitForm.modelUnit.trim(),
         merk: editUnitForm.merk.trim(),
         nama: editUnitForm.nama.trim(),
+        kerusakanAwal: editUnitForm.kerusakanAwal.trim() || null,
         tokoId: editUnitForm.tokoId ? Number(editUnitForm.tokoId) : null,
         customerId: editUnitForm.customerId ? Number(editUnitForm.customerId) : null,
         statusGaransi: editUnitForm.statusGaransi,
@@ -582,13 +585,14 @@ export default function MasterDataView() {
             <TableHead>Status</TableHead>
             <TableHead>Kode Part</TableHead>
             {showStatus && <TableHead>Part</TableHead>}
+            <TableHead>Kerusakan</TableHead>
             <TableHead className="text-right">Barcode</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {list.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={showStatus ? 10 : 9} className="py-8 text-center text-sm text-slate-500">{emptyText}</TableCell>
+              <TableCell colSpan={showStatus ? 11 : 10} className="py-8 text-center text-sm text-slate-500">{emptyText}</TableCell>
             </TableRow>
           ) : list.map((u) => {
             const info = partInfoByUnit.get(u.id) ?? { count: 0, countAktif: 0, codes: [] as string[] }
@@ -683,18 +687,15 @@ export default function MasterDataView() {
                     )}
                   </TableCell>
                 )}
+                <TableCell className="max-w-52">
+                  {u.kerusakanAwal?.trim() ? (
+                    <p className="line-clamp-2 text-[11px] text-slate-700" title={`Diagnosa awal (bahasa awam): ${u.kerusakanAwal}`}>{u.kerusakanAwal}</p>
+                  ) : (
+                    <span className="text-[11px] text-slate-400">–</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    {aktifTiket && (
-                      <Badge variant="outline" className="shrink-0 border-violet-300 font-mono text-[10px] text-violet-700" title="Unit sedang dalam proses — input part lewat tiket ini agar tidak ganda">
-                        {aktifTiket.noTiket}
-                      </Badge>
-                    )}
-                    {waitingPart && emailTiket && (
-                      <Badge variant="outline" className="shrink-0 border-indigo-300 font-mono text-[10px] text-indigo-700" title="Menunggu part dari produsen via email — input part saat sudah datang">
-                        {emailTiket.noTiket}
-                      </Badge>
-                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -1055,6 +1056,17 @@ export default function MasterDataView() {
             <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="Kipas Angin 16 inch ..." /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={newUnit.merk} onChange={(e) => setUnitMerk(e.target.value)} placeholder="cth: Miyako, Rinnai, Shimizu" /></div>
             <div className="space-y-1.5"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: Kipas Ruang Tamu" /></div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Kerusakan Unit — Diagnosa Awal (bahasa awam)</Label>
+              <Textarea
+                rows={2}
+                value={newUnit.kerusakanAwal}
+                onChange={(e) => setNewUnit({ ...newUnit, kerusakanAwal: e.target.value })}
+                placeholder="cth: Kipas tidak mau nyala sama sekali, dibawa customer ke toko kemarin"
+                aria-label="Kerusakan unit diagnosa awal"
+              />
+              <p className="text-[11px] text-slate-500">Terekam sejak registrasi — tidak perlu menunggu kode part terbit, jadi unit yang lama menunggu tetap punya catatan kerusakan.</p>
+            </div>
             <div className="space-y-1.5">
               <Label>Toko Mitra</Label>
               <SearchSelect
@@ -1351,6 +1363,16 @@ export default function MasterDataView() {
             <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={editUnitForm.modelUnit} onChange={(e) => setEditUnitForm({ ...editUnitForm, modelUnit: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={editUnitForm.merk} onChange={(e) => setEditUnitForm({ ...editUnitForm, merk: e.target.value })} /></div>
             <div className="space-y-1.5 sm:col-span-2"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={editUnitForm.nama} onChange={(e) => setEditUnitForm({ ...editUnitForm, nama: e.target.value })} /></div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>Kerusakan Unit — Diagnosa Awal (bahasa awam)</Label>
+              <Textarea
+                rows={2}
+                value={editUnitForm.kerusakanAwal}
+                onChange={(e) => setEditUnitForm({ ...editUnitForm, kerusakanAwal: e.target.value })}
+                placeholder="Kerusakan awal yang dilaporkan customer saat registrasi"
+                aria-label="Kerusakan unit diagnosa awal (edit)"
+              />
+            </div>
             <div className="space-y-1.5">
               <Label>Toko Mitra</Label>
               <SearchSelect

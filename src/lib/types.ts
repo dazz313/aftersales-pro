@@ -212,6 +212,8 @@ export interface UnitAsset {
   modelUnit: string
   merk: string
   nama: string
+  /** Kerusakan unit — diagnosa awal bahasa awam, dicatat saat registrasi sebelum kode part terbit. */
+  kerusakanAwal: string | null
   tokoId: number | null
   customerId: number | null
   statusGaransi: StatusGaransi
