@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T00:19:31.057Z",
+  "generatedAt": "2026-10-19T00:51:19.440Z",
   "masterToko": [
     {
       "id": 216,
@@ -1752,6 +1752,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T04:25:03.963Z"
+    },
+    {
+      "id": 352,
+      "kodePart": "RI-602-142-10X1-P",
+      "namaPart": "Side Panel LHS 602 E (W)",
+      "brandKompatibel": "RINNAI",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-19T00:51:19.322Z"
     },
     {
       "id": 338,
@@ -5612,9 +5626,9 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:42:09.929Z",
       "createdAt": "2026-10-15T05:42:09.946Z",
-      "updatedAt": "2026-10-19T00:02:55.854Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-19T00:51:19.376Z",
+      "editedAt": "2026-10-19T00:51:19.374Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
       "lampiranEmail": null,
@@ -5622,13 +5636,13 @@
         {
           "id": 40,
           "serviceRequestId": 32,
-          "sparepartId": 308,
+          "sparepartId": 352,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
+          "editedAt": "2026-10-19T00:51:19.362Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -7570,6 +7584,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 764,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0030",
+      "deskripsi": "Koreksi part [edited]: kode RI-602-142-10-1-P → RI-602-142-10X1-P",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-19T00:51:19.390Z"
+    },
+    {
+      "id": 763,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "RI-602-142-10X1-P",
+      "deskripsi": "Kode koreksi part otomatis masuk katalog: Side Panel LHS 602 E (W) (tiket SVC-2610-0030)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-19T00:51:19.351Z"
+    },
     {
       "id": 762,
       "aksi": "CREATE_UNIT_ASSET",
