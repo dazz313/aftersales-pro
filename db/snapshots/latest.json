@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T00:53:34.939Z",
+  "generatedAt": "2026-10-19T00:59:48.403Z",
   "masterToko": [
     {
       "id": 216,
@@ -4143,6 +4143,50 @@
   ],
   "serviceRequest": [
     {
+      "id": 80,
+      "noTiket": "SVC-2609-0002",
+      "unitAssetId": 183,
+      "status": "REQUEST",
+      "noSttb": "STTB-2609-0002",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-24T00:00:00.000Z",
+      "createdAt": "2026-10-19T00:59:48.355Z",
+      "updatedAt": "2026-10-19T00:59:48.355Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 89,
+          "serviceRequestId": 80,
+          "sparepartId": 306,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 76,
       "noTiket": "SVC-2610-0001",
       "unitAssetId": 212,
@@ -7584,6 +7628,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 767,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0002",
+      "deskripsi": "Tiket manual dibuat untuk unit 44080132792 (MCM558SBC, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2609-0002 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-19T00:59:48.370Z"
+    },
     {
       "id": 766,
       "aksi": "MULAI_PROSES_SERVICE",
