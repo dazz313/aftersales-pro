@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T01:00:16.596Z",
+  "generatedAt": "2026-10-19T06:59:50.415Z",
   "masterToko": [
     {
       "id": 216,
@@ -4827,14 +4827,14 @@
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
-      "slaFlag": false,
+      "slaFlag": true,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
       "tglFinish": null,
       "tglTiket": "2026-10-18T00:00:00.000Z",
       "createdAt": "2026-10-18T06:12:07.494Z",
-      "updatedAt": "2026-10-19T00:02:55.867Z",
+      "updatedAt": "2026-10-19T06:59:50.215Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -7628,6 +7628,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 770,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-19T06-59-50.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-19T06:59:50.395Z"
+    },
+    {
+      "id": 769,
+      "aksi": "ALT02_SLA_FLAG",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Flag merah ALT-02 dipasang: REQUEST > 24 jam tanpa konfirmasi part",
+      "aktor": "CRON-ENGINE",
+      "createdAt": "2026-10-19T06:59:50.362Z"
+    },
     {
       "id": 768,
       "aksi": "TERIMA_PART_PRODUSEN",
@@ -12571,6 +12589,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 19,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 414,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-19T06-59-50.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-19T06:59:50.369Z"
+    },
     {
       "id": 18,
       "status": "LOCAL",
