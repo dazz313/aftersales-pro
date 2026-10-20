@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
+import KodeSparepart from '@/components/kode-sparepart'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
@@ -697,15 +698,14 @@ export default function ServiceView() {
                           ) : (
                             <div className="flex flex-col gap-1">
                               {t.parts.map((p) => (
-                                <span
-                                  key={p.id}
-                                  title={`${p.sparepart?.namaPart ?? ''} · qty ${p.qty} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`}
-                                  className={cn(
-                                    'whitespace-nowrap font-mono text-[10px] font-semibold',
-                                    p.statusPart === 'READY' ? 'text-emerald-700' : 'text-rose-600'
-                                  )}
-                                >
-                                  {p.sparepart?.kodePart ?? '?'} <span className="font-normal text-slate-400">×{p.qty}</span>
+                                <span key={p.id} className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
+                                  <KodeSparepart
+                                    kode={p.sparepart?.kodePart ?? ''}
+                                    nama={p.sparepart?.namaPart}
+                                    cek
+                                    className={p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
+                                  />
+                                  <span className="font-mono text-[10px] font-normal text-slate-400">×{p.qty}</span>
                                 </span>
                               ))}
                             </div>
@@ -953,7 +953,10 @@ export default function ServiceView() {
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs font-medium text-slate-800">{p.sparepart?.namaPart}</p>
-                              <p className="font-mono text-[10px] text-slate-400">{p.sparepart?.kodePart} · qty {p.qty}</p>
+                              <p className="flex items-center gap-1 font-mono text-[10px] text-slate-400">
+                                <KodeSparepart kode={p.sparepart?.kodePart ?? ''} nama={p.sparepart?.namaPart} cek />
+                                <span>· qty {p.qty}</span>
+                              </p>
                               {((p.sparepart?.brandKompatibel?.trim() || p.sparepart?.supplier?.trim())) && (
                                 <p className="text-[10px] text-slate-500">
                                   {[p.sparepart?.brandKompatibel?.trim(), p.sparepart?.supplier?.trim()].filter(Boolean).join(' · ')}

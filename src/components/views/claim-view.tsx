@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Wand2 } from 'lucide-react'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
+import KodeSparepart from '@/components/kode-sparepart'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import { cn } from '@/lib/utils'
 
@@ -189,8 +190,14 @@ export default function ClaimView() {
                 <TableCell className="text-xs">
                   <p>Jasa: {formatRupiah(t.biayaJasa)}</p>
                   {t.parts.length > 0 && (
-                    <p className="text-[10px] text-slate-500">
-                      Part: {t.parts.map((p) => `${p.sparepart?.kodePart}×${p.qty}`).join(', ')}
+                    <p className="flex flex-wrap items-center gap-x-1 text-[10px] text-slate-500">
+                      Part:
+                      {t.parts.map((p) => (
+                        <span key={p.id} className="inline-flex items-center gap-0.5">
+                          <KodeSparepart kode={p.sparepart?.kodePart ?? ''} nama={p.sparepart?.namaPart} cek className="text-[10px]" />
+                          <span>×{p.qty}</span>
+                        </span>
+                      ))}
                     </p>
                   )}
                 </TableCell>

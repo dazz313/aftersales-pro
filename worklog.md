@@ -1,6 +1,41 @@
 # Worklog
 
 ---
+Task ID: 25
+Agent: GLM (opencode)
+Task: Audit fungsi background (read-only, izin user — "asal tidak ganggu produksi")
+
+Work Log:
+- Rantai boot diverifikasi ulang tanpa menyentuh proses: dump.pm2 hanya aspro-prod status online ✓; registry Run "PM2AutoStart" ✓; pm2-resurrect.vbs + aspro-prod.ico + shortcut .lnk ada ✓; pid listener :3000 = pid PM2 (23464) ✓; GET / 200 ✓ (build 09:54, uptime stabil, restart 0)
+- Log error instance sekarang: tidak ada baris baru sejak start 09:54; error lama "Cannot find module C:\ROOT\.../worker-script/node/index.js" (tesseract.js) tertulis pada pid 16800 — era build lama sebelum task 24; worker script di build baru identik dengan node_modules sumber (771 B, itu memang loader; tesseract.js v7 memuat worker lewat bundler sendiri) → tidak terbukti rusak, validasi fungsional OCR menyusul saat scan pertama dipakai
+- Out log menunjukkan prisma:query ikut ter-log di produksi (query logging aktif) → kontributor utama pertumbuhan aspro-prod-out-0.log ±3 MB/hari
+- Log lama aplikasi lain masih ada di .pm2\logs: aftersales-pro (2,7 MB, 18/10), bass-prod (2,1 MB, 15/10), eracool (11 KB; entry-nya sudah dihapus dari PM2) — sampah historis, tidak mengganggu
+- tg-polling mini-service idle sejak 17/10 (tg-poll.* tidak terupdate) — gateway berjalan via webhook / mode polling tak dipakai; tidak dijadwalkan ke PM2
+- Tidak ada perubahan kode/konfigurasi pada audit ini
+
+Stage Summary:
+- Rantai auto-start tervalidasi utuh untuk boot berikutnya tanpa tindakan tambahan
+- Item daftar keputusan user (tidak dipaksakan): (a) pasang pm2-logrotate demi rotasi log produksi, (b) matikan prisma:query log di produksi (butuh build + restart ~30 s), (c) hapus log lama historis, (d) validasi OCR saat scan pertama nanti
+
+---
+Task ID: 24
+Agent: GLM (opencode)
+Task: Kode sparepart bisa diklik (cek & salin) + urutan side panel baru; Gateway tinggal di Pengaturan
+
+Work Log:
+- Motif user: kode sparepart harus bisa diklik untuk cek atau copy-paste + sidebar diurutkan ulang (dashboard, master, service, field-ops, inventory, klaim, lacak, ai, inbox, pengaturan); Gateway tidak perlu menu sendiri karena sudah ada di Pengaturan
+- Komponen baru src/components/kode-sparepart.tsx: klik kode = salin ke clipboard (toast "Kode tersalin" + swap ikon check), ikon SearchCheck = cek → navigateTo('lacak', { lacakQuery }) ; util src/lib/clipboard.ts (clipboard API + fallback execCommand); NavIntent + field lacakQuery
+- Lapang pemakaian: service-view (baris tiket + dialog detail), inventory-view (daftar part, tab kosong, tab order, draft reorder), claim-view (ringkasan part), sparepart-finder-view (hasil cari, Bank Kode, tanya AI, AI dari hasil cari) — ikon Copy manual lama dinonaktifkan/dihapus di view lacak (kode itu sendiri jadi tombol)
+- sparepart-finder-view: konsumsi navIntent.lacakQuery (dipakai set clearNavIntent, pola claim-view) → setBankQ + muatBank + scrollIntoView kartu Bank Kode (ref BankRef div pembungkus Card)
+- page.tsx: NAV_ITEMS diurutkan ulang; gelar 'gateway' dihapus (Router ikut hilang beserta tetap dinamis dikompilasi, view masih bisa diakses lewat quick-entry & Pengaturan)
+- Verifikasi: tsc NO ERROR, eslint bersih; build pertama EPERM menghapus .prisma query engine dll karena masih aspro-prod berjalan di .next/standaloneisasi — diperbaiki urutan: pm2 stop → npm run build (backup DB otomatis dari next-build.mjs) → pm2 start → GET / 200; PM2 restart ke-0 dan status online
+
+Stage Summary:
+- Setiap kode sparepart kini sambil itu bisa langsung disalin & di-cek lewat 2 ketukan — ikon copy terpisah tidak lagi diperlukan
+- Sidebar: 10 menu sesuai urutan user; View Gateway tidak dihapus dari aplikasi (quick-entry + Pengaturan); file berubah: page.tsx, store.ts, kode-sparepart (baru), clipboard (baru), service-view, inventory-view, claim-view, sparepart-finder-view
+- RILIS — urutan deploy yang mepet harus diterapkan dari sekarang: pm2 stop aspro-prod → npm run build → pm2 start ecosystem.config.cjs (build EPERM kalau lupa stop karena DLL tidak bisa ditimpa saat runtime berjalan)
+
+---
 Task ID: 23
 Agent: GLM (opencode)
 Task: Rute pengembangan tetap aman bersama PM2 produksi — dev dipindahkan ke :3001

@@ -32,6 +32,8 @@ export interface NavIntent {
   inventoryFilter?: 'kritis' | 'kosong'
   fieldOpsFilter?: 'terlambat' | 'kunjungan'
   masterTab?: 'toko' | 'customer' | 'unit' | 'karyawan'
+  /** Klik "cek" kode sparepart di view lain → Lacak Sparepart membaca ini sebagai kata kunci. */
+  lacakQuery?: string
   ts: number
 }
 

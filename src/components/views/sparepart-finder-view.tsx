@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { fetcher, postJson, type BankKode } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -13,9 +13,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import HistoryInput from '@/components/history-input'
 import CsvImportDialog from '@/components/csv-import-dialog'
+import KodeSparepart from '@/components/kode-sparepart'
 import { useAppStore } from '@/lib/store'
 import { useToast } from '@/hooks/use-toast'
-import { SearchCheck, PackageX, Database, Sparkles, Loader2, X, Copy, Check, BookMarked, Plus, Upload, RefreshCw } from 'lucide-react'
+import { SearchCheck, PackageX, Database, Sparkles, Loader2, X, BookMarked, Plus, Upload, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface HasilCari {
@@ -98,7 +99,7 @@ export default function SparepartFinderView() {
 
   // ===== Bank Kode Produsen — semua kode rumit, siap dipanggil + disalin =====
   // Terisi otomatis dari katalog, balasan produsen di tiket, order & CSV.
-  const { role } = useAppStore()
+  const { role, navIntent, clearNavIntent } = useAppStore()
   const [bankQ, setBankQ] = useState('')
   const [bankHasil, setBankHasil] = useState<{ total: number; totalBank: number; items: BankKode[] } | null>(null)
   const [bankLoading, setBankLoading] = useState(false)
@@ -173,32 +174,24 @@ export default function SparepartFinderView() {
 
   const skorMax = Math.max(1, ...(hasil?.hasil.map((h) => h.skor) ?? [1]))
 
-  // ===== Salin kode — satu ketuk langsung copy-paste ke tiket/order =====
-  const [disalin, setDisalin] = useState<string | null>(null)
-  const salinKode = async (kode: string) => {
-    const teks = kode.trim()
-    if (!teks) return
-    try {
-      await navigator.clipboard.writeText(teks)
-    } catch {
-      // Fallback untuk iframe / konteks non-secure (clipboard API diblokir)
-      const ta = document.createElement('textarea')
-      ta.value = teks
-      ta.style.position = 'fixed'
-      ta.style.opacity = '0'
-      document.body.appendChild(ta)
-      ta.select()
-      try {
-        document.execCommand('copy')
-      } catch {
-        // abaikan — toast tetap memberi tahu kode yang dimaksud
+  // ===== Konsumsi navIntent — klik "Cek kode" dari view lain (tiket/inventory/klaim) =====
+  // Isi pencarian Bank Kode dengan kode sasaran, muat hasilnya, lalu scroll ke kartu ini.
+  // useRef + setTimeout(0) mengikuti pola claim-view (tidak setState sinkron di effect body).
+  const bankRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!navIntent) return
+    const kode = navIntent.lacakQuery
+    const t = setTimeout(() => {
+      if (kode) {
+        setBankQ(kode)
+        void muatBank(kode)
+        bankRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-      ta.remove()
-    }
-    setDisalin(teks)
-    toast({ title: 'Kode tersalin', description: `${teks} siap ditempel ke tiket / order.` })
-    setTimeout(() => setDisalin((d) => (d === teks ? null : d)), 1500)
-  }
+      clearNavIntent()
+    }, 0)
+    return () => clearTimeout(t)
+    // muatBank sengaja di luar deps — identitasnya berubah tiap render, intent dihormati cukup sekali
+  }, [navIntent, clearNavIntent])
 
   return (
     <div className="space-y-4">
@@ -241,6 +234,7 @@ export default function SparepartFinderView() {
       </Card>
 
       {/* ===== Bank Kode Produsen — registry kode rumit + Powered AI ===== */}
+      <div ref={bankRef}>
       <Card className="border-violet-200">
         <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
           <div>
@@ -346,7 +340,7 @@ export default function SparepartFinderView() {
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">{i + 1}</span>
                     <div className="min-w-0 flex-1">
                       <p className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] font-bold text-slate-900">
-                        {r.kode}
+                        <KodeSparepart kode={r.kode} className="text-[11px] text-slate-900" />
                         {refKode?.modelTipe?.trim() && (
                           <span className="rounded bg-emerald-100 px-1 py-px font-sans text-[9px] font-semibold text-emerald-700" title={`Cocok untuk model: ${refKode.modelTipe}`}>
                             {refKode.modelTipe}
@@ -355,16 +349,6 @@ export default function SparepartFinderView() {
                       </p>
                       {r.alasan && <p className="mt-0.5 text-[11px] italic leading-snug text-violet-800">{r.alasan}</p>}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 w-6 shrink-0 p-0 text-violet-500 hover:bg-violet-100 hover:text-violet-700"
-                      onClick={() => void salinKode(r.kode)}
-                      title={`Salin kode ${r.kode}`}
-                      aria-label={`Salin kode ${r.kode}`}
-                    >
-                      {disalin === r.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                    </Button>
                   </div>
                   )
                 })}
@@ -393,19 +377,7 @@ export default function SparepartFinderView() {
                     {bankHasil.items.map((b) => (
                       <TableRow key={b.id}>
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            <p className="font-mono text-[11px] font-semibold text-slate-800">{b.kode}</p>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:bg-violet-50 hover:text-violet-700"
-                              onClick={() => void salinKode(b.kode)}
-                              title={`Salin kode ${b.kode}`}
-                              aria-label={`Salin kode ${b.kode}`}
-                            >
-                              {disalin === b.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                            </Button>
-                          </div>
+                          <KodeSparepart kode={b.kode} nama={b.namaPart} className="text-[11px] text-slate-800" />
                         </TableCell>
                         <TableCell>
                           <p className="max-w-48 truncate text-xs text-slate-700" title={b.namaPart || undefined}>{b.namaPart || '—'}</p>
@@ -442,6 +414,7 @@ export default function SparepartFinderView() {
           )}
         </CardContent>
       </Card>
+      </div>
 
       {/* Dialog tambah kode sparepart manual */}
       <Dialog open={tambahOpen} onOpenChange={setTambahOpen}>
@@ -520,21 +493,12 @@ export default function SparepartFinderView() {
                         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-[10px] font-bold text-white">{i + 1}</span>
                         <div className="min-w-0 flex-1">
                           <p className="font-mono text-[11px] font-bold text-slate-900">
-                            {r.kode} <span className="font-sans font-medium text-slate-600">· {ref?.namaPart ?? ''}</span>
+                            <KodeSparepart kode={r.kode} nama={ref?.namaPart} className="text-[11px] text-slate-900" />
+                            <span className="font-sans font-medium text-slate-600">· {ref?.namaPart ?? ''}</span>
                             {ref && ref.stokInventory === 0 && <span className="ml-1 rounded bg-rose-100 px-1 font-sans text-[9px] font-semibold text-rose-700">KOSONG</span>}
                           </p>
                           {r.alasan && <p className="mt-0.5 text-[11px] italic leading-snug text-violet-800">{r.alasan}</p>}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 shrink-0 p-0 text-violet-500 hover:bg-violet-100 hover:text-violet-700"
-                          onClick={() => void salinKode(r.kode)}
-                          title={`Salin kode ${r.kode}`}
-                          aria-label={`Salin kode ${r.kode}`}
-                        >
-                          {disalin === r.kode ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                        </Button>
                       </div>
                     )
                   })}
@@ -566,19 +530,7 @@ export default function SparepartFinderView() {
                     {hasil.hasil.map((h) => (
                       <TableRow key={h.sparepartId}>
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            <p className="font-mono text-[11px] font-semibold text-slate-800">{h.kodePart}</p>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-6 w-6 shrink-0 p-0 text-slate-400 hover:bg-teal-50 hover:text-teal-700"
-                              onClick={() => void salinKode(h.kodePart)}
-                              title={`Salin kode ${h.kodePart}`}
-                              aria-label={`Salin kode ${h.kodePart}`}
-                            >
-                              {disalin === h.kodePart ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                            </Button>
-                          </div>
+                          <KodeSparepart kode={h.kodePart} nama={h.namaPart} className="text-[11px] text-slate-800" />
                           {(h.brandKompatibel?.trim() || h.supplier?.trim()) && (
                             <p className="max-w-36 truncate text-[10px] text-slate-400" title={[h.brandKompatibel, h.supplier].filter(Boolean).join(' · ')}>
                               {[h.brandKompatibel?.trim(), h.supplier?.trim()].filter(Boolean).join(' · ')}

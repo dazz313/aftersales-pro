@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
+import KodeSparepart from '@/components/kode-sparepart'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
@@ -500,8 +501,9 @@ export default function InventoryView() {
                         <TableRow key={p.id} className={cn(p.kosong && 'bg-rose-50/60', p.ropAlert && !p.kosong && 'bg-amber-50/50')}>
                           <TableCell>
                             <p className="text-xs font-semibold text-slate-800">{p.namaPart}</p>
-                            <p className="font-mono text-[10px] text-slate-400" title={(p.dipakai ?? 0) > 0 ? `${p.kodePart} — dipakai di ${p.dipakai} tiket, tidak dapat dihapus` : p.kodePart}>
-                              {p.kodePart}{(p.dipakai ?? 0) > 0 && <span className="font-sans"> · {p.dipakai} tiket</span>}
+                            <p className="flex items-center gap-1 text-[10px] text-slate-400">
+                              <KodeSparepart kode={p.kodePart} nama={p.namaPart} cek />
+                              {(p.dipakai ?? 0) > 0 && <span>· {p.dipakai} tiket</span>}
                             </p>
                           </TableCell>
                           <TableCell className="max-w-40">
@@ -610,7 +612,7 @@ export default function InventoryView() {
                       <div key={p.id} className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1.5">
                         <div className="min-w-0">
                           <p className="truncate text-[11px] font-medium text-slate-700">{p.namaPart}</p>
-                          <p className="font-mono text-[10px] text-slate-400">{p.kodePart}</p>
+                          <KodeSparepart kode={p.kodePart} nama={p.namaPart} cek className="text-[10px] text-slate-400" />
                         </div>
                         <Button size="sm" variant="outline" className="h-6 shrink-0 px-2 text-[10px]" onClick={() => openOrder(p.id)}>
                           Order
@@ -676,7 +678,10 @@ export default function InventoryView() {
                       </TableCell>
                       <TableCell>
                         <p className="text-xs text-slate-800">{o.namaPart} <span className="font-bold">×{o.qty}</span></p>
-                        <p className="font-mono text-[10px] text-slate-400">{o.kodePart}{o.brand ? ` · ${o.brand}` : ''}</p>
+                        <p className="flex items-center gap-1 text-[10px] text-slate-400">
+                          <KodeSparepart kode={o.kodePart} nama={o.namaPart} cek />
+                          {o.brand ? <span>· {o.brand}</span> : null}
+                        </p>
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -810,9 +815,9 @@ export default function InventoryView() {
                   <div key={p.id} className="flex items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50/60 px-2.5 py-2">
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-slate-800" title={p.namaPart}>{p.namaPart}</p>
-                      <p className="truncate font-mono text-[10px] text-slate-500" title={`${p.kodePart} · Terpakai ${p.totalTerpakai ?? 0} · Stok brand ${p.stokInventory}${p.menungguDi?.length ? ` · Tiket: ${p.menungguDi.join(', ')}` : ''}`}>
-                        {p.kodePart} · Terpakai {p.totalTerpakai ?? 0} · Stok {p.stokInventory}
-                        {p.menungguDi?.length ? ` · ${p.menungguDi.join(', ')}` : ''}
+                      <p className="flex items-center gap-1 text-[10px] text-slate-500">
+                        <KodeSparepart kode={p.kodePart} nama={p.namaPart} cek />
+                        <span className="truncate">· Terpakai {p.totalTerpakai ?? 0} · Stok {p.stokInventory}{p.menungguDi?.length ? ` · ${p.menungguDi.join(', ')}` : ''}</span>
                       </p>
                     </div>
                     <Badge className="shrink-0 bg-rose-600 text-[10px] text-white hover:bg-rose-600">×{p.dipesanPerUnit ?? 0}</Badge>
