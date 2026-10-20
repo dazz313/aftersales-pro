@@ -182,6 +182,10 @@ model ServiceRequest {
   // oleh modul "Part Masuk (Surat Jalan Produsen)" saat barang cocok diterima.
   noSuratJalanProdusen String?
   tglPartDatang        DateTime?
+  // Tanggal klik "Surat Jalan" (request part ke produsen) — diisi otomatis
+  // saat dokumen SJR dibuat; tampil di bawah badge REQUEST pada baris tiket
+  // agar jelas kapan part diorder (part sering datang tidak serentak).
+  tglRequestPart       DateTime?
   unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])
   parts               ServiceRequestPart[]
   // Lampiran (PDF/foto) untuk tiket REQUEST EMAIL — dilampirkan saat kirim email ke produsen
@@ -442,4 +446,39 @@ model SuratJalanMasukItem {
   cocokPartId       Int? // MasterSparepart id bila kode terbaca di katalog
   alasan            String? // penjelasan singkat cara mencocokkan
   suratJalanMasuk   SuratJalanMasuk @relation(fields: [suratJalanMasukId], references: [id])
+}
+
+// ==========================================
+// 15. Surat Jalan REQUEST part ke Produsen (surat_jalan_request)
+// Dibuat otomatis saat Admin menekan "Surat Jalan" di Service Tiket lalu
+// mengunduh PDF/Excel — snapshot tiket + part yang di-request, lengkap dengan
+// no. dokumen SJR-YYYYMMDD-NNNN. Tujuan: part ke produsen sering datang
+// tidak serentak, jadi tanggal request harus tercatat per dokumen & per tiket.
+// Tanggal datang balasannya dicatat alami via SuratJalanMasuk (+ tglPartDatang
+// di tiket), sehingga request vs datang bisa dibandingkan di Lacak Sparepart.
+// ==========================================
+model SuratJalanRequest {
+  id              Int                     @id @default(autoincrement())
+  noSurat         String                  @unique // SJR-YYYYMMDD-NNNN
+  tglRequest      DateTime                @default(now())
+  dibuatOleh      String?
+  totalTiket      Int                     @default(0)
+  totalItem       Int                     @default(0)
+  totalQty        Int                     @default(0)
+  lewatTanpaKode  Int                     @default(0) // part dengan kode/nama belum lengkap — lewat dari dokumen
+  items           SuratJalanRequestItem[]
+}
+
+model SuratJalanRequestItem {
+  id                  Int               @id @default(autoincrement())
+  suratJalanRequestId Int
+  serviceRequestId    Int?
+  noTiket             String
+  kodePart            String
+  namaPart            String?
+  qty                 Int               @default(1)
+  toko                String? // snapshot nama toko saat request dibuat
+  serialNumber        String?
+  modelUnit           String?
+  suratJalanRequest   SuratJalanRequest @relation(fields: [suratJalanRequestId], references: [id])
 }

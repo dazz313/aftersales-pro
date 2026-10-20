@@ -310,6 +310,9 @@ export interface ServiceTicket {
   slaFlag: boolean
   statusKlaimProdusen: 'DRAFT' | 'SUBMITTED' | 'PAID'
   tglKlaim: string | null
+  // Tanggal klik "Surat Jalan" (request part ke produsen) — stamp otomatis dari
+  // dokumen SJR; tampil kecil di bawah badge REQUEST agar jelas kapan diorder.
+  tglRequestPart?: string | null
   biayaJasa: number
   tglFinish: string | null
   tglTiket: string

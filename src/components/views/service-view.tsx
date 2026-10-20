@@ -673,7 +673,19 @@ export default function ServiceView() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap items-center gap-1">
-                            <Badge variant="outline" className={st.cls}>{st.label}</Badge>
+                            <div className="flex flex-col items-start">
+                              <Badge variant="outline" className={st.cls}>{st.label}</Badge>
+                              {/* Tgl request part (kecepatan "Surat Jalan" ditekan) tampil */}
+                              {/* di bawah badge REQUEST — pembanding saat part datang tidak serentak */}
+                              {t.status === 'REQUEST' && t.tglRequestPart && (
+                                <span
+                                  className="mt-0.5 font-mono text-[9px] text-slate-500"
+                                  title={`Request part ke produsen: ${new Date(t.tglRequestPart).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })}`}
+                                >
+                                  Req: {new Date(t.tglRequestPart).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}
+                                </span>
+                              )}
+                            </div>
                             {/* Ringkasan part: ✔ READY vs ● INDEN — identifikasi sekilas tanpa buka detail */}
                             {t.parts.length > 0 && (
                               <Badge

@@ -16,7 +16,7 @@ import CsvImportDialog from '@/components/csv-import-dialog'
 import KodeSparepart from '@/components/kode-sparepart'
 import { useAppStore } from '@/lib/store'
 import { useToast } from '@/hooks/use-toast'
-import { SearchCheck, PackageX, Database, Sparkles, Loader2, X, BookMarked, Plus, Upload, RefreshCw } from 'lucide-react'
+import { SearchCheck, PackageX, Database, Sparkles, Loader2, X, BookMarked, Plus, Upload, RefreshCw, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface HasilCari {
@@ -38,6 +38,26 @@ interface CariResponse {
   totalTiketDipindai: number
   totalCocok: number
   hasil: HasilCari[]
+}
+
+/** Baris hasil pencarian "Part Datang" — Surat Jalan produsen + pemiliknya (tiket). */
+interface DatangRow {
+  id: number
+  noSuratJalan: string
+  sjStatus: string
+  tglSurat: string | null
+  tglDatang: string | null
+  kodePart: string
+  namaPart: string
+  qty: number
+  serialNumber: string | null
+  noTiket: string | null
+  toko: string
+  serial: string
+  model: string
+  kerusakan: string
+  status: string
+  statusPart: string
 }
 
 /**
@@ -174,6 +194,47 @@ export default function SparepartFinderView() {
 
   const skorMax = Math.max(1, ...(hasil?.hasil.map((h) => h.skor) ?? [1]))
 
+  // ===== Part Datang — Surat Jalan produsen (kiriman bertahap per toko/tiket) =====
+  // Masalah yang dijawab: order ke produsen datang TIDAK serentak, workshop
+  // sering bingung kiriman untuk toko mana. Kotak bebas mencari tgl datang,
+  // no. tiket, toko, serial/model, kode/nama part, kerusakan & status.
+  const [datangQ, setDatangQ] = useState('')
+  const [datangRows, setDatangRows] = useState<DatangRow[] | null>(null)
+  const [datangLoading, setDatangLoading] = useState(false)
+  const muatDatang = async (q: string) => {
+    setDatangLoading(true)
+    try {
+      const res = await fetcher<DatangRow[]>(`/api/sparepart/datang?q=${encodeURIComponent(q.trim())}&take=200`)
+      setDatangRows(res)
+    } catch (e) {
+      toast({ title: 'Part Datang gagal dimuat', description: (e as Error).message, variant: 'destructive' })
+    } finally {
+      setDatangLoading(false)
+    }
+  }
+  // Muat terkini saat kartu pertama dibuka — setState dijalankan via callback
+  // async (setTimeout 0, pola claim-view) agar tidak setState sinkron di effect.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      void muatDatang('')
+    }, 0)
+    return () => clearTimeout(t)
+    // muatDatang sengaja di luar deps (identitas berubah tiap render; muat sekali saja)
+  }, [])
+  const fmtTgl = (d: string | null): string =>
+    d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—'
+  const TIKET_CLS: Record<string, string> = {
+    REQUEST: 'border-slate-400 text-slate-600',
+    REQUEST_EMAIL: 'border-violet-300 text-violet-700',
+    PROSES: 'border-amber-300 text-amber-700',
+    FINISH: 'border-emerald-300 text-emerald-700',
+  }
+  const SJ_CLS: Record<string, string> = {
+    DRAFT: 'border-slate-300 text-slate-500',
+    DIPERIKSA: 'border-amber-300 text-amber-700',
+    DITERAPKAN: 'border-emerald-300 text-emerald-700',
+  }
+
   // ===== Konsumsi navIntent — klik "Cek kode" dari view lain (tiket/inventory/klaim) =====
   // Isi pencarian Bank Kode dengan kode sasaran, muat hasilnya, lalu scroll ke kartu ini.
   // useRef + setTimeout(0) mengikuti pola claim-view (tidak setState sinkron di effect body).
@@ -195,6 +256,116 @@ export default function SparepartFinderView() {
 
   return (
     <div className="space-y-4">
+      {/* ===== Part Datang — Surat Jalan produsen (kiriman bertahap) ===== */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+            <Truck className="h-4 w-4 text-teal-700" /> Part Datang — Surat Jalan Produsen
+            {datangRows && (
+              <Badge variant="outline" className="border-slate-300 text-[10px] text-slate-600">
+                {datangRows.length} baris · {new Set(datangRows.map((r) => r.noTiket).filter(Boolean)).size} tiket
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Kiriman part jarang datang bersamaan — cari pemiliknya lewat kotak bebas: tgl datang, no. tiket, toko, serial/model, kode/nama part, kerusakan atau status. Ketuk kode untuk salin.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-2">
+            <Input
+              value={datangQ}
+              onChange={(e) => setDatangQ(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && void muatDatang(datangQ)}
+              placeholder="Cari part datang… cth: SVC-2610-0039 / nama toko / dk-01 / 20/10"
+              className="h-8 text-xs"
+              aria-label="Cari part datang"
+            />
+            <Button size="sm" variant="outline" className="h-8 shrink-0" disabled={datangLoading} onClick={() => void muatDatang(datangQ)}>
+              {datangLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Cari'}
+            </Button>
+          </div>
+          {datangRows === null ? (
+            <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">Memuat…</p>
+          ) : datangRows.length === 0 ? (
+            <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">
+              Tidak ada kiriman yang cocok — coba kata kunci lain (mis. kode part, nama toko, atau no. tiket).
+            </p>
+          ) : (
+            <div className="max-h-[26rem] overflow-auto rounded-md border">
+              <Table>
+                <TableHeader className="sticky top-0 z-10 bg-slate-50">
+                  <TableRow>
+                    <TableHead className="text-[10px]">Tgl Datang</TableHead>
+                    <TableHead className="text-[10px]">No. Surat Jalan</TableHead>
+                    <TableHead className="text-[10px]">Kode Sparepart</TableHead>
+                    <TableHead className="text-[10px]">Nama Sparepart</TableHead>
+                    <TableHead className="text-[10px] text-right">Qty</TableHead>
+                    <TableHead className="text-[10px]">No. Tiket</TableHead>
+                    <TableHead className="text-[10px]">Toko</TableHead>
+                    <TableHead className="text-[10px]">Serial / Model</TableHead>
+                    <TableHead className="text-[10px]">Status</TableHead>
+                    <TableHead className="hidden text-[10px] md:table-cell">Kerusakan</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {datangRows.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="whitespace-nowrap">
+                        <p className={cn('text-xs font-bold', r.tglDatang ? 'text-emerald-700' : 'text-slate-400')}>{fmtTgl(r.tglDatang)}</p>
+                        <p className="text-[10px] text-slate-400" title="Tgl tercetak di surat jalan">surat: {fmtTgl(r.tglSurat)}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="font-mono text-[10px] font-semibold text-slate-700">{r.noSuratJalan}</p>
+                        <Badge variant="outline" className={cn('mt-0.5 text-[9px]', SJ_CLS[r.sjStatus] ?? 'border-slate-300 text-slate-500')}>
+                          {r.sjStatus}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <KodeSparepart kode={r.kodePart} nama={r.namaPart} className="text-[11px] text-slate-800" />
+                      </TableCell>
+                      <TableCell>
+                        <p className="max-w-40 truncate text-xs text-slate-700" title={r.namaPart || undefined}>{r.namaPart || '—'}</p>
+                      </TableCell>
+                      <TableCell className="text-right text-xs font-bold">{r.qty}</TableCell>
+                      <TableCell>
+                        {r.noTiket ? (
+                          <span className="font-mono text-[11px] font-semibold text-emerald-700">{r.noTiket}</span>
+                        ) : (
+                          <Badge variant="outline" className="text-[9px] text-slate-400">tanpa tiket</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <p className="max-w-32 truncate text-xs text-slate-700" title={r.toko || undefined}>{r.toko || '—'}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="font-mono text-[10px] text-slate-500">{r.serial || '—'}</p>
+                        <p className="max-w-32 truncate text-[10px] text-slate-400" title={r.model || undefined}>{r.model || '—'}</p>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col items-start gap-0.5">
+                          {r.status && (
+                            <Badge variant="outline" className={cn('text-[9px]', TIKET_CLS[r.status] ?? 'border-slate-300 text-slate-500')}>
+                              {r.status}
+                            </Badge>
+                          )}
+                          <span className={cn('text-[9px] font-semibold', r.statusPart === 'READY' ? 'text-emerald-600' : r.statusPart === 'ORDER' ? 'text-rose-600' : 'text-slate-400')}>
+                            {r.statusPart === '-' ? '—' : r.statusPart}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden max-w-44 md:table-cell">
+                        <p className="truncate text-[10px] text-slate-500" title={r.kerusakan || undefined}>{r.kerusakan || '—'}</p>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">

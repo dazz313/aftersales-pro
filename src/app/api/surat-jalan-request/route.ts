@@ -1,0 +1,397 @@
+import { NextResponse } from 'next/server'
+import QRCode from 'qrcode'
+import * as XLSX from 'xlsx'
+import { db } from '@/lib/db'
+import { logAudit } from '@/lib/audit'
+import { autoGitBackup } from '@/lib/git-backup'
+import { requireActiveSession } from '@/lib/auth-server'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+/**
+ * Surat Jalan REQUEST part ke Produsen (kolektif, keluar).
+ *
+ * Dipanggil dialog cetak "Surat Jalan" di Service Tiket. Setiap unduhan:
+ * 1. Data request DISIMPAN sebagai dokumen SJR-YYYYMMDD-NNNN (snapshot
+ *    tiket + part + qty + toko + serial/model) — tidak lagi sekadar print.
+ * 2. Tiket yang belum punya ditandai `tglRequestPart` (request pertama yang
+ *    menang) → tampil di bawah badge REQUEST pada baris tiket.
+ * 3. Dokumen PDF/Excel dibuat dengan baris "Tanggal Request :" tepat
+ *    di bawah judul REQUEST — pembanding saat part datang bertahap.
+ *
+ * POST body: { noTiket: string[], format?: 'pdf' | 'xlsx' }
+ * - dengan format → file attachment (PDF A4 landscape / XLSX 2 sheet)
+ * - tanpa format  → JSON { noSurat, tglRequest, totalItem, totalQty }
+ */
+
+interface ItemBaris {
+  serviceRequestId: number | null
+  noTiket: string
+  kodePart: string
+  namaPart: string
+  qty: number
+  toko: string
+  serialNumber: string
+  modelUnit: string
+}
+
+export async function POST(request: Request) {
+  try {
+    const { session, denied } = await requireActiveSession(request)
+    if (denied) return denied
+    const aktor = session?.nama ?? 'SYSTEM'
+
+    const body = (await request.json().catch(() => null)) as
+      | { noTiket?: unknown[]; format?: unknown }
+      | null
+    const noTiketList: string[] = Array.isArray(body?.noTiket)
+      ? [...new Set(body.noTiket.map((s: unknown) => String(s).trim()).filter(Boolean))]
+      : []
+    if (noTiketList.length === 0) {
+      return NextResponse.json({ error: 'Pilih minimal 1 tiket untuk surat jalan request' }, { status: 400 })
+    }
+    if (noTiketList.length > 100) {
+      return NextResponse.json({ error: 'Maksimal 100 tiket per surat jalan request' }, { status: 400 })
+    }
+    const format = body?.format === 'xlsx' ? 'xlsx' : body?.format === 'pdf' ? 'pdf' : null
+
+    const tickets = await db.serviceRequest.findMany({
+      where: { noTiket: { in: noTiketList } },
+      include: {
+        unitAsset: { include: { toko: true } },
+        parts: { include: { sparepart: true } },
+      },
+      orderBy: { noTiket: 'asc' },
+    })
+    const foundSet = new Set(tickets.map((t) => t.noTiket))
+    const missing = noTiketList.filter((n) => !foundSet.has(n))
+    if (missing.length > 0) {
+      return NextResponse.json(
+        { error: `Tiket tidak ditemukan: ${missing.slice(0, 5).join(', ')}` },
+        { status: 404 }
+      )
+    }
+
+    // Snapshot item — hanya part dengan kode+nama lengkap (part belum keisi
+    // komunikasinya ke user via angka lewat di dialog; koreksi dulu di tiket).
+    const items: ItemBaris[] = []
+    let lewatTanpaKode = 0
+    for (const t of tickets) {
+      for (const p of t.parts) {
+        const kode = (p.sparepart?.kodePart ?? '').trim()
+        const nama = (p.sparepart?.namaPart ?? '').trim()
+        if (!kode || !nama) {
+          lewatTanpaKode++
+          continue
+        }
+        items.push({
+          serviceRequestId: t.id,
+          noTiket: t.noTiket,
+          kodePart: kode,
+          namaPart: nama,
+          qty: p.qty,
+          toko: t.unitAsset.toko?.namaToko ?? '-',
+          serialNumber: t.unitAsset.serialNumber || '-',
+          modelUnit: t.unitAsset.modelUnit || '-',
+        })
+      }
+    }
+    if (items.length === 0) {
+      return NextResponse.json(
+        { error: 'Tiket terpilih belum punya part dengan kode+nama. Lengkapi part di tiket dulu.' },
+        { status: 400 }
+      )
+    }
+
+    // Nomor dokumen harian: SJR-YYYYMMDD-NNNN (tiap unduhan = 1 dokumen baru —
+    // riwayat lengkap, tgl request tiket tidak diubah ulang setelah terisi).
+    const now = new Date()
+    const ymd = now.toISOString().slice(0, 10).replace(/-/g, '')
+    const startOfDay = new Date(now)
+    startOfDay.setHours(0, 0, 0, 0)
+    const usedToday = await db.suratJalanRequest.count({
+      where: { tglRequest: { gte: startOfDay } },
+    })
+    const noSurat = `SJR-${ymd}-${String(usedToday + 1).padStart(4, '0')}`
+    const totalQty = items.reduce((a, i) => a + (i.qty || 1), 0)
+
+    const sjr = await db.suratJalanRequest.create({
+      data: {
+        noSurat,
+        tglRequest: now,
+        dibuatOleh: aktor,
+        totalTiket: tickets.length,
+        totalItem: items.length,
+        totalQty,
+        lewatTanpaKode,
+        items: {
+          create: items.map((i) => ({
+            serviceRequestId: i.serviceRequestId,
+            noTiket: i.noTiket,
+            kodePart: i.kodePart,
+            namaPart: i.namaPart,
+            qty: i.qty,
+            toko: i.toko,
+            serialNumber: i.serialNumber,
+            modelUnit: i.modelUnit,
+          })),
+        },
+      },
+    })
+
+    // Tandai tiket — tgl request ditampilkan di bawah badge REQUEST.
+    await db.serviceRequest.updateMany({
+      where: { noTiket: { in: noTiketList }, tglRequestPart: null },
+      data: { tglRequestPart: now },
+    })
+
+    await logAudit({
+      aksi: 'CETAK_SJ_REQUEST',
+      entitas: 'surat_jalan_request',
+      entitasId: noSurat,
+      deskripsi: `Surat jalan request part: ${tickets.length} tiket · ${items.length} item · ${totalQty} pcs${lewatTanpaKode ? ` · ${lewatTanpaKode} part lewat (kode/nama kurang)` : ''}`,
+      aktor,
+    })
+    await autoGitBackup('CREATE', 'surat_jalan_request', noSurat, aktor)
+
+    if (!format) {
+      return NextResponse.json({
+        ok: true,
+        id: sjr.id,
+        noSurat,
+        tglRequest: now,
+        totalItem: items.length,
+        totalQty,
+        lewatTanpaKode,
+      })
+    }
+
+    const settings = await db.pengaturan.findMany()
+    const s: Record<string, string> = {}
+    for (const row of settings) s[row.kunci] = row.nilai
+    const infoToko = {
+      nama: s['nama_perusahaan'] ?? 'Workshop',
+      alamat: s['alamat_perusahaan'] ?? '-',
+      email: (s['email_perusahaan'] ?? '').trim(),
+    }
+
+    if (format === 'pdf') {
+      const pdf = await buatPdf({ noSurat, tglRequest: now, items, infoToko, totalQty })
+      return new NextResponse(pdf, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="Surat-Jalan-Request-${noSurat}.pdf"`,
+        },
+      })
+    }
+    const xlsx = buatXlsx({ noSurat, tglRequest: now, items, totalQty, lewatTanpaKode })
+    return new NextResponse(xlsx, {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="Surat-Jalan-Request-${noSurat}.xlsx"`,
+      },
+    })
+  } catch (error) {
+    console.error('Surat jalan REQUEST error:', error)
+    return NextResponse.json({ error: 'Gagal membuat surat jalan request' }, { status: 500 })
+  }
+}
+
+// ============ PDF A4 landscape (jspdf) — kop + Tanggal Request + tabel ============
+async function buatPdf(param: {
+  noSurat: string
+  tglRequest: Date
+  items: ItemBaris[]
+  totalQty: number
+  infoToko: { nama: string; alamat: string; email: string }
+}): Promise<ArrayBuffer> {
+  const jsPDFModule = await import('jspdf')
+  const jsPDF = jsPDFModule.jsPDF
+  const { noSurat, tglRequest, items, totalQty, infoToko } = param
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' })
+  const pageW = doc.internal.pageSize.getWidth() // 297
+  const pageH = doc.internal.pageSize.getHeight() // 210
+  const M = 12
+  const tableRight = pageW - M
+  const tglCetak = tglRequest.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+  const qrPayload = `SJR:${noSurat}|ITEM:${items.length}|QTY:${totalQty}`
+  const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1 })
+
+  let y = 0
+  const drawPageHeader = () => {
+    const T = 14
+    doc.setTextColor(30, 41, 59)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(14)
+    doc.text('SURAT JALAN REQUEST PART', M, T + 8)
+    // Baris DI BAWAH judul REQUEST: tanggal request dokumen ini.
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.text(`Tanggal Request : ${tglCetak}`, M, T + 15)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(9)
+    doc.text(`No. ${noSurat}`, M, T + 21)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text(infoToko.nama, pageW - M, T + 7, { align: 'right' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.text(infoToko.alamat, pageW - M, T + 13, { align: 'right', maxWidth: 100 })
+    if (infoToko.email) doc.text(infoToko.email, pageW - M, T + 18, { align: 'right', maxWidth: 110 })
+    doc.setDrawColor(30, 41, 59)
+    doc.setLineWidth(0.8)
+    doc.line(M, T + 27, pageW - M, T + 27)
+    doc.setLineWidth(0.2)
+    y = T + 34
+  }
+  drawPageHeader()
+
+  const judul = (t: string, maxW: number): string => {
+    if (doc.getTextWidth(t) <= maxW) return t
+    let c = t
+    while (c.length > 1 && doc.getTextWidth(c + '…') > maxW) c = c.slice(0, -1)
+    return c + '…'
+  }
+
+  const cols: { title: string; x: number; w: number }[] = [
+    { title: 'No', x: M, w: 8 },
+    { title: 'No. Tiket', x: M + 8, w: 30 },
+    { title: 'Toko', x: M + 38, w: 34 },
+    { title: 'Serial Number', x: M + 72, w: 27 },
+    { title: 'Model Unit', x: M + 99, w: 38 },
+    { title: 'Kode Part', x: M + 137, w: 30 },
+    { title: 'Nama Part', x: M + 167, w: 74 },
+    { title: 'Qty', x: M + 241, w: 20 },
+  ]
+
+  const drawTableHeader = () => {
+    doc.setFillColor(226, 232, 240)
+    doc.rect(M, y - 4.5, tableRight - M, 7, 'F')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+    for (const c of cols) doc.text(c.title, c.x + 1.5, y)
+    doc.setDrawColor(100, 116, 139)
+    doc.rect(M, y - 4.5, tableRight - M, 7)
+    for (const c of cols) doc.line(c.x, y - 4.5, c.x, y + 2.5)
+    doc.line(tableRight, y - 4.5, tableRight, y + 2.5)
+    y += 7
+    doc.setFont('helvetica', 'normal')
+  }
+  drawTableHeader()
+
+  items.forEach((i, idx) => {
+    if (y > pageH - 26) {
+      doc.addPage()
+      drawPageHeader()
+      drawTableHeader()
+    }
+    doc.setFontSize(8)
+    const rowH = 6
+    doc.setTextColor(30, 41, 59)
+    doc.text(String(idx + 1), cols[0].x + 1.5, y)
+    doc.text(judul(i.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
+    doc.text(judul(i.toko, cols[2].w - 2), cols[2].x + 1.5, y)
+    doc.text(judul(i.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
+    doc.text(judul(i.modelUnit, cols[4].w - 2), cols[4].x + 1.5, y)
+    doc.setFont('courier', 'bold')
+    doc.text(judul(i.kodePart, cols[5].w - 2), cols[5].x + 1.5, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(judul(i.namaPart, cols[6].w - 2), cols[6].x + 1.5, y)
+    doc.text(String(i.qty), tableRight - 1.5, y, { align: 'right' })
+    doc.setDrawColor(203, 213, 225)
+    doc.line(M, y + 2.5, tableRight, y + 2.5)
+    y += rowH
+  })
+
+  // Ringkasan + catatan tindak lanjut
+  if (y > pageH - 30) {
+    doc.addPage()
+    drawPageHeader()
+  }
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.text(`Total : ${items.length} item · ${totalQty} pcs · ${new Set(items.map((i) => i.toko)).size} toko`, M, y + 6)
+
+  const qrX = tableRight - 24
+  doc.addImage(qrDataUrl, 'PNG', qrX, 8, 20, 20)
+  doc.setFontSize(6)
+  doc.setTextColor(100, 116, 139)
+  doc.text('Scan QR verifikasi', qrX + 10, 30, { align: 'center' })
+
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  doc.text(
+    'Part diorder ke produsen dan bisa datang bertahap — tgl tiba dicatat pada modul "Part Masuk (Surat Jalan Produsen)".',
+    M,
+    y + 14,
+    { maxWidth: tableRight - M }
+  )
+  doc.text(
+    'Untuk melacak kiriman per toko / tiket / kode: buka Lacak Sparepart → Part Datang.',
+    M,
+    y + 19,
+    { maxWidth: tableRight - M }
+  )
+  doc.setTextColor(30, 41, 59)
+
+  return doc.output('arraybuffer')
+}
+
+// ============ XLSX — 2 sheet: Request (baris) + Ringkasan (per toko) ============
+function buatXlsx(param: {
+  noSurat: string
+  tglRequest: Date
+  items: ItemBaris[]
+  totalQty: number
+  lewatTanpaKode: number
+}): ArrayBuffer {
+  const { noSurat, tglRequest, items, totalQty, lewatTanpaKode } = param
+  const tglText = `${tglRequest.toLocaleDateString('id-ID')} ${tglRequest.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+
+  const wb = XLSX.utils.book_new()
+  const body = items.map((i, idx) => [
+    idx + 1,
+    i.noTiket,
+    i.toko,
+    i.serialNumber,
+    i.modelUnit,
+    i.kodePart,
+    i.namaPart,
+    i.qty,
+    tglText,
+  ])
+  const request = XLSX.utils.aoa_to_sheet([
+    ['SURAT JALAN REQUEST PART', '', '', '', ''],
+    [`No. ${noSurat}`, '', '', '', ''],
+    [`Tanggal Request : ${tglText}`, '', '', '', ''],
+    [],
+    ['No', 'No. Tiket', 'Toko', 'Serial Number', 'Model Unit', 'Kode Part', 'Nama Part', 'Qty', 'Tgl Request'],
+    ...body,
+  ])
+  XLSX.utils.book_append_sheet(wb, request, 'Request')
+
+  // Ringkasan per toko — langsung menjawab "part ini untuk toko mana".
+  const tokoMap = new Map<string, { item: number; qty: number }>()
+  for (const i of items) {
+    const cur = tokoMap.get(i.toko) ?? { item: 0, qty: 0 }
+    cur.item++
+    cur.qty += i.qty || 1
+    tokoMap.set(i.toko, cur)
+  }
+  const ringkasan = XLSX.utils.aoa_to_sheet([
+    ['No. Surat Jalan', noSurat],
+    ['Tanggal Request', tglText],
+    ['Jumlah Tiket', new Set(items.map((i) => i.noTiket)).size],
+    ['Jumlah Item', items.length],
+    ['Total Qty', `${totalQty} pcs`],
+    ['Lewat (kode/nama belum lengkap)', lewatTanpaKode],
+    [],
+    ['Toko', 'Item', 'Qty'],
+    ...[...tokoMap.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([t, v]) => [t, v.item, v.qty]),
+  ])
+  XLSX.utils.book_append_sheet(wb, ringkasan, 'Ringkasan')
+
+  return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+}

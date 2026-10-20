@@ -1,6 +1,28 @@
 # Worklog
 
 ---
+Task ID: 26
+Agent: GLM (opencode)
+Task: Surat Jalan REQUEST part disimpan + tgl request di badge; pencarian "Part Datang" di Lacak Sparepart
+
+Work Log:
+- Motif user: kiriman part ke produsen sering datang TIDAK serentak — workshop bingung kiriman untuk toko mana; minta data "Surat Jalan" disimpan + tgl request di bawah tulisan REQUEST, plus pencarian part datang (tgl datang, per toko, per tiket, kode, nama, kerusakan, status, serial/model) di dalam Lacak Sparepart
+- Temuan bug lama: tombol "Surat Jalan" menembak POST /api/surat-jalan (route penyimpan draft Part Masuk yang wajib noSuratJalan) → unduhan PDF/Excel selalu 400 "Nomor surat jalan wajib diisi" — generator cetak TIDAK pernah ikut
+- Schema: ServiceRequest + tglRequestPart DateTime?; model baru SuratJalanRequest (noSurat SJR-YYYYMMDD-NNNN unique, tglRequest, totalTiket/Item/Qty, lewatTanpaKode) + SuratJalanRequestItem (snapshot noTiket, kode, nama, qty, toko, serial, model, serviceRequestId); prisma db push terverifikasi via migrate diff → "No difference detected" (backup DB otomatis di awal build)
+- API baru POST /api/surat-jalan-request: validasi + snapshot + SIMPAN dokumen + updateMany tglRequestPart (request pertama yang menang) + audit + git backup; format=pdf → jspdf A4 landscape (kop: judul SURAT JALAN REQUEST PART, baris "Tanggal Request : <tgl>" di bawahnya, QR verifikasi, tabel No/Tiket/Toko/SN/Model/Kode/Nama/Qty, multi page); format=xlsx → 2 sheet (Request + Ringkasan per toko)
+- Dialog surat-jalan-dialog.tsx diarahkan ke endpoint baru + invalidate service-tickets pasca unduh (badge langsung muncul) + catatan tgl request tercatat
+- service-view: badge REQUEST kini punya "Req: dd/mm" di bawahnya (hanya tiket REQUEST+punya tglRequestPart)
+- API baru GET /api/sparepart/datang?q=&take=: rows dari SuratJalanMasukItem + tiket (cocokTiketId) → tglDatang=tglPartDatang??(DITERAPKAN→diterapkanAt); multi token AND mencakup kode/nama/tiket/toko/serial/model/kerusakan/status/statusPart/noSJR/status SJ/tgl (dd/mm/yy); urut tgl datang desc, belum datang baris tetap tampil (status SJ DRAFT/DIPERIKSA terlihat)
+- Lacak Sparepart: kartu "Part Datang — Surat Jalan Produsen" di paling atas (muat 200 baris terkini saat dibuka; kotak bebas multi kata; badge jumlah baris+tiket; tabel Tgl Datang(+tgl surat)/No SJ+status SJ/Kode (KodeSparepart salin)/Nama/Qty/No Tiket/Toko/Serial-Model/Status tiket+status part/Kerusakan)
+- Verifikasi: tsc + eslint kosong; deploy urutan aman: pm2 stop → db push → npm run build → start; GET / 200; endpoint datang tanpa sesi = 401 (terparam, terproteksi); PM2 online
+
+Stage Summary:
+- Klik "Surat Jalan" sekarang: dokumen SJR tersimpan + tiket mendapat tanggal request + PDF/Excel berisi "Tanggal Request" di bawah judul + ringkasan per toko
+- Jawab persoalan "kiriman untuk toko mana": buka Lacak Sparepart → kartu Part Datang paling atas; cari per toko/tiket/kode/tgl datang lalu lihat kolom Toko & Serial/Model
+- Batas: pencarian menjangkau 60 surat jalan masuk terakhir & 200 baris; dokumen SJR tak bisa disunting (tiap unduhan = dokumen riwayat baru); part dengan kode/nama belum lengkap tidak ikut dokumen (terhitung sebagai lewat)
+- File berubah: prisma/schema.prisma, lib/types.ts, api/surat-jalan-request (baru), api/sparepart/datang (baru), surat-jalan-dialog.tsx, service-view.tsx, sparepart-finder-view.tsx
+
+---
 Task ID: 25
 Agent: GLM (opencode)
 Task: Audit fungsi background (read-only, izin user — "asal tidak ganggu produksi")

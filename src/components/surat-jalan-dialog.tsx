@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen } from 'lucide-react'
+import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen, CalendarClock } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,8 +12,10 @@ import { useToast } from '@/hooks/use-toast'
 import { authHeaders, formatRupiah, type ServiceTicket } from '@/lib/api'
 
 /**
- * Dialog cetak Surat Jalan kolektif — part rusak unit yang dikirim ke produsen.
+ * Dialog cetak Surat Jalan kolektif — request part ke produsen.
  * Format: PDF (A4 landscape + QR verifikasi) & Excel (.xlsx, 2 sheet).
+ * Setiap unduhan menandai tiket dengan tgl request (tersimpan sebagai dokumen
+ * SJR-YYYYMMDD-NNNN) — part datang kemudian bisa dianalisa di Lacak Sparepart.
  * Unduhan dilakukan via fetch+blob agar bekerja juga di konteks iframe
  * yang memblokir cookie (fallback Bearer header ikut terkirim).
  */
@@ -26,6 +29,7 @@ export default function SuratJalanDialog({
   tickets: ServiceTicket[]
 }) {
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const [busy, setBusy] = useState<'pdf' | 'xlsx' | null>(null)
 
   // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
@@ -49,7 +53,7 @@ export default function SuratJalanDialog({
     if (tickets.length === 0 || busy) return
     setBusy(format)
     try {
-      const res = await fetch('/api/surat-jalan', {
+      const res = await fetch('/api/surat-jalan-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ noTiket: tickets.map((t) => t.noTiket), format }),
@@ -60,7 +64,7 @@ export default function SuratJalanDialog({
       }
       const cd = res.headers.get('content-disposition') ?? ''
       const m = cd.match(/filename="([^"]+)"/)
-      const filename = m?.[1] ?? `Surat-Jalan-${new Date().toISOString().slice(0, 10)}.${format}`
+      const filename = m?.[1] ?? `Surat-Jalan-Request-${new Date().toISOString().slice(0, 10)}.${format}`
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -70,9 +74,11 @@ export default function SuratJalanDialog({
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
+      // Badge REQUEST di baris tiket menampilkan tgl request — segarkan daftar.
+      void queryClient.invalidateQueries({ queryKey: ['service-tickets'] })
       toast({
-        title: `Surat Jalan ${format.toUpperCase()} terunduh`,
-        description: `${filename} · ${tickets.length} tiket · ${totalQty} pcs`,
+        title: `Surat Jalan Request ${format.toUpperCase()} terunduh`,
+        description: `${filename} · tanggal request tercatat & ditulis di dokumen/badge tiket.`,
       })
     } catch (e) {
       toast({
@@ -90,10 +96,10 @@ export default function SuratJalanDialog({
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 pr-8 text-slate-900">
-            <Truck className="h-5 w-5 shrink-0 text-teal-700" /> Cetak Surat Jalan Kolektif
+            <Truck className="h-5 w-5 shrink-0 text-teal-700" /> Surat Jalan Request Part
           </DialogTitle>
           <DialogDescription>
-            Rincian kolektif unit dengan part rusak yang dikirim ke produsen — siap dicetak sebagai PDF maupun Excel.
+            Request part ke produsen — kolektif unit terpilih. Setiap unduhan tersimpan dengan tanggal request; part datangnya dilacak di Lacak Sparepart → Part Datang.
           </DialogDescription>
         </DialogHeader>
 
@@ -157,7 +163,10 @@ export default function SuratJalanDialog({
           <Badge variant="outline" className="shrink-0 border-teal-300 text-[10px] text-teal-700">
             {tickets.length} tiket terpilih
           </Badge>
-          <span className="min-w-0">No. surat jalan otomatis berurutan harian (SJ-YYYYMMDD-0001) + QR verifikasi.</span>
+          <Badge variant="outline" className="gap-1 shrink-0 border-teal-300 text-[10px] text-teal-700">
+            <CalendarClock className="h-3 w-3" /> tgl request tercatat saat unduh
+          </Badge>
+          <span className="min-w-0">No. SJR otomatis (SJR-YYYYMMDD-NNNN) + baris "Tanggal Request" di bawah judul dokumen.</span>
           {tanpaKode > 0 && (
             <span className="min-w-0 text-amber-600">{tanpaKode} part tanpa kode dilewati — lengkapi dulu di tiket.</span>
           )}
