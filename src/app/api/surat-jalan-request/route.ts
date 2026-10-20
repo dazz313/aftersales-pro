@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     const aktor = session?.nama ?? 'SYSTEM'
 
     const body = (await request.json().catch(() => null)) as
-      | { noTiket?: unknown[]; format?: unknown }
+      | { noTiket?: unknown[]; format?: unknown; produsen?: unknown }
       | null
     const noTiketList: string[] = Array.isArray(body?.noTiket)
       ? [...new Set(body.noTiket.map((s: unknown) => String(s).trim()).filter(Boolean))]
@@ -54,6 +54,10 @@ export async function POST(request: Request) {
     if (noTiketList.length > 100) {
       return NextResponse.json({ error: 'Maksimal 100 tiket per surat jalan request' }, { status: 400 })
     }
+    // Produsen tujuan surat ("Kepada: PT ...") — input dialog, atau saran merk
+    // unit dari klien bila kosong; hanya dicatat, tidak divalidasi ke master.
+    const produsenTujuan =
+      typeof body?.produsen === 'string' ? body.produsen.trim().slice(0, 120) : ''
     const format = body?.format === 'xlsx' ? 'xlsx' : body?.format === 'pdf' ? 'pdf' : null
 
     const tickets = await db.serviceRequest.findMany({
@@ -120,6 +124,7 @@ export async function POST(request: Request) {
       data: {
         noSurat,
         tglRequest: now,
+        produsenTujuan: produsenTujuan || null,
         dibuatOleh: aktor,
         totalTiket: tickets.length,
         totalItem: items.length,
@@ -177,7 +182,7 @@ export async function POST(request: Request) {
     }
 
     if (format === 'pdf') {
-      const pdf = await buatPdf({ noSurat, tglRequest: now, items, infoToko, totalQty })
+      const pdf = await buatPdf({ noSurat, tglRequest: now, items, infoToko, totalQty, produsenTujuan, dibuatOleh: aktor })
       return new NextResponse(pdf, {
         headers: {
           'Content-Type': 'application/pdf',
@@ -185,7 +190,7 @@ export async function POST(request: Request) {
         },
       })
     }
-    const xlsx = buatXlsx({ noSurat, tglRequest: now, items, totalQty, lewatTanpaKode })
+    const xlsx = buatXlsx({ noSurat, tglRequest: now, items, totalQty, lewatTanpaKode, produsenTujuan })
     return new NextResponse(xlsx, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -205,10 +210,12 @@ async function buatPdf(param: {
   items: ItemBaris[]
   totalQty: number
   infoToko: { nama: string; alamat: string; email: string }
+  produsenTujuan: string
+  dibuatOleh: string
 }): Promise<ArrayBuffer> {
   const jsPDFModule = await import('jspdf')
   const jsPDF = jsPDFModule.jsPDF
-  const { noSurat, tglRequest, items, totalQty, infoToko } = param
+  const { noSurat, tglRequest, items, totalQty, infoToko, produsenTujuan, dibuatOleh } = param
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' })
   const pageW = doc.internal.pageSize.getWidth() // 297
   const pageH = doc.internal.pageSize.getHeight() // 210
@@ -218,8 +225,16 @@ async function buatPdf(param: {
   const qrPayload = `SJR:${noSurat}|ITEM:${items.length}|QTY:${totalQty}`
   const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1 })
 
+  // Potong teks bila melebar dari kolom
+  const potong = (t: string, maxW: number): string => {
+    if (doc.getTextWidth(t) <= maxW) return t
+    let c = t
+    while (c.length > 1 && doc.getTextWidth(c + '…') > maxW) c = c.slice(0, -1)
+    return c + '…'
+  }
+
   let y = 0
-  const drawPageHeader = () => {
+  const drawPageHeader = (halPertama: boolean) => {
     const T = 14
     doc.setTextColor(30, 41, 59)
     doc.setFont('helvetica', 'bold')
@@ -232,28 +247,33 @@ async function buatPdf(param: {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
     doc.text(`No. ${noSurat}`, M, T + 21)
+    // Kop perusahaan kanan — nama, alamat, email. QR pindah ke kaki dokumen
+    // agar tidak tumpang tindih dengan kop.
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(11)
     doc.text(infoToko.nama, pageW - M, T + 7, { align: 'right' })
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8)
-    doc.text(infoToko.alamat, pageW - M, T + 13, { align: 'right', maxWidth: 100 })
-    if (infoToko.email) doc.text(infoToko.email, pageW - M, T + 18, { align: 'right', maxWidth: 110 })
+    if (infoToko.alamat && infoToko.alamat !== '-') doc.text(potong(infoToko.alamat, 110), pageW - M, T + 13, { align: 'right' })
+    if (infoToko.email) doc.text(`Email: ${infoToko.email}`, pageW - M, T + 19, { align: 'right' })
     doc.setDrawColor(30, 41, 59)
     doc.setLineWidth(0.8)
     doc.line(M, T + 27, pageW - M, T + 27)
     doc.setLineWidth(0.2)
-    y = T + 34
-  }
-  drawPageHeader()
+    y = T + 32
 
-  // Potong teks bila melebar dari kolom
-  const potong = (t: string, maxW: number): string => {
-    if (doc.getTextWidth(t) <= maxW) return t
-    let c = t
-    while (c.length > 1 && doc.getTextWidth(c + '…') > maxW) c = c.slice(0, -1)
-    return c + '…'
+    // Blok tujuan surat (halaman pertama): "Kepada: PT ..." — produsen penerima
+    if (halPertama && produsenTujuan) {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.text('Kepada :', M, y + 5)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(11)
+      doc.text(potong(produsenTujuan, 150), M, y + 11.5)
+      y += 19
+    }
   }
+  drawPageHeader(true)
 
   const cols: { title: string; x: number; w: number }[] = [
     { title: 'No', x: M, w: 8 },
@@ -284,7 +304,7 @@ async function buatPdf(param: {
   items.forEach((i, idx) => {
     if (y > pageH - 26) {
       doc.addPage()
-      drawPageHeader()
+      drawPageHeader(false)
       drawTableHeader()
     }
     doc.setFontSize(8)
@@ -304,37 +324,40 @@ async function buatPdf(param: {
     y += 6
   })
 
-  // Ringkasan + catatan tindak lanjut
-  if (y > pageH - 30) {
-    doc.addPage()
-    drawPageHeader()
-  }
+  // Ringkasan
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(9)
+  doc.setTextColor(30, 41, 59)
   doc.text(`Total : ${items.length} item · ${totalQty} pcs · ${new Set(items.map((i) => i.toko)).size} toko`, M, y + 6)
 
-  const qrX = tableRight - 24
-  doc.addImage(qrDataUrl, 'PNG', qrX, 8, 20, 20)
+  // Zona kaki dokumen — QR verifikasi kiri, tanda tangan kanan (surat resmi).
+  // Catatan internal aplikasi dihapus sesuai permintaan: halaman bersih.
+  if (y > pageH - 58) {
+    doc.addPage()
+    drawPageHeader(false)
+  }
+  const sigY = y + 12
+  doc.addImage(qrDataUrl, 'PNG', M, sigY + 2, 22, 22)
+  doc.setFont('helvetica', 'normal')
   doc.setFontSize(6)
   doc.setTextColor(100, 116, 139)
-  doc.text('Scan QR verifikasi', qrX + 10, 30, { align: 'center' })
+  doc.text('Scan QR verifikasi', M + 11, sigY + 27, { align: 'center' })
 
-  doc.setTextColor(100, 116, 139)
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7.5)
-  doc.text(
-    'Part diorder ke produsen dan bisa datang bertahap — tgl tiba dicatat pada modul "Part Masuk (Surat Jalan Produsen)".',
-    M,
-    y + 14,
-    { maxWidth: tableRight - M }
-  )
-  doc.text(
-    'Untuk melacak kiriman per toko / tiket / kode: buka Lacak Sparepart → Part Datang.',
-    M,
-    y + 19,
-    { maxWidth: tableRight - M }
-  )
   doc.setTextColor(30, 41, 59)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text('Hormat kami,', tableRight, sigY + 4, { align: 'right' })
+  doc.setFontSize(8)
+  doc.setTextColor(100, 116, 139)
+  doc.text(potong(infoToko.nama, 70), tableRight, sigY + 9.5, { align: 'right' })
+  doc.setDrawColor(30, 41, 59)
+  doc.setLineWidth(0.4)
+  doc.line(tableRight - 70, sigY + 24, tableRight, sigY + 24)
+  doc.setLineWidth(0.2)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.setTextColor(30, 41, 59)
+  doc.text(potong(dibuatOleh, 70), tableRight, sigY + 29, { align: 'right' })
 
   return doc.output('arraybuffer')
 }
@@ -346,8 +369,9 @@ function buatXlsx(param: {
   items: ItemBaris[]
   totalQty: number
   lewatTanpaKode: number
+  produsenTujuan: string
 }): ArrayBuffer {
-  const { noSurat, tglRequest, items, totalQty, lewatTanpaKode } = param
+  const { noSurat, tglRequest, items, totalQty, lewatTanpaKode, produsenTujuan } = param
   const tglText = `${tglRequest.toLocaleDateString('id-ID')} ${tglRequest.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
 
   const wb = XLSX.utils.book_new()
@@ -362,10 +386,12 @@ function buatXlsx(param: {
     i.qty,
     tglText,
   ])
+  const barisKepada = produsenTujuan ? [[`Kepada : ${produsenTujuan}`, '', '', '', '']] : []
   const request = XLSX.utils.aoa_to_sheet([
     ['SURAT JALAN REQUEST PART', '', '', '', ''],
     [`No. ${noSurat}`, '', '', '', ''],
     [`Tanggal Request : ${tglText}`, '', '', '', ''],
+    ...barisKepada,
     [],
     ['No', 'No. Tiket', 'Toko', 'Serial Number', 'Model Unit', 'Kode Part', 'Nama Part', 'Qty', 'Tgl Request'],
     ...body,
@@ -383,6 +409,7 @@ function buatXlsx(param: {
   const ringkasan = XLSX.utils.aoa_to_sheet([
     ['No. Surat Jalan', noSurat],
     ['Tanggal Request', tglText],
+    ...(produsenTujuan ? [['Kepada (Produsen)', produsenTujuan]] : []),
     ['Jumlah Tiket', new Set(items.map((i) => i.noTiket)).size],
     ['Jumlah Item', items.length],
     ['Total Qty', `${totalQty} pcs`],

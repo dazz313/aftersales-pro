@@ -1,6 +1,26 @@
 # Worklog
 
 ---
+Task ID: 29
+Agent: GLM (opencode)
+Task: Surat jalan request lebih resmi — blok "Kepada: PT …", email di kop, QR tidak menimpa kop, catatan internal dihapus
+
+Work Log:
+- Permintaan user terhadap PDF surat jalan request: tambahkan email perusahaan; tambahkan blok tujuan surat "Kepada: PT ..."; barcode/QR yang tumpang tindih dengan kop perusahaan dipindah; tulisan "part order ke produsen…" (catatan internal aplikasi) dihapus karna ini surat resmi untuk produsen
+- Skema: SuratJalanRequest + kolom `produsenTujuan String?` (tercatat per dokumen, masa depan bisa dipakai filter riwayat); db push "in sync"; prisma generate
+- Dialog surat-jalan-dialog: input "Kepada (Produsen)" dengan saran otomatis dari merk unit bila merk semua tiket terpilih sama (hint menampilkan saran/peringatan tidak seragam); kosong = pakai saran; body kini kirim `produsen`
+- POST /api/surat-jalan-request: terima & simpan `produsenTujuan` (trim, maks 120 karakter) dan meneruskan ke generator PDF/XLSX
+- PDF baru: kop kanan bernama/alamat/`Email: …` eksplisit (alamat & email dilewati bila kosong); blok "Kepada :" + nama produsen bold di bawah kop halaman 1 saja; tabel tetap; Zona kaki dokumen: QR verifikasi pindah ke KIRI BAWAH (tidak lagi menimpa kop) berdampingan dengan blok ttd kanan "Hormat kami," + nama workshop + garis tanda tangan + nama pembuat dokumen (dibuatOleh); kedua catatan internal (referensi modul Part Masuk & Lacak Sparepart) DIHAPUS dari dokumen; page-break aman (zona ttd pindah halaman bila tak muat)
+- XLSX: baris `Kepada : …` di sheet Request (saat ada) + `Kepada (Produsen)` di sheet Ringkasan; perbaikan bug spread string per-baris (barisKepada dibungkus array tunggal)
+- Verifikasi: tsc + eslint kosong; deploy (stop → db push → build → start); GET / 200; POST tanpa sesi 401; pm2 save
+
+Stage Summary:
+- Surat jalan request kini layak jadi surat resmi: kop lengkap dengan email, tujuan jelas ("Kepada: PT …"), QR terpisah dari kop, dokumen bebas rujukan internal, plus area tanda tangan
+- Tujuan produsen tersimpan di setiap document SJR meski di print dipilih manual
+- Catatan: alamat/email mengikuti Pengaturan (alamat_perusahaan/email_perusahaan); bila email masih kosong, isi di Pengaturan agar muncul di kop
+- File berubah: prisma/schema.prisma, api/surat-jalan-request/route.ts, surat-jalan-dialog.tsx
+
+---
 Task ID: 28
 Agent: GLM (opencode)
 Task: Perbaikan unduh PDF surat jalan request — endpoint POST tertimpa saat Task 27

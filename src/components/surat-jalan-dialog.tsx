@@ -6,6 +6,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
@@ -31,6 +33,9 @@ export default function SuratJalanDialog({
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState<'pdf' | 'xlsx' | null>(null)
+  // Produsen tujuan ("Kepada: PT ...") yang tercetak di surat — input bebas;
+  // saran otomatis dari merk unit bila semua tiket terpilih merknya sama.
+  const [kepada, setKepada] = useState('')
 
   // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
   const mentah = tickets.flatMap((t) =>
@@ -48,6 +53,8 @@ export default function SuratJalanDialog({
   const totalQty = items.reduce((a, i) => a + i.qty, 0)
   const totalNilai =
     tickets.reduce((a, t) => a + (t.nilaiKlaim ?? 0), 0)
+  const merkSet = [...new Set(tickets.map((t) => (t.unitAsset.merk || '').trim()).filter(Boolean))]
+  const merkUmum = merkSet.length === 1 ? merkSet[0] : ''
 
   async function download(format: 'pdf' | 'xlsx') {
     if (tickets.length === 0 || busy) return
@@ -56,7 +63,11 @@ export default function SuratJalanDialog({
       const res = await fetch('/api/surat-jalan-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ noTiket: tickets.map((t) => t.noTiket), format }),
+        body: JSON.stringify({
+          noTiket: tickets.map((t) => t.noTiket),
+          format,
+          produsen: (kepada.trim() || merkUmum) || undefined,
+        }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -170,6 +181,25 @@ export default function SuratJalanDialog({
           {tanpaKode > 0 && (
             <span className="min-w-0 text-amber-600">{tanpaKode} part tanpa kode dilewati — lengkapi dulu di tiket.</span>
           )}
+        </div>
+
+        {/* Kepada (produsen tujuan) — tercetak di surat resmi: "Kepada: PT ..." */}
+        <div className="space-y-1">
+          <Label className="text-[11px] text-slate-600">Kepada (Produsen)</Label>
+          <Input
+            value={kepada}
+            onChange={(e) => setKepada(e.target.value)}
+            placeholder="mis. PT SANY INDONESIA"
+            className="h-8 max-w-sm text-xs"
+          />
+          <p className="text-[10px] leading-relaxed text-slate-500">
+            Tercetak sebagai blok "Kepada: …" di surat.
+            {merkUmum ? (
+              <> Kosongkan untuk memakai saran otomatis dari merk unit: <b>{merkUmum}</b>.</>
+            ) : (
+              <> Isi manual — merk unit tiket terpilih tidak seragam, tidak ada saran otomatis.</>
+            )}
+          </p>
         </div>
 
         <DialogFooter className="gap-2">

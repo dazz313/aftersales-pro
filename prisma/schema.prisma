@@ -465,6 +465,9 @@ model SuratJalanRequest {
   id              Int                     @id @default(autoincrement())
   noSurat         String                  @unique // SJR-YYYYMMDD-NNNN
   tglRequest      DateTime                @default(now())
+  // Produsen tujuan surat ("Kepada: PT ...") — diisi manusiawi saat unduh;
+  // saran otomatis dari merk unit tiket terpilih bila semua sama.
+  produsenTujuan  String?
   dibuatOleh      String?
   totalTiket      Int                     @default(0)
   totalItem       Int                     @default(0)
