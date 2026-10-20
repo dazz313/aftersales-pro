@@ -1,6 +1,25 @@
 # Worklog
 
 ---
+Task ID: 34
+Agent: GLM (opencode)
+Task: Analisa AI "Kirim vs Terima" untuk surat jalan masuk + tampilan teks asli OCR vs saran AI
+
+Work Log:
+- Latar: file Excel surat jalan dari produsen hasil OCR sering salah ketik kode part; pencocokan & tautan manual selama ini mensyaratkan kode persis (NORM) sehingga baris salah-baca tak bisa ditaut; user pilih skop Celah A+B, pemicu TOMBOL MANUAL (bukan on-upload)
+- Endpoint baru POST /api/surat-jalan/[id]/analisa (manual, tanpa menulis DB): sisi KIRIM = dokumen SJR (refSjrNo bila diisi; selain itu SJR yang memuat tiket-tiket draft), sisi TERIMA = baris draft; pasangan deterministik per (tiket|kodeN): SAMA / BEDA_QTY / KIRIM_TANPA_TERIMA (dgn catatan "diterima via doc lain" bila korban dokumen lain) / TERIMA_TANPA_KIRIM; saran penautan baris belum tertaut: skor deterministik (SN sama 60 + jembatan doc kirim 25 + kemiripan nama/kode maks 15, threshold 75) lalu sisa (maks 40 baris, kandidat 120) diteruskan ke AI yang WAJIB memilih key kandidat yang ada (tidak bisa mengarang) + yakin 0-100; model & sumber dok kirim ikut ditampilkan; audit ANALISA_SJ "tanpa perubahan data"
+- api/surat-jalan/[id]/item: mode baru asalSaran='AI' — syarat kemiripan kode DILONGGARKAN (kandidat harus tetap ada), kode baris DIBENARKAN ke kode kandidat, kode asli tercatat di alasan + Audit Log ("Saran AI diterima oleh X — kode documen 'Y' → 'Z'"); otherwise tautan manual seperti dulu (kode NORM wajib)
+- api/surat-jalan/match: prompt AI kini minta yakin (0-100) — preview menampilkan "AI xx%" dgn tooltip keterangan; response items + `yakin`
+- lib/surat-jalan.ts: HasilBaris + `yakin?: number`; `similarity` kini diekspor (dipakai analisa); types.ts: SJBaris+`yakin`, tipe baru SJPasangan/SJPasanganKirim/SJSaran/SJAnalisaHasil (re-eksport via api.ts)
+- Dialog surat-jalan-masuk: tombol "Analisa AI (Kirim vs Terima)" di baris aksi DRAFT; panel hasil: ringkasan hitungan + tabel pasangan (badge status, kirim via SJR+qty, terima dll) + tabel saran (kode asli rose → saran emerald, badge AI %, ref SJR, alasan) dgn tombol "Terima" per baris & "Terima semua saran yakin (≥90%)" (loop mutateAsync); saran yang diterima hilang dr panel (state lokal); state dibersihkan saat tutup/hapus/ganti draft
+- Verifikasi: tsc + eslint kosong; deploy pm2 stop → npm run build → pm2 start → pm2 save (route analisa terdaftar di daftar build); GET / 200; POST /api/surat-jalan/1/analisa tanpa sesi → 401
+
+Stage Summary:
+- Data kirim & terima kini bisa dibandingkan satu layar sebelum diterapkan — selisih qty, part belum dikirim produsen, dan barisan tak dikenal langsung terlihat; AI hanya MENYARANKAN (skor + alasan), status blokir aturan keras tetap penentu
+- Baris salah ketik OCR tak lagi jalan buntu: bisa ditaut via saran AI (skor ≥75 deterministik atau AI), kode asli terdokumentasi
+- File berubah: api/surat-jalan/[id]/analisa/route.ts (baru), api/surat-jalan/[id]/item/route.ts, api/surat-jalan/match/route.ts, lib/surat-jalan.ts, lib/types.ts, lib/api.ts, surat-jalan-masuk-dialog.tsx
+
+---
 Task ID: 33
 Agent: GLM (opencode)
 Task: Part terpasang tak bisa dihapus + cache kode/nama part + gabung kembar di FINISH

@@ -352,7 +352,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                         const kand: SJKandidat | undefined = [...(b.cocokCand ? [b.cocokCand] : []), ...b.opsi].find((k) => k.key === (sjPilih[i] || b.cocokKey))
                         return (
                           <TableRow key={i}>
-                            <TableCell className="font-mono text-[11px]">{b.kodePart}</TableCell>
+                            <TableCell className="font-mono text-[11px]" title={b.keterangan || undefined}>{b.kodePart}</TableCell>
                             <TableCell className="max-w-40 truncate text-[11px]" title={b.namaPart}>{b.namaPart || '—'}</TableCell>
                             <TableCell className="text-[11px]">{b.qty}</TableCell>
                             <TableCell className="font-mono text-[11px]">{b.serialNumber || '—'}</TableCell>
@@ -360,6 +360,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                               <Badge variant="outline" className={b.statusMatch === 'COCOK' ? 'border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700' : 'border-amber-300 bg-amber-50 text-[10px] text-amber-700'}>
                                 {b.statusMatch === 'COCOK' ? 'COCOK' : 'TANPA TIKET'}
                               </Badge>
+                              {b.yakin != null && <span className="ml-1 text-[9px] text-indigo-600" title={b.keterangan}>AI {b.yakin}%</span>}
                             </TableCell>
                             <TableCell>
                               {kand && b.statusMatch === 'COCOK' ? (
