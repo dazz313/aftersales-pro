@@ -10,19 +10,17 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 /**
- * Surat Jalan REQUEST part ke Produsen (kolektif, keluar).
- *
- * Dipanggil dialog cetak "Surat Jalan" di Service Tiket. Setiap unduhan:
- * 1. Data request DISIMPAN sebagai dokumen SJR-YYYYMMDD-NNNN (snapshot
- *    tiket + part + qty + toko + serial/model) — tidak lagi sekadar print.
- * 2. Tiket yang belum punya ditandai `tglRequestPart` (request pertama yang
- *    menang) → tampil di bawah badge REQUEST pada baris tiket.
- * 3. Dokumen PDF/Excel dibuat dengan baris "Tanggal Request :" tepat
- *    di bawah judul REQUEST — pembanding saat part datang bertahap.
- *
- * POST body: { noTiket: string[], format?: 'pdf' | 'xlsx' }
- * - dengan format → file attachment (PDF A4 landscape / XLSX 2 sheet)
- * - tanpa format  → JSON { noSurat, tglRequest, totalItem, totalQty }
+ * Satu route, dua peran:
+ * - POST — Surat Jalan REQUEST part ke Produsen (keluar). Dipanggil dialog
+ *   cetak "Surat Jalan" di Service Tiket. Setiap unduhan: (1) data request
+ *   DISIMPAN sebagai dokumen SJR-YYYYMMDD-NNNN (snapshot tiket + part + qty
+ *   + toko + serial/model); (2) tiket ditandai `tglRequestPart` (request
+ *   pertama yang menang) → tampil di bawah badge REQUEST; (3) dokumen
+ *   PDF/Excel dibuat dengan baris "Tanggal Request :" tepat di bawah judul.
+ *   Body: { noTiket: string[], format?: 'pdf' | 'xlsx' } — tanpa format → JSON.
+ * - GET — riwayat 10 dokumen request terakhir PLUS cross-check ke surat
+ *   jalan masuk: diterima (pasangan kode|tiket ada di SJ DITERAPKAN),
+ *   dicatat (di DRAF/DIPERIKSA), belum (tak ada jejakkiriman).
  */
 
 interface ItemBaris {
@@ -35,6 +33,8 @@ interface ItemBaris {
   serialNumber: string
   modelUnit: string
 }
+
+const NORM = (s: string) => (s || '').toUpperCase().replace(/[^A-Z0-9#]/g, '')
 
 export async function POST(request: Request) {
   try {
@@ -73,8 +73,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Snapshot item — hanya part dengan kode+nama lengkap (part belum keisi
-    // komunikasinya ke user via angka lewat di dialog; koreksi dulu di tiket).
+    // Snapshot item — hanya part dengan kode+nama lengkap (yang belum keisi
+    // komunikasi part dilewatkan; angka lewatnya ikut dilaporkan di dokumen).
     const items: ItemBaris[] = []
     let lewatTanpaKode = 0
     for (const t of tickets) {
@@ -247,7 +247,8 @@ async function buatPdf(param: {
   }
   drawPageHeader()
 
-  const judul = (t: string, maxW: number): string => {
+  // Potong teks bila melebar dari kolom
+  const potong = (t: string, maxW: number): string => {
     if (doc.getTextWidth(t) <= maxW) return t
     let c = t
     while (c.length > 1 && doc.getTextWidth(c + '…') > maxW) c = c.slice(0, -1)
@@ -287,21 +288,20 @@ async function buatPdf(param: {
       drawTableHeader()
     }
     doc.setFontSize(8)
-    const rowH = 6
     doc.setTextColor(30, 41, 59)
     doc.text(String(idx + 1), cols[0].x + 1.5, y)
-    doc.text(judul(i.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
-    doc.text(judul(i.toko, cols[2].w - 2), cols[2].x + 1.5, y)
-    doc.text(judul(i.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
-    doc.text(judul(i.modelUnit, cols[4].w - 2), cols[4].x + 1.5, y)
+    doc.text(potong(i.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
+    doc.text(potong(i.toko, cols[2].w - 2), cols[2].x + 1.5, y)
+    doc.text(potong(i.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
+    doc.text(potong(i.modelUnit, cols[4].w - 2), cols[4].x + 1.5, y)
     doc.setFont('courier', 'bold')
-    doc.text(judul(i.kodePart, cols[5].w - 2), cols[5].x + 1.5, y)
+    doc.text(potong(i.kodePart, cols[5].w - 2), cols[5].x + 1.5, y)
     doc.setFont('helvetica', 'normal')
-    doc.text(judul(i.namaPart, cols[6].w - 2), cols[6].x + 1.5, y)
+    doc.text(potong(i.namaPart, cols[6].w - 2), cols[6].x + 1.5, y)
     doc.text(String(i.qty), tableRight - 1.5, y, { align: 'right' })
     doc.setDrawColor(203, 213, 225)
     doc.line(M, y + 2.5, tableRight, y + 2.5)
-    y += rowH
+    y += 6
   })
 
   // Ringkasan + catatan tindak lanjut
@@ -394,4 +394,79 @@ function buatXlsx(param: {
   XLSX.utils.book_append_sheet(wb, ringkasan, 'Ringkasan')
 
   return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer
+}
+
+// ===== GET — riwayat 10 dokumen request + cross-check ke surat jalan masuk =====
+// diterima = pasangan kode|tiket ada di SJ DITERAPKAN (resmi, tglPartDatang terisi)
+// dicatat  = pasangan ada di SJ DRAF/DIPERIKSA (produsen tandai kirim, menunggu cek → terapkan)
+// belum    = tak ada jejak kiriman
+export async function GET(request: Request) {
+  try {
+    const { denied } = await requireActiveSession(request)
+    if (denied) return denied
+
+    const [sjs, masuk] = await Promise.all([
+      db.suratJalanRequest.findMany({
+        orderBy: { tglRequest: 'desc' },
+        take: 10,
+        include: { items: { orderBy: { id: 'asc' } } },
+      }),
+      db.suratJalanMasuk.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 60,
+        select: {
+          noSuratJalan: true,
+          status: true,
+          refSjrNo: true,
+          items: { select: { kodePart: true, cocokTiketId: true } },
+        },
+      }),
+    ])
+
+    // Dua keranjang pencocokan: resmi diterima (DITERAPKAN) vs baru dicatat
+    // (DRAF/DIPERIKSA) — tiap keranjang memuat pasangan kode|tiket + daftar kode.
+    const diterima = { pair: new Set<string>(), kode: new Set<string>() }
+    const dicatat = { pair: new Set<string>(), kode: new Set<string>() }
+    for (const s of masuk) {
+      const target = s.status === 'DITERAPKAN' ? diterima : dicatat
+      for (const it of s.items) {
+        const kode = NORM(it.kodePart)
+        target.kode.add(kode)
+        target.pair.add(`${kode}|${it.cocokTiketId ?? 'x'}`)
+      }
+    }
+    const cocok = (serviceRequestId: number | null, kodePart: string, b: typeof diterima): boolean => {
+      const kode = NORM(kodePart)
+      return b.pair.has(`${kode}|${serviceRequestId ?? 'x'}`) || (serviceRequestId == null && b.kode.has(kode))
+    }
+
+    const hasil = sjs.map((s) => {
+      let nDiterima = 0
+      let nDicatat = 0
+      const belum: { noTiket: string; kodePart: string; namaPart: string }[] = []
+      for (const it of s.items) {
+        if (cocok(it.serviceRequestId, it.kodePart, diterima)) nDiterima++
+        else if (cocok(it.serviceRequestId, it.kodePart, dicatat)) nDicatat++
+        else belum.push({ noTiket: it.noTiket, kodePart: it.kodePart, namaPart: it.namaPart ?? '' })
+      }
+      return {
+        noSurat: s.noSurat,
+        tglRequest: s.tglRequest,
+        dibuatOleh: s.dibuatOleh,
+        totalTiket: s.totalTiket,
+        totalItem: s.totalItem,
+        totalQty: s.totalQty,
+        lewatTanpaKode: s.lewatTanpaKode,
+        diterima: nDiterima,
+        dicatat: nDicatat,
+        belum: belum.length,
+        contohBelum: belum.slice(0, 8),
+      }
+    })
+
+    return NextResponse.json(hasil)
+  } catch (error) {
+    console.error('Surat jalan REQUEST GET error:', error)
+    return NextResponse.json({ error: 'Gagal memuat riwayat request surat jalan' }, { status: 500 })
+  }
 }

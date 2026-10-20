@@ -60,6 +60,21 @@ interface DatangRow {
   statusPart: string
 }
 
+/** Satu dokumen Surat Jalan Request (SJR) + hasil cross-check kiriman. */
+interface SjrDoc {
+  noSurat: string
+  tglRequest: string
+  dibuatOleh: string | null
+  totalTiket: number
+  totalItem: number
+  totalQty: number
+  lewatTanpaKode: number
+  diterima: number
+  dicatat: number
+  belum: number
+  contohBelum: { noTiket: string; kodePart: string; namaPart: string }[]
+}
+
 /**
  * Pelacakan sparepart khusus: masukkan MODEL unit + JENIS KERUSAKAN,
  * sistem memindai kumpulan inputan tiket yang tersimpan di database
@@ -234,6 +249,26 @@ export default function SparepartFinderView() {
     DIPERIKSA: 'border-amber-300 text-amber-700',
     DITERAPKAN: 'border-emerald-300 text-emerald-700',
   }
+  // Label ramah alur cek berlapis (nilai DB tetap DRAFT/DIPERIKSA/DITERAPKAN)
+  const SJ_LABEL: Record<string, string> = { DRAFT: 'DRAF', DIPERIKSA: 'SUDAH DICEK', DITERAPKAN: 'PART DITERIMA' }
+
+  // ===== Riwayat Request (SJR) + cross-check: part request mana yang sudah =====
+  // dikirim produsen vs belum — dibuka manual dari klik supaya hemat & tanpa
+  // setState di dalam effect. Verifikasi manual (periksa → terapkan) tetap wajib.
+  const [sjrOpen, setSjrOpen] = useState(false)
+  const [sjrRows, setSjrRows] = useState<SjrDoc[] | null>(null)
+  const [sjrLoading, setSjrLoading] = useState(false)
+  const toggleSjr = () => {
+    const buka = !sjrOpen
+    setSjrOpen(buka)
+    if (buka && sjrRows === null) {
+      setSjrLoading(true)
+      fetcher<SjrDoc[]>('/api/surat-jalan-request')
+        .then(setSjrRows)
+        .catch((e) => toast({ title: 'Riwayat Request gagal dimuat', description: (e as Error).message, variant: 'destructive' }))
+        .finally(() => setSjrLoading(false))
+    }
+  }
 
   // ===== Konsumsi navIntent — klik "Cek kode" dari view lain (tiket/inventory/klaim) =====
   // Isi pencarian Bank Kode dengan kode sasaran, muat hasilnya, lalu scroll ke kartu ini.
@@ -318,7 +353,7 @@ export default function SparepartFinderView() {
                       <TableCell>
                         <p className="font-mono text-[10px] font-semibold text-slate-700">{r.noSuratJalan}</p>
                         <Badge variant="outline" className={cn('mt-0.5 text-[9px]', SJ_CLS[r.sjStatus] ?? 'border-slate-300 text-slate-500')}>
-                          {r.sjStatus}
+                          {SJ_LABEL[r.sjStatus] ?? r.sjStatus}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -363,6 +398,72 @@ export default function SparepartFinderView() {
               </Table>
             </div>
           )}
+
+          {/* Riwayat Request (SJR) + cross-check: sudah dikirim vs belum */}
+          <div className="border-t border-slate-200 pt-3">
+            <button
+              type="button"
+              onClick={toggleSjr}
+              className="flex w-full items-center justify-between gap-2 text-[11px] font-semibold text-slate-700 hover:text-teal-700"
+            >
+              <span className="flex items-center gap-1.5">
+                <BookMarked className="h-3.5 w-3.5" /> Riwayat Request (SJR) — cross-check ke kiriman
+              </span>
+              <span className="text-[10px] font-normal text-slate-400">{sjrOpen ? 'tutup ▲' : 'buka ▼'}</span>
+            </button>
+            {sjrOpen && (
+              <div className="mt-2">
+                {sjrRows === null ? (
+                  <p className="rounded-lg border border-dashed p-3 text-center text-[10px] text-slate-500">
+                    {sjrLoading ? 'Memuat…' : '—'}
+                  </p>
+                ) : sjrRows.length === 0 ? (
+                  <p className="rounded-lg border border-dashed p-3 text-center text-[10px] text-slate-500">
+                    Belum ada dokumen request — pilih tiket di Service Tiket → Surat Jalan → unduh.
+                  </p>
+                ) : (
+                  <div className="overflow-auto rounded-md border">
+                    <Table>
+                      <TableHeader className="bg-slate-50">
+                        <TableRow>
+                          <TableHead className="text-[10px]">No. SJR</TableHead>
+                          <TableHead className="text-[10px]">Tgl Request</TableHead>
+                          <TableHead className="text-[10px] text-right">Item</TableHead>
+                          <TableHead className="text-[10px] text-right">Diterima</TableHead>
+                          <TableHead className="text-[10px] text-right">Dicatat</TableHead>
+                          <TableHead className="text-[10px] text-right">Belum</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sjrRows.map((d) => (
+                          <TableRow key={d.noSurat}>
+                            <TableCell>
+                              <p className="font-mono text-[10px] font-bold text-slate-700">{d.noSurat}</p>
+                              <p className="text-[9px] text-slate-400">{d.totalTiket} tiket · {d.totalQty} pcs</p>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-[11px] text-slate-600">{fmtTgl(d.tglRequest)}</TableCell>
+                            <TableCell className="text-right text-xs">{d.totalItem}</TableCell>
+                            <TableCell className="text-right text-xs font-bold text-emerald-700">{d.diterima}</TableCell>
+                            <TableCell className="text-right text-xs font-semibold text-amber-700">{d.dicatat}</TableCell>
+                            <TableCell
+                              className="text-right text-xs font-bold text-rose-600"
+                              title={d.contohBelum.map((b) => `${b.kodePart} (${b.noTiket})`).join(' · ') || undefined}
+                            >
+                              {d.belum}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+                <p className="mt-1.5 text-[10px] text-slate-400">
+                  Diterima = masuk lewat surat jalan yang PART DITERIMA · Dicatat = produsen sudah tandai kirim (cepat dicek manual) ·
+                  arahkan kursor ke angka Belum untuk lihat kode partnya.
+                </p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

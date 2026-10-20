@@ -1,6 +1,44 @@
 # Worklog
 
 ---
+Task ID: 28
+Agent: GLM (opencode)
+Task: Perbaikan unduh PDF surat jalan request — endpoint POST tertimpa saat Task 27
+
+Work Log:
+- Kejadian: user melaporkan unduh PDF surat jalan part request tidak bisa; akar penyebab bukan generator, melainkan kesalahan agent saat Task 27 — file `api/surat-jalan-request/route.ts` ditulis ulang (write) hanya berisi GET riwayat sehingga endpoint POST pembuat PDF/Excel dari Task 26 HILANG ditimpa; hasilnya dialog cetak menabrak route tanpa POST (405)
+- Sisi log produksi: tail error lama (ChecksumException & tesseract pid 16800) hanya sisa era build lama — tidak berhubungan
+- Perbaikan: gabungkan KEDUA endpoint dalam satu route — POST (validasi + snapshot + simpan SJR + stamp tglRequestPart + audit + backup; format pdf → jspdf A4 landscape; xlsx → 2 sheet helper `potong` untuk teks melebar) DAN GET riwayat (10 SJR terakhir + cross-check diterima/dicatat/belum, pencocokan pasangan kode|tiket + fallback kode bila salah satu sisi belum bertaut)
+- Proses verifikasi diperketat: uji smoke membedakan 401 (route ada, diproteksi) vs 405 (route tidak punya method) — sebelum perbaikan POST 405, sesudah 401
+- Verifikasi: tsc + eslint kosong; deploy urutan aman (stop → build → start, tanpa db push — skema tidak berubah); GET / 200; GET & POST /api/surat-jalan-request tanpa sesi 401; pm2 save
+
+Stage Summary:
+- Unduh PDF/Excel surat jalan request berfungsi kembali; data request + tgl request tetap tersimpan tiap unduhan; riwayat Request SJR di Lacak tidak terganggu
+- Pelajaran dicatat di file: satu route = satu file DIDIK berkembang — ke depan file ditimpa wajib cek isi file lama dulu, dan smoke test per method HTTP, bukan hanya GET
+- File berubah: api/surat-jalan-request/route.ts (dipulihkan + digabung)
+
+---
+Task ID: 27
+Agent: GLM (opencode)
+Task: Label "PART DITERIMA" + identitas SJR-… saat part tiba (cross-check request vs kiriman, cek manual tetap wajib)
+
+Work Log:
+- Persetujuan user: (1) label status surat jalan masuk diganti lebih manusiawi, (2) nomor SJR (task 26) dipakai sebagai kunci identifikasi saat kiriman tiba: petugas menempel nomor SJR-… di dialog Part Masuk → sistem otomatis menandai part request yang benar-benar sudah dikirim vs belum (produsen sering tidak mengirim sekaligus), (3) cek manual tetap wajib — penanda hanya informatif
+- Label label tampilan (nilai DB tetap DRAFT/DIPERIKSA/DITERAPKAN, tanpa migrasi data): DRAFT→DRAF, DIPERIKSA→SUDAH DICEK, DITERAPKAN→PART DITERIMA — map SJ_LABEL di surat-jalan-masuk-dialog (badge riwayat) & sparepart-finder-view (badge kartu Part Datang); toast tindakan tetap istilah "Terapkan Permanen" karena nama tombolnya
+- Skema: SuratJalanMasuk + kolom `refSjrNo String?` (referensi dokumen SJR yang dijawab kiriman); prisma db push "your database is now in sync"; prisma generate ulang supaya tipe client baru terbaca
+- POST /api/surat-jalan (draft): terima `refSjrNo` opsional → validasi dokumen SJR-nya ADA di tabel SuratJalanRequest (400 bila tidak) → disimpan → respons kini membawa `refInfo { noSjr, totalItem, terpenuhi, belum[{noTiket, kodePart, namaPart}] }` hasil pencocokan pasangan (kode part + tiket; kandidat cocok saja); audit log ikut mencatat ref
+- Dialog Part Masuk: kolom "Referensi Request (SJR-…) opsional" + penjelasan; strip teal Cross-check di atas wizard (X/Y part request ada di kiriman + daftar maks 6 yang belum dikirim); toast sukses memuat ringkasan cross-check
+- API baru GET /api/surat-jalan-request: 10 dokumen SJR terakhir + statistik per dokumen — diterima (pasangan ada di SJ DITERAPKAN), dicatat (ada di DRAF/DIPERIKSA), belum (tak ada jejak; arahkan kursor → contoh kode part via contohBelum); pencocokan pasangan kode|tiket, dan fallback kode-saja bila salah satu sisi belum bertaut tiket
+- Lacak Sparepart: seksi lipat "Riwayat Request (SJR)" di dasar kartu Part Datang (muat saat dibuka lewat klik, bukan effect) — tabel No. SJR/Tgl Request/Item/Diterima/Dicatat/Belum + penjelasan warna
+- Verifikasi: tsc + eslint kosong; deploy urutan aman (stop → db push → build → start); GET / 200; endpoint riwayat & datang tanpa sesi 401; pm2 save dijalankan (dump kini mencerminkan proses sekarang)
+
+Stage Summary:
+- Saat part tiba: buka Part Masuk → isi no. surat jalan dari produsen + tempel SJR-… dari request yang dulu dibuat → Simpan Draft → strip langsung menampilkan "berapa part request yang benar-benar dikirim" dan yang belum → lanjut cek manual seperti biasa
+- Riwayat permintaan bisa dipantau kapan saja di Lacak Sparepart → Riwayat Request SJR: kolom Diterima/Dicatat/Belum menjawab "part yang saya minta sudah sampai mana"
+- Batas: pencocokan kehadiran (bukan rekonsiliasi qty); kolom referensi opsional — kiriman tanpa referensi tetap jalan normal; label lama di DB tak diubah
+- File berubah: prisma/schema.prisma, api/surat-jalan/route.ts, api/surat-jalan-request/route.ts (endpoint GET riwayat), surat-jalan-masuk-dialog.tsx, sparepart-finder-view.tsx
+
+---
 Task ID: 26
 Agent: GLM (opencode)
 Task: Surat Jalan REQUEST part disimpan + tgl request di badge; pencarian "Part Datang" di Lacak Sparepart

@@ -411,6 +411,10 @@ model OrderEmailPart {
 model SuratJalanMasuk {
   id            Int                   @id  @default(autoincrement())
   noSuratJalan  String
+  // Referensi ke nomor dokumen request (SJR-YYYYMMDD-NNNN) bila kiriman ini
+  // menjawab surat jalan request ke produsen — dipakai sistem untuk menandai
+  // part request yang benar-benar sudah dikirim (cross-check manual tetap jalan).
+  refSjrNo      String?
   tglSurat      DateTime?
   produsen      String?
   namaFile      String? // nama file Excel/CSV sumber

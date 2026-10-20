@@ -78,6 +78,8 @@ export async function POST(request: Request) {
       namaFile?: string
       aktor?: string
       rows?: (BarisSuratJalan & { pilihKey?: string })[]
+      /** Nomor dokumen request (SJR-…) yang dijawab kiriman ini — opsional. */
+      refSjrNo?: string
     }
     const noSuratJalan = (body.noSuratJalan ?? '').trim()
     if (!noSuratJalan) return NextResponse.json({ error: 'Nomor surat jalan wajib diisi' }, { status: 400 })
@@ -88,6 +90,24 @@ export async function POST(request: Request) {
     if (rows.length > 200) return NextResponse.json({ error: 'Maksimal 200 baris per surat jalan' }, { status: 400 })
     const aktor = body.aktor || 'SYSTEM'
     const tglSurat = body.tglSurat ? new Date(body.tglSurat) : null
+
+    // Referensi request (opsional): bila diisi, wajib dokumen SJR yang sah —
+    // dipakai untuk menandai part request yang benar-benar sudah dikirim.
+    const refSjrNo = (body.refSjrNo ?? '').trim() || null
+    let sjrCek: { noSurat: string; items: { kodePart: string; namaPart: string | null; qty: number; serviceRequestId: number | null; noTiket: string }[] } | null = null
+    if (refSjrNo) {
+      const sjr = await db.suratJalanRequest.findUnique({
+        where: { noSurat: refSjrNo },
+        select: { noSurat: true, items: { select: { kodePart: true, namaPart: true, qty: true, serviceRequestId: true, noTiket: true } } },
+      })
+      if (!sjr) {
+        return NextResponse.json(
+          { error: `Nomor referensi "${refSjrNo}" tidak ditemukan. Cek daftar di Lacak Sparepart → Riwayat Request SJR.` },
+          { status: 400 }
+        )
+      }
+      sjrCek = sjr
+    }
 
     // Cocokkan sisi server (kebal klien); pilihKey preview dihormati bila valid.
     const kandidat = await ambilKandidat()
@@ -111,6 +131,7 @@ export async function POST(request: Request) {
     const sj = await db.suratJalanMasuk.create({
       data: {
         noSuratJalan,
+        refSjrNo,
         tglSurat: tglSurat && !Number.isNaN(tglSurat.getTime()) ? tglSurat : null,
         produsen: (body.produsen ?? '').trim() || null,
         namaFile: (body.namaFile ?? '').slice(0, 200) || undefined,
@@ -135,9 +156,37 @@ export async function POST(request: Request) {
         },
       },
     })
-    await logAudit({ aksi: 'SURAT_JALAN_DRAFT', entitas: 'surat_jalan_masuk', entitasId: noSuratJalan, deskripsi: `Draft surat jalan masuk disimpan: ${hasil.length} baris · ${cocok} cocok (belum diterapkan)`, aktor })
+    await logAudit({ aksi: 'SURAT_JALAN_DRAFT', entitas: 'surat_jalan_masuk', entitasId: noSuratJalan, deskripsi: `Draft surat jalan masuk disimpan: ${hasil.length} baris · ${cocok} cocok (belum diterapkan)${refSjrNo ? ` · ref ${refSjrNo}` : ''}`, aktor })
     await autoGitBackup('CREATE', 'surat_jalan_masuk_draft', noSuratJalan, aktor)
-    return NextResponse.json({ ok: true, id: sj.id, status: 'DRAFT', totalItem: hasil.length, cocokCount: cocok, tanpaTiket: hasil.length - cocok })
+
+    // Cross-check dengan request (bila referensi diisi): tandai part request
+    // yang benar-benar ada di kiriman ini vs yang belum dikirim produsen.
+    // Hanya informatif — cek manual (periksa → terapkan) tetap wajib dijalankan.
+    let refInfo: {
+      noSjr: string
+      totalItem: number
+      terpenuhi: number
+      belum: { noTiket: string; kodePart: string; namaPart: string }[]
+    } | null = null
+    if (sjrCek) {
+      const pasanganDatang = new Set(
+        hasil
+          .filter((h) => h.statusMatch === 'COCOK')
+          .map((h) => `${NORM(h.kodePart)}|${h.cocokKandidat?.serviceRequestId ?? 'x'}`)
+      )
+      const belum: { noTiket: string; kodePart: string; namaPart: string }[] = []
+      let terpenuhi = 0
+      for (const it of sjrCek.items) {
+        const ada =
+          pasanganDatang.has(`${NORM(it.kodePart)}|${it.serviceRequestId ?? 'x'}`) ||
+          (it.serviceRequestId == null && pasanganDatang.has(`${NORM(it.kodePart)}|x`))
+        if (ada) terpenuhi++
+        else belum.push({ noTiket: it.noTiket, kodePart: it.kodePart, namaPart: it.namaPart ?? '' })
+      }
+      refInfo = { noSjr: sjrCek.noSurat, totalItem: sjrCek.items.length, terpenuhi, belum }
+    }
+
+    return NextResponse.json({ ok: true, id: sj.id, status: 'DRAFT', totalItem: hasil.length, cocokCount: cocok, tanpaTiket: hasil.length - cocok, refInfo })
   } catch (error) {
     console.error('Surat jalan DRAFT error:', error)
     return NextResponse.json({ error: 'Gagal menyimpan draft surat jalan' }, { status: 500 })

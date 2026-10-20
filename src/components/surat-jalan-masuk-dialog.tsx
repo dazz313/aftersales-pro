@@ -26,7 +26,11 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
   const queryClient = useQueryClient()
   const aktor = role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop'
   const [sjFile, setSjFile] = useState<File | null>(null)
-  const [sjMeta, setSjMeta] = useState({ noSuratJalan: '', tglSurat: '', produsen: '' })
+  const [sjMeta, setSjMeta] = useState({ noSuratJalan: '', tglSurat: '', produsen: '', refSjrNo: '' })
+  // Hasil cross-check bila kiriman mengisi referensi request SJR-… — strip
+  // informasi "part request mana yang benar-benar sudah dikirim". Hanya
+  // informatif: cek manual (periksa → terapkan) tetap wajib dijalankan.
+  const [sjRefInfo, setSjRefInfo] = useState<{ noSjr: string; totalItem: number; terpenuhi: number; belum: { noTiket: string; kodePart: string; namaPart: string }[] } | null>(null)
   const [sjPreview, setSjPreview] = useState<SJPreview | null>(null)
   const [sjPilih, setSjPilih] = useState<Record<number, string>>({}) // baris → key kandidat pilihan user
   const [sjGunakanAi, setSjGunakanAi] = useState(true)
@@ -38,12 +42,14 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
   const [sjCek, setSjCek] = useState<SJCekHasil | null>(null)
   const [sjCekAkhir, setSjCekAkhir] = useState(false)
   const sjNrm = (s: string) => (s || '').toUpperCase().replace(/[^A-Z0-9#]/g, '')
+  // Label ramah untuk status alur cek berlapis (nilai DB tetap DRAFT/DIPERIKSA/DITERAPKAN).
+  const SJ_LABEL: Record<string, string> = { DRAFT: 'DRAF', DIPERIKSA: 'SUDAH DICEK', DITERAPKAN: 'PART DITERIMA' }
 
   // Tutup dialog: kembalikan ke mode input & bersihkan seluruh status wizard.
   const tutup = (o: boolean) => {
     onOpenChange(o)
     if (!o) {
-      setSjPreview(null); setSjFile(null); setSjPilih({}); setSjCek(null); setSjCekAkhir(false); setSjTicks({}); setSjDraftId(null); setSjMode('INPUT'); setSjCekManual(false); setSjMeta({ noSuratJalan: '', tglSurat: '', produsen: '' })
+      setSjPreview(null); setSjFile(null); setSjPilih({}); setSjCek(null); setSjCekAkhir(false); setSjTicks({}); setSjDraftId(null); setSjMode('INPUT'); setSjCekManual(false); setSjRefInfo(null); setSjMeta({ noSuratJalan: '', tglSurat: '', produsen: '', refSjrNo: '' })
     }
   }
 
@@ -70,6 +76,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
       setSjPreview(p)
       setSjPilih({})
       setSjMeta((m) => ({
+        ...m,
         noSuratJalan: p.noSuratJalan || m.noSuratJalan,
         tglSurat: p.tglSurat ? new Date(p.tglSurat).toISOString().slice(0, 10) : m.tglSurat,
         produsen: p.produsen || m.produsen,
@@ -113,10 +120,11 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
   const sjApplyMutation = useMutation({
     // SIMPAN DRAFT — tanpa efek ke tiket/unit; lanjut: cek berlapis → cek akhir → terapkan.
     mutationFn: () =>
-      postJson<{ ok: boolean; id: number; status: string; totalItem: number; cocokCount: number; tanpaTiket: number }>('/api/surat-jalan', {
+      postJson<{ ok: boolean; id: number; status: string; totalItem: number; cocokCount: number; tanpaTiket: number; refInfo: { noSjr: string; totalItem: number; terpenuhi: number; belum: { noTiket: string; kodePart: string; namaPart: string }[] } | null }>('/api/surat-jalan', {
         noSuratJalan: sjMeta.noSuratJalan.trim() || new Date().toISOString().slice(0, 10).replace(/-/g, ''),
         tglSurat: sjMeta.tglSurat || null,
         produsen: sjMeta.produsen.trim() || null,
+        refSjrNo: sjMeta.refSjrNo.trim() || undefined,
         namaFile: sjPreview?.namaFile,
         aktor,
         rows: (sjPreview?.items ?? []).map((b, i) => ({
@@ -138,8 +146,14 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
       setSjPreview(null)
       setSjFile(null)
       setSjPilih({})
-      setSjMeta({ noSuratJalan: '', tglSurat: '', produsen: '' })
-      toast({ title: `Draft ${r.totalItem} baris tersimpan (belum berpengaruh)`, description: 'Lanjutkan: Cek Berlapis → Cek Akhir → Terapkan Permanen. Draft tidak mengubah tiket/unit apa pun.' })
+      setSjRefInfo(r.refInfo)
+      setSjMeta({ noSuratJalan: '', tglSurat: '', produsen: '', refSjrNo: '' })
+      toast({
+        title: `Draft ${r.totalItem} baris tersimpan (belum berpengaruh)`,
+        description: r.refInfo
+          ? `Ref ${r.refInfo.noSjr}: ${r.refInfo.terpenuhi}/${r.refInfo.totalItem} part request ada di kiriman ini. Lanjutkan: Cek Berlapis → Cek Akhir → Terapkan.`
+          : 'Lanjutkan: Cek Berlapis → Cek Akhir → Terapkan Permanen. Draft tidak mengubah tiket/unit apa pun.',
+      })
     },
     onError: (e: Error) => toast({ title: 'Gagal menyimpan draft surat jalan', description: e.message, variant: 'destructive' }),
   })
@@ -227,12 +241,45 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
           </DialogDescription>
         </DialogHeader>
 
+        {/* Strip cross-check: part request yang benar-benar sudah dikirim produsen */}
+        {sjRefInfo && sjMode === 'DRAFT' && (
+          <div className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-[11px] text-teal-900">
+            <p className="flex flex-wrap items-center gap-1 font-semibold">
+              <Truck className="h-3.5 w-3.5" /> Cross-check {sjRefInfo.noSjr}
+              <Badge variant="outline" className="border-teal-300 text-[9px] text-teal-700">
+                {sjRefInfo.terpenuhi}/{sjRefInfo.totalItem} part request ada di kiriman ini
+              </Badge>
+            </p>
+            {sjRefInfo.belum.length > 0 && (
+              <p className="mt-1 text-teal-800">
+                <span className="font-semibold">{sjRefInfo.belum.length} belum dikirim</span> (produsen tidak selalu
+                mengirim semuanya): {sjRefInfo.belum.slice(0, 6).map((b) => `${b.kodePart} (${b.noTiket})`).join(' · ')}
+                {sjRefInfo.belum.length > 6 ? ' …' : ''}
+              </p>
+            )}
+          </div>
+        )}
+
         {sjMode === 'INPUT' && (
           <div className="space-y-3">
             <div className="grid gap-2 sm:grid-cols-3">
               <div className="space-y-1"><Label>No Surat Jalan</Label><Input value={sjMeta.noSuratJalan} onChange={(e) => setSjMeta({ ...sjMeta, noSuratJalan: e.target.value })} placeholder="mis. SJ-20261018-112" /></div>
               <div className="space-y-1"><Label>Tanggal Surat</Label><Input type="date" value={sjMeta.tglSurat} onChange={(e) => setSjMeta({ ...sjMeta, tglSurat: e.target.value })} /></div>
               <div className="space-y-1"><Label>Produsen</Label><Input value={sjMeta.produsen} onChange={(e) => setSjMeta({ ...sjMeta, produsen: e.target.value })} placeholder="mis. SANY" /></div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[11px] text-slate-600">Referensi Request (SJR-…) — opsional</Label>
+              <Input
+                value={sjMeta.refSjrNo}
+                onChange={(e) => setSjMeta({ ...sjMeta, refSjrNo: e.target.value })}
+                placeholder="mis. SJR-20261020-0001"
+                className="h-8 font-mono text-xs"
+              />
+              <p className="text-[10px] leading-relaxed text-slate-500">
+                Tempel nomor SJR dari surat jalan <b>request part</b> yang pernah diunduh — sistem otomatis menandai
+                part request yang benar-benar sudah dikirim vs yang belum (produsen sering tidak mengirim semuanya
+                sekaligus). Cek manual per baris tetap wajib.
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <input
@@ -501,7 +548,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                   {riwayat.slice(0, 5).map((r) => (
                     <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-slate-200 px-2 py-1 text-[10px] text-slate-500">
                       <span className="flex min-w-0 flex-wrap items-center gap-1.5">
-                        <Badge variant="outline" className={r.status === 'DITERAPKAN' ? 'border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700' : r.status === 'DIPERIKSA' ? 'border-sky-300 bg-sky-50 text-[9px] text-sky-700' : 'border-slate-300 bg-slate-100 text-[9px] text-slate-600'}>{r.status}</Badge>
+                        <Badge variant="outline" className={r.status === 'DITERAPKAN' ? 'border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700' : r.status === 'DIPERIKSA' ? 'border-sky-300 bg-sky-50 text-[9px] text-sky-700' : 'border-slate-300 bg-slate-100 text-[9px] text-slate-600'}>{SJ_LABEL[r.status] ?? r.status}</Badge>
                         <span className="font-mono font-semibold text-slate-700">{r.noSuratJalan}{r.produsen ? ` · ${r.produsen}` : ''}</span>
                         <span>{formatTanggal(r.createdAt)} · {r.cocokCount}/{r.totalItem} cocok</span>
                       </span>
