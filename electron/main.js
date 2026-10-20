@@ -325,8 +325,8 @@ if (!gotLock) {
     }
 
     if (isDev) {
-      // Dev: server Next dev sudah jalan di :3000
-      serverPort = 3000
+      // Dev: server Next dev dijalankan terpisah di :3001 (produksi :3000 via PM2)
+      serverPort = 3001
       buildMenu()
       createWindow(serverPort)
     } else {

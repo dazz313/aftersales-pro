@@ -1,6 +1,39 @@
 # Worklog
 
 ---
+Task ID: 23
+Agent: GLM (opencode)
+Task: Rute pengembangan tetap aman bersama PM2 produksi — dev dipindahkan ke :3001
+
+Work Log:
+- Motif user: tanya apakah masih bisa ngoding setelah aspro-prod dinyalakan PM2 di port 3000 — verdict: bisa, cukup pisahkan port
+- Temuan konflik: package.json "dev": next dev -p 3000 masih menginjak port produksi (yang sudah dinyalakan dan harus tetap merespons); konvensi :3001 sebenarnya sudah tertulis di komentar ecosystem.config.cjs
+- Selaraskan 2 file: package.json "dev" → next dev -p 3001; electron/main.js cabang dev serverPort 3000 → 3001 ( komentar ikut diperbarui) — desktop:dev ikut membaca dev :3001
+- Uji menyeluruh (PM2 hidup + dev nyala serentak): GET http://localhost:3000 = 200, GET http://localhost:3001 = 200 (Next 16.4.0 Turbopack, siap 3 detik); dev server dihentikan pasca-tes, prod tetap 200
+- DETAIL berikutnya yang tercatat: depresi warning "middleware" file convention → di Next 16.4.0 ganti konvensi "proxy" (npx @next/codemod middleware-to-proxy); DB tetap milik satu folder (db/custom.db) → operasi skema (db:push/migrate/restore) sebaiknya saat pm2 stop aspro-prod
+
+Stage Summary:
+- Rute kerja terbentuk: dev = npm run dev (:3001, hot reload) · produksi = PM2 :3000 (auto-start saat login, restart via pm2) · rilis = pm2 stop → npm run build → pm2 start ecosystem.config.cjs
+- Jangan menjalankan `npm start` tangan sendiri (yang jalan adalah milik PM2 — kena EADDRINUSE)
+
+---
+Task ID: 22
+Agent: GLM (opencode)
+Task: Autostart app produksi via PM2 saat PC start (keputusan user: setelah login; entry lama errored dihapus)
+
+Work Log:
+- Motif user: app langsung start di background pakai pm2 saat PC dinyalakan, tanpa start manual
+- pm2 startup tak tersedia di Windows → dipilih jalur login: daftar proses disimpan `pm2 save` → C:\Users\eraco\.pm2\dump.pm2
+- Bersih-bersih: entry PM2 lama "eracool" (errored, npm.cmd sebagai script) dihapus; aspro-prod start via ecosystem.config.cjs → online, GET / 200
+- Helper: C:\Users\eraco\.pm2\pm2-resurrect.vbs (hidden) menjalankan `node ...pm2\bin\pm2 resurrect` tanpa jendela; didaftarkan ke HKCU\Software\Microsoft\Windows\CurrentVersion\Run / "PM2AutoStart" = wscript.exe "...pm2-resurrect.vbs" (tanpa hak admin)
+- Simulasi boot end-to-end: pm2 kill (daemon mati) → wscript helper → aspro-prod pulih online (pid baru), HTTP 200
+
+Stage Summary:
+- App produksi (aspro-prod, port 3000) sekarang otomatis start setelah login Windows — tidak perlu start pm2 manual lagi; coroutine: shortcut desktop "AfterSales Pro.lnk" (buka http://localhost:3000, ikon logo app hasil konversi logo.svg→ico via sharp) — user konfirmasi berjalan baik
+- Antrean proses PM2 berubah hanya jika `pm2 save` dijalankan ulang setelah add/delete app
+- File dibuat di luar repo: C:\Users\eraco\.pm2\pm2-resurrect.vbs + entri registry Run + C:\Users\eraco\.pm2\aspro-prod.ico (shortcut di OneDrive\Desktop)
+
+---
 Task ID: 21
 Agent: GLM (opencode)
 Task: Dropdown section di Pengaturan default semua tertutup
