@@ -1,6 +1,63 @@
 # Worklog
 
 ---
+Task ID: 32
+Agent: GLM (opencode)
+Task: Cetak ulang dokumen pemasangan (rusak/tercecer) + gerbang pemasangan hanya tiket PROSES
+
+Work Log:
+- Permintaan user: (1) dokumen yang sudah masuk Riwayat tetap bisa dicetak ulang — jaga-jaga bila dokumen rusak/tercecer; (2) yang lolos panel pemasangan hanya tiket sudah PROSES (part ready/diterima) — ditemukan 1 part toko Jaya Bessi dari tiket REQUEST bocor ke panel
+- Analisa: nomor dokumen asli selalu rekonstruksi dari waktu pasang (PMS-YYYYMMDD-HHMM dari tglPasang) — cetak ulang TANPA model baru/TANPA migrasi: helper `pmsDocNo(waktu)` dipakai saat sahkan maupun saat cetak ulang sehingga nomor & waktu ASLI identik; SETIAP baris riwayat (termasuk dari sebelum fitur ini) bisa dicetak ulang
+- GET /api/pemasangan: baris riwayat kini memuat `docNo`; ambil SEMUA tiket (tanpa filter status) — riwayat menampilkan sejarah nyata termasuk tiket yang kini FINISH
+- POST /api/pemasangan cabang `cetakUlang:true`: wajib semua item sudah dipasang & satu waktu pasang (satu dokumen), menghasilkan PDF dengan nomor/waktu/oleh ASLI + catatan seekor italic kiri-bawah "Cetak ulang pada …", audit `CETAK_ULANG_PASANG`, nama file Dokumen-Pemasangan-Ulang-<no>.pdf; tidak mengubah penanda apa pun
+- POST normal: gerbang ketat — tiket selain PROSES ditolak per nama tiket ("Tiket SVC-… belum masuk PROSES — hanya unit yang sudah ditarik …"); target = item belum bertanda; tiket FINISH otomatis tak lolos karena status ≠ PROSES
+- Service-view: Riwayat Pemasangan kini dikelompokkan PER DOKUMEN (kepala PMS-… · N part · oleh siapa · waktu) dengan tombol "🖨 Cetak Ulang" per dokumen; kolom "Oleh" dipindah ke kepala seksi; teks deskripsi panel menyebut syarat tiket PROSES
+- Verifikasi: tsc + eslint kosong; deploy (stop → build → start, tanpa db push); GET / 200; GET & POST (cetakUlang) /api/pemasangan tanpa sesi 401; pm2 save
+
+Stage Summary:
+- Riwayat = katalog dokumen: satu nomor PMS = satu dokumen fisik, bisa di-regenerasi utuh kapan pun (baris tanda catatan cetak ulang untuk kontrol dokumen)
+- Panel pemasangan kini hanya memuat tiket PROSES dengan part READY — REQUEST tak lagi bocor (kasus Jaya Bessi beres bila tiketnya belum ditarik)
+- File berubah: api/pemasangan/route.ts, service-view.tsx
+
+---
+Task ID: 31
+Agent: GLM (opencode)
+Task: Dokumen Pemasangan Part → lanskap + kode part utuh + kolom ceklis
+
+Work Log:
+- Permintaan user: dokumen pemasangan part dibuat lanskap supaya kode part tercetak SEMUA (penting untuk cross-check), plus kolom kotak ceklis di ujung baris untuk dicentang manual saat pemasangan
+- buatPdfPemasangan: orientasi portrait → landscape (A4 297×210); kolom kembali diatur — No(8) Tiket(28) Serial(30) Model(32) Kode(36) Nama(104) Qty(12) Cek(19); lebar total 269 mm
+- Kode part kini TIDAK pernah dipotong: helper tulisKode menurunkan ukuran font 8→5 pt bila teks lebih lebar dari kolom (dipasang lewat courier bold), lalu font kembali normal; teks lain tetap memakai potong()
+- Kolom Cek: kotak 5,5 mm (garis 0,3 mm) di tengah kolom tiap baris — untuk dicentang pulpen saat part benar-benar dipasang; kepala kolom berlabel "Cek"; Qty rata kanan di batas kolomnya (bukan tabel kanan)
+- Baris ttd seksi menyesuaikan lebar ("Diterima oleh (Toko)" ke kanan tabel); guard halaman lanjutan tetap
+- Verifikasi: tsc + eslint kosong; deploy (stop → build → start — tanpa db push, skema tak berubah); GET / 200; GET /api/pemasangan tanpa sesi 401; pm2 save
+
+Stage Summary:
+- Cetak ulang dokumen pemasangan: halaman lanskap, semua kode part terbaca utuh untuk cek silang, dan setiap baris punya kotak ceklis yang bisa dicoret saat pemasangan
+- File berubah: api/pemasangan/route.ts
+
+---
+Task ID: 30
+Agent: GLM (opencode)
+Task: Pemasangan Part per Toko — centang item siap pasang → sahkan → waktu pasang tercatat + Dokumen Pemasangan PDF
+
+Work Log:
+- Permintaan user: saat part tiba dan mau dipasang ke unit, item bisa dicentang PER TOKO untuk dokumen pemasangan, sehingga pemasangan terdeteksi per toko dan per waktu pasang
+- Skema: ServiceRequestPart + `tglPasang DateTime?` + `pasangOleh String?` (pemasangan per baris part); db push "in sync"; prisma generate
+- API baru GET /api/pemasangan: dua kelompok — `siap` (part READY belum dipasang: tiket aktif, statusPart READY, bukan jawaban TIDAK_READY, kode+nama lengkap; info toko/serial/model/lokasi unit/status tiket) & `riwayat` (yang dipasang 7 hari terakhir, urut waktu desc)
+- API baru POST /api/pemasangan: body { itemIds, format? } → stamp tglPasang=sekarang + pasangOleh (hanya item belum bertanda; tiket FINISH ditolak) → audit PASANG_PART + git backup; format=pdf → Dokumen Pemasangan (nomor PMS-YYYYMMDD-HHMM dari waktu sah, A4 portrait, kop perusahaan+email, seksi per toko: kepala tabel No/Tiket/Serial/Model/Kode/Nama/Qty + baris ttd "Dipasang oleh (Workshop): <nama> / Diterima oleh (Toko): ____", multi-page aman)
+- Service Tiket: kartu panel "Pemasangan Part (per Toko)" DI ATAS Daftar Tiket (lipat default tertutup; badge jumlah part menunggu & jumlah toko); isi: per toko satu tabel + tombol "Pilih semua/Lepas semua", KodeSparepart klik-salin, chip lokasi unit (di toko/di workshop), toolbar "Sahkan & Cetak Dokumen" / "Sahkan Saja" + counter terpilih; sub-lipatan "Riwayat Pemasangan 7 hari" (waktu pasang, toko, tiket, kode, nama, qty, oleh)
+- Pasca-sahkan: query service-tickets di-refresh, panel dimuat ulang, pilihan reset; toast nama file dokumen
+- Kebersihan kode: satu variabel generator sempat salah ketik memuat karakter non-latin (M+Kiril+Right) — diganti `kanan` via skrip sekali-jalankan; import QRCode tak terpakai dibuang
+- Verifikasi: tsc + eslint kosong; deploy urutan aman (stop → db push → build → start); GET / 200; GET & POST /api/pemasangan tanpa sesi 401 (terparam); pm2 save
+
+Stage Summary:
+- Alur harian: part tiba (Part Masuk) → buka "Pemasangan Part (per Toko)" di Service Tiket → pilih per toko → Sahkan → waktu pasang tercatat per baris part + dokumen per toko siap untuk ditandatangani (ttd)
+- Deteksi: panel Riwayat 7 hari menjawab "kapan part ini dipasang untuk toko mana"; audit log juga menandai PASANG_PART
+- Batas: penanda sekali-sah (tidak bisa diulang lewat panel); riwayat 7 hari; dokumen pemasangan khusus PDF (Excel menyusul bila perlu)
+- File berubah: prisma/schema.prisma, api/pemasangan/route.ts (baru), service-view.tsx
+
+---
 Task ID: 29
 Agent: GLM (opencode)
 Task: Surat jalan request lebih resmi — blok "Kepada: PT …", email di kop, QR tidak menimpa kop, catatan internal dihapus

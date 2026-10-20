@@ -207,6 +207,10 @@ model ServiceRequestPart {
   statusPart       String          @default("READY")
   statusKonfirmasi String          @default("MENUNGGU")
   sumberPart       String          @default("KATALOG") // KATALOG | PRODUSEN (kode dari balasan produsen)
+  // Catatan pemasangan part ke unit — diisi lewat panel "Pemasangan Part":
+  // centang item per toko → sahkan → tgl pasang tercatat + dokumen pemasangan.
+  tglPasang        DateTime?
+  pasangOleh       String?
   // Tanda koreksi baris part (ubah kode/nama/qty oleh Admin/Manager setelah
   // tiket selesai) — tampil kecil "(edited)" di UI untuk pemeriksaan kelak.
   editedAt         DateTime?

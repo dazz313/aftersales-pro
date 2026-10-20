@@ -253,6 +253,144 @@ export default function ServiceView() {
 
   // STTB kolektif per toko (pick up): wajib 1 toko yang sama
   const [sttbBusy, setSttbBusy] = useState(false)
+  // ===== Pemasangan Part (per Toko): centang item siap dipasang → sahkan =====
+  // Part tiba (Surat Jalan Masuk) membuat statusPart READY — panel ini menyaring
+  // yang BELUM dipasang, dikelompokkan per toko; sahkan mencatat tglPasang +
+  // pasangOleh dan bisa mengunduh Dokumen Pemasangan (PDF per toko).
+  interface PasangRow {
+    id: number
+    noTiket: string
+    statusTiket: string
+    lokasiUnit: string
+    kodeToko: string
+    toko: string
+    serial: string
+    model: string
+    kodePart: string
+    namaPart: string
+    qty: number
+    tglPasang: string | null
+    pasangOleh: string | null
+    docNo: string | null
+  }
+  const [pasangOpen, setPasangOpen] = useState(false)
+  const [pasangData, setPasangData] = useState<{ siap: PasangRow[]; riwayat: PasangRow[] } | null>(null)
+  const [pasangLoading, setPasangLoading] = useState(false)
+  const [pasangSel, setPasangSel] = useState<Set<number>>(new Set())
+  const [pasangBusy, setPasangBusy] = useState(false)
+  const [pasangRiwayatOpen, setPasangRiwayatOpen] = useState(false)
+  async function muatPasang() {
+    setPasangLoading(true)
+    try {
+      setPasangData(await fetcher<{ siap: PasangRow[]; riwayat: PasangRow[] }>('/api/pemasangan'))
+    } catch (e) {
+      toast({ title: 'Panel Pemasangan gagal dimuat', description: (e as Error).message, variant: 'destructive' })
+    } finally {
+      setPasangLoading(false)
+    }
+  }
+  function bukaPanelPasang() {
+    const buka = !pasangOpen
+    setPasangOpen(buka)
+    if (buka && pasangData === null) void muatPasang()
+  }
+  const pasangToko = useMemo(() => {
+    const m = new Map<string, PasangRow[]>()
+    for (const r of pasangData?.siap ?? []) {
+      const arr = m.get(r.toko) ?? []
+      arr.push(r)
+      m.set(r.toko, arr)
+    }
+    return [...m.entries()]
+  }, [pasangData])
+  async function sahkanPasang(denganDokumen: boolean) {
+    if (pasangSel.size === 0 || pasangBusy) return
+    const n = pasangSel.size
+    setPasangBusy(true)
+    try {
+      const res = await fetch('/api/pemasangan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ itemIds: [...pasangSel], format: denganDokumen ? 'pdf' : undefined }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal menyahkan pemasangan (${res.status})`)
+      }
+      let filename = ''
+      if (denganDokumen) {
+        const cd = res.headers.get('content-disposition') ?? ''
+        const m = cd.match(/filename="([^"]+)"/)
+        filename = m?.[1] ?? `Dokumen-Pemasangan-${new Date().toISOString().slice(0, 10)}.pdf`
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(url)
+      }
+      void queryClient.invalidateQueries({ queryKey: ['service-tickets'] })
+      setPasangSel(new Set())
+      await muatPasang()
+      toast({
+        title: `${n} part dinyatakan dipasang`,
+        description: denganDokumen ? `${filename} terunduh · waktu pasang tercatat per toko.` : 'Waktu pasang tercatat per toko (lihat Riwayat).',
+      })
+    } catch (e) {
+      toast({ title: 'Gagal menyahkan pemasangan', description: e instanceof Error ? e.message : 'Coba lagi', variant: 'destructive' })
+    } finally {
+      setPasangBusy(false)
+    }
+  }
+  // Riwayat dikelompokkan per dokumen pemasangan (nomor PMS) sehingga satu
+  // dokumen fisik (yang bisa rusak/tercecer) bisa dicetak ulang utuh.
+  const riwayatDokumen = useMemo(() => {
+    const m = new Map<string, PasangRow[]>()
+    for (const r of pasangData?.riwayat ?? []) {
+      const kunci = r.docNo ?? `${r.tglPasang ?? ''}|${r.pasangOleh ?? '-'}`
+      const arr = m.get(kunci) ?? []
+      arr.push(r)
+      m.set(kunci, arr)
+    }
+    return [...m.entries()]
+  }, [pasangData])
+  async function cetakUlangPasang(rows: PasangRow[]) {
+    if (rows.length === 0 || pasangBusy) return
+    const docNo = rows[0].docNo ?? rows[0].tglPasang ?? 'dokumen'
+    setPasangBusy(true)
+    try {
+      const res = await fetch('/api/pemasangan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ itemIds: rows.map((r) => r.id), cetakUlang: true, format: 'pdf' }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal cetak ulang (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `Dokumen-Pemasangan-Ulang-${docNo}.pdf`
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast({ title: `${filename} terunduh`, description: `Cetakan ulang ${docNo} — nomor & waktu pasang asli tetap tertulis.` })
+    } catch (e) {
+      toast({ title: 'Gagal cetak ulang', description: e instanceof Error ? e.message : 'Coba lagi', variant: 'destructive' })
+    } finally {
+      setPasangBusy(false)
+    }
+  }
+
   async function unduhSttbKolektif() {
     const list = sjTickets
     if (list.length === 0 || sttbBusy) return
@@ -476,6 +614,208 @@ export default function ServiceView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* ===== Panel Pemasangan Part (per Toko) ===== */}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <div>
+            <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+              <Wrench className="h-4 w-4 text-teal-700" /> Pemasangan Part (per Toko)
+              {pasangData && pasangData.siap.length > 0 && (
+                <Badge variant="outline" className="border-teal-300 text-[10px] text-teal-700">
+                  {pasangData.siap.length} part menunggu · {[...new Set(pasangData.siap.map((r) => r.toko))].length} toko
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              Hanya tiket PROSES (unit ditarik) dengan part READY/diterima yang lolos: centang per toko → Sahkan → waktu pasang tercatat + Dokumen Pemasangan
+            </CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" onClick={bukaPanelPasang}>
+            {pasangOpen ? <ChevronDown className="mr-1 h-3.5 w-3.5" /> : <Wrench className="mr-1 h-3.5 w-3.5" />}
+            {pasangOpen ? 'Tutup' : 'Buka'}
+          </Button>
+        </CardHeader>
+        {pasangOpen && (
+          <CardContent className="space-y-3">
+            {pasangData === null ? (
+              <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">{pasangLoading ? 'Memuat…' : '—'}</p>
+            ) : pasangData.siap.length === 0 ? (
+              <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">
+                Tidak ada part menunggu pemasangan — part READY sudah tercatat dipasang, atau kiriman belum diterapkan.
+              </p>
+            ) : (
+              <>
+                {pasangToko.map(([toko, rows]) => {
+                  const semuaCeklis = rows.every((r) => pasangSel.has(r.id))
+                  return (
+                    <div key={toko} className="overflow-hidden rounded-lg border">
+                      <div className="flex items-center justify-between gap-2 bg-slate-50 px-3 py-1.5">
+                        <p className="text-xs font-bold text-slate-700">
+                          {toko} <span className="font-normal text-slate-400">· {rows.length} part</span>
+                        </p>
+                        <button
+                          type="button"
+                          className="text-[10px] text-teal-700 hover:underline"
+                          onClick={() => {
+                            const ids = rows.map((r) => r.id)
+                            setPasangSel((prev) => {
+                              const next = new Set(prev)
+                              for (const id of ids) if (semuaCeklis) next.delete(id); else next.add(id)
+                              return next
+                            })
+                          }}
+                        >
+                          {semuaCeklis ? 'Lepas semua' : 'Pilih semua'}
+                        </button>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-8" />
+                            <TableHead className="text-[10px]">No. Tiket</TableHead>
+                            <TableHead className="text-[10px]">Serial / Model</TableHead>
+                            <TableHead className="text-[10px]">Kode Part</TableHead>
+                            <TableHead className="text-[10px]">Nama Part</TableHead>
+                            <TableHead className="text-right text-[10px]">Qty</TableHead>
+                            <TableHead className="text-[10px]">Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {rows.map((r) => (
+                            <TableRow key={r.id} className={cn(pasangSel.has(r.id) && 'bg-teal-50/60')}>
+                              <TableCell>
+                                <Checkbox
+                                  aria-label={`Pilih part ${r.kodePart} — tiket ${r.noTiket}`}
+                                  checked={pasangSel.has(r.id)}
+                                  onCheckedChange={() =>
+                                    setPasangSel((prev) => {
+                                      const next = new Set(prev)
+                                      if (next.has(r.id)) next.delete(r.id); else next.add(r.id)
+                                      return next
+                                    })
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <p className="font-mono text-[11px] font-semibold text-emerald-700">{r.noTiket}</p>
+                                <p className="text-[9px] text-slate-400">{r.lokasiUnit === 'TOKO' ? 'unit di toko' : 'unit di workshop'}</p>
+                              </TableCell>
+                              <TableCell>
+                                <p className="font-mono text-[10px] text-slate-500">{r.serial || '—'}</p>
+                                <p className="max-w-32 truncate text-[10px] text-slate-400" title={r.model || undefined}>{r.model || '—'}</p>
+                              </TableCell>
+                              <TableCell>
+                                <KodeSparepart kode={r.kodePart} nama={r.namaPart} className="text-[11px] text-slate-800" />
+                              </TableCell>
+                              <TableCell>
+                                <p className="max-w-40 truncate text-xs text-slate-700" title={r.namaPart}>{r.namaPart}</p>
+                              </TableCell>
+                              <TableCell className="text-right text-xs font-bold">{r.qty}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="text-[9px]">{r.statusTiket}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )
+                })}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="border-teal-300 text-[10px] text-teal-700">
+                    {pasangSel.size} item dipilih
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-teal-700 text-teal-700 hover:bg-teal-50"
+                    disabled={pasangSel.size === 0 || pasangBusy}
+                    onClick={() => void sahkanPasang(true)}
+                    title="Tandai dipasang + unduh Dokumen Pemasangan (PDF, seksi per toko)"
+                  >
+                    {pasangBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="mr-1 h-3.5 w-3.5" />}
+                    Sahkan &amp; Cetak Dokumen
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={pasangSel.size === 0 || pasangBusy}
+                    onClick={() => void sahkanPasang(false)}
+                  >
+                    <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Sahkan Saja
+                  </Button>
+                </div>
+                {/* Riwayat pemasangan 7 hari — deteksi per toko & waktu pasang */}
+                <div className="border-t border-slate-200 pt-2">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between text-[11px] font-semibold text-slate-600 hover:text-teal-700"
+                    onClick={() => setPasangRiwayatOpen((v) => !v)}
+                  >
+                    <span>Riwayat Pemasangan 7 hari ({pasangData.riwayat.length} part)</span>
+                    <span className="text-[10px] font-normal text-slate-400">{pasangRiwayatOpen ? 'tutup ▲' : 'buka ▼'}</span>
+                  </button>
+                  {pasangRiwayatOpen &&
+                    (pasangData.riwayat.length === 0 ? (
+                      <p className="mt-2 rounded-lg border border-dashed p-3 text-center text-[10px] text-slate-500">
+                        Belum ada pemasangan dalam 7 hari terakhir.
+                      </p>
+                    ) : (
+                      <div className="mt-2 max-h-96 space-y-2 overflow-auto rounded-md border p-2">
+                        {riwayatDokumen.map(([docNo, rows]) => (
+                          <div key={docNo} className="overflow-hidden rounded border">
+                            <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-2.5 py-1.5">
+                              <p className="font-mono text-[10px] font-bold text-slate-700">
+                                {docNo ?? 'tanpa nomor'}
+                                <span className="ml-2 font-sans font-normal text-slate-400">
+                                  {rows.length} part · oleh {rows[0].pasangOleh ?? '—'} · {formatWaktu(rows[0].tglPasang)}
+                                </span>
+                              </p>
+                              <button
+                                type="button"
+                                className="text-[10px] text-teal-700 hover:underline disabled:opacity-40"
+                                disabled={pasangBusy}
+                                onClick={() => void cetakUlangPasang(rows)}
+                                title="Cetak ulang dokumen dengan nomor & waktu asli — untuk dokumen rusak/tercecer"
+                              >
+                                🖨 Cetak Ulang
+                              </button>
+                            </div>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="text-[10px]">Waktu Pasang</TableHead>
+                                  <TableHead className="text-[10px]">Toko</TableHead>
+                                  <TableHead className="text-[10px]">No. Tiket</TableHead>
+                                  <TableHead className="text-[10px]">Kode Part</TableHead>
+                                  <TableHead className="text-[10px]">Nama Part</TableHead>
+                                  <TableHead className="text-right text-[10px]">Qty</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {rows.map((r) => (
+                                  <TableRow key={r.id}>
+                                    <TableCell className="whitespace-nowrap text-[10px] font-bold text-emerald-700">{formatWaktu(r.tglPasang)}</TableCell>
+                                    <TableCell className="max-w-32 truncate text-[10px]" title={r.toko}>{r.toko}</TableCell>
+                                    <TableCell className="font-mono text-[10px] text-emerald-700">{r.noTiket}</TableCell>
+                                    <TableCell className="font-mono text-[10px] text-slate-700">{r.kodePart}</TableCell>
+                                    <TableCell className="max-w-36 truncate text-[10px]" title={r.namaPart}>{r.namaPart}</TableCell>
+                                    <TableCell className="text-right text-[10px]">{r.qty}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        )}
+      </Card>
 
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
