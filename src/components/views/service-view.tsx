@@ -53,6 +53,13 @@ const emailAktifUntuk = (
 ): NonNullable<ServiceTicket['orderEmailParts']>[number] | null =>
   list?.find((e) => KODE_NORM(e.kodePart) === KODE_NORM(kode) && (e.status === 'PENDING' || e.status === 'TERKIRIM')) ?? null
 
+/** Nilai input datetime-local (format lokal — bukan UTC), pola sama dgn field-ops-view. */
+const dtLocalFrom = (d: Date) => {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+}
+const dtLocalNow = () => dtLocalFrom(new Date())
+
 /** Badge kecil "(edited)" — penanda koreksi data untuk kepentingan pemeriksaan kelak. */
 function BadgeEdited({ waktu, oleh }: { waktu: string; oleh?: string | null }) {
   return (
@@ -90,6 +97,12 @@ export default function ServiceView() {
   const [partEdit, setPartEdit] = useState<{ id: number; kode: string; nama: string; qty: string } | null>(null)
   const [finishTarget, setFinishTarget] = useState<ServiceTicket | null>(null)
   const [notaFile, setNotaFile] = useState('')
+  // Tanggal FINISH di dialog Selesaikan — default waktu sekarang, bisa diubah
+  // manual utk menyesuaikan data lama (unit dinyatakan selesai belakangan).
+  const [finishTgl, setFinishTgl] = useState('')
+  // Koreksi tanggal FINISH tiket yang sudah selesai (Admin Workshop/Manager) —
+  // inline di detail tiket, tersimpan dengan tanda "(edited)" di sistem & Audit Log.
+  const [tglFinishEdit, setTglFinishEdit] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
 
   // Konsumsi navIntent dari Dashboard → terapkan filter lalu bersihkan
@@ -111,6 +124,7 @@ export default function ServiceView() {
   const openDetail = (t: ServiceTicket | null) => {
     setTiketEdit(false)
     setPartEdit(null)
+    setTglFinishEdit(null)
     setDetail(t)
   }
 
@@ -153,6 +167,8 @@ export default function ServiceView() {
       setDetail(null)
       setFinishTarget(null)
       setNotaFile('')
+      setFinishTgl('')
+      setTglFinishEdit(null)
       toast({ title: 'Aksi berhasil diproses', description: `Workflow tiket diperbarui oleh sistem. (${vars.body.aksi})` })
     },
     onError: (e: Error) => toast({ title: 'Aksi ditolak', description: e.message, variant: 'destructive' }),
@@ -1160,7 +1176,7 @@ export default function ServiceView() {
                                   {t.status === 'PROSES' && (
                                     <DropdownMenuItem
                                       className="gap-1.5 text-[11px] text-emerald-700"
-                                      onClick={() => { setFinishTarget(t); setNotaFile(`nota-stempel-${t.noTiket}.jpg`) }}>
+                                      onClick={() => { setFinishTarget(t); setNotaFile(`nota-stempel-${t.noTiket}.jpg`); setFinishTgl(dtLocalNow()) }}>
                                       <Camera className="h-3 w-3" /> Selesaikan
                                     </DropdownMenuItem>
                                   )}
@@ -1446,8 +1462,53 @@ export default function ServiceView() {
                     <p className="font-semibold text-slate-800">{detail.fotoNotaStempel ?? 'Belum diunggah'}</p>
                   </div>
                   <div className="rounded-md border p-2.5">
-                    <p className="text-slate-500">Selesai pada</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-slate-500">Selesai pada</p>
+                      {detail.status === 'FINISH' && bisaKoreksiPart && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-5 w-5 shrink-0 p-0 text-amber-600 hover:bg-amber-50"
+                          title="Koreksi tanggal selesai — tersimpan dengan tanda (edited) di sistem"
+                          onClick={() => setTglFinishEdit(dtLocalFrom(new Date(detail.tglFinish ?? Date.now())))}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                     <p className="font-semibold text-slate-800">{formatTanggal(detail.tglFinish)}</p>
+                    {tglFinishEdit && (
+                      <div className="mt-2 space-y-1.5 rounded-md border border-amber-200 bg-amber-50 p-2">
+                        <p className="text-[11px] font-semibold text-amber-800">
+                          Koreksi tanggal selesai — tertanda (edited) di sistem &amp; Audit Log untuk pemeriksaan kelak
+                        </p>
+                        <Input
+                          type="datetime-local"
+                          value={tglFinishEdit}
+                          onChange={(e) => setTglFinishEdit(e.target.value)}
+                          className="h-7 text-[11px]"
+                          aria-label="Tanggal selesai koreksi"
+                        />
+                        <div className="flex justify-end gap-1.5">
+                          <Button size="sm" variant="outline" className="h-6 text-[11px]" onClick={() => setTglFinishEdit(null)}>
+                            <X className="mr-1 h-3 w-3" /> Batal
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-6 text-[11px]"
+                            disabled={!tglFinishEdit || flowMutation.isPending}
+                            onClick={() =>
+                              flowMutation.mutate({
+                                id: detail.id,
+                                body: { aksi: 'KOREKSI_TGL_FINISH', tglFinish: new Date(tglFinishEdit).toISOString(), koreksiSelesai: true },
+                              })
+                            }
+                          >
+                            <CheckCircle2 className="mr-1 h-3 w-3" /> Simpan Koreksi
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {detail.noSttb && (
@@ -1474,6 +1535,17 @@ export default function ServiceView() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="finish-tgl">Tanggal Selesai</Label>
+                  <Input
+                    id="finish-tgl"
+                    type="datetime-local"
+                    value={finishTgl}
+                    onChange={(e) => setFinishTgl(e.target.value)}
+                    aria-label="Tanggal selesai tiket"
+                  />
+                  <p className="text-[10px] text-slate-400">Isi otomatis dengan waktu sekarang — ubah sesuai waktu sebenarnya bila ini data lama yang baru diselesaikan.</p>
+                </div>
                 <div className="rounded-lg border border-dashed bg-slate-50 p-4 text-center">
                   <Camera className="mx-auto mb-2 h-8 w-8 text-slate-400" />
                   <p className="text-xs text-slate-500">Simulasi kamera teknisi: foto nota berstempel</p>
@@ -1488,7 +1560,7 @@ export default function ServiceView() {
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700"
                   disabled={!notaFile.trim() || aksiMutation.isPending}
-                  onClick={() => aksiMutation.mutate({ id: finishTarget.id, body: { aksi: 'FINISH', fotoNotaStempel: notaFile.trim() } })}
+                  onClick={() => aksiMutation.mutate({ id: finishTarget.id, body: { aksi: 'FINISH', fotoNotaStempel: notaFile.trim(), ...(finishTgl ? { tglFinish: new Date(finishTgl).toISOString() } : {}) } })}
                 >
                   <CheckCircle2 className="mr-1 h-4 w-4" /> Konfirmasi FINISH
                 </Button>

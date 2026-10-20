@@ -53,7 +53,8 @@ const NORM_KODE = (s: string | null | undefined) => (s || '').toString().toUpper
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
- *   | TAMBAH_PART | HAPUS_PART | UBAH_QTY_PART | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
+ *   | TAMBAH_PART | HAPUS_PART | UBAH_QTY_PART | KOREKSI_PART | KOREKSI_TGL_FINISH
+ *   | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
  *   | ORDER_EMAIL_REORDER (daftarkan baris inden ORDER_PRODUSEN sebagai item email)
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
@@ -436,17 +437,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           { status: 400 }
         )
       }
+      // Tanggal FINISH: default waktu sekarang; boleh diatur manual (data lama
+      // diselesaikan belakangan — tanggal mencerminkan waktu selesai yg sebenarnya).
+      // Ditolak bila format salah atau di masa depan.
+      const tglFinishManual = body.tglFinish ? new Date(body.tglFinish) : new Date()
+      if (isNaN(tglFinishManual.getTime())) {
+        return NextResponse.json({ error: 'Tanggal selesai tidak valid' }, { status: 400 })
+      }
+      if (tglFinishManual.getTime() > Date.now() + 5 * 60_000) {
+        return NextResponse.json({ error: 'Tanggal selesai tidak boleh di masa depan' }, { status: 400 })
+      }
       const updated = await db.serviceRequest.update({
         where: { id: ticketId },
         data: {
           status: 'FINISH',
           fotoNotaStempel: body.fotoNotaStempel,
           tandaTanganDigital: body.tandaTanganDigital ?? null,
-          tglFinish: new Date(),
+          tglFinish: tglFinishManual,
           // Nota berstempel + TTD = unit sudah kembali ke toko & STTB tercabut
           lokasiUnit: 'TOKO',
           sttbDicabut: true,
-          tglKembaliKeToko: existing.tglKembaliKeToko ?? new Date(),
+          tglKembaliKeToko: existing.tglKembaliKeToko ?? tglFinishManual,
         },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
@@ -454,7 +465,51 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         aksi: 'FINISH_SERVICE',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (${body.fotoNotaStempel})`,
+        deskripsi: `Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (${body.fotoNotaStempel})${body.tglFinish ? ` — tglFinish diatur manual: ${tglFinishManual.toLocaleString('id-ID')}` : ''}`,
+        aktor,
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi koreksi: ubah tanggal FINISH tiket yang sudah selesai (mis. data lama
+    // yang tanggal selesainya keliru). Hanya Admin Workshop/Manager + flag
+    // koreksiSelesai — tiket diberi tanda "(edited)" untuk pemeriksaan kelak.
+    if (aksi === 'KOREKSI_TGL_FINISH') {
+      if (existing.status !== 'FINISH') {
+        return NextResponse.json({ error: 'Koreksi tanggal hanya untuk tiket FINISH' }, { status: 409 })
+      }
+      if (!bolehKoreksiSelesai(body.koreksiSelesai, session)) {
+        return NextResponse.json(
+          { error: 'Tanggal FINISH hanya dapat dikoreksi oleh Admin Workshop/Manager melalui tombol koreksi dengan konfirmasi' },
+          { status: 409 }
+        )
+      }
+      const tanggalBaru = new Date(body.tglFinish)
+      if (isNaN(tanggalBaru.getTime())) {
+        return NextResponse.json({ error: 'Tanggal selesai tidak valid' }, { status: 400 })
+      }
+      if (tanggalBaru.getTime() > Date.now() + 5 * 60_000) {
+        return NextResponse.json({ error: 'Tanggal selesai tidak boleh di masa depan' }, { status: 400 })
+      }
+      if (tanggalBaru.getTime() < new Date(existing.createdAt).getTime()) {
+        return NextResponse.json({ error: 'Tanggal selesai tidak boleh sebelum tiket dibuat' }, { status: 400 })
+      }
+      const updated = await db.serviceRequest.update({
+        where: { id: ticketId },
+        data: {
+          tglFinish: tanggalBaru,
+          ...(session
+            ? { editedAt: new Date(), editedBy: session.username ?? session.nama }
+            : {}),
+        },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await logAudit({
+        aksi: 'KOREKSI_TGL_FINISH',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Koreksi tanggal FINISH — tglFinish diganti dari ${existing.tglFinish ? new Date(existing.tglFinish).toLocaleString('id-ID') : '-'} menjadi ${tanggalBaru.toLocaleString('id-ID')} [TIKET FINISH — koreksi Admin/Manager]`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
