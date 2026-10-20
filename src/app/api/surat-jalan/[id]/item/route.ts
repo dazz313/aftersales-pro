@@ -10,6 +10,10 @@ export const runtime = 'nodejs'
 // POST /api/surat-jalan/[id]/item — ubah pilihan tiket SATU baris draft
 // (fase DRAFT/DIPERIKSA; DITERAPKAN dikunci). Dipakai saat cek manual:
 // menautkan kandidat (key p{id}/e{id}) atau melepasnya ('' → TANPA_TIKET).
+// body: { itemId: number, pilihKey?: string, asalSaran?: 'AI', alasanSaran?: string, aktor?: string }
+//   asalSaran='AI' = menerima SRAN AI (mis. kode OCR salah ketik): kandidat tetap
+//   wajib ada, tapi syarat kemiripan kode longgar — kode baris DIBENARKAN ke
+//   kode kandidat & kode asli tercatat di alasan + Audit Log. Manual & sadar.
 // body: { itemId: number, pilihKey?: string, aktor?: string }
 export async function POST(request: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
@@ -17,7 +21,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     if (denied) return denied
     const { id } = await ctx.params
     const sjId = Number(id)
-    const body = (await request.json()) as { itemId?: number; pilihKey?: string; aktor?: string }
+    const body = (await request.json()) as { itemId?: number; pilihKey?: string; asalSaran?: string; alasanSaran?: string; aktor?: string }
     if (typeof body.itemId !== 'number') return NextResponse.json({ error: 'itemId wajib diisi' }, { status: 400 })
     const sj = await db.suratJalanMasuk.findUnique({ where: { id: sjId }, select: { status: true, noSuratJalan: true } })
     if (!sj) return NextResponse.json({ error: 'Draft surat jalan tidak ditemukan' }, { status: 404 })
@@ -25,9 +29,11 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
     const item = await db.suratJalanMasukItem.findFirst({ where: { id: body.itemId, suratJalanMasukId: sjId } })
     if (!item) return NextResponse.json({ error: 'Baris item tidak ditemukan' }, { status: 404 })
     const aktor = (body.aktor || session?.nama || 'SYSTEM').slice(0, 60)
+    // Menerima saran AI (`asalSaran='AI'`): syarat kemiripan kode longgar karena
+    // file hasil OCR bisa salah ketik — dipakai di cabang taut di bawah.
+    const saranAi = body.asalSaran === 'AI'
 
-    if (!body.pilihKey || body.pilihKey === '') {
-      // Lepas tautan: baris menjadi TANPA_TIKET (hanya catatan penerimaan barang)
+    if (!body.pilihKey || body.pilihKey === '') {      // Lepas tautan: baris menjadi TANPA_TIKET (hanya catatan penerimaan barang)
       await db.suratJalanMasukItem.update({
         where: { id: item.id },
         data: {
@@ -44,19 +50,32 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
       const cand = kandidat.find((c) => c.key === body.pilihKey)
       if (!cand) return NextResponse.json({ error: 'Kandidat tiket tidak ditemukan / sudah tidak tersedia' }, { status: 400 })
       const NORMK = (s: string) => (s || '').toUpperCase().replace(/[^A-Z0-9#]/g, '')
-      if (NORMK(cand.kodePart) !== NORMK(item.kodePart)) {
+      // Menerima saran AI: syarat kemiripan kode longgar (OCR bisa salah ketik) —
+      // kode baris dibereskan ke kode kandidat & kode asli tercatat di alasan.
+      if (!saranAi && NORMK(cand.kodePart) !== NORMK(item.kodePart)) {
         return NextResponse.json({ error: `Kode kandidat (${cand.kodePart}) tidak sesuai baris (${item.kodePart})` }, { status: 400 })
       }
+      const dataUpdate = saranAi
+        ? {
+            statusMatch: 'COCOK',
+            cocokTipe: cand.emailPartId ? 'TIKET_EMAIL' : 'TIKET_PART',
+            cocokTiketId: cand.serviceRequestId,
+            cocokUnitId: cand.unitId,
+            cocokPartId: cand.partId ?? null,
+            kodePart: cand.kodePart,
+            alasan: `Saran AI diterima oleh ${aktor} — kode documen '${item.kodePart}' → '${cand.kodePart}' (${(body.alasanSaran || 'kemiripan').slice(0, 120)})`,
+          }
+        : {
+            statusMatch: 'COCOK',
+            cocokTipe: cand.emailPartId ? 'TIKET_EMAIL' : 'TIKET_PART',
+            cocokTiketId: cand.serviceRequestId,
+            cocokUnitId: cand.unitId,
+            cocokPartId: cand.partId ?? null,
+            alasan: `Ditautkan manual oleh ${aktor} ke ${cand.noTiket}`,
+          }
       await db.suratJalanMasukItem.update({
         where: { id: item.id },
-        data: {
-          statusMatch: 'COCOK',
-          cocokTipe: cand.emailPartId ? 'TIKET_EMAIL' : 'TIKET_PART',
-          cocokTiketId: cand.serviceRequestId,
-          cocokUnitId: cand.unitId,
-          cocokPartId: cand.partId ?? null,
-          alasan: `Ditautkan manual oleh ${aktor} ke ${cand.noTiket}`,
-        },
+        data: dataUpdate,
       })
     }
     // Perbarui hitung-hitungan header
@@ -67,7 +86,11 @@ export async function POST(request: Request, ctx: { params: Promise<{ id: string
       aksi: 'EDIT',
       entitas: 'surat_jalan_masuk',
       entitasId: `${sj.noSuratJalan}#item${item.id}`,
-      deskripsi: body.pilihKey ? `Taut tiket ke baris surat jalan (${body.pilihKey})` : 'Lepas tautan tiket baris surat jalan',
+      deskripsi: body.pilihKey
+        ? saranAi
+          ? `Saran AI diterima: baris '${item.kodePart}' diubah ke '${body.pilihKey}' (${(body.alasanSaran || '').slice(0, 120)})`
+          : `Taut tiket ke baris surat jalan (${body.pilihKey})`
+        : 'Lepas tautan tiket baris surat jalan',
       aktor,
     })
     return NextResponse.json({ ok: true, cocokCount: cocok, tanpaTiket: items.length - cocok })

@@ -47,6 +47,7 @@ export interface HasilBaris extends BarisSuratJalan {
   cocokKandidat?: Kandidat
   opsi: Kandidat[] // kandidat utk baris ambigu (UI berupa pilihan)
   keterangan: string
+  yakin?: number // keyakinan AI 0-100 bila dibantu AI
 }
 
 export interface RingkasanSuratJalan {
@@ -62,7 +63,7 @@ export interface RingkasanSuratJalan {
 const NORM = (s: string) => (s || '').toString().toUpperCase().replace(/[^A-Z0-9#]/g, '')
 
 /** Jarak mirip 0..1 ringan (containment token + Levenshtein ratio). */
-function similarity(a: string, b: string): number {
+export function similarity(a: string, b: string): number {
   const A = NORM(a)
   const B = NORM(b)
   if (!A || !B) return 0

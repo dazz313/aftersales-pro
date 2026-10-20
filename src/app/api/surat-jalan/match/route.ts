@@ -66,6 +66,7 @@ export async function POST(request: Request) {
         cocokCand: h.cocokKandidat ? ringkas(h.cocokKandidat) : undefined,
         opsi: h.opsi.map(ringkas),
         keterangan: h.keterangan,
+        yakin: h.yakin,
       })),
     })
   } catch (error) {
@@ -100,22 +101,24 @@ async function perbaikiDenganAi(hasil: HasilBaris[], kandidat: Kandidat[]): Prom
       .join('\n')
 
     const jawab = await chatCompletion(cfg, [
-      { role: 'system', content: 'Kamu asisten pencocokan surat jalan sparepart bengkel. Jawab HANYA JSON valid tanpa teks lain.' },
+      { role: 'system', content: 'Kamu asisten pencocokan surat jalan sparepart bengkel. Jawab HANYA JSON valid tanpa teks lain, tanpa code fence.' },
       {
         role: 'user',
         content:
           `Daftar part yang DIORDER ke produsen (kandidat, format key|nomorTiket|unit|kodePart|namaPart|qty):\n${deretTiket}\n\n` +
           `Baris surat jalan masuk yang BELUM cocok (format i|kode|nama|qty|sn):\n${deretBaris}\n\n` +
           `Susun pasangan baris surat jalan i → key kandidat yang PALING sesuai — pertimbangkan kemiripan nama part, kode, qty, dan SN unit. ` +
-          `Bila tidak yakin, key = null. Jawab HANYA JSON: {"items":[{"i":0,"key":"p123","alasan":"singkat"}]}`,
+          `File surat jalan ini hasil OCR sehingga kode/nama bisa salah ketik — cocokkan yang benar-benar sama, bukan sekadar mirip. ` +
+          `Bila tidak yakin, key = null. Jawab HANYA JSON: {"items":[{"i":0,"key":"p123","alasan":"singkat","yakin":85}]}`,
       },
     ])
-    const hasilJawab = extractJson<{ items?: { i?: number; key?: string | null; alasan?: string }[] }>(jawab)
+    const hasilJawab = extractJson<{ items?: { i?: number; key?: string | null; alasan?: string; yakin?: number }[] }>(jawab)
     for (const it of hasilJawab.items ?? []) {
       if (typeof it.i !== 'number' || !hasil[it.i] || !it.key) continue
       if (!kandidatSet.has(it.key)) continue
       const cand = kandidat.find((c) => c.key === it.key)
-      hasil[it.i] = { ...hasil[it.i], statusMatch: 'COCOK', cocokKandidat: cand, keterangan: `AI: ${it.alasan || 'dicocokkan berdasarkan kemiripan'}` }
+      const yakin = Math.max(0, Math.min(100, Math.round(Number(it.yakin) || 0)))
+      hasil[it.i] = { ...hasil[it.i], statusMatch: 'COCOK', cocokKandidat: cand, yakin, keterangan: `AI ${yakin}%: ${it.alasan || 'dicocokkan berdasarkan kemiripan'}` }
       dibantuAi++
     }
   } catch (error) {

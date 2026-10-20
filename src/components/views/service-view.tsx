@@ -984,10 +984,13 @@ export default function ServiceView() {
                   {filtered.map((t) => {
                     const st = STATUS_STYLES[t.status]
                     const kl = KLAIM_STYLES[t.statusKlaimProdusen]
-                    const hasOrderPart = t.parts.some((p) => p.statusPart === 'ORDER_PRODUSEN')
+                    // Baris part kembar yg di-nolkan saat gabung FINISH disembunyikan
+                    // dari daftar — datanya tetap tersimpan utk statistik pemasangan.
+                    const partsTampil = t.parts.filter((p) => p.qty > 0)
+                    const hasOrderPart = partsTampil.some((p) => p.statusPart === 'ORDER_PRODUSEN')
                     // Identifikasi Ready vs Inden per part + status item order-email
-                    const readyCnt = t.parts.filter((p) => p.statusPart === 'READY').length
-                    const indenCnt = t.parts.length - readyCnt
+                    const readyCnt = partsTampil.filter((p) => p.statusPart === 'READY').length
+                    const indenCnt = partsTampil.length - readyCnt
                     // Part inden belum dipesan via email → perlu aksi "Email Order"
                     const butuhOrderEmail =
                       hasOrderPart &&
@@ -1043,7 +1046,7 @@ export default function ServiceView() {
                               )}
                             </div>
                             {/* Ringkasan part: ✔ READY vs ● INDEN — identifikasi sekilas tanpa buka detail */}
-                            {t.parts.length > 0 && (
+                            {partsTampil.length > 0 && (
                               <Badge
                                 variant="outline"
                                 className={cn(
@@ -1061,11 +1064,11 @@ export default function ServiceView() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {t.parts.length === 0 ? (
+                          {partsTampil.length === 0 ? (
                             <span className="text-xs text-slate-400">—</span>
                           ) : (
                             <div className="flex flex-col gap-1">
-                              {t.parts.map((p) => (
+                              {partsTampil.map((p) => (
                                 <span key={p.id} className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
                                   <KodeSparepart
                                     kode={p.sparepart?.kodePart ?? ''}
@@ -1080,11 +1083,11 @@ export default function ServiceView() {
                           )}
                         </TableCell>
                         <TableCell className="max-w-44">
-                          {t.parts.length === 0 ? (
+                          {partsTampil.length === 0 ? (
                             <span className="text-xs text-slate-400">—</span>
                           ) : (
                             <div className="flex flex-col gap-1">
-                              {t.parts.map((p) => (
+                              {partsTampil.map((p) => (
                                 <span
                                   key={p.id}
                                   title={`${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`}
@@ -1222,8 +1225,9 @@ export default function ServiceView() {
                   {detail.noTiket}
                   <Badge variant="outline" className={STATUS_STYLES[detail.status].cls}>{STATUS_STYLES[detail.status].label}</Badge>
                   {detail.parts.length > 0 && (() => {
-                    const r = detail.parts.filter((p) => p.statusPart === 'READY').length
-                    const o = detail.parts.length - r
+                    const tampil = detail.parts.filter((p) => p.qty > 0)
+                    const r = tampil.filter((p) => p.statusPart === 'READY').length
+                    const o = tampil.length - r
                     return (
                       <Badge
                         variant="outline"
@@ -1298,8 +1302,9 @@ export default function ServiceView() {
                 <div>
                   <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Sparepart</p>
                   {detail.parts.length > 0 && (() => {
-                    const r = detail.parts.filter((p) => p.statusPart === 'READY').length
-                    const o = detail.parts.length - r
+                    const tampil = detail.parts.filter((p) => p.qty > 0)
+                    const r = tampil.filter((p) => p.statusPart === 'READY').length
+                    const o = tampil.length - r
                     const em = detail.orderEmailParts?.filter((e) => e.status === 'PENDING' || e.status === 'TERKIRIM').length ?? 0
                     return (
                       <p className="mb-2 text-[11px] text-slate-600">
@@ -1316,7 +1321,7 @@ export default function ServiceView() {
                     <p className="text-xs text-slate-400">Tidak ada part tercatat.</p>
                   ) : (
                     <div className="space-y-1.5">
-                      {detail.parts.map((p) => (
+                      {detail.parts.filter((p) => p.qty > 0).map((p) => (
                         <div key={p.id} className="rounded-md border px-3 py-2">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
@@ -1332,8 +1337,12 @@ export default function ServiceView() {
                               )}
                             </div>
                             <div className="flex shrink-0 flex-col items-end gap-1">
-                              <Badge variant="outline" className={p.statusPart === 'READY' ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}>
-                                {p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
+                              <Badge
+                                variant="outline"
+                                className={p.statusPart === 'READY' || p.tglPasang ? 'border-emerald-300 text-emerald-700' : 'border-rose-300 text-rose-700'}
+                                title={p.tglPasang ? `Terpasang ${formatTanggal(p.tglPasang)} oleh ${p.pasangOleh ?? '-'}` : undefined}
+                              >
+                                {p.tglPasang ? 'TERPASANG' : p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}
                               </Badge>
                               {p.editedAt && <BadgeEdited waktu={p.editedAt} oleh={p.editedBy} />}
                               {p.sumberPart === 'PRODUSEN' && (
@@ -1394,8 +1403,15 @@ export default function ServiceView() {
                                     <Plus className="h-3 w-3" />
                                   </Button>
                                   <Button
-                                    size="sm" variant="outline" className="h-6 w-6 p-0 text-rose-600 hover:bg-rose-50" title="Hapus baris part ini (koreksi salah input — stok dikembalikan)"
-                                    disabled={flowMutation.isPending}
+                                    size="sm"
+                                    variant="outline"
+                                    className={cn('h-6 w-6 p-0', p.tglPasang ? 'text-slate-300 hover:bg-slate-50' : 'text-rose-600 hover:bg-rose-50')}
+                                    title={
+                                      p.tglPasang
+                                        ? `Sudah terpasang ${formatTanggal(p.tglPasang)} — tidak dapat dihapus (statistik pemasangan bergantung padanya); kurangi qty bila perlu`
+                                        : 'Hapus baris part ini (koreksi salah input — stok dikembalikan)'
+                                    }
+                                    disabled={flowMutation.isPending || !!p.tglPasang}
                                     onClick={() => {
                                       if (!window.confirm(`Hapus ${p.sparepart?.kodePart} ×${p.qty} dari tiket ${detail.noTiket}? Stok yang direserve akan dikembalikan${detail.status === 'FINISH' ? ' — tiket akan tertanda (edited)' : ''}.`)) return
                                       flowMutation.mutate({ id: detail.id, body: { aksi: 'HAPUS_PART', partId: p.id, ...(detail.status === 'FINISH' ? { koreksiSelesai: true } : {}) } })

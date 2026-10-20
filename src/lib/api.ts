@@ -184,5 +184,6 @@ export type {
   Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
   Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus, BankKode,
   SJKandidat, SJBaris, SJPreview, SJRingkasan, SJRiwayat, SJCek, SJCekHasil, SJDraftDetail,
+  SJPasangan, SJSaran, SJAnalisaHasil,
 } from '@/lib/types'
 

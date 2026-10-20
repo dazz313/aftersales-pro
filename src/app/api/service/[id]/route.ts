@@ -447,6 +447,68 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (tglFinishManual.getTime() > Date.now() + 5 * 60_000) {
         return NextResponse.json({ error: 'Tanggal selesai tidak boleh di masa depan' }, { status: 400 })
       }
+
+      // ===== Gabungkan part kembar + stempel cache kode/nama =====
+      // Baris part dgn master/status/konfirmasi/sumber identik = kembar (salah
+      // input dua kali, part datang terpisah, dst). Di FINISH qty disatukan ke
+      // satu baris utama (tglPasang paling awal bila ada); kembar yang belum
+      // terpasang dihapus, yang sudah terpasang dipertahankan utk statistik
+      // dengan qty 0. Total stok/terpakai tidak berubah (jumlah qty sama).
+      const grupKembar = new Map<string, typeof existing.parts>()
+      for (const p of existing.parts) {
+        const kunci = `${p.sparepartId}|${p.statusPart}|${p.statusKonfirmasi}|${p.sumberPart}`
+        const grup = grupKembar.get(kunci) ?? []
+        grup.push(p)
+        grupKembar.set(kunci, grup)
+      }
+      let kembarHapus = 0
+      let kembarNol = 0
+      for (const anggota of grupKembar.values()) {
+        if (anggota.length < 2) continue
+        const terpasang = anggota.filter((p) => p.tglPasang)
+        const utama = terpasang.length
+          ? terpasang.reduce((a, b) => (new Date(a.tglPasang!).getTime() <= new Date(b.tglPasang!).getTime() ? a : b))
+          : anggota.reduce((a, b) => (a.id < b.id ? a : b))
+        const totalQty = anggota.reduce((s, p) => s + p.qty, 0)
+        for (const p of anggota) {
+          if (p.id === utama.id) continue
+          if (p.tglPasang) {
+            await db.serviceRequestPart.update({ where: { id: p.id }, data: { qty: 0 } })
+            kembarNol++
+          } else {
+            await db.serviceRequestPart.delete({ where: { id: p.id } })
+            kembarHapus++
+          }
+        }
+        if (utama.qty !== totalQty) {
+          await db.serviceRequestPart.update({ where: { id: utama.id }, data: { qty: totalQty } })
+        }
+      }
+      // Stempel cache kode/nama semua baris sisa (statistik tetap stabil walau
+      // master nanti diubah/dihapus).
+      const sisaBaris = await db.serviceRequestPart.findMany({
+        where: { serviceRequestId: ticketId },
+        include: { sparepart: true },
+      })
+      for (const p of sisaBaris) {
+        const kode = p.sparepart?.kodePart?.trim() || null
+        const nama = p.sparepart?.namaPart?.trim() || null
+        if (p.kodePartCache === kode && p.namaPartCache === nama) continue
+        await db.serviceRequestPart.update({
+          where: { id: p.id },
+          data: { kodePartCache: kode, namaPartCache: nama },
+        })
+      }
+      if (kembarHapus || kembarNol) {
+        await logAudit({
+          aksi: 'GABUNG_PART_FINISH',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Part kembar digabung saat FINISH: ${kembarHapus} baris belum terpasang dihapus, ${kembarNol} baris terpasang di-nolkan (qty disatukan ke baris utama, stok & terpakai tetap akurat)`,
+          aktor,
+        })
+      }
+
       const updated = await db.serviceRequest.update({
         where: { id: ticketId },
         data: {
@@ -905,6 +967,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       const baris = existing.parts.find((p) => p.id === partId)
       if (!baris) {
         return NextResponse.json({ error: 'Part tidak ditemukan di tiket ini' }, { status: 404 })
+      }
+      // Part yang sudah terpasang TIDAK dapat dihapus — statistik pemasangan,
+      // Riwayat Pemasangan, dan dokumen PMS bergantung pada baris ini
+      // (tglPasang/pasangOleh). Berlaku untuk semua role; salah jumlah cukup
+      // dikurangi via qty.
+      if (baris.tglPasang) {
+        return NextResponse.json(
+          { error: `Part ${baris.sparepart?.kodePart ?? ''} ×${baris.qty} sudah terpasang ${new Date(baris.tglPasang).toLocaleDateString('id-ID')} — tidak dapat dihapus karena statistik pemasangan bergantung padanya. Ubah/kurangi qty bila perlu.` },
+          { status: 409 }
+        )
       }
       const direserve = baris.statusPart === 'READY' && baris.statusKonfirmasi === 'READY'
       if (baris.statusPart === 'READY') {

@@ -1,6 +1,27 @@
 # Worklog
 
 ---
+Task ID: 33
+Agent: GLM (opencode)
+Task: Part terpasang tak bisa dihapus + cache kode/nama part + gabung kembar di FINISH
+
+Work Log:
+- Permintaan user: (1) jangan hapus part yang sudah terpasang — statistik & riwayat pemasangan bergantung padanya; (2) nama part perlu "cache" agar statistik tetap stabil walau master berubah/hapus; (3) part kembar dijadikan 0/dihilangkan saat FINISH — sekarang masih tampil READY di tiket FINISH; keputusan user via 3 pertanyaan: riwayat terpasang pakai CACHE (terkunci), kembar BELUM terpasang DIHAPUS, kunci hapus berlaku SEMUA role
+- Schema: ServiceRequestPart + `kodePartCache String?` + `namaPartCache String?` — snapshot kode/nama pada momen kunci; db push "in sync"; prisma generate
+- api/service HAPUS_PART: guard baru di atas semua — baris dgn tglPasang ditolak 409 "sudah terpasang [tgl] — statistik pemasangan bergantung padanya, ubah/kurangi qty"; berlaku semua role termasuk koreksiSelesai Admin/Manager
+- api/service FINISH: sebelum update tiket — grup kembar (sparepartId|statusPart|statusKonfirmasi|sumberPart): qty disatukan ke baris utama (tglPasang paling awal; tanpa terpasang = id terkecil); kembar belum terpasang dihapus; kembar terpasang disimpan qty 0 utk statistik; total stok/reserve/terpakai tidak berubah (jumlah sama); audit GABUNG_PART_FINISH (hemat: hanya bila ada penggabungan)
+- Stempel cache di 3 titik: sahkan pemasangan (POST updateMany → per-baris loop dgn kodePartCache/namaPartCache dari master saat itu), FINISH (semua baris sisa), koreksi part relink mengikuti data baru otomatis karena cache dibaca saat koreksi berikutnya; backfill scripts/backfill-part-cache.mjs — 68/68 baris terisi
+- api/pemasangan: baris & PDF dgn qty<=0 disembunyikan (sisa gabungan), kode/nama dibaca CACHE DULU lalu fallback master (riwayat & cetak ulang dokumen jadi stabil); panel Daftar Siap tetap live (belum ada cache)
+- service-view: chip READY → "TERPASANG" (emerald, title dgn tgl/oleh) utk baris bertanda tglPasang; qty<=0 disembunyikan dari daftar tiket (kolom kode/nama, badge ready/inden) & detail (badge, ringkasan, baris row); tombol hapus dimatikan utk terpasang (abu-abu, tooltip alasan stat)
+- types.ts: ServicePart + tglPasang/pasangOleh/kodePartCache/namaPartCache
+- Verifikasi: tsc + eslint kosong; backfill dipakai; deploy (stop → build → start & pm2 save — db push sudah dilakukan lebih dulu); GET / 200; GET /api/pemasangan & /api/service tanpa sesi 401
+
+Stage Summary:
+- Statistik pemasangan kini permanen: baris terpasang terkunci dr penghapusan, nama/kode terkunci via cache di baris; Riwayat & dokumen PMS tidak lompat saat master dikoreksi
+- Tiket FINISH bersih: 1 baris per part dgn qty total; chip TERPASANG bukan READY; kembar tak terpasang hilang sejak FINISH (audit membuktikan)
+- File berubah: prisma/schema.prisma, api/service/[id]/route.ts, api/pemasangan/route.ts, service-view.tsx, lib/types.ts, scripts/backfill-part-cache.mjs (baru)
+
+---
 Task ID: 32
 Agent: GLM (opencode)
 Task: Cetak ulang dokumen pemasangan (rusak/tercecer) + gerbang pemasangan hanya tiket PROSES

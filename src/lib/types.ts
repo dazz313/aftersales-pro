@@ -61,6 +61,8 @@ export interface SJBaris {
   cocokCand?: SJKandidat
   opsi: SJKandidat[]
   keterangan: string
+  /** Keyakinan AI (0-100) bila baris ini dibantu AI — null untuk aturan murni. */
+  yakin?: number
 }
 
 /** Hasil /api/surat-jalan/match — preview sebelum disimpan. */
@@ -136,6 +138,7 @@ export interface SJDraftDetail {
 }
 
 /** Riwayat surat jalan masuk (GET /api/surat-jalan). */
+/** Riwayat surat jalan masuk (GET /api/surat-jalan). */
 export interface SJRiwayat {
   id: number
   noSuratJalan: string
@@ -154,6 +157,48 @@ export interface SJRiwayat {
   createdAt: string
   createdBy: string | null
   items: { id: number; kodePart: string; namaPart: string | null; qty: number; serialNumber: string | null; statusMatch: string; tiket: string | null; unit: string | null; alasan: string | null }[]
+}
+
+/** Sisi kirim pada pasangan analisa (dari dokumen SJR yang dikirim ke produsen). */
+export interface SJPasanganKirim {
+  noSjr: string
+  tgl: string | null
+  qty: number
+  noTiket: string
+}
+
+/** Satu pasangan Kirim-vs-Terima pada analisa — display saja, tidak menulis DB. */
+export interface SJPasangan {
+  jenis: 'SAMA' | 'BEDA_QTY' | 'KIRIM_TANPA_TERIMA' | 'TERIMA_TANPA_KIRIM'
+  kode: string
+  nama?: string | null
+  sn?: string | null
+  kirim?: SJPasanganKirim | null
+  terima?: { itemId: number; kodeAsli: string; qty: number; tiket?: string | null } | null
+  catatan?: string
+}
+
+/** Saran AI utk baris surat jalan yg belum tertaut — diterima MANUAL per baris. */
+export interface SJSaran {
+  terimaId: number
+  kodeAsli: string
+  kodeSaran: string | null
+  noTiket: string
+  noSjr?: string | null
+  saranKey: string
+  alasan: string
+  yakin: number
+}
+
+/** Hasil POST /api/surat-jalan/[id]/analisa — Kirim vs Terima + saran AI. */
+export interface SJAnalisaHasil {
+  model: string | null
+  sumber: 'REF_SJR' | 'SJR_TIKET' | 'TIDAK_ADA'
+  refSjr: string | null
+  dipakaiSjr: string[]
+  ringkasan: { sama: number; bedaQty: number; belumDiterima: number; tanpaKirim: number; saran: number; saranYakin: number }
+  pasangan: SJPasangan[]
+  saran: SJSaran[]
 }
 
 export interface Sparepart {
@@ -247,6 +292,11 @@ export interface ServicePart {
   statusPart: 'READY' | 'ORDER_PRODUSEN'
   statusKonfirmasi: 'MENUNGGU' | 'READY' | 'TIDAK_READY'
   sumberPart: 'KATALOG' | 'PRODUSEN'
+  // Stempel pemasangan + cache kode/nama (statistik tetap stabil walau master berubah)
+  tglPasang?: string | null
+  pasangOleh?: string | null
+  kodePartCache?: string | null
+  namaPartCache?: string | null
   // Tanda koreksi (badge kecil "(edited)" di UI, untuk pemeriksaan kelak)
   editedAt?: string | null
   editedBy?: string | null

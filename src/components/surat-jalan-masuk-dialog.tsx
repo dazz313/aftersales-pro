@@ -11,8 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { fetcher, postJson, authHeaders, formatTanggal, formatWaktu, type SJKandidat, type SJPreview, type SJRingkasan, type SJRiwayat, type SJCekHasil, type SJDraftDetail } from '@/lib/api'
-import { CheckCircle2, Download, Loader2, Search, Truck } from 'lucide-react'
+import { fetcher, postJson, authHeaders, formatTanggal, formatWaktu, type SJKandidat, type SJPreview, type SJRingkasan, type SJRiwayat, type SJCekHasil, type SJDraftDetail, type SJAnalisaHasil } from '@/lib/api'
+import { CheckCircle2, Download, Loader2, Search, Truck, Sparkles } from 'lucide-react'
 
 /**
  * Dialog Surat Jalan Masuk — penerimaan part dari produsen dengan CEK BERLAPIS:
@@ -41,6 +41,10 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
   const [sjTicks, setSjTicks] = useState<Record<number, boolean>>({})
   const [sjCek, setSjCek] = useState<SJCekHasil | null>(null)
   const [sjCekAkhir, setSjCekAkhir] = useState(false)
+  // Hasil "Analisa AI — Kirim vs Terima" (tombol manual, bukan otomatis):
+  // pembanding draft ini vs dokumen SJR yang dikirim ke produsen + saran
+  // penautan baris salah ketik OCR. Murni display — saran diterima manual.
+  const [sjAnalisa, setSjAnalisa] = useState<SJAnalisaHasil | null>(null)
   const sjNrm = (s: string) => (s || '').toUpperCase().replace(/[^A-Z0-9#]/g, '')
   // Label ramah untuk status alur cek berlapis (nilai DB tetap DRAFT/DIPERIKSA/DITERAPKAN).
   const SJ_LABEL: Record<string, string> = { DRAFT: 'DRAF', DIPERIKSA: 'SUDAH DICEK', DITERAPKAN: 'PART DITERIMA' }
@@ -49,7 +53,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
   const tutup = (o: boolean) => {
     onOpenChange(o)
     if (!o) {
-      setSjPreview(null); setSjFile(null); setSjPilih({}); setSjCek(null); setSjCekAkhir(false); setSjTicks({}); setSjDraftId(null); setSjMode('INPUT'); setSjCekManual(false); setSjRefInfo(null); setSjMeta({ noSuratJalan: '', tglSurat: '', produsen: '', refSjrNo: '' })
+      setSjPreview(null); setSjFile(null); setSjPilih({}); setSjCek(null); setSjCekAkhir(false); setSjTicks({}); setSjDraftId(null); setSjMode('INPUT'); setSjCekManual(false); setSjRefInfo(null); setSjAnalisa(null); setSjMeta({ noSuratJalan: '', tglSurat: '', produsen: '', refSjrNo: '' })
     }
   }
 
@@ -181,15 +185,34 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
     onError: (e: Error) => toast({ title: 'Gagal menjalankan cek', description: e.message, variant: 'destructive' }),
   })
   const sjItemMutation = useMutation({
-    // Koreksi/tautan tiket satu baris draft (dipakai saat cek manual/fix blokir)
-    mutationFn: (params: { itemId: number; pilihKey: string }) => postJson<{ ok: boolean }>(`/api/surat-jalan/${sjDraftId}/item`, { ...params, aktor }),
-    onSuccess: () => {
+    // Koreksi/tautan tiket satu baris draft (cek manual/fix blokir) ATAU
+    // menerima saran AI (asalSaran='AI' — kode OCR salah ketik dibereskan).
+    mutationFn: (params: { itemId: number; pilihKey: string; asalSaran?: string; alasanSaran?: string }) => postJson<{ ok: boolean }>(`/api/surat-jalan/${sjDraftId}/item`, { ...params, aktor }),
+    onSuccess: (_r, params) => {
       setSjCek(null) // cek harus diulang setelah koreksi
       setSjCekAkhir(false)
+      if (params.asalSaran === 'AI') {
+        // Saran sudah dieksekusi — keluarkan dari panel analisa.
+        setSjAnalisa((a) => (a ? { ...a, saran: a.saran.filter((s) => s.terimaId !== params.itemId), ringkasan: { ...a.ringkasan, saran: Math.max(0, a.ringkasan.saran - 1) } } : a))
+      }
       void queryClient.invalidateQueries({ queryKey: ['surat-jalan-detail', sjDraftId] })
       queryClient.invalidateQueries({ queryKey: ['surat-jalan'] })
     },
     onError: (e: Error) => toast({ title: 'Gagal mengubah baris', description: e.message, variant: 'destructive' }),
+  })
+  const sjAnalisaMutation = useMutation({
+    // ANALISA AI KIRIM vs TERIMA: bandingkan draft ini dengan dokumen SJR yang
+    // dikirim ke produsen + saran penautan untuk baris OCR salah ketik.
+    // TIDAK menulis database — hasil hanya display untuk cek manual.
+    mutationFn: () => postJson<SJAnalisaHasil>(`/api/surat-jalan/${sjDraftId}/analisa`, {}),
+    onSuccess: (a) => {
+      setSjAnalisa(a)
+      toast({
+        title: a.saran.length > 0 ? `Analisa selesai — ${a.saran.length} saran penautan` : 'Analisa selesai',
+        description: `${a.ringkasan.sama} sama · ${a.ringkasan.bedaQty} beda qty · ${a.ringkasan.belumDiterima} belum diterima · ${a.ringkasan.tanpaKirim} tanpa kirim. Tidak ada data yang diubah.`,
+      })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menjalankan analisa', description: e.message, variant: 'destructive' }),
   })
   const sjTerapkanMutation = useMutation({
     // CEK AKHIR + TERAPKAN PERMANEN: server menjalankan cek ulang & menolak bila blokir.
@@ -217,7 +240,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
       return res.json()
     }),
     onSuccess: () => {
-      if (sjDraftId) { setSjDraftId(null); setSjMode('INPUT') }
+      if (sjDraftId) { setSjDraftId(null); setSjMode('INPUT'); setSjAnalisa(null) }
       queryClient.invalidateQueries({ queryKey: ['surat-jalan'] })
       toast({ title: 'Draft surat jalan dihapus' })
     },
@@ -482,6 +505,16 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                   {sjPeriksaMutation.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Search className="mr-1 h-4 w-4" />}
                   {sjCek ? 'Cek Ulang' : 'Jalankan Cek Berlapis'}
                 </Button>
+                <Button
+                  size="sm" variant="outline"
+                  className="border-indigo-300 text-[11px] text-indigo-700 hover:bg-indigo-50"
+                  disabled={sjAnalisaMutation.isPending || sjDraft.items.length === 0}
+                  onClick={() => sjAnalisaMutation.mutate()}
+                  title="Bandingkan draft ini dengan dokumen SJR yang dikirim ke produsen + saran AI utk baris salah ketik OCR — hanya tampilan, tidak mengubah data apa pun"
+                >
+                  {sjAnalisaMutation.isPending ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Sparkles className="mr-1 h-4 w-4" />}
+                  {sjAnalisa ? 'Ulangi Analisa AI' : 'Analisa AI (Kirim vs Terima)'}
+                </Button>
               </div>
 
               {sjCek && (
@@ -516,6 +549,127 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                 <p className="rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-700">
                   ✔ CEK AKHIR BERSIH — siap diterapkan permanen. Server akan mengulang cek sebagai pertahanan akhir.
                 </p>
+              )}
+
+              {sjAnalisa && (
+                <div className="space-y-2 rounded-lg border border-indigo-200 bg-indigo-50/40 p-3 text-[11px]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                    <span className="font-semibold text-indigo-900">Analisa AI — Kirim vs Terima</span>
+                    <Badge variant="outline" className="border-indigo-300 text-[9px] text-indigo-700">
+                      {sjAnalisa.sumber === 'REF_SJR' ? `doc kirim: ${sjAnalisa.refSjr}` : sjAnalisa.sumber === 'SJR_TIKET' ? `doc kirim (SJR tiket): ${sjAnalisa.dipakaiSjr.join(', ')}` : 'tidak ada dokumen kirim (SJR)'}
+                    </Badge>
+                    {sjAnalisa.model && <Badge variant="outline" className="border-slate-300 text-[9px] text-slate-500">AI: {sjAnalisa.model}</Badge>}
+                    <span className="text-slate-500">
+                      {sjAnalisa.ringkasan.sama} sama · {sjAnalisa.ringkasan.bedaQty} beda qty · {sjAnalisa.ringkasan.belumDiterima} belum diterima · {sjAnalisa.ringkasan.tanpaKirim} tanpa kirim
+                    </span>
+                  </div>
+
+                  {sjAnalisa.pasangan.length > 0 && (
+                    <div className="max-h-48 overflow-y-auto rounded border border-slate-200 bg-white">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-[10px]">Status</TableHead>
+                            <TableHead className="text-[10px]">Kode / Nama</TableHead>
+                            <TableHead className="text-[10px]">Dikirim (SJR)</TableHead>
+                            <TableHead className="text-[10px]">Diterima (draft ini)</TableHead>
+                            <TableHead className="text-[10px]">Catatan</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {sjAnalisa.pasangan.map((p, i) => (
+                            <TableRow key={i}>
+                              <TableCell>
+                                <Badge variant="outline" className={`text-[9px] ${p.jenis === 'SAMA' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : p.jenis === 'BEDA_QTY' ? 'border-amber-300 bg-amber-50 text-amber-700' : p.jenis === 'KIRIM_TANPA_TERIMA' ? 'border-rose-300 bg-rose-50 text-rose-700' : 'border-slate-300 bg-slate-50 text-slate-600'}`}>
+                                  {p.jenis === 'SAMA' ? '✔ SAMA' : p.jenis === 'BEDA_QTY' ? '⚠ BEDA QTY' : p.jenis === 'KIRIM_TANPA_TERIMA' ? '❌ BELUM DITERIMA' : '➕ TIDAK DIKIRIM'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="font-mono text-[10px]">
+                                {p.kode}
+                                {p.nama ? <span className="block max-w-40 truncate font-sans text-[9px] text-slate-500" title={p.nama}>{p.nama}</span> : null}
+                              </TableCell>
+                              <TableCell className="text-[10px]">
+                                {p.kirim ? <span title={`${p.kirim.noSjr} · ${p.kirim.tgl ? formatTanggal(p.kirim.tgl) : ''} · ${p.kirim.noTiket}`}>{p.kirim.qty} <span className="text-slate-400">via</span> <span className="font-mono">{p.kirim.noSjr}</span></span> : <span className="text-slate-300">—</span>}
+                              </TableCell>
+                              <TableCell className="text-[10px]">
+                                {p.terima ? <span className={p.terima.kodeAsli !== p.kode ? 'font-mono text-amber-700' : ''}>{p.terima.kodeAsli !== p.kode ? `${p.terima.kodeAsli} → ` : ''}{p.terima.qty}</span> : <span className="text-slate-300">—</span>}
+                              </TableCell>
+                              <TableCell className="max-w-44 truncate text-[10px] text-slate-600" title={p.catatan}>{p.catatan || '—'}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+
+                  {sjAnalisa.saran.length > 0 && sjDraft.status !== 'DITERAPKAN' && (
+                    <div className="rounded border border-indigo-200 bg-white p-2">
+                      <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-semibold text-slate-600">Saran penautan ({sjAnalisa.saran.length} baris) — diterima manual per baris:</span>
+                        {sjAnalisa.ringkasan.saranYakin > 0 && (
+                          <Button
+                            size="sm" variant="outline" disabled={sjItemMutation.isPending}
+                            className="h-6 border-emerald-300 px-2 text-[9px] text-emerald-700 hover:bg-emerald-50"
+                            onClick={() => {
+                              const yakinList = sjAnalisa.saran.filter((s) => s.yakin >= 90)
+                              void (async () => {
+                                for (const s of yakinList) {
+                                  try { await sjItemMutation.mutateAsync({ itemId: s.terimaId, pilihKey: s.saranKey, asalSaran: 'AI', alasanSaran: `${s.alasan} (AI ${s.yakin}%)` }) } catch { /* toast dr onError */ }
+                                }
+                              })()
+                            }}
+                            title="Autolink semua saran dengan keyakinan AI ≥ 90% — tiap baris tetap tercatat di Audit Log"
+                          >
+                            Terima semua saran yakin (≥90%) — {sjAnalisa.ringkasan.saranYakin} baris
+                          </Button>
+                        )}
+                      </div>
+                      <div className="max-h-44 overflow-y-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-[10px]">Kode (file OCR)</TableHead>
+                              <TableHead className="text-[10px]">Saran AI</TableHead>
+                              <TableHead className="text-[10px]">Tiket</TableHead>
+                              <TableHead className="text-[10px]">Ref SJR</TableHead>
+                              <TableHead className="text-[10px]">Alasan</TableHead>
+                              <TableHead className="text-[10px]"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {sjAnalisa.saran.map((s) => (
+                              <TableRow key={s.terimaId}>
+                                <TableCell className="font-mono text-[10px] text-rose-700" title="Teks asli di file Excel">{s.kodeAsli}</TableCell>
+                                <TableCell className="font-mono text-[10px] text-emerald-700">
+                                  {s.kodeSaran ? `${s.kodeSaran} ` : ''}
+                                  <Badge variant="outline" className={`ml-0.5 text-[8px] ${s.yakin >= 90 ? 'border-emerald-300 text-emerald-700' : s.yakin >= 75 ? 'border-amber-300 text-amber-700' : 'border-slate-300 text-slate-500'}`}>AI {s.yakin}%</Badge>
+                                </TableCell>
+                                <TableCell className="font-mono text-[10px]">{s.noTiket}</TableCell>
+                                <TableCell className="font-mono text-[9px] text-slate-500">{s.noSjr || '—'}</TableCell>
+                                <TableCell className="max-w-40 truncate text-[10px] text-slate-600" title={s.alasan}>{s.alasan}</TableCell>
+                                <TableCell>
+                                  <Button
+                                    size="sm" variant="outline" disabled={sjItemMutation.isPending}
+                                    className="h-6 border-emerald-300 px-1.5 text-[9px] text-emerald-700 hover:bg-emerald-50"
+                                    onClick={() => sjItemMutation.mutate({ itemId: s.terimaId, pilihKey: s.saranKey, asalSaran: 'AI', alasanSaran: `${s.alasan} (AI ${s.yakin}%)` })}
+                                    title="Tautkan baris ini ke tiket saran AI (kode salah ketik dibereskan; kode asli tercatat di alasan & Audit Log)"
+                                  >
+                                    Terima
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-[9px] text-slate-400">
+                    Analisa hanya untuk diperiksa — tidak mengubah data apa pun. Saran yang diterima baris secara manual tercatat di pelacakan audit (Audit Log).
+                  </p>
+                </div>
               )}
             </div>
           )
@@ -555,7 +709,7 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
                       <span className="flex items-center gap-1">
                         {r.status !== 'DITERAPKAN' ? (
                           <>
-                            <button type="button" className="cursor-pointer rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[9px] text-indigo-700 hover:bg-indigo-100" onClick={() => { setSjDraftId(r.id); setSjMode('DRAFT'); setSjCekManual(r.cekManual); setSjCek(null); setSjCekAkhir(false); setSjTicks({}) }}>Lanjut</button>
+                            <button type="button" className="cursor-pointer rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[9px] text-indigo-700 hover:bg-indigo-100" onClick={() => { setSjDraftId(r.id); setSjMode('DRAFT'); setSjCekManual(r.cekManual); setSjCek(null); setSjCekAkhir(false); setSjTicks({}); setSjAnalisa(null) }}>Lanjut</button>
                             <button type="button" className="cursor-pointer rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[9px] text-rose-600 hover:bg-rose-100" onClick={() => sjHapusMutation.mutate(r.id)}>Hapus</button>
                           </>
                         ) : (

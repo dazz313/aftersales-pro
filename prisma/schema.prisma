@@ -211,6 +211,11 @@ model ServiceRequestPart {
   // centang item per toko → sahkan → tgl pasang tercatat + dokumen pemasangan.
   tglPasang        DateTime?
   pasangOleh       String?
+  // Cache kode/nama part pada momen kunci (sahkan pemasangan, FINISH, koreksi
+  // part) — statistik & riwayat pemasangan tetap stabil walau master diubah/
+  // dihapus. Pembacaan: cache dulu, fallback ke relasi master.
+  kodePartCache    String?
+  namaPartCache    String?
   // Tanda koreksi baris part (ubah kode/nama/qty oleh Admin/Manager setelah
   // tiket selesai) — tampil kecil "(edited)" di UI untuk pemeriksaan kelak.
   editedAt         DateTime?

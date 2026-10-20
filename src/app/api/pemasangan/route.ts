@@ -74,8 +74,12 @@ export async function GET(request: Request) {
     const riwayat: Baris[] = []
     for (const t of tickets) {
       for (const p of t.parts) {
-        const kode = (p.sparepart?.kodePart ?? '').trim()
-        const nama = (p.sparepart?.namaPart ?? '').trim()
+        // Baris kembar yg di-nolkan saat gabung FINISH disembunyikan dari panel.
+        if (p.qty <= 0) continue
+        // Cache dulu (snapshot saat pemasangan/FINISH/koreksi) — statistik
+        // stabil; fallback live master bila cache belum terstempel.
+        const kode = (p.kodePartCache ?? p.sparepart?.kodePart ?? '').trim()
+        const nama = (p.namaPartCache ?? p.sparepart?.namaPart ?? '').trim()
         if (!kode || !nama) continue
         const baris: Baris = {
           id: p.id,
@@ -145,6 +149,8 @@ export async function POST(request: Request) {
         qty: true,
         tglPasang: true,
         pasangOleh: true,
+        kodePartCache: true,
+        namaPartCache: true,
         sparepart: { select: { kodePart: true, namaPart: true } },
         serviceRequest: {
           select: {
@@ -180,8 +186,10 @@ export async function POST(request: Request) {
         toko: r.serviceRequest.unitAsset.toko?.namaToko ?? '-',
         serial: r.serviceRequest.unitAsset.serialNumber || '-',
         model: r.serviceRequest.unitAsset.modelUnit || '-',
-        kodePart: r.sparepart?.kodePart ?? '-',
-        namaPart: r.sparepart?.namaPart ?? '-',
+        // Cache dulu (snapshot saat pemasangan/koreksi) — baris terpasang tetap
+        // stabil walau master berubah; fallback live master bila belum ada cache.
+        kodePart: (r.kodePartCache || r.sparepart?.kodePart || '-').trim(),
+        namaPart: (r.namaPartCache || r.sparepart?.namaPart || '-').trim(),
         qty: r.qty,
       }))
       barisDoc.sort((a, b) => a.toko.localeCompare(b.toko) || a.noTiket.localeCompare(b.noTiket) || NORM(a.kodePart).localeCompare(NORM(b.kodePart)))
@@ -231,10 +239,19 @@ export async function POST(request: Request) {
     }
 
     const now = new Date()
-    await db.serviceRequestPart.updateMany({
-      where: { id: { in: target.map((r) => r.id) } },
-      data: { tglPasang: now, pasangOleh: aktor },
-    })
+    // Stamp per baris — cache kode/nama snapshot master saat pemasangan
+    // (statistik tetap stabil walau master diubah nanti).
+    for (const r of target) {
+      await db.serviceRequestPart.update({
+        where: { id: r.id },
+        data: {
+          tglPasang: now,
+          pasangOleh: aktor,
+          kodePartCache: r.sparepart?.kodePart?.trim() || null,
+          namaPartCache: r.sparepart?.namaPart?.trim() || null,
+        },
+      })
+    }
 
     const tokoUnik = new Set(target.map((r) => r.serviceRequest.unitAsset.toko?.namaToko ?? '-'))
     await logAudit({
@@ -258,8 +275,9 @@ export async function POST(request: Request) {
       toko: r.serviceRequest.unitAsset.toko?.namaToko ?? '-',
       serial: r.serviceRequest.unitAsset.serialNumber || '-',
       model: r.serviceRequest.unitAsset.modelUnit || '-',
-      kodePart: r.sparepart?.kodePart ?? '-',
-      namaPart: r.sparepart?.namaPart ?? '-',
+      // Baris baru — master live saat itu (cache baru juga distempel di atas).
+      kodePart: (r.kodePartCache || r.sparepart?.kodePart || '-').trim(),
+      namaPart: (r.namaPartCache || r.sparepart?.namaPart || '-').trim(),
       qty: r.qty,
     }))
     baris.sort((a, b) => a.toko.localeCompare(b.toko) || a.noTiket.localeCompare(b.noTiket) || NORM(a.kodePart).localeCompare(NORM(b.kodePart)))
