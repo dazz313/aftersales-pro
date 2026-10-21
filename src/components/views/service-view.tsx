@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type UnitAsset, type Sparepart, type Toko, type Customer } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type Sparepart, type Toko, type Customer } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -131,10 +131,6 @@ export default function ServiceView() {
   const { data: tickets, isLoading } = useQuery<ServiceTicket[]>({
     queryKey: ['service-tickets'],
     queryFn: () => fetcher<ServiceTicket[]>('/api/service'),
-  })
-  const { data: units } = useQuery<UnitAsset[]>({
-    queryKey: ['units'],
-    queryFn: () => fetcher<UnitAsset[]>('/api/unit'),
   })
   const { data: parts } = useQuery<Sparepart[]>({
     queryKey: ['spareparts'],
@@ -456,7 +452,10 @@ export default function ServiceView() {
   }, [tickets])
 
   // ===== Form buat tiket manual =====
-  const [formUnit, setFormUnit] = useState('')
+  // Unit TIDAK dipilih lagi — syarat pokok cukup NAMA + JENIS BARANG (no seri &
+  // model tidak wajib). Server mencari/daftarkan unit pemilik otomatis.
+  const [formNama, setFormNama] = useState('')
+  const [formJenis, setFormJenis] = useState('')
   const [formDesc, setFormDesc] = useState('')
   const [formJasa, setFormJasa] = useState('100000')
   const [formSumber, setFormSumber] = useState('MANUAL')
@@ -467,26 +466,23 @@ export default function ServiceView() {
     { key: 0, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' },
   ])
   const nextPartKey = useRef(1)
-  // Klasifikasi customer: TOKO (stok toko → otomatis garansi) atau PERORANGAN
+  // Pemilik unit: TOKO (milik toko ATAU titipan customer — kadang toko pegang unit
+  // titipan, jadi tidak otomatis stok-toko) atau PERORANGAN
   const [formTipe, setFormTipe] = useState<'TOKO' | 'PERORANGAN'>('TOKO')
   const [formPemilik, setFormPemilik] = useState('')
-  const [formKlasifikasi, setFormKlasifikasi] = useState<'GARANSI' | 'NON_GARANSI' | ''>('')
+  // Klasifikasi unit via DROPDOWN 3 golongan: STOK TOKO / GARANSI / NON GARANSI
+  const [formKlas, setFormKlas] = useState<'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'>('STOK_TOKO')
   const [formTgl, setFormTgl] = useState(() => {
     const d = new Date()
     const p = (n: number) => String(n).padStart(2, '0')
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
   })
 
-  const garansiOtomatis = formTipe === 'TOKO'
-  const klasifikasiFinal = garansiOtomatis ? 'GARANSI' : formKlasifikasi
-  const jasaDisabled = klasifikasiFinal === 'GARANSI'
-
-  // Unit otomatis mengikuti pemilik yang dipilih (data toko / customer)
-  const unitPilihan = useMemo(() => {
-    if (!formPemilik) return []
-    const pid = Number(formPemilik)
-    return (units ?? []).filter((u) => (formTipe === 'TOKO' ? u.tokoId === pid : u.customerId === pid))
-  }, [units, formTipe, formPemilik])
+  const jasaDisabled = formKlas !== 'NON_GARANSI'
+  // Default klasifikasi saat tipe pemilik berganti: TOKO → stok toko (garansi
+  // otomatis), PERORANGAN → non garansi (dinaikkan manual bila ada garansi).
+  const klasDefault = (tipe: 'TOKO' | 'PERORANGAN'): 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI' =>
+    tipe === 'TOKO' ? 'STOK_TOKO' : 'NON_GARANSI'
 
   // ===== Validasi baris part: anti-pengulangan (kode sama tidak boleh 2x) =====
   const updatePartRow = (key: number, patch: Partial<PartRow>) =>
@@ -528,14 +524,15 @@ export default function ServiceView() {
     .filter((p): p is NonNullable<typeof p> => p !== null)
 
   const resetFormTiket = () => {
-    setFormUnit('')
+    setFormNama('')
+    setFormJenis('')
     setFormDesc('')
     setFormJasa('100000')
     setFormParts([{ key: nextPartKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
     setFormSumber('MANUAL')
     setFormTipe('TOKO')
     setFormPemilik('')
-    setFormKlasifikasi('')
+    setFormKlas('STOK_TOKO')
     const d = new Date()
     const p = (n: number) => String(n).padStart(2, '0')
     setFormTgl(`${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`)
@@ -586,17 +583,23 @@ export default function ServiceView() {
   const createMutation = useMutation({
     mutationFn: () =>
       postJson('/api/service', {
-        unitAssetId: Number(formUnit),
-        deskripsiKerusakan: formDesc,
+        // Tanpa unitAssetId — server cari/daftarkan unit dari nama + jenis barang
+        namaBarang: formNama.trim(),
+        jenisBarang: formJenis.trim(),
+        deskripsiKerusakan: formDesc.trim(),
         biayaJasa: jasaDisabled ? 0 : Number(formJasa) || 0,
         sumberLaporan: formSumber,
         customerType: formTipe,
-        klasifikasiGaransi: klasifikasiFinal,
+        tokoId: formTipe === 'TOKO' ? formPemilik : '',
+        customerId: formTipe === 'PERORANGAN' ? formPemilik : '',
+        klasifikasiGaransi: formKlas,
         tglTiket: formTgl ? new Date(formTgl).toISOString() : undefined,
         parts: partsPayload,
+        aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop',
       }),
     onSuccess: () => {
       invalidateAll()
+      queryClient.invalidateQueries({ queryKey: ['units'] })
       setCreateOpen(false)
       resetFormTiket()
       toast({ title: 'Tiket manual dibuat', description: 'Nomor tiket digenerate otomatis oleh sistem.' })
@@ -1591,7 +1594,7 @@ export default function ServiceView() {
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Buat Tiket Service Manual</DialogTitle>
-            <DialogDescription>Pilih customer (toko / perorangan) dari data master, klasifikasikan garansi, lalu simpan tiket.</DialogDescription>
+            <DialogDescription>Pilih pemilik (toko / perorangan), isi nama &amp; jenis barang — no seri &amp; model tidak diperlukan — pilih klasifikasi unit, lalu simpan tiket.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -1602,26 +1605,27 @@ export default function ServiceView() {
                   size="sm"
                   variant={formTipe === 'TOKO' ? 'default' : 'outline'}
                   className={formTipe === 'TOKO' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                  onClick={() => { setFormTipe('TOKO'); setFormPemilik(''); setFormUnit(''); setFormKlasifikasi('') }}
+                  onClick={() => { setFormTipe('TOKO'); setFormPemilik(''); setFormNama(''); setFormJenis(''); setFormKlas('STOK_TOKO') }}
                 >
-                  Toko (Stok Toko)
+                  Toko
                 </Button>
                 <Button
                   type="button"
                   size="sm"
                   variant={formTipe === 'PERORANGAN' ? 'default' : 'outline'}
                   className={formTipe === 'PERORANGAN' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                  onClick={() => { setFormTipe('PERORANGAN'); setFormPemilik(''); setFormUnit(''); setFormKlasifikasi('') }}
+                  onClick={() => { setFormTipe('PERORANGAN'); setFormPemilik(''); setFormNama(''); setFormJenis(''); setFormKlas('NON_GARANSI') }}
                 >
                   Perorangan
                 </Button>
               </div>
+              <p className="text-[11px] text-slate-500">Toko bisa memegang unit milik toko ATAU titipan customer — karena itu klasifikasi unit dipilih manual lewat dropdown di bawah, tidak lagi otomatis.</p>
             </div>
             <div className="space-y-1.5">
-              <Label>{formTipe === 'TOKO' ? 'Pilih Toko (otomatis dari data toko)' : 'Pilih Customer (otomatis dari data customer)'}</Label>
+              <Label>{formTipe === 'TOKO' ? 'Pilih Toko' : 'Pilih Customer'}</Label>
               <SearchSelect
                 value={formPemilik}
-                onChange={(v) => { setFormPemilik(v); setFormUnit('') }}
+                onChange={(v) => setFormPemilik(v)}
                 options={(formTipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
                   formTipe === 'TOKO'
                     ? { value: String(p.id), label: `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` }
@@ -1631,60 +1635,48 @@ export default function ServiceView() {
                 ariaLabel="Pilih pemilik unit"
               />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Nama Barang <span className="text-red-500">*</span></Label>
+                <Input
+                  value={formNama}
+                  onChange={(e) => setFormNama(e.target.value)}
+                  placeholder="Contoh: Kipas Ruang Tamu"
+                  aria-label="Nama barang"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Jenis Barang <span className="text-red-500">*</span></Label>
+                <Input
+                  value={formJenis}
+                  onChange={(e) => setFormJenis(e.target.value)}
+                  placeholder="Contoh: Kipas / Mesin Cuci"
+                  aria-label="Jenis barang"
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-500">
+              Wajib hanya nama &amp; jenis barang — <span className="font-medium">no seri &amp; model tidak diperlukan</span>. Bila unit dengan nama+jenis sama atas pemilik ini sudah pernah ada, unit itu dipakai ulang; bila belum, unit baru terdaftar otomatis.
+            </p>
+            {/* Klasifikasi unit — DROPDOWN 3 golongan: STOK TOKO / GARANSI / NON GARANSI */}
             <div className="space-y-1.5">
-              <Label>Pilih Unit Milik {formTipe === 'TOKO' ? 'Toko' : 'Customer'} Tersebut</Label>
-              <SearchSelect
-                value={formUnit}
-                onChange={setFormUnit}
-                disabled={!formPemilik}
-                options={unitPilihan.map((u) => ({
-                  value: String(u.id),
-                  label: `${u.serialNumber} · ${u.modelUnit}`,
-                  sub: `${u.merk?.trim() ? `${u.merk.trim()} · ` : ''}${u.statusGaransi.replace('_', '-')}`,
-                }))}
-                placeholder={formPemilik ? '— Ketik serial/model —' : '— Pilih pemilik dulu —'}
-                ariaLabel="Pilih unit"
-              />
-              {formPemilik && unitPilihan.length === 0 && (
-                <p className="text-[11px] text-amber-700">Belum ada unit terdaftar untuk pemilik ini — registrasikan dulu di Master Data → Unit Asset.</p>
+              <Label>Klasifikasi Unit</Label>
+              <Select value={formKlas} onValueChange={(v) => setFormKlas(v as 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI')}>
+                <SelectTrigger aria-label="Klasifikasi unit"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="STOK_TOKO">Stok Toko — garansi otomatis</SelectItem>
+                  <SelectItem value="GARANSI">Garansi</SelectItem>
+                  <SelectItem value="NON_GARANSI">Non Garansi</SelectItem>
+                </SelectContent>
+              </Select>
+              {formKlas !== 'NON_GARANSI' ? (
+                <p className="text-[11px] text-emerald-700">Garansi aktif — biaya repair dinonaktifkan (Rp 0). Unit titipan customer dari toko: pilih Garansi bila masih aktif garansi.</p>
+              ) : (
+                <p className="text-[11px] text-amber-700">Non garansi — biaya repair bisa diisi manual.</p>
               )}
             </div>
-            {/* Klasifikasi 3 golongan */}
-            {garansiOtomatis ? (
-              <div className="rounded-md border border-emerald-300 bg-emerald-50 p-2.5 text-xs text-emerald-800">
-                <p className="font-semibold">Golongan: STOK TOKO — otomatis GARANSI</p>
-                <p className="mt-0.5">Unit milik toko mendapat garansi otomatis. Biaya repair dinonaktifkan (Rp 0).</p>
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <Label>Klasifikasi Garansi</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={formKlasifikasi === 'GARANSI' ? 'default' : 'outline'}
-                    className={formKlasifikasi === 'GARANSI' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                    onClick={() => setFormKlasifikasi('GARANSI')}
-                  >
-                    Garansi Customer
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={formKlasifikasi === 'NON_GARANSI' ? 'default' : 'outline'}
-                    className={formKlasifikasi === 'NON_GARANSI' ? 'bg-slate-700 hover:bg-slate-800' : ''}
-                    onClick={() => setFormKlasifikasi('NON_GARANSI')}
-                  >
-                    Non Garansi
-                  </Button>
-                </div>
-                {formKlasifikasi === 'GARANSI' && (
-                  <p className="text-[11px] text-emerald-700">Garansi aktif — biaya repair dinonaktifkan (Rp 0).</p>
-                )}
-              </div>
-            )}
             <div className="space-y-1.5">
-              <Label>Deskripsi Kerusakan</Label>
+              <Label>Deskripsi Kerusakan (opsional)</Label>
               <HistoryInput historyKey="service-deskripsi" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: Kipas tidak berputar, bau gosong..." />
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -1804,7 +1796,7 @@ export default function ServiceView() {
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!formPemilik || !formUnit || !formDesc.trim() || (!garansiOtomatis && !formKlasifikasi) || partRowInvalid || dupPartKode.size > 0 || createMutation.isPending}
+              disabled={!formPemilik || !formNama.trim() || !formJenis.trim() || partRowInvalid || dupPartKode.size > 0 || createMutation.isPending}
               onClick={() => createMutation.mutate()}
             >
               <Plus className="mr-1 h-4 w-4" /> Simpan Tiket

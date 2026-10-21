@@ -112,7 +112,7 @@ model UnitAsset {
   kerusakanAwal   String?
   tokoId          Int?
   customerId      Int?
-  statusGaransi   String           @default("GARANSI") // GARANSI | NON_GARANSI
+  statusGaransi   String           @default("GARANSI") // STOK_TOKO | GARANSI | NON_GARANSI
   tglPembelian    DateTime?
   createdAt       DateTime         @default(now())
   toko            MasterToko?      @relation(fields: [tokoId], references: [id])
@@ -156,7 +156,7 @@ model ServiceRequest {
   status              String               @default("REQUEST")
   noSttb              String?
   sumberLaporan       String               @default("MANUAL")
-  tipeCustomer        String               @default("PERORANGAN") // TOKO (stok toko → otomatis garansi) | PERORANGAN
+  tipeCustomer        String               @default("PERORANGAN") // TOKO (milik toko / titipan — klasifikasi di statusGaransi unit) | PERORANGAN
   lokasiUnit          String               @default("TOKO")
   penanganan          String               @default("BELUM")
   noSuratJalan        String?
