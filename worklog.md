@@ -1,6 +1,24 @@
 # Worklog
 
 ---
+Task ID: 35
+Agent: GLM (opencode)
+Task: Aksi BUKA_ULANG_PROSES — tiket FINISH dibuka ulang utk temuan part rusak tambahan (kasus SVC-2610-0029)
+
+Work Log:
+- Kasus: part order produsen datang & dipasang (20 Okt), ternyata ada bagian lain yang rusak; prinsip: JANGAN "FINISH tanpa klaim + tiket baru" (nilai klaim part-1 + jasa luntur, klaim 2x utk SN sama rawan ditolak) — jalur benarnya: 1 tiket, FINISH ulang, klaim sekali memuat SEMUA part
+- api/service/[id]: aksi baru BUKA_ULANG_PROSES — hanya tiket FINISH, hanya Admin Workshop/Manager dgn flag koreksiSelesai (bolehKoreksiSelesai), blokir bila statusKlaimProdusen ≠ DRAFT (klaim sudah diajukan → suruh koreksi part); efek: status FINISH → PROSES, tglFinish=null, editedAt/editedBy diisi (badge "(edited)"), fotoNotaStempel & data lain tidak disentuh; audit BUKA_ULANG_SERVICE dgn alasan dari body.alasan; daftar aksi di header komentar diperbarui
+- service-flow.tsx: prop ActionsProps + bisaBukaUlang (diisi oleh view) + blok kartu ungu di area FINISH — keterangan alur "tambah part (stok kurang → order produsen) → pasang → FINISH ulang → klaim sekali"; tombol "Buka Ulang ke Proses": window.prompt alasan (default: temuan bagian lain rusak setelah pemasangan) + confirm, lalu onAction({aksi: 'BUKA_ULANG_PROSES', alasan, koreksiSelesai: true}); bila klaim sudah SUBMITTED/PAID tampil hanya teks info tanpa tombol; icon Undo2
+- service-view.tsx: ServiceFlowActions + bisaBukaUlang={bisaKoreksiPart} (satu-satunya pemakai komponen ini)
+- Tiket SVC-2610-0029 dieksekusi via skrip = replikasi aksi (guard sama: FINISH + klaim DRAFT): status → PROSES, tglFinish null, editedBy "Admin Workshop", audit BUKA_ULANG_SERVICE (aktor Admin Workshop, alasan temuan setelah pemasangan); verifikasi ulang DB: status PROSES, parts utuh, klaim DRAFT
+- Verifikasi: tsc + eslint kosong (service-flow, service-view, api/service/[id])
+
+Stage Summary:
+- Tiket FINISH kini bisa dibuka ulang utk temuan part lanjutan tanpa membuat tiket baru — klaim tetap sekali & riwayat unit 1 kejadian; tiket tertanda (edited)
+- Part rusak lain ditemukan setelah klaim SUBMITTED/PAID → jalurnya tetap koreksi part (tertanda (edited))
+- File berubah: api/service/[id]/route.ts, components/service-flow.tsx, components/views/service-view.tsx
+
+---
 Task ID: 34
 Agent: GLM (opencode)
 Task: Analisa AI "Kirim vs Terima" untuk surat jalan masuk + tampilan teks asli OCR vs saran AI

@@ -54,6 +54,7 @@ const NORM_KODE = (s: string | null | undefined) => (s || '').toString().toUpper
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
  *   | TAMBAH_PART | HAPUS_PART | UBAH_QTY_PART | KOREKSI_PART | KOREKSI_TGL_FINISH
+ *   | BUKA_ULANG_PROSES (FINISH → PROSES — Admin/Manager + flag koreksiSelesai)
  *   | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
  *   | ORDER_EMAIL_REORDER (daftarkan baris inden ORDER_PRODUSEN sebagai item email)
  *
@@ -528,6 +529,54 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         entitas: 'service_request',
         entitasId: existing.noTiket,
         deskripsi: `Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (${body.fotoNotaStempel})${body.tglFinish ? ` — tglFinish diatur manual: ${tglFinishManual.toLocaleString('id-ID')}` : ''}`,
+        aktor,
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi buka ulang: tiket FINISH dikembalikan ke PROSES — mis. part sudah
+    // dipasang lalu ditemukan bagian lain yang rusak, sehingga perlu tambah
+    // part (stok kurang → order produsen) sebelum FINISH ulang. Klaim tetap
+    // sekali: diajukan setelah FINISH ulang memuat SEMUA part + jasa.
+    // Hanya Admin Workshop/Manager + flag koreksiSelesai (sama seperti
+    // koreksi part); tiket diberi tanda "(edited)" & tanggal selesai dibatalkan.
+    if (aksi === 'BUKA_ULANG_PROSES') {
+      if (existing.status !== 'FINISH') {
+        return NextResponse.json(
+          { error: 'Hanya tiket FINISH yang dapat dibuka ulang' },
+          { status: 409 }
+        )
+      }
+      if (!bolehKoreksiSelesai(body.koreksiSelesai, session)) {
+        return NextResponse.json(
+          { error: 'Buka ulang hanya dapat dilakukan oleh Admin Workshop/Manager melalui tombol koreksi dengan konfirmasi' },
+          { status: 409 }
+        )
+      }
+      // Klaim yang sudah SUBMITTED/PAID tidak boleh dibuka — nilai klaim sudah
+      // diajukan; part tambahan dicatat via koreksi part (tertanda (edited)).
+      if (existing.statusKlaimProdusen !== 'DRAFT') {
+        return NextResponse.json(
+          { error: `Klaim sudah ${existing.statusKlaimProdusen} — tiket tidak dapat dibuka ulang. Part tambahan dicatat via koreksi part (tertanda (edited)).` },
+          { status: 409 }
+        )
+      }
+      const alasan = String(body.alasan ?? '').trim() || 'Temuan kerusakan tambahan setelah FINISH'
+      const updated = await db.serviceRequest.update({
+        where: { id: ticketId },
+        data: {
+          status: 'PROSES',
+          tglFinish: null,
+          ...(session ? { editedAt: new Date(), editedBy: session.username ?? session.nama } : {}),
+        },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await logAudit({
+        aksi: 'BUKA_ULANG_SERVICE',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Status FINISH → PROSES (buka ulang; tglFinish ${existing.tglFinish ? new Date(existing.tglFinish).toLocaleString('id-ID') : '-'} dibatalkan) — ${alasan} [TIKET FINISH — buka ulang Admin/Manager]`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)

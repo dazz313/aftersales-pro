@@ -1128,6 +1128,7 @@ export default function ServiceView() {
                   spareparts={parts}
                   saran={saranParts}
                   waPending={waMutation.isPending}
+                  bisaBukaUlang={bisaKoreksiPart}
                   onKirimWa={() => waMutation.mutate(detail.id)}
                   onAction={(body) => flowMutation.mutate({ id: detail.id, body })}
                 />

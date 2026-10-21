@@ -24,6 +24,7 @@ import {
   PackageCheck,
   Store,
   Flag,
+  Undo2,
   X,
 } from 'lucide-react'
 
@@ -184,10 +185,12 @@ interface ActionsProps {
   saran?: SaranPart[]
   onKirimWa?: () => void
   waPending?: boolean
+  /** Workflow buka ulang FINISH → PROSES — sama terbatas dgn tombol koreksi (Admin Workshop/Manager). */
+  bisaBukaUlang?: boolean
 }
 
 /** Tombol aksi kontekstual sesuai tahap alur. */
-export function ServiceFlowActions({ ticket, pending, onAction, spareparts, saran, onKirimWa, waPending }: ActionsProps) {
+export function ServiceFlowActions({ ticket, pending, onAction, spareparts, saran, onKirimWa, waPending, bisaBukaUlang }: ActionsProps) {
   const [sj, setSj] = useState('')
   // Baris dinamis kode + nama part (balasan produsen) — baris kosong baru
   // otomatis bertambah saat baris terakhir terisi lengkap.
@@ -501,6 +504,43 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
         <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">
           <Flag className="mr-1 inline h-3 w-3" /> Selesai — nota stempel + TTD. Lanjut ke klaim produsen bila ada part garansi.
         </p>
+      )}
+
+      {/* Buka ulang: temuan bagian lain rusak setelah part terpasang & tiket sudah FINISH.
+          Tujuannya: order + pasang part tambahan di tiket yang sama, lalu FINISH ulang;
+          klaim tetap sekali dan memuat semua part. */}
+      {ticket.status === 'FINISH' && bisaBukaUlang && (
+        <div className="rounded-md border border-violet-200 bg-violet-50/60 p-2">
+          <p className="text-[11px] font-semibold text-violet-800">Ada bagian lain yang rusak temuan setelah pemasangan?</p>
+          {ticket.statusKlaimProdusen === 'DRAFT' ? (
+            <>
+              <p className="mb-2 mt-0.5 text-[10px] text-violet-600">
+                Buka ulang ke PROSES untuk tambah part (stok kurang → otomatis order produsen), pasang &amp; FINISH ulang — klaim tetap diajukan sekali memuat semua part. Tiket tertanda (edited) &amp; tanggal selesai dibatalkan.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 w-full border-violet-300 text-[11px] text-violet-700 hover:bg-violet-100"
+                disabled={pending}
+                onClick={() => {
+                  const alasan = window.prompt(
+                    `Alasan buka ulang ${ticket.noTiket} (tercatat di Audit Log):`,
+                    'Setelah pemasangan part ditemukan bagian lain yang rusak — perlu order & pasang part tambahan'
+                  )
+                  if (alasan === null) return
+                  if (!window.confirm(`Buka ulang ${ticket.noTiket}? Status FINISH → PROSES, tanggal selesai dibatalkan, dan tiket tertanda (edited).`)) return
+                  onAction({ aksi: 'BUKA_ULANG_PROSES', alasan: alasan.trim(), koreksiSelesai: true })
+                }}
+              >
+                <Undo2 className="mr-1 h-3 w-3" /> Buka Ulang ke Proses
+              </Button>
+            </>
+          ) : (
+            <p className="mt-0.5 text-[10px] text-violet-600">
+              Klaim sudah {ticket.statusKlaimProdusen} — tiket tidak dapat dibuka ulang. Catat part tambahan via koreksi part (tertanda (edited)).
+            </p>
+          )}
+        </div>
       )}
     </div>
   )
