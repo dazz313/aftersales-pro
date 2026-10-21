@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type Sparepart, type Toko, type Customer } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, formatTanggal, formatWaktu, bukaLinkEksternal, type ServiceTicket, type Sparepart } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,6 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
-import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
@@ -103,7 +102,6 @@ export default function ServiceView() {
   // Koreksi tanggal FINISH tiket yang sudah selesai (Admin Workshop/Manager) —
   // inline di detail tiket, tersimpan dengan tanda "(edited)" di sistem & Audit Log.
   const [tglFinishEdit, setTglFinishEdit] = useState<string | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
 
   // Konsumsi navIntent dari Dashboard → terapkan filter lalu bersihkan
   // (dijalankan di callback async agar tidak setState sinkron di effect body)
@@ -132,17 +130,10 @@ export default function ServiceView() {
     queryKey: ['service-tickets'],
     queryFn: () => fetcher<ServiceTicket[]>('/api/service'),
   })
+  // Katalog sparepart untuk tambah/ubah part di dialog detail tiket
   const { data: parts } = useQuery<Sparepart[]>({
     queryKey: ['spareparts'],
     queryFn: () => fetcher<Sparepart[]>('/api/sparepart'),
-  })
-  const { data: tokoList } = useQuery<Toko[]>({
-    queryKey: ['toko'],
-    queryFn: () => fetcher<Toko[]>('/api/toko'),
-  })
-  const { data: customerList } = useQuery<Customer[]>({
-    queryKey: ['customers'],
-    queryFn: () => fetcher<Customer[]>('/api/customer'),
   })
 
   const invalidateAll = () => {
@@ -451,93 +442,6 @@ export default function ServiceView() {
     return c
   }, [tickets])
 
-  // ===== Form buat tiket manual =====
-  // Unit TIDAK dipilih lagi — syarat pokok cukup NAMA + JENIS BARANG (no seri &
-  // model tidak wajib). Server mencari/daftarkan unit pemilik otomatis.
-  const [formNama, setFormNama] = useState('')
-  const [formJenis, setFormJenis] = useState('')
-  const [formDesc, setFormDesc] = useState('')
-  const [formJasa, setFormJasa] = useState('100000')
-  const [formSumber, setFormSumber] = useState('MANUAL')
-  // Multi-part: 1 unit bisa butuh >1 kode sparepart — tiap baris pilih dari
-  // katalog ATAU tulis kode+nama manual (part baru otomatis terdaftar).
-  type PartRow = { key: number; mode: 'katalog' | 'manual'; sparepartId: string; kode: string; nama: string; qty: string }
-  const [formParts, setFormParts] = useState<PartRow[]>([
-    { key: 0, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' },
-  ])
-  const nextPartKey = useRef(1)
-  // Pemilik unit: TOKO (milik toko ATAU titipan customer — kadang toko pegang unit
-  // titipan, jadi tidak otomatis stok-toko) atau PERORANGAN
-  const [formTipe, setFormTipe] = useState<'TOKO' | 'PERORANGAN'>('TOKO')
-  const [formPemilik, setFormPemilik] = useState('')
-  // Klasifikasi unit via DROPDOWN 3 golongan: STOK TOKO / GARANSI / NON GARANSI
-  const [formKlas, setFormKlas] = useState<'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI'>('STOK_TOKO')
-  const [formTgl, setFormTgl] = useState(() => {
-    const d = new Date()
-    const p = (n: number) => String(n).padStart(2, '0')
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
-  })
-
-  const jasaDisabled = formKlas !== 'NON_GARANSI'
-  // Default klasifikasi saat tipe pemilik berganti: TOKO → stok toko (garansi
-  // otomatis), PERORANGAN → non garansi (dinaikkan manual bila ada garansi).
-  const klasDefault = (tipe: 'TOKO' | 'PERORANGAN'): 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI' =>
-    tipe === 'TOKO' ? 'STOK_TOKO' : 'NON_GARANSI'
-
-  // ===== Validasi baris part: anti-pengulangan (kode sama tidak boleh 2x) =====
-  const updatePartRow = (key: number, patch: Partial<PartRow>) =>
-    setFormParts((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)))
-  const tambahPartRow = () =>
-    setFormParts((rows) => [...rows, { key: nextPartKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
-  const hapusPartRow = (key: number) => setFormParts((rows) => rows.filter((r) => r.key !== key))
-
-  const partKodePerRow = useMemo(
-    () =>
-      formParts.map((r) => {
-        if (r.mode === 'katalog') {
-          if (!r.sparepartId) return ''
-          return (parts ?? []).find((p) => p.id === Number(r.sparepartId))?.kodePart ?? ''
-        }
-        return r.kode.trim().toUpperCase()
-      }),
-    [formParts, parts]
-  )
-  const dupPartKode = useMemo(() => {
-    const count = new Map<string, number>()
-    for (const k of partKodePerRow) if (k) count.set(k, (count.get(k) ?? 0) + 1)
-    return new Set(partKodePerRow.filter((k) => k && (count.get(k) ?? 0) > 1))
-  }, [partKodePerRow])
-  const partRowInvalid = formParts.some((r) =>
-    r.mode === 'manual' ? (!r.kode.trim() && r.nama.trim()) || (r.kode.trim() && !r.nama.trim()) : false
-  )
-  const partsPayload = formParts
-    .map((r) => {
-      if (r.mode === 'katalog') {
-        return r.sparepartId
-          ? { sparepartId: Number(r.sparepartId), qty: Math.max(1, Number(r.qty) || 1) }
-          : null
-      }
-      const kode = r.kode.trim().toUpperCase()
-      const nama = r.nama.trim()
-      return kode && nama ? { kodePart: kode, namaPart: nama, qty: Math.max(1, Number(r.qty) || 1) } : null
-    })
-    .filter((p): p is NonNullable<typeof p> => p !== null)
-
-  const resetFormTiket = () => {
-    setFormNama('')
-    setFormJenis('')
-    setFormDesc('')
-    setFormJasa('100000')
-    setFormParts([{ key: nextPartKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
-    setFormSumber('MANUAL')
-    setFormTipe('TOKO')
-    setFormPemilik('')
-    setFormKlas('STOK_TOKO')
-    const d = new Date()
-    const p = (n: number) => String(n).padStart(2, '0')
-    setFormTgl(`${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`)
-  }
-
   // Aksi alur di dalam dialog detail — dialog tetap terbuka & menampilkan status baru
   const flowMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
@@ -580,37 +484,10 @@ export default function ServiceView() {
     return [...hitung.values()].filter((s) => !dipakai.has(s.kodePart)).sort((a, b) => b.count - a.count).slice(0, 4)
   }, [tickets, detail])
 
-  const createMutation = useMutation({
-    mutationFn: () =>
-      postJson('/api/service', {
-        // Tanpa unitAssetId — server cari/daftarkan unit dari nama + jenis barang
-        namaBarang: formNama.trim(),
-        jenisBarang: formJenis.trim(),
-        deskripsiKerusakan: formDesc.trim(),
-        biayaJasa: jasaDisabled ? 0 : Number(formJasa) || 0,
-        sumberLaporan: formSumber,
-        customerType: formTipe,
-        tokoId: formTipe === 'TOKO' ? formPemilik : '',
-        customerId: formTipe === 'PERORANGAN' ? formPemilik : '',
-        klasifikasiGaransi: formKlas,
-        tglTiket: formTgl ? new Date(formTgl).toISOString() : undefined,
-        parts: partsPayload,
-        aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop',
-      }),
-    onSuccess: () => {
-      invalidateAll()
-      queryClient.invalidateQueries({ queryKey: ['units'] })
-      setCreateOpen(false)
-      resetFormTiket()
-      toast({ title: 'Tiket manual dibuat', description: 'Nomor tiket digenerate otomatis oleh sistem.' })
-    },
-    onError: (e: Error) => toast({ title: 'Gagal membuat tiket', description: e.message, variant: 'destructive' }),
-  })
-
   return (
     <div className="space-y-4">
       {/* Summary strip */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {(['REQUEST', 'PROSES', 'FINISH'] as const).map((s) => (
           <Card key={s} className="py-3">
             <CardContent className="flex items-center gap-3 px-4">
@@ -625,13 +502,6 @@ export default function ServiceView() {
             </CardContent>
           </Card>
         ))}
-        <Card className="py-3 border-dashed">
-          <CardContent className="flex h-full flex-col items-center justify-center gap-1.5 px-4">
-            <Button size="sm" onClick={() => setCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
-              <Plus className="mr-1 h-4 w-4" /> Tiket Manual
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
       {/* ===== Panel Pemasangan Part (per Toko) ===== */}
@@ -1586,222 +1456,6 @@ export default function ServiceView() {
               </DialogFooter>
             </>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* ===== Dialog Buat Tiket Manual ===== */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Buat Tiket Service Manual</DialogTitle>
-            <DialogDescription>Pilih pemilik (toko / perorangan), isi nama &amp; jenis barang — no seri &amp; model tidak diperlukan — pilih klasifikasi unit, lalu simpan tiket.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>Customer — Toko atau Perorangan</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={formTipe === 'TOKO' ? 'default' : 'outline'}
-                  className={formTipe === 'TOKO' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                  onClick={() => { setFormTipe('TOKO'); setFormPemilik(''); setFormNama(''); setFormJenis(''); setFormKlas('STOK_TOKO') }}
-                >
-                  Toko
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={formTipe === 'PERORANGAN' ? 'default' : 'outline'}
-                  className={formTipe === 'PERORANGAN' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                  onClick={() => { setFormTipe('PERORANGAN'); setFormPemilik(''); setFormNama(''); setFormJenis(''); setFormKlas('NON_GARANSI') }}
-                >
-                  Perorangan
-                </Button>
-              </div>
-              <p className="text-[11px] text-slate-500">Toko bisa memegang unit milik toko ATAU titipan customer — karena itu klasifikasi unit dipilih manual lewat dropdown di bawah, tidak lagi otomatis.</p>
-            </div>
-            <div className="space-y-1.5">
-              <Label>{formTipe === 'TOKO' ? 'Pilih Toko' : 'Pilih Customer'}</Label>
-              <SearchSelect
-                value={formPemilik}
-                onChange={(v) => setFormPemilik(v)}
-                options={(formTipe === 'TOKO' ? (tokoList ?? []) : (customerList ?? [])).map((p) => (
-                  formTipe === 'TOKO'
-                    ? { value: String(p.id), label: `${(p as Toko).kodeToko} — ${(p as Toko).namaToko}` }
-                    : { value: String(p.id), label: (p as Customer).nama }
-                ))}
-                placeholder={formTipe === 'TOKO' ? '— Ketik kode/nama toko —' : '— Ketik nama customer —'}
-                ariaLabel="Pilih pemilik unit"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Nama Barang <span className="text-red-500">*</span></Label>
-                <Input
-                  value={formNama}
-                  onChange={(e) => setFormNama(e.target.value)}
-                  placeholder="Contoh: Kipas Ruang Tamu"
-                  aria-label="Nama barang"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Jenis Barang <span className="text-red-500">*</span></Label>
-                <Input
-                  value={formJenis}
-                  onChange={(e) => setFormJenis(e.target.value)}
-                  placeholder="Contoh: Kipas / Mesin Cuci"
-                  aria-label="Jenis barang"
-                />
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500">
-              Wajib hanya nama &amp; jenis barang — <span className="font-medium">no seri &amp; model tidak diperlukan</span>. Bila unit dengan nama+jenis sama atas pemilik ini sudah pernah ada, unit itu dipakai ulang; bila belum, unit baru terdaftar otomatis.
-            </p>
-            {/* Klasifikasi unit — DROPDOWN 3 golongan: STOK TOKO / GARANSI / NON GARANSI */}
-            <div className="space-y-1.5">
-              <Label>Klasifikasi Unit</Label>
-              <Select value={formKlas} onValueChange={(v) => setFormKlas(v as 'STOK_TOKO' | 'GARANSI' | 'NON_GARANSI')}>
-                <SelectTrigger aria-label="Klasifikasi unit"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="STOK_TOKO">Stok Toko — garansi otomatis</SelectItem>
-                  <SelectItem value="GARANSI">Garansi</SelectItem>
-                  <SelectItem value="NON_GARANSI">Non Garansi</SelectItem>
-                </SelectContent>
-              </Select>
-              {formKlas !== 'NON_GARANSI' ? (
-                <p className="text-[11px] text-emerald-700">Garansi aktif — biaya repair dinonaktifkan (Rp 0). Unit titipan customer dari toko: pilih Garansi bila masih aktif garansi.</p>
-              ) : (
-                <p className="text-[11px] text-amber-700">Non garansi — biaya repair bisa diisi manual.</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label>Deskripsi Kerusakan (opsional)</Label>
-              <HistoryInput historyKey="service-deskripsi" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Contoh: Kipas tidak berputar, bau gosong..." />
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="space-y-1.5">
-                <Label>Sumber Laporan</Label>
-                <Select value={formSumber} onValueChange={setFormSumber}>
-                  <SelectTrigger aria-label="Sumber laporan"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(SUMBER_LABEL).filter(([v]) => v !== 'WA_BOT').map(([v, l]) => (
-                      <SelectItem key={v} value={v}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Tanggal Kejadian</Label>
-                <Input type="date" value={formTgl} onChange={(e) => setFormTgl(e.target.value)} aria-label="Tanggal kejadian tiket" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Biaya Repair (Rp){jasaDisabled && ' — nonaktif (garansi)'}</Label>
-                <Input type="number" value={jasaDisabled ? '0' : formJasa} onChange={(e) => setFormJasa(e.target.value)} disabled={jasaDisabled} />
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500">Tanggal kejadian boleh diisi lama (data historis) — nomor tiket &amp; urutan daftar otomatis menyesuaikan tanggal ini.</p>
-            <div className="space-y-2">
-              <Label>Part untuk Unit Ini — boleh lebih dari satu kode</Label>
-              {formParts.map((row, i) => {
-                const kodeRow = partKodePerRow[i]
-                const dup = kodeRow !== '' && dupPartKode.has(kodeRow)
-                const setengah = row.mode === 'manual' && ((!row.kode.trim() && row.nama.trim()) || (row.kode.trim() && !row.nama.trim()))
-                return (
-                  <div key={row.key} className="space-y-1.5 rounded-md border border-slate-200 bg-slate-50 p-2">
-                    <div className="flex items-start gap-1.5">
-                      <div className="min-w-0 flex-1">
-                        {row.mode === 'katalog' ? (
-                          <SearchSelect
-                            value={row.sparepartId}
-                            onChange={(v) => updatePartRow(row.key, { sparepartId: v })}
-                            options={(parts ?? []).map((p) => ({
-                              value: String(p.id),
-                              label: `${p.kodePart} · ${p.namaPart}`,
-                              sub: `${p.brandKompatibel?.trim() ?? ''}${p.brandKompatibel?.trim() ? ' · ' : ''}stok ${p.stokInventory}`.replace(/^ · /, ''),
-                            }))}
-                            placeholder="— Ketik kode/nama part —"
-                            ariaLabel={`Pilih part baris ${i + 1}`}
-                          />
-                        ) : (
-                          <div className="grid grid-cols-2 gap-1.5">
-                            <Input
-                              value={row.kode}
-                              onChange={(e) => updatePartRow(row.key, { kode: e.target.value.toUpperCase() })}
-                              placeholder="Kode part"
-                              className="h-9 font-mono text-xs"
-                              aria-label={`Kode part baris ${i + 1}`}
-                            />
-                            <Input
-                              value={row.nama}
-                              onChange={(e) => updatePartRow(row.key, { nama: e.target.value })}
-                              placeholder="Nama sparepart"
-                              className="h-9 text-xs"
-                              aria-label={`Nama sparepart baris ${i + 1}`}
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={row.qty}
-                        onChange={(e) => updatePartRow(row.key, { qty: e.target.value })}
-                        className="h-9 w-14 shrink-0 text-center text-xs"
-                        aria-label={`Jumlah part baris ${i + 1}`}
-                      />
-                      {formParts.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-8 shrink-0 text-slate-400 hover:text-red-600"
-                          onClick={() => hapusPartRow(row.key)}
-                          aria-label={`Hapus part baris ${i + 1}`}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="text-[11px] text-slate-500 underline-offset-2 hover:text-slate-700 hover:underline"
-                      onClick={() =>
-                        updatePartRow(row.key, row.mode === 'katalog' ? { mode: 'manual', kode: '', nama: '' } : { mode: 'katalog', kode: '', nama: '' })
-                      }
-                    >
-                      {row.mode === 'katalog' ? '＋ belum ada di katalog? tulis kode & nama manual' : 'pilih dari katalog'}
-                    </button>
-                    {dup && (
-                      <p className="text-[11px] font-medium text-red-600">
-                        Kode {kodeRow} sudah dipilih di baris lain — gabungkan jumlahnya jadi satu baris (pengulangan tidak diizinkan).
-                      </p>
-                    )}
-                    {setengah && (
-                      <p className="text-[11px] font-medium text-red-600">Kode dan nama wajib diisi bersamaan.</p>
-                    )}
-                  </div>
-                )
-              })}
-              <Button type="button" variant="outline" size="sm" className="w-full border-dashed" onClick={tambahPartRow}>
-                <Plus className="mr-1 h-3.5 w-3.5" /> Tambah Part
-              </Button>
-            </div>
-            <p className="flex items-start gap-1.5 rounded-md bg-emerald-50 p-2.5 text-xs text-emerald-800">
-              <RotateCcw className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              Stok tersinkron otomatis: jika part tersedia, stok bisa-jual (lalu garansi) direserve &amp; inventory berkurang. Jika kosong, part berstatus ORDER_PRODUSEN &amp; produsen dinotifikasi.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Batal</Button>
-            <Button
-              className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!formPemilik || !formNama.trim() || !formJenis.trim() || partRowInvalid || dupPartKode.size > 0 || createMutation.isPending}
-              onClick={() => createMutation.mutate()}
-            >
-              <Plus className="mr-1 h-4 w-4" /> Simpan Tiket
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

@@ -51,14 +51,19 @@ export async function POST(request: Request) {
     if (denied) return denied
     void session
     const body = await request.json()
-    // Syarat pokok tiket manual: NAMA + JENIS BARANG — no seri & model tidak wajib.
-    // Deskripsi kerusakan OPSIONAL. Jalur unit terdaftar (unitAssetId) tetap
-    // diterima demi kompatibilitas pemanggil lama (Master Data → tiket part/perbaiki).
+    // BYPASS — Tiket manual = CATATAN SEMENTARA unit masuk yang akan dibenerin
+    // kemudian. Wajib cukup JENIS BARANG (+ deskripsi kerusakan); merk opsional.
+    // Unit TIDAK perlu diregistrasi/pilih dulu: dicari dari identitas sederhana
+    // (nama + jenis + merk), bila belum ada otomatis TERDAFTAR di master Unit
+    // Asset (barcode) TANPA no seri (serial auto-generate) & model — toko /
+    // customer & garansi dilengkapi/diedit belakangan di Master Data.
+    // Deskripsi kerusakan WAJIB (inti catatan). Jalur unit terdaftar (unitAssetId)
+    // tetap diterima demi kompatibilitas pemanggil lama (Master Data → tiket part/perbaiki).
     const namaBarang = String(body.namaBarang ?? '').trim()
     const jenisBarang = String(body.jenisBarang ?? '').trim()
-    if (!body.unitAssetId && (!namaBarang || !jenisBarang)) {
+    if (!body.unitAssetId && !jenisBarang) {
       return NextResponse.json(
-        { error: 'Nama dan jenis barang wajib diisi — no seri & model tidak diperlukan' },
+        { error: 'Jenis barang wajib diisi — no seri & model tidak diperlukan' },
         { status: 400 }
       )
     }
@@ -86,25 +91,52 @@ export async function POST(request: Request) {
         include: { toko: true },
       })
     } else {
-      // Jalur entri manual (Tiket Manual): tidak ada pemilihan unit — unit dicari
-      // dari identitas sederhana (pemilik + nama + jenis barang) dan dipakai bila
-      // sudah pernah ada; bila belum, unit baru terdaftar otomatis TANPA no seri
-      // (serial auto-generate) & model (modelUnit = jenis barang).
+      // Jalur BYPASS (Tiket Manual): catatan sementara unit masuk — tanpa
+      // registrasi/pilih unit. Pemilik (toko/customer) OPSIONAL; wajib cukup
+      // jenis barang (+ merk jika ada) + deskripsi. Unit dicari dari identitas
+      // sederhana (nama + jenis + merk): pakai ulang bila sudah pernah ada,
+      // bila belum terdaftar otomatis di master Unit Asset (barcode) TANPA no
+      // seri (serial auto-generate) & model; garansi & data unit diedit belakangan.
       const tokoId = body.tokoId ? Number(body.tokoId) : null
       const customerId = body.customerId ? Number(body.customerId) : null
-      const pemilik = tipeCustomer === 'TOKO' ? { tokoId } : { customerId }
-      if (!tokoId && !customerId) {
-        return NextResponse.json({ error: 'Pemilik unit (toko / customer) wajib dipilih' }, { status: 400 })
-      }
       const noSeri = String(body.noSeri ?? '').trim()
+      const merkBarang = String(body.merk ?? '').trim()
+      const identitas = {
+        nama: namaBarang || jenisBarang,
+        modelUnit: jenisBarang,
+        ...(merkBarang ? { merk: merkBarang } : {}),
+      }
       if (noSeri) {
         unit = await db.unitAsset.findUnique({ where: { serialNumber: noSeri }, include: { toko: true } })
       } else {
-        unit = await db.unitAsset.findFirst({
-          where: { ...pemilik, nama: namaBarang, modelUnit: jenisBarang },
-          orderBy: { createdAt: 'desc' },
-          include: { toko: true },
-        })
+        // 1) Prioritas: cari unit identitas sama milik pemilik yang dipilih
+        if (tokoId || customerId) {
+          unit = await db.unitAsset.findFirst({
+            where: { ...identitas, ...(tokoId ? { tokoId } : { customerId }) },
+            orderBy: { createdAt: 'desc' },
+            include: { toko: true },
+          })
+        }
+        // 2) Fallback: unit catatan lama dengan identitas sama (bisa tanpa pemilik)
+        if (!unit) {
+          unit = await db.unitAsset.findFirst({
+            where: identitas,
+            orderBy: { createdAt: 'desc' },
+            include: { toko: true },
+          })
+        }
+        if (unit && (tokoId || customerId)) {
+          const milikPemilik = tokoId ? unit.tokoId === tokoId : unit.customerId === customerId
+          if (!milikPemilik && !unit.tokoId && !unit.customerId) {
+            // Unit catatan lama belum punya pemilik → tandai dengan pemilik yang dipilih
+            await db.unitAsset.update({ where: { id: unit.id }, data: tokoId ? { tokoId } : { customerId } })
+            unit.tokoId = tokoId
+            unit.customerId = customerId
+          } else if (!milikPemilik) {
+            // Identitas sama tapi pemilik unit BEDA → unit BARU (jangan pakai unit milik orang lain)
+            unit = null
+          }
+        }
       }
       if (!unit) {
         unit = await db.unitAsset.create({
@@ -113,10 +145,13 @@ export async function POST(request: Request) {
               noSeri ||
               `AUTO-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
             modelUnit: jenisBarang,
-            nama: namaBarang,
-            // Diagnosa awal bila deskripsi diisi (opsional di tiket manual).
+            nama: namaBarang || jenisBarang,
+            merk: merkBarang,
+            // Diagnosa awal (inti catatan tiket manual — wajib).
             kerusakanAwal: String(body.deskripsiKerusakan ?? '').trim() || null,
-            ...pemilik,
+            // Pemilik opsional — toko/customer dilengkapi belakangan via edit master.
+            ...(tokoId ? { tokoId } : {}),
+            ...(customerId ? { customerId } : {}),
           },
           include: { toko: true },
         })
@@ -306,7 +341,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'STOK TOKO — garansi otomatis' : unit.statusGaransi === 'GARANSI' ? 'GARANSI' : 'NON GARANSI'})${body.unitAssetId ? '' : ' — entri manual nama+jenis barang, unit didaftarkan otomatis tanpa no seri/model'}${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}${langsungProses ? ' — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)' : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'STOK TOKO — garansi otomatis' : unit.statusGaransi === 'GARANSI' ? 'GARANSI' : 'NON GARANSI'})${body.unitAssetId ? '' : ' — bypass: catatan unit masuk, unit otomatis terdaftar di master tanpa no seri/model'}${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}${langsungProses ? ' — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)' : ''}`,
       aktor: body.aktor,
     })
     // Folder Kekurangan Sparepart: begitu tiket part unit ini dibuat (part dari produsen

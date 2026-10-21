@@ -46,6 +46,7 @@ const SettingsView = dynamic(() => import('@/components/views/settings-view'), {
 import AutoBackupWatcher from '@/components/auto-backup-watcher'
 import CompanyLogo from '@/components/company-logo'
 import QuickActions from '@/components/quick-entry'
+import NotifBell from '@/components/notif-bell'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -360,6 +361,8 @@ export default function Home() {
             <p className="hidden truncate text-xs text-slate-500 sm:block">{current?.desc}</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Lonceng notifikasi req service baru */}
+            <NotifBell />
             {/* Chip user + menu Keluar (Log Out) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
