@@ -102,7 +102,7 @@ model MasterSparepart {
 // ==========================================
 model UnitAsset {
   id              Int              @id @default(autoincrement())
-  serialNumber    String           @unique
+  serialNumber    String           // opsional — boleh kosong (diisi belakangan lewat Edit Unit); tidak lagi unique karena beberapa unit boleh tanpa nomor seri
   modelUnit       String
   merk            String           @default("") // merk/brand unit (mis. Miyako, Shimizu)
   nama            String           @default("") // nama panggilan unit (mis. "Kipas Ruang Tamu")
@@ -156,7 +156,7 @@ model ServiceRequest {
   status              String               @default("REQUEST")
   noSttb              String?
   sumberLaporan       String               @default("MANUAL")
-  tipeCustomer        String               @default("PERORANGAN") // TOKO (milik toko / titipan — klasifikasi di statusGaransi unit) | PERORANGAN
+  tipeCustomer        String               @default("PERORANGAN") // TOKO (stok toko → otomatis garansi) | PERORANGAN
   lokasiUnit          String               @default("TOKO")
   penanganan          String               @default("BELUM")
   noSuratJalan        String?

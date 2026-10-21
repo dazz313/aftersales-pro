@@ -25,7 +25,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return NextResponse.json({ error: 'Nomor seri tidak boleh kosong' }, { status: 400 })
       }
       if (serial !== existing.serialNumber) {
-        const dupe = await db.unitAsset.findUnique({ where: { serialNumber: serial } })
+        // Nomor seri bukan kunci unik lagi (boleh kosong) → findFirst
+        const dupe = await db.unitAsset.findFirst({ where: { serialNumber: serial } })
         if (dupe) {
           return NextResponse.json({ error: `Nomor seri ${serial} sudah dipakai oleh unit ${dupe.modelUnit}` }, { status: 409 })
         }

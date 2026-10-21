@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
 import { umurTiketJam, isDataLama } from '@/lib/umur'
@@ -51,21 +50,8 @@ export async function POST(request: Request) {
     if (denied) return denied
     void session
     const body = await request.json()
-    // BYPASS — Tiket manual = CATATAN SEMENTARA unit masuk yang akan dibenerin
-    // kemudian. Wajib cukup JENIS BARANG (+ deskripsi kerusakan); merk opsional.
-    // Unit TIDAK perlu diregistrasi/pilih dulu: dicari dari identitas sederhana
-    // (nama + jenis + merk), bila belum ada otomatis TERDAFTAR di master Unit
-    // Asset (barcode) TANPA no seri (serial auto-generate) & model — toko /
-    // customer & garansi dilengkapi/diedit belakangan di Master Data.
-    // Deskripsi kerusakan WAJIB (inti catatan). Jalur unit terdaftar (unitAssetId)
-    // tetap diterima demi kompatibilitas pemanggil lama (Master Data → tiket part/perbaiki).
-    const namaBarang = String(body.namaBarang ?? '').trim()
-    const jenisBarang = String(body.jenisBarang ?? '').trim()
-    if (!body.unitAssetId && !jenisBarang) {
-      return NextResponse.json(
-        { error: 'Jenis barang wajib diisi — no seri & model tidak diperlukan' },
-        { status: 400 }
-      )
+    if (!body.unitAssetId || !body.deskripsiKerusakan) {
+      return NextResponse.json({ error: 'Unit dan deskripsi kerusakan wajib diisi' }, { status: 400 })
     }
     // Tanggal kejadian/laporan — opsional, default sekarang. Mendukung backdate
     // untuk upload data historis; ditolak bila invalid atau setelah besok.
@@ -80,83 +66,10 @@ export async function POST(request: Request) {
       }
       tglTiket = parsed
     }
-    // Tipe pemilik didefinisikan di sini — dipakai jalur manual & klasifikasi di bawah.
-    const tipeCustomer = body.customerType === 'TOKO' ? 'TOKO' : 'PERORANGAN'
-    type UnitWithToko = Prisma.UnitAssetGetPayload<{ include: { toko: true } }>
-    let unit: UnitWithToko | null = null
-    if (body.unitAssetId) {
-      // Jalur lama: unit yang sudah terdaftar dipilih lewat id.
-      unit = await db.unitAsset.findUnique({
-        where: { id: Number(body.unitAssetId) },
-        include: { toko: true },
-      })
-    } else {
-      // Jalur BYPASS (Tiket Manual): catatan sementara unit masuk — tanpa
-      // registrasi/pilih unit. Pemilik (toko/customer) OPSIONAL; wajib cukup
-      // jenis barang (+ merk jika ada) + deskripsi. Unit dicari dari identitas
-      // sederhana (nama + jenis + merk): pakai ulang bila sudah pernah ada,
-      // bila belum terdaftar otomatis di master Unit Asset (barcode) TANPA no
-      // seri (serial auto-generate) & model; garansi & data unit diedit belakangan.
-      const tokoId = body.tokoId ? Number(body.tokoId) : null
-      const customerId = body.customerId ? Number(body.customerId) : null
-      const noSeri = String(body.noSeri ?? '').trim()
-      const merkBarang = String(body.merk ?? '').trim()
-      const identitas = {
-        nama: namaBarang || jenisBarang,
-        modelUnit: jenisBarang,
-        ...(merkBarang ? { merk: merkBarang } : {}),
-      }
-      if (noSeri) {
-        unit = await db.unitAsset.findUnique({ where: { serialNumber: noSeri }, include: { toko: true } })
-      } else {
-        // 1) Prioritas: cari unit identitas sama milik pemilik yang dipilih
-        if (tokoId || customerId) {
-          unit = await db.unitAsset.findFirst({
-            where: { ...identitas, ...(tokoId ? { tokoId } : { customerId }) },
-            orderBy: { createdAt: 'desc' },
-            include: { toko: true },
-          })
-        }
-        // 2) Fallback: unit catatan lama dengan identitas sama (bisa tanpa pemilik)
-        if (!unit) {
-          unit = await db.unitAsset.findFirst({
-            where: identitas,
-            orderBy: { createdAt: 'desc' },
-            include: { toko: true },
-          })
-        }
-        if (unit && (tokoId || customerId)) {
-          const milikPemilik = tokoId ? unit.tokoId === tokoId : unit.customerId === customerId
-          if (!milikPemilik && !unit.tokoId && !unit.customerId) {
-            // Unit catatan lama belum punya pemilik → tandai dengan pemilik yang dipilih
-            await db.unitAsset.update({ where: { id: unit.id }, data: tokoId ? { tokoId } : { customerId } })
-            unit.tokoId = tokoId
-            unit.customerId = customerId
-          } else if (!milikPemilik) {
-            // Identitas sama tapi pemilik unit BEDA → unit BARU (jangan pakai unit milik orang lain)
-            unit = null
-          }
-        }
-      }
-      if (!unit) {
-        unit = await db.unitAsset.create({
-          data: {
-            serialNumber:
-              noSeri ||
-              `AUTO-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
-            modelUnit: jenisBarang,
-            nama: namaBarang || jenisBarang,
-            merk: merkBarang,
-            // Diagnosa awal (inti catatan tiket manual — wajib).
-            kerusakanAwal: String(body.deskripsiKerusakan ?? '').trim() || null,
-            // Pemilik opsional — toko/customer dilengkapi belakangan via edit master.
-            ...(tokoId ? { tokoId } : {}),
-            ...(customerId ? { customerId } : {}),
-          },
-          include: { toko: true },
-        })
-      }
-    }
+    const unit = await db.unitAsset.findUnique({
+      where: { id: Number(body.unitAssetId) },
+      include: { toko: true },
+    })
     if (!unit) {
       return NextResponse.json({ error: 'Unit tidak ditemukan' }, { status: 404 })
     }
@@ -296,20 +209,26 @@ export async function POST(request: Request) {
     // - STOK_TOKO (stok toko) → otomatis garansi, biaya jasa dipaksa 0 (disable)
     // - GARANSI (dari customer) → biaya jasa dipaksa 0
     // - NON_GARANSI → biaya jasa manual
-    // Klasifikasi garansi kini lewat DROPDOWN 3 pilihan (Stok Toko / Garansi / Non Garansi):
-    // - STOK_TOKO → stok toko → garansi otomatis, biaya jasa dipaksa 0 (disable)
-    // - GARANSI (unit titipan customer aktif garansi termasuk di sini) → biaya jasa 0
+    // Klasifikasi garansi 3 pilihan:
+    // - STOK_TOKO (stok toko) → otomatis garansi, biaya jasa dipaksa 0 (disable)
+    // - GARANSI (dari customer) → biaya jasa dipaksa 0
     // - NON_GARANSI → biaya jasa manual
-    // Toko TIDAK lagi otomatis stok-toko: toko kerap memegang unit titipan customer,
-    // jadi klasifikasi dipilih bebas terlepas dari pemiliknya (toko / perorangan).
-    let klas = String(body.klasifikasiGaransi ?? '').trim().toUpperCase()
-    if (klas !== 'STOK_TOKO' && klas !== 'GARANSI' && klas !== 'NON_GARANSI') {
-      klas = tipeCustomer === 'TOKO' ? 'STOK_TOKO' : 'NON_GARANSI'
-    }
+    const tipeCustomer = body.customerType === 'TOKO' ? 'TOKO' : 'PERORANGAN'
+    const klas = body.klasifikasiGaransi
+    const klasifikasiDiberi = klas === 'GARANSI' || klas === 'NON_GARANSI' || klas === 'STOK_TOKO'
     let biayaJasa = Number(body.biayaJasa) || 0
-    await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: klas } })
-    unit.statusGaransi = klas
-    if (klas !== 'NON_GARANSI') biayaJasa = 0
+    if (tipeCustomer === 'TOKO') {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'STOK_TOKO' } })
+      unit.statusGaransi = 'STOK_TOKO'
+      biayaJasa = 0
+    } else if (klas === 'GARANSI' || klas === 'STOK_TOKO') {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: klas } })
+      unit.statusGaransi = klas
+      biayaJasa = 0
+    } else if (klasifikasiDiberi) {
+      await db.unitAsset.update({ where: { id: unit.id }, data: { statusGaransi: 'NON_GARANSI' } })
+      unit.statusGaransi = 'NON_GARANSI'
+    }
     // Aturan inti: STTB terbit SEJAK REQUEST PART — begitu tiket punya part
     // (kode+nama diminta, READY ataupun ORDER), nomor STTB langsung ada untuk
     // dibawa saat pick up. Tidak menunggu part datang. Part READY → otomatis
@@ -322,14 +241,14 @@ export async function POST(request: Request) {
     const ticket = await db.serviceRequest.create({
       data: {
         noTiket,
-        unitAssetId: unit.id,
+        unitAssetId: Number(body.unitAssetId),
         status: autoProses ? 'PROSES' : 'REQUEST',
         ...(noSttbOtomatis ? { noSttb: noSttbOtomatis } : {}),
         sumberLaporan,
         tipeCustomer,
         lokasiUnit: 'TOKO',
         penanganan: langsungProses ? 'DI_TOKO' : 'BELUM',
-        deskripsiKerusakan: String(body.deskripsiKerusakan ?? '').trim() || null,
+        deskripsiKerusakan: body.deskripsiKerusakan,
         biayaJasa,
         tglTiket,
         parts: { create: partsCreate },
@@ -341,7 +260,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'STOK TOKO — garansi otomatis' : unit.statusGaransi === 'GARANSI' ? 'GARANSI' : 'NON GARANSI'})${body.unitAssetId ? '' : ' — bypass: catatan unit masuk, unit otomatis terdaftar di master tanpa no seri/model'}${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}${langsungProses ? ' — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)' : ''}`,
+      deskripsi: `Tiket manual dibuat untuk unit ${unit.serialNumber} (${unit.modelUnit}, ${unit.statusGaransi === 'STOK_TOKO' ? 'stok toko → GARANSI otomatis' : unit.statusGaransi})${hasOrderPart ? ' — ada part ORDER_PRODUSEN' : ''}${noSttbOtomatis ? ` — STTB ${noSttbOtomatis} terbit sejak request part` : ''}${autoProses ? ' — part READY → otomatis PROSES' : ''}${langsungProses ? ' — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)' : ''}`,
       aktor: body.aktor,
     })
     // Folder Kekurangan Sparepart: begitu tiket part unit ini dibuat (part dari produsen

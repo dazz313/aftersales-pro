@@ -5,7 +5,7 @@
  * - Klik kode          → salin ke clipboard (toast "Kode tersalin")
  * - Ikon cari ("cek")  → buka Lacak Sparepart dengan kata kunci = kode
  *                        (query Bank Kode terfilter — pola navIntent drill-down)
- * Dipakai di tabel Service Tiket, Stok Inventory, Klaim, serta dialog detail.
+ * Dipakai di tabel Proses Service, Stok Inventory, Klaim, serta dialog detail.
  * Ikon Copy manual lama digantikan: kode itu sendiri sekarang tombolnya.
  */
 import { useState } from 'react'

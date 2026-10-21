@@ -209,7 +209,15 @@ export async function POST(request: Request) {
     let updated = 0
     for (const a of toUpdate) {
       try {
-        await db.unitAsset.update({ where: { serialNumber: a.data!.insert.serialNumber }, data: buildRow(a, true) })
+        // Nomor seri bukan kunci unik lagi (boleh kosong) → cari dulu, update via id
+        const target = await db.unitAsset.findFirst({ where: { serialNumber: a.data!.insert.serialNumber } })
+        if (!target) {
+          a.status = 'error'
+          a.message = `Unit "${a.kode}" tidak ditemukan di database`
+          a.data = undefined
+          continue
+        }
+        await db.unitAsset.update({ where: { id: target.id }, data: buildRow(a, true) })
         updated++
       } catch {
         a.status = 'error'

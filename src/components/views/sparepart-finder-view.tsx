@@ -419,7 +419,7 @@ export default function SparepartFinderView() {
                   </p>
                 ) : sjrRows.length === 0 ? (
                   <p className="rounded-lg border border-dashed p-3 text-center text-[10px] text-slate-500">
-                    Belum ada dokumen request — pilih tiket di Service Tiket → Surat Jalan → unduh.
+                    Belum ada dokumen request — pilih tiket di menu Proses Service → Surat Jalan → unduh.
                   </p>
                 ) : (
                   <div className="overflow-auto rounded-md border">

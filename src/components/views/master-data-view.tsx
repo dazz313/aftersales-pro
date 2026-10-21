@@ -344,8 +344,8 @@ export default function MasterDataView() {
       toast({
         title: `Tiket perbaikan tanpa sparepart ${t?.noTiket ?? ''} terbit`,
         description: t?.status === 'PROSES'
-          ? 'Status langsung PROSES — penyelesaian aktif: buka Daftar Tiket Service → tombol Selesaikan (nota stempel + TTD). Tanpa part & tanpa STTB.'
-          : 'Status REQUEST di Daftar Tiket Service — tanpa part & tanpa STTB; lanjutkan pekerjaan dari tiket.',
+          ? 'Status langsung PROSES — penyelesaian aktif: buka menu Proses Service → tombol Selesaikan (nota stempel + TTD). Tanpa part & tanpa STTB.'
+          : 'Status REQUEST di menu Proses Service — tanpa part & tanpa STTB; lanjutkan pekerjaan dari tiket.',
       })
     },
     onError: (e: Error) => toast({ title: 'Gagal membuat tiket perbaikan', description: e.message, variant: 'destructive' }),
@@ -395,7 +395,7 @@ export default function MasterDataView() {
       setPartKurangUnit(null)
       toast({
         title: `Tiket ${r.noTiket} terbit (REQUEST EMAIL)`,
-        description: `${r.tersimpan} part kurang tersimpan. Lanjut di Daftar Tiket Service → aksi: Kirim Email / Upload Lampiran. PDF Detail Unit otomatis berisi part tsb.`,
+        description: `${r.tersimpan} part kurang tersimpan. Lanjut di menu Proses Service → aksi: Kirim Email / Upload Lampiran. PDF Detail Unit otomatis berisi part tsb.`,
       })
     },
     onError: (e: Error) => toast({ title: 'Gagal menyimpan part kurang', description: e.message, variant: 'destructive' }),
@@ -406,7 +406,9 @@ export default function MasterDataView() {
       const tglInputAsli = editUnit!.createdAt ? new Date(editUnit!.createdAt).toISOString().slice(0, 10) : ''
       const snBaru = editUnitForm.serialNumber.trim().toUpperCase()
       return postJson(`/api/unit/${editUnit!.id}`, {
-        serialNumber: snBaru,
+        // Nomor seri OPSIONAL — hanya dikirim bila diisi (unit tanpa nomor seri
+        // tetap bisa diedit; serial diinput belakangan lewat dialog ini juga).
+        ...(snBaru ? { serialNumber: snBaru } : {}),
         modelUnit: editUnitForm.modelUnit.trim(),
         merk: editUnitForm.merk.trim(),
         nama: editUnitForm.nama.trim(),
@@ -615,7 +617,7 @@ export default function MasterDataView() {
                     onCheckedChange={() => toggleUnit(u.id)}
                   />
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-xs text-slate-600" title="Tanggal input registrasi unit">
+                <TableCell className="whitespace-nowrap text-xs text-slate-600" title="Tanggal input registrasi service">
                   {formatTanggal(u.createdAt)}
                 </TableCell>
                 <TableCell className="text-xs text-slate-700">
@@ -638,7 +640,7 @@ export default function MasterDataView() {
                   {u.modelUnit}
                   {u.nama?.trim() && <p className="text-[10px] font-normal text-slate-500">{u.nama.trim()}</p>}
                 </TableCell>
-                <TableCell className="font-mono text-[11px] font-semibold text-slate-900">{u.serialNumber}</TableCell>
+                <TableCell className="font-mono text-[11px] font-semibold text-slate-900">{u.serialNumber || <span className="font-sans text-[10px] font-normal text-amber-600">belum diisi</span>}</TableCell>
                 <TableCell>
                   <Badge variant="outline" className={cn('text-[10px]', u.statusGaransi === 'NON_GARANSI' ? 'border-amber-300 text-amber-700' : u.statusGaransi === 'STOK_TOKO' ? 'border-teal-300 text-teal-700' : 'border-emerald-300 text-emerald-700')}>
                     {GARANSI_LABEL[u.statusGaransi] ?? u.statusGaransi.replace('_', '-')}
@@ -714,7 +716,7 @@ export default function MasterDataView() {
                           <PackageOpen className="mr-2 h-3.5 w-3.5 text-violet-600" /> Input Part Kurang
                         </DropdownMenuItem>
                         <p className="px-2 pb-1.5 text-[10px] text-slate-400">
-                          Simpan → kode service terbit (REQUEST EMAIL) · Kirim Email ke produsen dari Daftar Tiket Service.
+                          Simpan → kode service terbit (REQUEST EMAIL) · Kirim Email ke produsen dari menu Proses Service.
                         </p>
                         <DropdownMenuItem onSelect={() => unduhPdfDetail(u)} data-testid="aksi-pdf-detail">
                           <FileDown className="mr-2 h-3.5 w-3.5 text-violet-600" /> PDF Detail Unit
@@ -936,7 +938,7 @@ export default function MasterDataView() {
               <Button size="sm" variant="outline" onClick={() => setImportUnitOpen(true)}>
                 <Upload className="mr-1 h-4 w-4" /> Import CSV
               </Button>
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={openUnitRegistrasi}><Plus className="mr-1 h-4 w-4" /> Registrasi Unit</Button>
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={openUnitRegistrasi}><Plus className="mr-1 h-4 w-4" /> Registrasi Service</Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -1046,16 +1048,18 @@ export default function MasterDataView() {
 
       <Dialog open={unitOpen} onOpenChange={setUnitOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader><DialogTitle>Registrasi Unit Asset</DialogTitle><DialogDescription>Unit baru akan mendapat serial number unik untuk stiker barcode/QR.</DialogDescription></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Registrasi Service</DialogTitle>
+            <DialogDescription>
+              Cukup isi nama unit, kerusakan, dan pemilik (toko/customer). Nomor seri &amp; model boleh dikosongkan — nomor seri diinput kemudian lewat Edit Unit; barcode/QR terbit setelah serial terisi.
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Serial Number</Label>
-              <Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" aria-invalid={!!regSerialDupe} />
-              {regSerialDupe && <DupSerialWarning existing={regSerialDupe} mode="registrasi" tokoIdSekarang={newUnit.tokoId} />}
+              <Label>Nama Unit</Label>
+              <HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: Kipas Ruang Tamu" />
             </div>
-            <div className="space-y-1.5"><Label>Model / Tipe Unit</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="Kipas Angin 16 inch ..." /></div>
             <div className="space-y-1.5"><Label>Merk</Label><HistoryInput historyKey="unit-merk" suggestions={brandRules.map((b) => b.nama)} value={newUnit.merk} onChange={(e) => setUnitMerk(e.target.value)} placeholder="cth: Miyako, Rinnai, Shimizu" /></div>
-            <div className="space-y-1.5"><Label>Nama Unit (opsional)</Label><HistoryInput historyKey="unit-nama" value={newUnit.nama} onChange={(e) => setNewUnit({ ...newUnit, nama: e.target.value })} placeholder="cth: Kipas Ruang Tamu" /></div>
             <div className="space-y-1.5 sm:col-span-2">
               <Label>Kerusakan Unit — Diagnosa Awal (bahasa awam)</Label>
               <Textarea
@@ -1065,8 +1069,8 @@ export default function MasterDataView() {
                 placeholder="cth: Kipas tidak mau nyala sama sekali, dibawa customer ke toko kemarin"
                 aria-label="Kerusakan unit diagnosa awal"
               />
-              <p className="text-[11px] text-slate-500">Terekam sejak registrasi — tidak perlu menunggu kode part terbit, jadi unit yang lama menunggu tetap punya catatan kerusakan.</p>
             </div>
+            <p className="text-[11px] font-medium text-slate-600 sm:col-span-2">Pemilik unit wajib — pilih toko mitra atau customer (cukup salah satu):</p>
             <div className="space-y-1.5">
               <Label>Toko Mitra</Label>
               <SearchSelect
@@ -1091,6 +1095,16 @@ export default function MasterDataView() {
               />
             </div>
             <div className="space-y-1.5">
+              <Label>Serial Number (opsional — diisi belakangan bila belum ada)</Label>
+              <Input value={newUnit.serialNumber} onChange={(e) => setNewUnit({ ...newUnit, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" aria-invalid={!!regSerialDupe} />
+              {regSerialDupe ? (
+                <DupSerialWarning existing={regSerialDupe} mode="registrasi" tokoIdSekarang={newUnit.tokoId} />
+              ) : (
+                !newUnit.serialNumber && <p className="text-[11px] text-slate-500">Bila kosong: nomor seri tetap kosong — diisi belakangan lewat Edit Unit; barcode/QR terbit setelah serial terisi.</p>
+              )}
+            </div>
+            <div className="space-y-1.5"><Label>Model / Tipe Unit (opsional)</Label><HistoryInput historyKey="unit-model" value={newUnit.modelUnit} onChange={(e) => setNewUnit({ ...newUnit, modelUnit: e.target.value })} placeholder="Kipas Angin 16 inch ..." /></div>
+            <div className="space-y-1.5">
               <Label>Status Garansi {unitGaransiAuto && newUnit.merk.trim() && newUnit.tglPembelian ? <span className="font-normal text-emerald-700">(otomatis dari masa garansi)</span> : null}</Label>
               <Select value={newUnit.statusGaransi} onValueChange={(v) => { setNewUnit({ ...newUnit, statusGaransi: v }); setUnitGaransiAuto(false) }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -1110,7 +1124,13 @@ export default function MasterDataView() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUnitOpen(false)}>Batal</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700" disabled={!newUnit.serialNumber || !newUnit.modelUnit || !!regSerialDupe || addUnit.isPending} onClick={() => addUnit.mutate()}><Plus className="mr-1 h-4 w-4" /> Registrasi</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              disabled={!newUnit.nama.trim() || !newUnit.kerusakanAwal.trim() || (!newUnit.tokoId && !newUnit.customerId) || !!regSerialDupe || addUnit.isPending}
+              onClick={() => addUnit.mutate()}
+            >
+              <Plus className="mr-1 h-4 w-4" /> Registrasi
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1337,12 +1357,12 @@ export default function MasterDataView() {
       <Dialog open={!!editUnit} onOpenChange={(o) => !o && setEditUnit(null)}>
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit Unit {editUnit && <span className="font-mono text-sm text-slate-500">{editUnit.serialNumber}</span>}</DialogTitle>
+            <DialogTitle>Edit Unit {editUnit && <span className="font-mono text-sm text-slate-500">{editUnit.serialNumber || '— nomor seri belum diisi'}</span>}</DialogTitle>
             <DialogDescription>Nomor seri boleh dikoreksi selama belum duplikat. Unit yang sudah punya tiket terkunci — koreksi hanya oleh Admin Workshop/Manager dengan konfirmasi (tiket tetap menaut unit lewat ID).</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label>Nomor Seri</Label>
+              <Label>Nomor Seri (opsional — diisi belakangan bila belum ada)</Label>
               <Input value={editUnitForm.serialNumber} onChange={(e) => setEditUnitForm({ ...editUnitForm, serialNumber: e.target.value.toUpperCase() })} placeholder="SN-KPAS-2026-XXXXX" className="font-mono" aria-invalid={!!editSerialDupe} />
               {editSerialDupe && <DupSerialWarning existing={editSerialDupe} mode="edit" />}
               {editSnTerblokir && (
@@ -1417,7 +1437,7 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setEditUnit(null)}>Batal</Button>
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
-              disabled={!editUnit || !editUnitForm.serialNumber.trim() || !editUnitForm.modelUnit.trim() || !!editSerialDupe || editSnTerblokir || (editSnButuhKoreksi && !konfirmasiKoreksiSN) || updateUnit.isPending}
+              disabled={!editUnit || !editUnitForm.modelUnit.trim() || !!editSerialDupe || editSnTerblokir || (editSnButuhKoreksi && !konfirmasiKoreksiSN) || updateUnit.isPending}
               onClick={() => updateUnit.mutate()}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
@@ -1601,7 +1621,7 @@ export default function MasterDataView() {
             <DialogDescription>
               {partKurangUnit && (
                 <span>
-                  {partKurangUnit.modelUnit} · <span className="font-mono">{partKurangUnit.serialNumber}</span> — simpan → <b>kode service otomatis terbit</b> (status REQUEST EMAIL di Daftar Tiket Service).
+                  {partKurangUnit.modelUnit} · <span className="font-mono">{partKurangUnit.serialNumber}</span> — simpan → <b>kode service otomatis terbit</b> (status REQUEST EMAIL di menu Proses Service).
                 </span>
               )}
             </DialogDescription>
@@ -1727,7 +1747,7 @@ export default function MasterDataView() {
                 aria-label="Langsung aktifkan penyelesaian"
               />
               <span>
-                <b>Langsung aktifkan penyelesaian</b> — tiket langsung status PROSES (dikerjakan di toko) dan tombol <b>Selesaikan</b> tersedia di Daftar Tiket Service.
+                <b>Langsung aktifkan penyelesaian</b> — tiket langsung status PROSES (dikerjakan di toko) dan tombol <b>Selesaikan</b> tersedia di menu Proses Service.
                 {!perbaikiForm.langsung && <span className="text-slate-500"> Matikan bila pekerjaan menunggu — tiket masuk REQUEST dulu.</span>}
               </span>
             </label>

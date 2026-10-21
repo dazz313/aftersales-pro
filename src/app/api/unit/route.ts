@@ -37,19 +37,24 @@ export async function GET() {
   }
 }
 
-// POST /api/unit - registrasi unit baru
+// POST /api/unit - registrasi service (unit baru)
 export async function POST(request: Request) {
   try {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
     void session
     const body = await request.json()
-    // Normalisasi: cegah dobel via beda kapital/spasi ("sn-001" vs "SN-001 ")
-    const serial = String(body.serialNumber ?? '').trim().toUpperCase()
-    const model = String(body.modelUnit ?? '').trim()
-    if (!serial || !model) {
-      return NextResponse.json({ error: 'Serial number dan model unit wajib diisi' }, { status: 400 })
+    // Wajib cukup: NAMA UNIT, KERUSAKAN (diagnosa awal), PEMILIK (toko mitra /
+    // customer). Nomor seri & model OPSIONAL — nomor seri TIDAK digenerate
+    // otomatis: dikosongkan = tetap kosong & diinput belakangan lewat Edit Unit
+    // (kolom serial bukan unique lagi → beberapa unit boleh tanpa nomor seri).
+    const nama = String(body.nama ?? '').trim()
+    const kerusakan = String(body.kerusakanAwal ?? '').trim()
+    if (!nama || !kerusakan) {
+      return NextResponse.json({ error: 'Nama unit dan kerusakan unit wajib diisi — nomor seri & model boleh menyusul' }, { status: 400 })
     }
+    // Normalisasi: cegah dobel via beda kapital/spasi ("sn-001" vs "SN-001 ")
+    const model = String(body.modelUnit ?? '').trim()
     const tokoIdBaru = body.tokoId ? Number(body.tokoId) : null
     if (tokoIdBaru && !(await db.masterToko.findUnique({ where: { id: tokoIdBaru } }))) {
       return NextResponse.json({ error: 'Toko tidak ditemukan' }, { status: 404 })
@@ -58,17 +63,27 @@ export async function POST(request: Request) {
     if (customerIdBaru && !(await db.masterCustomer.findUnique({ where: { id: customerIdBaru } }))) {
       return NextResponse.json({ error: 'Customer tidak ditemukan' }, { status: 404 })
     }
-    // Trap dobel: kunci = nomor seri + toko. Sama persis → tolak langsung.
-    const exists = await db.unitAsset.findUnique({
-      where: { serialNumber: serial },
-      include: { toko: { select: { kodeToko: true, namaToko: true } } },
-    })
-    if (exists) {
-      const tokoLama = exists.toko ? `${exists.toko.kodeToko} — ${exists.toko.namaToko}` : 'tanpa toko'
-      if ((exists.tokoId ?? null) === tokoIdBaru) {
-        return NextResponse.json({ error: `Unit ${serial} sudah terdaftar di ${tokoLama} — input ganda ditolak.` }, { status: 409 })
+    if (!tokoIdBaru && !customerIdBaru) {
+      return NextResponse.json({ error: 'Pemilik unit wajib diisi — pilih toko mitra atau customer' }, { status: 400 })
+    }
+    // Nomor seri tidak digenerate otomatis — bila dikosongkan kolom tetap kosong
+    // dan diinput belakangan lewat Edit Unit.
+    const serial = String(body.serialNumber ?? '').trim().toUpperCase()
+    // Trap dobel: kunci = nomor seri + pemilik toko. Sama persis → tolak langsung.
+    // NOTE: nomor seri TIDAK unik lagi (boleh kosong) → pakai findFirst; unit
+    // TANPA nomor seri tidak bisa di-trap per serial & boleh duplikat kosong.
+    if (serial) {
+      const exists = await db.unitAsset.findFirst({
+        where: { serialNumber: serial },
+        include: { toko: { select: { kodeToko: true, namaToko: true } } },
+      })
+      if (exists) {
+        const tokoLama = exists.toko ? `${exists.toko.kodeToko} — ${exists.toko.namaToko}` : 'tanpa toko'
+        if ((exists.tokoId ?? null) === tokoIdBaru) {
+          return NextResponse.json({ error: `Unit ${serial} sudah terdaftar di ${tokoLama} — input ganda ditolak.` }, { status: 409 })
+        }
+        return NextResponse.json({ error: `Nomor seri ${serial} sudah terdaftar di ${tokoLama} — periksa data, jangan input ulang.` }, { status: 409 })
       }
-      return NextResponse.json({ error: `Nomor seri ${serial} sudah terdaftar di ${tokoLama} — periksa data, jangan input ulang.` }, { status: 409 })
     }
     // Tanggal input registrasi — opsional, default sekarang. Mendukung backdate
     // untuk susulan input lama (tanggal bisa ditelusuri dari postingan WA);
@@ -106,7 +121,7 @@ export async function POST(request: Request) {
       aksi: 'CREATE_UNIT_ASSET',
       entitas: 'unit_asset',
       entitasId: unit.serialNumber,
-      deskripsi: `Unit baru teregistrasi: ${unit.modelUnit} (${unit.statusGaransi})${susulan ? ' — input susulan (backdate)' : ''}${unit.kerusakanAwal ? ' — diagnosa awal kerusakan tercatat' : ''}`,
+      deskripsi: `Unit baru teregistrasi: ${unit.nama || unit.modelUnit} (${unit.statusGaransi})${susulan ? ' — input susulan (backdate)' : ''}${unit.kerusakanAwal ? ' — diagnosa awal kerusakan tercatat' : ''}`,
       aktor: body.aktor,
     })
     await autoGitBackup('CREATE', 'unit_asset', unit.serialNumber, body.aktor)

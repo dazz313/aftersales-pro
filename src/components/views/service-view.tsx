@@ -709,7 +709,7 @@ export default function ServiceView() {
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <div>
-            <CardTitle className="text-base">Daftar Tiket Service</CardTitle>
+            <CardTitle className="text-base">Daftar Tiket</CardTitle>
             <CardDescription>Alur otomatis: WA Bot buat tiket → Admin proses (STTB) → teknisi selesaikan (nota stempel) → klaim</CardDescription>
           </div>
           <Tabs value={tab} onValueChange={setTab}>

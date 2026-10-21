@@ -55,7 +55,8 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
     return { ok: true, reply: replyText, aksi: 'FORMAT_INVALID', channel, mode: fwd.mode }
   }
 
-  const unit = await db.unitAsset.findUnique({
+  // Nomor seri bukan kunci unik lagi (boleh kosong) → findFirst
+  const unit = await db.unitAsset.findFirst({
     where: { serialNumber: cmd.serial },
     include: { toko: true, customer: true },
   })

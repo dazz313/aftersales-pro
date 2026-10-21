@@ -59,7 +59,7 @@ import {
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
   { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
   { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
-  { key: 'service', label: 'Service Tiket', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
+  { key: 'service', label: 'Proses Service', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
   { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
   { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },

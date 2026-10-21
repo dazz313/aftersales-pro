@@ -19,7 +19,7 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    if (!unit) return
+    if (!unit?.serialNumber) return
     let cancelled = false
     import('jsbarcode')
       .then((mod) => {
@@ -64,9 +64,15 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
             <div className="mx-auto w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white p-4 text-center shadow-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unit Asset Sticker</p>
 
-              {/* Barcode visual CODE128 asli */}
+              {/* Barcode visual CODE128 asli — hanya bila nomor seri sudah terisi */}
               <div className="mt-2 flex justify-center">
-                <canvas ref={canvasRef} aria-label={`Barcode ${unit.serialNumber}`} />
+                {unit.serialNumber ? (
+                  <canvas ref={canvasRef} aria-label={`Barcode ${unit.serialNumber}`} />
+                ) : (
+                  <p className="rounded-md bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-700">
+                    Nomor seri belum diisi — isi lewat Edit Unit, lalu buka kembali stiker ini.
+                  </p>
+                )}
               </div>
 
               {/* Layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
@@ -103,7 +109,7 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
                 </div>
                 <div className="flex justify-between gap-2 text-xs">
                   <dt className="shrink-0 text-slate-400">Nomor Seri</dt>
-                  <dd className="break-all font-mono text-[11px] font-bold text-slate-900">{unit.serialNumber}</dd>
+                  <dd className="break-all font-mono text-[11px] font-bold text-slate-900">{unit.serialNumber || '-'}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-2 text-xs">
                   <dt className="shrink-0 text-slate-400">Status</dt>

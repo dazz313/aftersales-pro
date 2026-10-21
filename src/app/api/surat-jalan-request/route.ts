@@ -12,7 +12,7 @@ export const runtime = 'nodejs'
 /**
  * Satu route, dua peran:
  * - POST — Surat Jalan REQUEST part ke Produsen (keluar). Dipanggil dialog
- *   cetak "Surat Jalan" di Service Tiket. Setiap unduhan: (1) data request
+ *   cetak "Surat Jalan" di Proses Service. Setiap unduhan: (1) data request
  *   DISIMPAN sebagai dokumen SJR-YYYYMMDD-NNNN (snapshot tiket + part + qty
  *   + toko + serial/model); (2) tiket ditandai `tglRequestPart` (request
  *   pertama yang menang) → tampil di bawah badge REQUEST; (3) dokumen
