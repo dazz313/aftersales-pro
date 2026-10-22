@@ -1,6 +1,31 @@
 # Worklog
 
 ---
+Task ID: 36
+Agent: MiniMax M3.1 Flash (opencode)
+Task: Notifikasi lonceng untuk Registrasi Service unit baru (terlihat teknisi + admin + manager, tidak terlupa)
+
+Work Log:
+- Audit awal: alur "Registrasi Service" (POST /api/unit + POST /api/unit/import) TIDAK pernah memicu notifikasi server apa pun — hanya lonceng in-app berbasis localStorage (src/components/notif-bell.tsx) yang membandingkan createdAt > lastSeen; 2 bug nyata: (a) browser yang belum pernah membuka app → lastSeen diisi Date.now() → semua registrasi SEBELUM first-open hilang permanen; (b) registrasi susulan/backdate menyimpan createdAt = tglInput → selalu < lastSeen → tidak pernah muncul; (c) lastSeen per-browser → tidak ada status unread bersama antar pengguna
+- Solusi: sumber notifikasi pindah ke SERVER. Model baru Prisma "Notifikasi" (tipe/judul/pesan/refType/refId/refLabel/dibuatOleh/untukRole/createdAt) + "NotifikasiBaca" (notifikasiId+penggunaId unik → status dibaca PER PENGGUNA, jadi membuka lonceng di satu komputer tidak menghapus notifikasi untuk user lain); pruning otomatis notifikasi > 30 hari
+- src/lib/notifikasi.ts (baru): helper buatNotifikasi() (TIDAK melempar error — kegagalan notifikasi tidak boleh membatalkan registrasi unit) + susunPesanRegistrasi() + ROLE_NOTIFIKASI ('TEKNISI,ADMIN_WORKSHOP,MANAGER')
+- src/app/api/notifikasi/route.ts (baru): GET → daftar notifikasi + hitungan belum dibaca (filter audience per role: untukRole null = semua); POST → tandai terbaca (satu/several id/semua, upsert compound key notifikasiId_penggunaId)
+- Pemicu dipasang: POST /api/unit (unit baru, sertakan relasi toko/customer agar pesan kaya), POST /api/unit/import (1 notifikasi ringkasan, bukan per baris), POST /api/service (tiket manual), src/lib/laporan.ts (tiket dari bot #LAPOR — READY & ORDER_PRODUSEN)
+- src/components/notif-bell.tsx ditulis ulang: polling /api/notifikasi tiap 20 detik, badge = jumlah belum dibaca, notifikasi belum dibaca diurutkan di atas, titik merah per item, tombol "Tandai semua terbaca", klik item → tandai terbaca + lompat ke Master Data › Unit Asset (unit) atau Proses Service (tiket), notifikasi baru memunculkan TOAST popup supaya tidak terlupa
+- src/lib/types.ts: tipe NotifikasiItem + NotifikasiResponse; src/lib/api.ts: re-export kedua tipe
+- DB: prisma db push (tabel baru, tanpa kehilangan data) + prisma generate; backup db/custom-backup-pre-notifikasi-20261022-180056.db; build standalone (npm run build → backup DB otomatis) & PM2 restart aspro-prod (build sempat gagal EPERM query_engine-windows.dll.node karena PM2 masih memegang file → stop → build → start)
+- Verifikasi E2E (skrip sementara, lalu dihapus): POST /api/unit → 201 + notifikasi REGISTRASI_UNIT dibuat; admin & teknisi (2 user berbeda) sama-sama melihat notifikasi tsb; admin menandai terbaca → admin 0 unread, teknisi tetap 1 unread (baca per pengguna ✓); data uji dibersihkan (unit/notifikasi/audit = 0 sisa)
+- Verifikasi kode: npx tsc --noEmit kosong, npx eslint (9 file) kosong
+
+Stage Summary:
+- Registrasi unit baru kini langsung memunculkan notifikasi lonceng yang terlihat teknisi, admin, dan manager, lengkap dengan toast popup — tidak bisa lagi "terlewat" karena notifikasi hilang saat app belum pernah dibuka / registrasi backdate / beda perangkat
+- Status dibaca tercatat di server per pengguna (bukan localStorage per browser) — multi-user & multi-device konsisten
+- Ticket service baru (manual & bot WA) juga masuk lonceng yang sama
+- File baru: src/lib/notifikasi.ts, src/app/api/notifikasi/route.ts
+- File diubah: prisma/schema.prisma, src/app/api/unit/route.ts, src/app/api/unit/import/route.ts, src/app/api/service/route.ts, src/lib/laporan.ts, src/lib/types.ts, src/lib/api.ts, src/components/notif-bell.tsx
+- Sisa gap (belum dikerjakan, perlu konfirmasi): push ke WhatsApp/Telegram gateway untuk registrasi (kalau mau notifikasi keluar aplikasi), alert engine ALT-01..05 belum pernah mengirim otomatis, unit teregistrasi tanpa tiket belum masuk reminder berkala, notifikasi "nomor seri diisi belakangan" (PATCH /api/unit/[id]) belum ada
+
+---
 Task ID: 35
 Agent: GLM (opencode)
 Task: Aksi BUKA_ULANG_PROSES — tiket FINISH dibuka ulang utk temuan part rusak tambahan (kasus SVC-2610-0029)

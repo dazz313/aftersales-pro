@@ -409,6 +409,30 @@ export interface WaMessage {
   createdAt: string
 }
 
+/**
+ * Notifikasi in-app (lonceng header) — sumbernya server (tabel Notifikasi),
+ * sehingga teknisi/admin/manager melihat daftar yang sama. Status "dibaca"
+ * dicatat per pengguna.
+ */
+export interface NotifikasiItem {
+  id: number
+  tipe: 'REGISTRASI_UNIT' | 'TIKET_BARU'
+  judul: string
+  pesan: string
+  refType: string | null
+  refId: number | null
+  refLabel: string | null
+  dibuatOleh: string | null
+  createdAt: string
+  dibaca: boolean
+}
+
+export interface NotifikasiResponse {
+  items: NotifikasiItem[]
+  belumDibaca: number
+  total: number
+}
+
 export interface VisionScan {
   id: number
   sumber: string

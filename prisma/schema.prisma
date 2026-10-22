@@ -23,6 +23,7 @@ model Pengguna {
   aktif        Boolean     @default(true)
   createdAt    DateTime    @default(now())
   kunjungan    Kunjungan[]
+  notifikasiBaca NotifikasiBaca[]
 }
 
 // ==========================================
@@ -497,4 +498,46 @@ model SuratJalanRequestItem {
   serialNumber        String?
   modelUnit           String?
   suratJalanRequest   SuratJalanRequest @relation(fields: [suratJalanRequestId], references: [id])
+}
+
+// ==========================================
+// MODUL 7 - Notifikasi In-App (lonceng header)
+// ==========================================
+// Notifikasi terbentuk dari kejadian penting di aplikasi, terutama
+// Registrasi Service (unit baru) & tiket service baru. Disimpan di server
+// supaya SEMUA role (teknisi / admin / manager) melihat notifikasi yang sama
+// dan status "sudah dibaca" tercatat per pengguna (bukan per browser).
+// tipe: REGISTRASI_UNIT | TIKET_BARU
+// untukRole: null = semua role; else daftar role dipisah koma
+// ==========================================
+model Notifikasi {
+  id         Int               @id @default(autoincrement())
+  tipe       String            @default("REGISTRASI_UNIT") // REGISTRASI_UNIT | TIKET_BARU
+  judul      String
+  pesan      String
+  refType    String? // 'unit' | 'service_request' | 'unit-massal'
+  refId      Int?
+  refLabel   String? // nomor seri unit / nomor tiket
+  dibuatOleh String?
+  untukRole  String? // null = semua role
+  createdAt  DateTime          @default(now())
+  dibaca     NotifikasiBaca[]
+
+  @@index([createdAt])
+  @@index([tipe])
+}
+
+// Status baca per pengguna — satu notifikasi dibaca oleh teknisi/admin/manager
+// masing-masing secara terpisah (membaca di satu device TIDAK menghapus
+// notifikasi untuk user lain).
+model NotifikasiBaca {
+  id            Int         @id @default(autoincrement())
+  notifikasiId  Int
+  penggunaId    Int
+  dibacaAt      DateTime    @default(now())
+  notifikasi    Notifikasi @relation(fields: [notifikasiId], references: [id], onDelete: Cascade)
+  pengguna      Pengguna   @relation(fields: [penggunaId], references: [id], onDelete: Cascade)
+
+  @@unique([notifikasiId, penggunaId])
+  @@index([penggunaId])
 }

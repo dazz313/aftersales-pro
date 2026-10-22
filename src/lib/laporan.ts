@@ -3,6 +3,7 @@ import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
 import { isGaransi } from '@/lib/types'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { sendGatewayMessage, labelChannel, type GatewayChannel } from '@/lib/gateway'
+import { buatNotifikasi } from '@/lib/notifikasi'
 
 export type { GatewayChannel }
 
@@ -132,6 +133,16 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
     })
     const replyText = `✅ ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Berhasil Terbuat.*\nPart *READY*: ${sparepart.namaPart} (sisa stok ${sparepart.stokInventory - 1}).\n📄 Link STTB (PDF): /api/sttb/${noTiket}\n\nSilakan teknisi mengangkut unit ke workshop dengan dokumen STTB tersebut.`
     const fwd = await balas(channel, replyText, { noTiket, aksi: 'TIKET_DIBUAT_PART_READY', noSttb })
+    // Notifikasi lonceng: tiket baru dari bot → teknisi/admin/manager langsung tahu.
+    await buatNotifikasi({
+      tipe: 'TIKET_BARU',
+      judul: 'Tiket service baru',
+      pesan: `${noTiket} · PROSES · ${unit.modelUnit || unit.nama || '(tanpa nama)'}${tokoInfo ? ` — ${tokoInfo}` : ''} · part READY`,
+      refType: 'service_request',
+      refId: ticket.id,
+      refLabel: noTiket,
+      dibuatOleh: `${labelChannel(channel)}-BOT`,
+    })
     await logAudit({
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
@@ -158,6 +169,16 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
     })
     const replyText = `🎫 ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Terbuat.*\n⚠️ Part *KOSONG*: ${sparepart.namaPart} (${sparepart.kodePart}).\n🔴 Notifikasi permintaan sparepart otomatis dikirim ke pihak Produsen.\n\nMenunggu pengiriman sparepart dari produsen.`
     const fwd = await balas(channel, replyText, { noTiket, aksi: 'PART_ORDER_PRODUSEN', notifikasiProdusen: true })
+    // Notifikasi lonceng: tiket baru dari bot → teknisi/admin/manager langsung tahu.
+    await buatNotifikasi({
+      tipe: 'TIKET_BARU',
+      judul: 'Tiket service baru',
+      pesan: `${noTiket} · REQUEST · ${unit.modelUnit || unit.nama || '(tanpa nama)'}${tokoInfo ? ` — ${tokoInfo}` : ''} · part ${sparepart.kodePart} KOSONG (menunggu produsen)`,
+      refType: 'service_request',
+      refId: ticket.id,
+      refLabel: noTiket,
+      dibuatOleh: `${labelChannel(channel)}-BOT`,
+    })
     await logAudit({
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',

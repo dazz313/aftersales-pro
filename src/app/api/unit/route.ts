@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
+import { buatNotifikasi, susunPesanRegistrasi, ROLE_NOTIFIKASI } from '@/lib/notifikasi'
 
 // GET /api/unit - list unit asset + data barcode
 export async function GET() {
@@ -116,6 +117,10 @@ export async function POST(request: Request) {
         tglPembelian: body.tglPembelian ? new Date(body.tglPembelian) : null,
         createdAt,
       },
+      include: {
+        toko: { select: { kodeToko: true, namaToko: true } },
+        customer: { select: { nama: true } },
+      },
     })
     await logAudit({
       aksi: 'CREATE_UNIT_ASSET',
@@ -123,6 +128,27 @@ export async function POST(request: Request) {
       entitasId: unit.serialNumber,
       deskripsi: `Unit baru teregistrasi: ${unit.nama || unit.modelUnit} (${unit.statusGaransi})${susulan ? ' — input susulan (backdate)' : ''}${unit.kerusakanAwal ? ' — diagnosa awal kerusakan tercatat' : ''}`,
       aktor: body.aktor,
+    })
+    // Notifikasi lonceng: unit baru teregistrasi → teknisi/admin/manager tahu
+    // ada unit yang harus ditindaklanjuti (unit ini belum jadi tiket service).
+    await buatNotifikasi({
+      tipe: 'REGISTRASI_UNIT',
+      judul: 'Registrasi unit baru',
+      pesan: susunPesanRegistrasi({
+        nama: unit.nama,
+        merk: unit.merk,
+        modelUnit: unit.modelUnit,
+        serialNumber: unit.serialNumber,
+        kerusakanAwal: unit.kerusakanAwal,
+        statusGaransi: unit.statusGaransi,
+        toko: unit.toko,
+        customer: unit.customer,
+      }),
+      refType: 'unit',
+      refId: unit.id,
+      refLabel: unit.serialNumber || unit.nama,
+      dibuatOleh: body.aktor ?? session?.nama ?? null,
+      untukRole: ROLE_NOTIFIKASI,
     })
     await autoGitBackup('CREATE', 'unit_asset', unit.serialNumber, body.aktor)
     return NextResponse.json(unit, { status: 201 })

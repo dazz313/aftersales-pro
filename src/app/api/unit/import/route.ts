@@ -5,6 +5,7 @@ import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 import { parseBrandRules, detectGaransi } from '@/lib/brand'
 import { parseCsv, validateUnitRows, buildCsvTemplate, CSV_MAX_ROWS } from '@/lib/csv'
+import { buatNotifikasi, ROLE_NOTIFIKASI } from '@/lib/notifikasi'
 
 // GET /api/unit/import — unduh template CSV registrasi massal unit per toko/perorangan
 // Urutan kolom mengikuti layout Master Barcode: tgl_input, toko_customer, merk,
@@ -236,6 +237,22 @@ export async function POST(request: Request) {
         entitas: 'unit_asset',
         deskripsi: `Import CSV massal unit: ${inserted} ditambahkan, ${updated} diperbarui, ${skipped} dilewati, ${failed} gagal (mode: ${mode === 'skip' ? 'lewati' : 'perbarui'})`,
         aktor,
+      })
+      // Notifikasi lonceng: satu ringkasan untuk registrasi massal (bukan satu
+      // notifikasi per baris) agar lonceng tetap ringkas.
+      const daftarSeri = toInsert
+        .map((a) => a.data?.insert.serialNumber || a.nama || '')
+        .filter(Boolean)
+        .slice(0, 8)
+      await buatNotifikasi({
+        tipe: 'REGISTRASI_UNIT',
+        judul: 'Registrasi unit massal (import CSV)',
+        pesan:
+          `${inserted} unit ditambahkan, ${updated} diperbarui, ${skipped} dilewati, ${failed} gagal.` +
+          (daftarSeri.length ? `\n${daftarSeri.join(', ')}${toInsert.length > 8 ? `, …dan ${toInsert.length - 8} lainnya` : ''}` : ''),
+        refType: 'unit-massal',
+        dibuatOleh: aktor,
+        untukRole: ROLE_NOTIFIKASI,
       })
       await autoGitBackup('IMPORT', 'unit_asset', `${inserted}+${updated}`, aktor)
     }

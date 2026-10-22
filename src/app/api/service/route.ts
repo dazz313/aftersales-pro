@@ -4,6 +4,7 @@ import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
 import { umurTiketJam, isDataLama } from '@/lib/umur'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
+import { buatNotifikasi } from '@/lib/notifikasi'
 
 // GET /api/service - list semua tiket dengan relasi lengkap
 export async function GET() {
@@ -287,6 +288,18 @@ export async function POST(request: Request) {
     if (partResults.some((r) => r.status === 'READY')) {
       await backupSparepartToGit('RESERVE', partsCreate.map((p) => String(p.sparepartId)).join(',') || noTiket, body.aktor)
     }
+    // Notifikasi lonceng: tiket baru → semua role tahu ada permintaan baru.
+    await buatNotifikasi({
+      tipe: 'TIKET_BARU',
+      judul: 'Tiket service baru',
+      pesan: `${noTiket} · ${ticket.status} · ${unit.modelUnit || unit.nama || '(tanpa nama)'}${
+        unit.toko ? ` — ${unit.toko.kodeToko} ${unit.toko.namaToko}` : ''
+      }`,
+      refType: 'service_request',
+      refId: ticket.id,
+      refLabel: noTiket,
+      dibuatOleh: body.aktor ?? null,
+    })
     await autoGitBackup('CREATE', 'service_request', noTiket, body.aktor)
 
     return NextResponse.json(
