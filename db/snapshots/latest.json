@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T12:06:27.160Z",
+  "generatedAt": "2026-10-22T12:07:20.784Z",
   "masterToko": [
     {
       "id": 216,
@@ -2735,17 +2735,17 @@
       "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
-      "id": 241,
+      "id": 242,
       "serialNumber": "",
-      "modelUnit": "TES-NOTIF",
+      "modelUnit": "TES-2",
       "merk": "",
-      "nama": "Uji Notifikasi Grup",
-      "kerusakanAwal": "Pemeriksaan fitur notifikasi",
+      "nama": "Uji Notifikasi Grup 2",
+      "kerusakanAwal": "Cek mode kirim",
       "tokoId": null,
       "customerId": 27,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
-      "createdAt": "2026-10-22T12:06:27.120Z"
+      "createdAt": "2026-10-22T12:07:20.764Z"
     },
     {
       "id": 199,
@@ -8461,7 +8461,7 @@
       "nilai": "haripin@bhakti.co.id"
     },
     {
-      "id": 177,
+      "id": 179,
       "kunci": "gateway_channel_default",
       "nilai": "TELEGRAM"
     },
@@ -8496,7 +8496,7 @@
       "nilai": "CV ERACOOL TEKNIK SOLUTION"
     },
     {
-      "id": 176,
+      "id": 178,
       "kunci": "notifikasi_gateway_aktif",
       "nilai": "true"
     },
@@ -8538,13 +8538,13 @@
   ],
   "auditLog": [
     {
-      "id": 889,
+      "id": 890,
       "aksi": "CREATE_UNIT_ASSET",
       "entitas": "unit_asset",
       "entitasId": "",
-      "deskripsi": "Unit baru teregistrasi: Uji Notifikasi Grup (GARANSI) — diagnosa awal kerusakan tercatat",
+      "deskripsi": "Unit baru teregistrasi: Uji Notifikasi Grup 2 (GARANSI) — diagnosa awal kerusakan tercatat",
       "aktor": "Uji Otomatis",
-      "createdAt": "2026-10-22T12:06:27.126Z"
+      "createdAt": "2026-10-22T12:07:20.771Z"
     },
     {
       "id": 885,
