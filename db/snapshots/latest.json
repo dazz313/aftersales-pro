@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T12:02:46.678Z",
+  "generatedAt": "2026-10-22T12:03:31.414Z",
   "masterToko": [
     {
       "id": 216,
@@ -8431,6 +8431,11 @@
       "id": 56,
       "kunci": "alamat_perusahaan",
       "nilai": "Jl. Onta No.10 Watampone"
+    },
+    {
+      "id": 174,
+      "kunci": "alert_kirim_tanggal",
+      "nilai": "2026-10-22"
     },
     {
       "id": 57,
