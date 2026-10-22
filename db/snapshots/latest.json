@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T21:31:29.538Z",
+  "generatedAt": "2026-10-22T21:32:42.718Z",
   "masterToko": [
     {
       "id": 216,
@@ -2722,19 +2722,6 @@
   ],
   "unitAsset": [
     {
-      "id": 232,
-      "serialNumber": "",
-      "modelUnit": "",
-      "merk": "Shimizu",
-      "nama": "pompa air",
-      "kerusakanAwal": "ribut",
-      "tokoId": 225,
-      "customerId": null,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-22T00:00:00.000Z"
-    },
-    {
       "id": 199,
       "serialNumber": ".",
       "modelUnit": "KG-502C",
@@ -3825,6 +3812,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-05T16:00:00.000Z"
+    },
+    {
+      "id": 232,
+      "serialNumber": "ZL053522",
+      "modelUnit": "PS-135 E",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "SUARA RIBUT",
+      "tokoId": 225,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
       "id": 157,
@@ -8553,6 +8553,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 896,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZL053522",
+      "deskripsi": "Data unit diperbarui: serialNumber, modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian ( → ZL053522)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T21:32:42.703Z"
+    },
     {
       "id": 895,
       "aksi": "CREATE_UNIT_ASSET",
