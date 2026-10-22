@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T21:28:42.303Z",
+  "generatedAt": "2026-10-22T21:29:19.868Z",
   "masterToko": [
     {
       "id": 216,
@@ -3855,7 +3855,7 @@
     {
       "id": 244,
       "serialNumber": "ZN294188",
-      "modelUnit": "",
+      "modelUnit": "PS-135 E",
       "merk": "Shimizu",
       "nama": "pompa air",
       "kerusakanAwal": "macet tidak berputar",
@@ -8540,6 +8540,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 894,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZN294188",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (ZN294188)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T21:29:19.857Z"
+    },
     {
       "id": 893,
       "aksi": "CREATE_UNIT_ASSET",
