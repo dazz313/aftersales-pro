@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T21:24:07.128Z",
+  "generatedAt": "2026-10-22T21:28:42.303Z",
   "masterToko": [
     {
       "id": 216,
@@ -3877,6 +3877,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-21T16:00:00.000Z"
+    },
+    {
+      "id": 245,
+      "serialNumber": "ZR057329",
+      "modelUnit": "PS-130 BIT",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "MACET TIDAK BERPUTAR",
+      "tokoId": 225,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
       "id": 172,
@@ -8527,6 +8540,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 893,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZR057329",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T21:28:42.288Z"
+    },
     {
       "id": 892,
       "aksi": "CREATE_UNIT_ASSET",
