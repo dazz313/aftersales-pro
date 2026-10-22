@@ -37,6 +37,27 @@ export const ROLE_NOTIFIKASI = 'TEKNISI,ADMIN_WORKSHOP,MANAGER'
  */
 export type JenisNotifGateway = 'registrasi' | 'produsen' | 'alert'
 
+/**
+ * Sakelar notifikasi LONCENG untuk ringkasan alert harian — tabel Pengaturan
+ * kunci `alert_lonceng_aktif`. Default MATI (tak ada baris/nilai ≠ "true"):
+ * ringkasan alert tetap disusun & dikirim ke grup gateway (sakelar
+ * notifikasi_alert_gateway tersendiri), tapi TIDAK lagi memunculkan
+ * notifikasi/toast di lonceng. Alasannya: ringkasan menghitung SEMUA kondisi
+ * yang sekadar menunggu ditindak (part stok ≤ reorder, toko lewat jadwal,
+ * tiket SLA lewat, dsb.) sehingga tiap hari pasti berbunyi — pola kemunculannya
+ * yang muncul di waktu aksi user (tick 30 menit kebetulan bersamaan dengan
+ * registrasi unit) membuatnya terasa seperti dipicu oleh aksi itu.
+ * Salakan bila admin memang ingin ringkasan juga tampil di lonceng.
+ */
+export async function alertLoncengAktif(): Promise<boolean> {
+  try {
+    const row = await db.pengaturan.findUnique({ where: { kunci: 'alert_lonceng_aktif' } })
+    return row?.nilai === 'true'
+  } catch {
+    return false
+  }
+}
+
 export async function gatewayNotifAktif(jenis: JenisNotifGateway): Promise<boolean> {
   try {
     const rows = await db.pengaturan.findMany({

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T22:07:08.331Z",
+  "generatedAt": "2026-10-22T22:07:08.480Z",
   "masterToko": [
     {
       "id": 216,
@@ -8492,7 +8492,7 @@
     {
       "id": 199,
       "kunci": "alert_lonceng_aktif",
-      "nilai": "true"
+      "nilai": "false"
     },
     {
       "id": 57,
@@ -8571,6 +8571,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 901,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, alert_kirim_tanggal, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, log_retensi_terakhir, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user, alert_lonceng_aktif",
+      "aktor": "VERIFIKASI-E2E",
+      "createdAt": "2026-10-22T22:07:08.454Z"
+    },
     {
       "id": 900,
       "aksi": "UPDATE_PENGATURAN",

@@ -682,6 +682,26 @@ export default function SettingsView() {
               </div>
             </div>
 
+            {/* Notifikasi lonceng in-app — ringkasan alert harian (default MATI) */}
+            <div className="space-y-2.5 rounded-lg border border-amber-200 bg-amber-50/40 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                  <Bell className="h-3.5 w-3.5 text-amber-600" /> Ringkasan alert di lonceng (dalam aplikasi)
+                </p>
+                <Switch
+                  checked={gw('alert_lonceng_aktif') === 'true'}
+                  onCheckedChange={(v) => setGwForm({ ...gwForm, alert_lonceng_aktif: String(v) })}
+                  aria-label="Tampilkan ringkasan alert harian di lonceng"
+                />
+              </div>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                Default mati: ringkasan alert harian tetap dievaluasi & dikirim ke grup (bila
+                sakelar grup di atas menyala), tapi TIDAK memunculkan notifikasi/toast di lonceng
+                — ringkasan menghitung semua part stok-rendah & toko lewat jadwal, jadi tiap hari
+                pasti berbunyi. Nyalakan bila ringkasan juga ingin tampil di lonceng.
+              </p>
+            </div>
+
             {/* Penampungan Telegram — 2 kantong sesuai konsumen fitur */}
             <div className="space-y-2.5 rounded-lg border border-sky-200 bg-sky-50/50 p-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">

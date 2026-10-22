@@ -1,6 +1,68 @@
 # Worklog
 
 ---
+Task ID: 41
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Apply upgrade Next.js 16.4.2 ke produksi (approval user) + verifikasi penuh
+
+Work Log:
+- Approval user: "Ya, apply sekarang di repo utama" (hasil validasi worktree Task 40).
+- Cherry-pick komit worktree 6c8274e → main d182836 "upgrade: next 16.1.1 -> 16.4.2 (security advisory fix), react 19.3.1" (hanya package.json + package-lock.json; file fix alert Task 39 yang masih uncommitted TIDAK tersentuh — path berbeda).
+- npx pm2 stop aspro-prod → npm install (33 detik, changed 7 packages) → next --version = v16.4.2; npx tsc --noEmit = 0.
+- Build produksi full (npm run build, standalone): sukses — compiled 18,2s, 46 halaman, backup DB otomatis custom-2026-10-23-061951.db. PENTING: build TIDAK lagi memunculkan SecurityFatalError/advisory (versi lama memang sedang menghentikan build utk menyarankan upgrade; 16.4.2 bersih).
+- Deploy: pm2 start aspro-prod → online (pid 13436).
+- E2E HP upgrade (server produksi hidup): GET /login 200 & GET / 200; user admin TEMPORER (dihapus habis uji; 1 baris audit uji dibersihkan) → login HTTP OK; GET /api/notifikasi 200 (7 item); GET /api/alerts 200 (total=119, critical=90 — komposisi sama dgn Task 39: ALT-03 stok part + ALT-01 toko dominan; angka naik-turun harian itu wajar). LULUS ✓.
+- Worktree next-security-upgrade dihapus (tujuan selesai — komit sudah masuk main); upgrade tetap bisa di-rollback via git revert d182836 (lock+package.json saja).
+- SISA (perlu keputusan user, tidak dieksekusi): npm audit melaporkan 19 vulnerability (5 moderate/13 high/1 critical) di dependency transisi TANPA nyambung ke advisory Next.js — perlu `npm audit` review manual; peringatan konvensi lama "middleware" (deprecating → proxy di masa depan) juga muncul, bisa dimigrasi belakangan via codemod.
+
+Stage Summary:
+- PRODUKSI KINI SEHAT di Next.js 16.4.2 + React 19.3.1: advisory keamanan Next.js tuntas diatasi, tsc/lint/build bersih, E2E endpoint kunci 200 semua.
+- Pekerjaan Task 39 (fix ALT-06 + sakelar lonceng alert) tetap utuh dan ter-deploy berbarengan build ini.
+
+---
+Task ID: 40
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Upgrade keamanan Next.js di worktree terpisah (16.1.1 → 16.4.2), produksi tidak diganggu
+
+Work Log:
+- Latar: build Task 39 memunculkan SecurityFatalError (Next menahan eksekusi utk menyarankan upgrade — advisory bulk npm registry; versi terpasang terdampak kerentanan keamanan).
+- Worktree dibuat via tools.opencode.worktree_create: C:\Users\eraco\.local\share\opencode\worktree\ccb06c\next-security-upgrade (checkout repo pada komit auto-backup 797d480).
+- `npx next upgrade --agent=security ...` (sesuai pesan advisory) → GAGAL "unknown option" (Next versi ini tak punya flag agent); `next upgrade --help` menunjukkan hanya `--revision`. `npx next upgrade --revision latest --verbose` → GAGAL lagi ENOENT "spawn npx" (bug jembatan Windows: spawn tanpa shell, npx.cmd tak ditemukan). SOLUSI: jalankan langsung perintah internal `npx --yes @next/codemod@canary upgrade latest --verbose` (persis yang di-delegasi `next upgrade`).
+- Hasil upgrade: Next.js 16.1.1 → **16.4.2**, React 19.2.3 → 19.3.1, eslint-config-next 16.4.2; npm install 1216 paket (±2 mnt); codemod `cache-components-instant-false` + `remove-partial-prefetch` → 213/214 file tanpa perubahan, hanya layout.tsx disentuh.
+- Penyesuaian pasca-codemod: blok `export const instant = false` di layout.tsx MEMBUAT BUILD GAGAL ("Route segment config 'instant' requires nextConfig.cacheComponents") karena proyek tidak mengaktifkan Cache Components → dihapus kembali ke bentuk semula (kodemod menganggap proyek adopter; di sini bukan). layout.tsx kembali 0 diff.
+- Validasi di worktree: prisma generate (client v6.19.3) ✓; npx tsc --noEmit exit 0 ✓; npx next build (Next 16.4.2) ✓ compiled 3,7s + 46 halaman + TIDAK ADA advisory keamanan & build tidak lagi menghentikan diri (versi 16.4.2 bersih dikena advisori tsb).
+- Hasil committed di worktree branch: 6c8274e "upgrade: next 16.1.1 -> 16.4.2 (security advisory fix), react 19.3.1" (package.json + package-lock.json).
+- CATATAN npm audit (worktree): 19 vulnerability (5 moderate/13 high/1 critical) di dep transisi — TERPISAH dari advisory Next.js; belum ditindak (perlu keputusan user).
+
+Stage Summary:
+- Worktree `next-security-upgrade` berisi upgrade Next.js 16.4.2 yang LOLOS tsc + build penuh; produksi masih jalan di Next 16.1.1/16.4.0-installasi lama — TIDAK berubah (user memilih "worktree terpisah" agar hasil di(nilai) manual)
+- Langkah lanjut: bila user ingin bergabung → apply di repo utama (npm install + build + PM2 restart + E2E), atau biarkan di worktree
+
+---
+Task ID: 39
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Selidiki & bereskan notifikasi "Ringkasan alert: 117 aktif" yang muncul saat menambah unit baru + benahi apa yang harus dibenahi
+
+Work Log:
+- LAPORAN user: saat menambah unit baru muncul notifikasi ALERT di lonceng "RINGKASAN ALERT 117". Diagnosis dari kode (bukan asumsi): notifikasi itu dibuat HANYA oleh src/lib/alert-scheduler.ts (tick tiap 30 menit, kirim 1×/hari via penanda alert_kirim_tanggal di tabel Pengaturan) — sama sekali TIDAK ada jalur di POST /api/unit / /api/unit/import yang membuat notifikasi tipe ALERT (grep seluruh src). Jadi kemunculannya saat registrasi = GABUNGAN WAKTU: tick 30-menit kebetulan berjalan bersamaan aksi user (lonceng memunculkan toast utk SEMUA notifikasi baru).
+- Angka 117 = jumlah ALERT AKTIF saat ringkasan disusun (judul = "Ringkasan alert: {total} aktif"), bukan nomor unit. Dikomposisi lewat skrip diagnostik (=replikasi aturan ALT-01..06 dari DB nyata, tidak mutating): ALT-03 stok part ≤ reorder = 66, ALT-01 toko lewat jadwal visit = 33, ALT-02 REQUEST > 24 jam = 13, ALT-05 REQUEST tanpa part READY = 11, ALT-06 unit 7 hari tanpa tiket = 4 → total posible 127 (engine memotong maks 200). Riwayat tbl Notifikasi: "117 aktif" (kemarin ±19:03 WIB) & "120 aktif" (±04:06 WIB) — jadwalnya memang harian, angkanya wajar naik-turun.
+- BUG ALT-06 ditemukan & diperbaiki: doc aturan (alert-engine.ts + PRD) bilang "registrasi > 24 jam tanpa tiket", tapi kode hanya menyaring window 7 hari TANPA syarat umur → unit yang baru dijam 5 lalu langsung terhitung alert di ringkasan berikutnya (membuat user wajar mengaitkan registrasi ↔ alert). Fix di jalankanAlertEngine(): syarat ganda dibuat >= batasUnit (jendela 7 hari) && dibuat <= batasMuda (umur ≥ JAM_MINIMAL_UNIT_TANPA_TIKET 24 jam).
+- Fitur sesuai permintaan "ringkasan alert matikan notif lonceng": sakelar baru Pengaturan kunci alert_lonceng_aktif (default MATI — helper alertLoncengAktif() hanya true bila nilai 'true'), helper di src/lib/notifikasi.ts; alert-scheduler.ts kini bersyarat memanggil buatNotifikasi('ALERT'). Pengiriman ringkasan ke grup WA/Telegram TETAP jalan (sakelar notifikasi_alert_gateway tersendiri, tidak berubah). Dashboard masih bisa lihat evaluasi alert via GET /api/alerts.
+- UI: settings-view.tsx menambah blok switch amber "Ringkasan alert di lonceng (dalam aplikasi)" di bawah blok "Kirim notifikasi ke grup" (glow() gateway). Sisa 7 notifikasi lama (termasuk 2 ringkasan alert sebelum fix) tak dihapus — cukup ditandai terbaca.
+- Deploy: npx pm2 stop aspro-prod → npm run build (standalone, backup DB otomatis custom-2026-10-23-0605xx.db, rotasi backup lama) → pm2 start → online.
+- CATATAN build: npm run build PERTAMA "gagal" karena Next.js 16.4.0 sengoja menghentikan eksekusi utk menampilkan ADVISORY KEAMANAN (registry.npmjs.org advisories bulk: "versi Next.js affected by a known security vulnerability, strongly recommend upgrade"; retry command utk lanjut). Build ke-2 sukses penuh (compiled 5,1s, 46 halaman, standalone bersih). Rekomendasi upgrade Next.js disampaikan ke user (belum dieksekusi — butuh persetujuan).
+- Verifikasi: npx tsc --noEmit kosong; npx eslint (alert-engine.ts, notifikasi.ts, alert-scheduler.ts, settings-view.tsx) kosong. E2E HTTP lewat server produksi hidup: user admin TEMPORER (e2e-...@temp.local, role ADMIN_WORKSHOP) → login 200 → GET pengaturan: sakelar awalnya tidak ada (= MATI) → PUT 'true' → GET = 'true' → PUT 'false' → GET = 'false' (LULUS); sanity GET /api/notifikasi 200 (7 item). Bersih-bersih: user temp dihapus + 3 baris audit uji dihapus (tbl Pengguna & AuditLog 0 sisa). Perilaku lonceng tanpa ringkasan alert baru terlihat pada ringkasan berikutnya (1×/hari — pertama: besok).
+- Kredensial demo lama budi/admin123 TIDAK lagi valid (login 401) — password demo sudah diubah orang, tidak dipakai/di-reset oleh agent ini.
+- Skrip sementara scripts/diag-alert.mjs & scripts/e2e-verif-alert.mjs dibuat untuk uji lalu DIHAPUS (0 artefak).
+
+Stage Summary:
+- Notifikasi "Ringkasan alert: N aktif" kini JELAS: alert harian terjadwal (bukan dipicu registrasi unit); angka = jumlah kondisi menunggu tindakan (dominan: 66 part stok-rendah + 33 toko lewat jadwal)
+- Bug ALT-06 diperbaiki: unit yang baru di-register < 24 jam tidak lagi langsung terhitung alert (sesuai aturan tertulis "registrasi > 24 jam")
+- Lonceng tidak lagi bising: ringkasan alert default tidak memunculkan notifikasi in-app; grup WA/Telegram tetap diterima; bisa disalakan lewat Pengaturan › Gateway › "Ringkasan alert di lonceng (dalam aplikasi)"
+- File diubah: src/lib/alert-engine.ts, src/lib/notifikasi.ts, src/lib/alert-scheduler.ts, src/components/views/settings-view.tsx
+- Tanpa perubahan schema/db/API; deploy PM2 online; bahkan terdapat catatan keamanan Next.js (perlu keputusan user utk upgrade)
+
+---
 Task ID: 36
 Agent: MiniMax M3.1 Flash (opencode)
 Task: Notifikasi lonceng untuk Registrasi Service unit baru (terlihat teknisi + admin + manager, tidak terlupa)

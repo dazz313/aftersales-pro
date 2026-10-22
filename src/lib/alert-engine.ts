@@ -40,6 +40,14 @@ export interface HasilAlert {
 const HARI_MS = 24 * 3600 * 1000
 /** ALT-06: window unit yang masih "baru" tanpa tiket (hari). */
 const JENDELA_UNIT_TANPA_TIKET_HARI = 7
+/**
+ * ALT-06: masa tenggang minimal — unit didaftar < 24 jam BELUM dianggap
+ * "terlupa". Dulu code hanya menyaring jendela 7 hari TANPA syarat umur,
+ * padahal doc aturan & judulnya tertulis "registrasi > 24 jam" → unit yang
+ * baru dijam 5 lalu (bisa jadi sedang diproses) langsung terhitung alert di
+ * ringkasan berikutnya dan terasosiasi dengan aksi tambah unit.
+ */
+const JAM_MINIMAL_UNIT_TANPA_TIKET = 24
 const MAKS_ALERT = 200
 
 export async function jalankanAlertEngine(): Promise<HasilAlert> {
@@ -181,7 +189,13 @@ export async function jalankanAlertEngine(): Promise<HasilAlert> {
   // Unit yang didaftarkan (Registrasi Service) tapi belum pernah jadi tiket
   // service → gampang terlupa. Backdate (createdAt lama) tidak dihitung.
   const batasUnit = now - JENDELA_UNIT_TANPA_TIKET_HARI * HARI_MS
-  const unitTerlupa = unitTanpaTiket.filter((u) => new Date(u.createdAt).getTime() >= batasUnit)
+  const batasMuda = now - JAM_MINIMAL_UNIT_TANPA_TIKET * 3600_000
+  const unitTerlupa = unitTanpaTiket.filter((u) => {
+    const dibuat = new Date(u.createdAt).getTime()
+    // Masih dalam jendela 7 hari, TAPI sudah melewati tenggang 24 jam —
+    // unit yang baru didaftar diberi waktu; tiketnya kerap ditulis belakangan.
+    return dibuat >= batasUnit && dibuat <= batasMuda
+  })
   for (const u of unitTerlupa) {
     const jamBerlalu = (now - new Date(u.createdAt).getTime()) / 3600_000
     alerts.push({

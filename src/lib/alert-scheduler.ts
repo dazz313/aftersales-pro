@@ -1,7 +1,6 @@
 import { db } from '@/lib/db'
 import { jalankanAlertEngine, susunTeksAlert } from '@/lib/alert-engine'
-import { kirimNotifikasiGateway } from '@/lib/notifikasi'
-import { buatNotifikasi } from '@/lib/notifikasi'
+import { buatNotifikasi, kirimNotifikasiGateway, alertLoncengAktif } from '@/lib/notifikasi'
 
 /**
  * Scheduler alert harian (berjalan di dalam proses server).
@@ -9,8 +8,9 @@ import { buatNotifikasi } from '@/lib/notifikasi'
  * Dijalankan sekali saat server boot via src/instrumentation.ts.
  * Tiap 30 menit: bila hari ini belum ada pengiriman alert (penanda
  * `alert_kirim_tanggal` di tabel Pengaturan) → jalankan alert engine,
- * kirim ringkasannya ke grup WA/Telegram (kalau sakelarnya menyala) dan
- * catat notifikasi in-app (lonceng) supaya teknisi/admin/manager tahu.
+ * kirim ringkasannya ke grup WA/Telegram (kalau sakelarnya menyala) dan —
+ * hanya bila Pengaturan `alert_lonceng_aktif` disalakan (default MATI) —
+ * catat notifikasi in-app (lonceng).
  *
  * Catatan: server harus hidup saat jadwal tiba (server desktop/LAN umumnya
  * standby 24 jam).
@@ -37,19 +37,25 @@ export async function kirimAlertHarian(): Promise<{ dikirim: boolean; total: num
       critical: hasil.critical,
     })
     mode = keGrup.mode
-    // Notifikasi in-app (lonceng) — tetap dibuat walau grup mati, supaya
-    // semua role tetap melihat ringkasan alert.
-    const kodeUnik = [...new Set(hasil.alerts.map((a) => a.kode))]
-    await buatNotifikasi({
-      tipe: 'ALERT',
-      judul: `Ringkasan alert: ${hasil.total} aktif`,
-      pesan: `${hasil.critical} kritis · ${kodeUnik.join(', ')}\n${hasil.alerts
-        .slice(0, 5)
-        .map((a) => `• ${a.kode} ${a.entitas}: ${a.detail}`)
-        .join('\n')}`,
-      refType: 'alert',
-      dibuatOleh: 'ALERT-ENGINE',
-    })
+    // Notifikasi in-app (lonceng) — kini OPSIONAL (Pengaturan ›
+    // alert_lonceng_aktif, default MATI). Dulu selalu ditulis, sehingga tiap
+    // hari lonceng memunculkan "Ringkasan alert: N aktif" yang menghitung
+    // semua kondisi yang sekadar menunggu tindakan — bising & karena tick
+    // 30-menit, sering muncul bersamaan dengan aksi user (mis. registrasi
+    // unit) sehingga dikira dipicu aksi itu.
+    if (await alertLoncengAktif()) {
+      const kodeUnik = [...new Set(hasil.alerts.map((a) => a.kode))]
+      await buatNotifikasi({
+        tipe: 'ALERT',
+        judul: `Ringkasan alert: ${hasil.total} aktif`,
+        pesan: `${hasil.critical} kritis · ${kodeUnik.join(', ')}\n${hasil.alerts
+          .slice(0, 5)
+          .map((a) => `• ${a.kode} ${a.entitas}: ${a.detail}`)
+          .join('\n')}`,
+        refType: 'alert',
+        dibuatOleh: 'ALERT-ENGINE',
+      })
+    }
   }
 
   await db.pengaturan.upsert({
