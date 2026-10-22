@@ -72,3 +72,5 @@ db/custom.db-wal
 db/custom.db-shm
 # Salinan DB di folder build standalone
 .next/standalone/db/
+# Cache data bahasa Tesseract (30 MB, diunduh ulang via npm run tessdata)
+.cache/

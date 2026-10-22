@@ -73,6 +73,18 @@ async function main() {
   }
   process.env._TG_TOKEN = token
 
+  // Kalau bot SUDAH punya webhook (server publik), long polling akan konflik
+  // (Telegram balas 409). Jangan hapus webhook orang lain — keluar dengan
+  // jelas. Set TG_FORCE_POLLING=1 untuk memaksa mode polling.
+  const info = await tg('getWebhookInfo').catch(() => null)
+  const webhookUrl = info?.result?.url || ''
+  if (webhookUrl && process.env.TG_FORCE_POLLING !== '1') {
+    console.error(
+      `[${stamp()}] ✗ Bot sudah terdaftar webhook (${webhookUrl}) — mode long polling akan konflik (409).\n` +
+        `[${stamp()}]   Pilih salah satu: (a) biarkan webhook, matikan service ini; (b) set TG_FORCE_POLLING=1 untuk memaksa polling.`
+    )
+    process.exit(1)
+  }
   // Long polling konflik dengan webhook aktif → hapus webhook saat start.
   const del = await tg('deleteWebhook')
   if (del.ok) console.log(`[${stamp()}] ✓ Webhook lama dihapus (mode long polling aktif)`)

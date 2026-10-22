@@ -24,6 +24,9 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
  * Di-ensure sekali saat boot; diabaikan bila gagal (mis. DB sedang terkunci
  * sesaat oleh proses lain) — aplikasi tetap jalan seperti sebelumnya.
  */
-void db.$queryRawUnsafe('PRAGMA journal_mode = WAL').catch((e: unknown) => {
-  console.warn('Gagal mengaktifkan SQLite WAL:', e instanceof Error ? e.message : e)
-})
+const faseBuild = process.env.NEXT_PHASE === 'phase-production-build'
+if (!faseBuild) {
+  void db.$queryRawUnsafe('PRAGMA journal_mode = WAL').catch((e: unknown) => {
+    console.warn('Gagal mengaktifkan SQLite WAL:', e instanceof Error ? e.message : JSON.stringify(e))
+  })
+}

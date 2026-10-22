@@ -23,7 +23,56 @@ import { db } from '@/lib/db'
 /** Role internal yang wajib melihat notifikasi operasional. */
 export const ROLE_NOTIFIKASI = 'TEKNISI,ADMIN_WORKSHOP,MANAGER'
 
-export type TipeNotifikasi = 'REGISTRASI_UNIT' | 'TIKET_BARU'
+/**
+ * Notifikasi keluar aplikasi (WhatsApp / Telegram).
+ *
+ * Sakelar (tabel Pengaturan):
+ *  - notifikasi_gateway_aktif        : master — "true" = boleh kirim ke grup
+ *  - notifikasi_registrasi_gateway   : notifikasi registrasi unit (default true)
+ *  - notifikasi_produsen_gateway     : permintaan sparepart ke produsen (default true)
+ *  - notifikasi_alert_gateway        : ringkasan alert harian (default true)
+ *
+ * Semua default-nya OFF untuk master switch → tidak ada pesan yang keluar
+ * aplikasi tanpa diizinkan lewat Pengaturan.
+ */
+export type JenisNotifGateway = 'registrasi' | 'produsen' | 'alert'
+
+export async function gatewayNotifAktif(jenis: JenisNotifGateway): Promise<boolean> {
+  try {
+    const rows = await db.pengaturan.findMany({
+      where: { kunci: { in: ['notifikasi_gateway_aktif', `notifikasi_${jenis}_gateway`] } },
+    })
+    const map: Record<string, string> = {}
+    for (const r of rows) map[r.kunci] = r.nilai
+    if (map['notifikasi_gateway_aktif'] !== 'true') return false
+    return map[`notifikasi_${jenis}_gateway`] !== 'false'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Kirim notifikasi ke channel default gateway (WA/Telegram sesuai
+ * Pengaturan). Mengembalikan hasil; kalau sakelar mati → mode 'DIMATIKAN'.
+ */
+export async function kirimNotifikasiGateway(
+  teks: string,
+  jenis: JenisNotifGateway,
+  meta: Record<string, unknown> = {}
+): Promise<{ ok: boolean; mode: string; detail: string }> {
+  if (!(await gatewayNotifAktif(jenis))) {
+    return { ok: false, mode: 'DIMATIKAN', detail: 'Notifikasi ke grup dimatikan di Pengaturan.' }
+  }
+  const { getGatewayConfig, kirimGateway } = await import('@/lib/gateway')
+  const cfg = await getGatewayConfig()
+  const hasil = await kirimGateway(cfg.channelDefault, teks, {
+    pengirim: 'ASPRO-NOTIFIKASI',
+    meta: { ...meta, jenis },
+  })
+  return { ok: hasil.ok, mode: hasil.mode, detail: hasil.detail }
+}
+
+export type TipeNotifikasi = 'REGISTRASI_UNIT' | 'TIKET_BARU' | 'ALERT'
 
 export interface BuatNotifikasiInput {
   tipe: TipeNotifikasi

@@ -1,6 +1,7 @@
 import { createSign } from 'node:crypto'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
+import { BACKUP_DIR } from '@/lib/paths'
 
 /**
  * Backup Otomatis Google Spreadsheet (data bersama)
@@ -234,15 +235,15 @@ async function pushSheets(spreadsheetId: string, token: string, sheets: SheetDat
 async function writeLocalSnapshot(sheets: SheetData[]): Promise<string> {
   const { mkdir, writeFile } = await import('node:fs/promises')
   const { join } = await import('node:path')
-  const dir = join(process.cwd(), 'db', 'backups')
-  await mkdir(dir, { recursive: true })
+  const dir = BACKUP_DIR
+  await mkdir(/*turbopackIgnore: true*/ dir, { recursive: true })
   const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
   const file = join(dir, `backup-${ts}.json`)
   const payload: Record<string, unknown> = { generatedAt: new Date().toISOString(), tabel: {} }
   for (const s of sheets) {
     ;(payload.tabel as Record<string, unknown>)[s.nama] = s.rows
   }
-  await writeFile(file, JSON.stringify(payload, null, 2), 'utf-8')
+  await writeFile(/*turbopackIgnore: true*/ file, JSON.stringify(payload, null, 2), 'utf-8')
   return file
 }
 

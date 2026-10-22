@@ -43,6 +43,36 @@ Stage Summary:
 - File baru: src/lib/log-retention.ts
 - File diubah: src/lib/db.ts, src/instrumentation.ts, src/lib/notifikasi.ts
 
+---
+Task ID: 38
+Agent: MiniMax M3.1 Flash (opencode)
+Task: Perbaiki semua temuan audit (notifikasi keluar aplikasi, alert engine, OCR, path data, poller Telegram, build output)
+
+Work Log:
+- NOTIFIKASI KELUAR APLIKASI (sebelumnya tidak ada sama sekali): src/lib/gateway.ts + kirimGateway() — kirim pesan DAN catat ke WaMessage (sebelumnya hanya bot #LAPOR & MCP yang menulis; kirim manual & pesan uji tidak tercatat). Sakelar di Pengaturan: notifikasi_gateway_aktif (master) + notifikasi_registrasi_gateway / notifikasi_produsen_gateway / notifikasi_alert_gateway — UI switch di Pengaturan → Gateway. src/lib/notifikasi.ts + kirimNotifikasiGateway() (master switch default OFF → tidak ada pesan keluar tanpa izin)
+- Registrasi unit → push ke grup (WA/Telegram sesuai channel default) + lonceng. Unit nomor seri diisi belakangan / diagnosa awal dilengkapi (PATCH /api/unit/[id]) → notifikasi baru
+- ALERT ENGINE benar-benar mengirim: src/lib/alert-engine.ts (dipisah dari route, dipakai bersama) + src/lib/alert-scheduler.ts (scheduler harian 1×/hari, penanda alert_kirim_tanggal) → ringkasan dikirim ke grup + notifikasi lonceng. Route /api/alerts sekarang memakai engine yang sama. Teks alert yang dulu menjanjikan "reminder otomatis dikirim" kini benar-benar terkirim
+- ATURAN BARU ALT-06 "Unit Terregistrasi Tanpa Tiket" (registrasi > 24 jam tanpa tiket service, window 7 hari, backdate tidak dihitung) → unit yang terlupa tidak lagi buta
+- Janji palsu di laporan.ts (part KOSONG): teks "Notifikasi ... otomatis dikirim ke Produsen" →请求生产线 benar-benar dikirim ke grup (mode tercatat di balasan + audit + WaMessage); bila gateway mati, teks jujur "belum terkirim — kirim manual"
+- OCR DIPERBAIKI (tadinya selalu gagal di produksi): tesseract.js menghitung workerPath dari __dirname yang diganti placeholder "/ROOT" di build standalone → "Cannot find module 'C:\ROOT\node_modules\tesseract.js\...". Fix: workerPath dihitung saat runtime (createRequire + cek existsSync), cache bahasa pindah ke <repo>/.cache/tesseract (bukan %TEMP% yang dihapus Windows), data bahasa diunduh sekali (npm run tessdata, script scripts/fetch-tessdata.mjs), timeout OCR 60→120 detik. Bukti: gambar uji "TEST 123" → OCR "TEST 12=" confidence 88 (sebelumnya MODULE_NOT_FOUND)
+- PATH DATA RUNTIME (temuAN besar): server standalone Next.js melakukan process.chdir(__dirname) → cwd = .next/standalone → SEMUA path berbasis process.cwd() (snapshot git, backup DB, folder upload Telegram, logo, lampiran email) menulis ke folder BUILD, bukan root repo (db/snapshots/latest.json di root ter stagnan sejak 19/10). Fix: src/lib/paths.ts (APP_ROOT mencari root project, melewatkan segmen ".next") dipakai git-backup.ts, gsheets.ts, telegram-files.ts, api/logo, api/service/[id]
+- BUILD OUTPUT: warning "Dynamic filesystem access causes tracing of the whole project" → whole repo ikut ter-copy ke .next/standalone (377 MB). Fix: /*turbopackIgnore: true*/ pada akses fs dinamis (logo, telegram-files, git-backup, gsheets, vision), next.config.ts outputFileTracingExcludes, scripts/next-build.mjs membersihkan .next/standalone + membuang folder data (src, db, upload, logs, .cache, scripts …) dari output. Hasil: standalone bersih (327 MB, tanpa data), tidak ada lagi warning
+- BUILD DATABASE_URL: script build memakai 'file:./db/custom.db' relatif → Prisma membuka path yang salah saat build ("Unable to open the database file"). Fix: path di-absolutkan di scripts/next-build.mjs
+- TELEGRAM POLLER HIDUP LAGI: bot tidak punya webhook (getWebhookInfo → url "") → inbound Telegram mustahil tanpa polling; service idle sejak 17/10. Fix: ecosystem.config.cjs + app kedua "aspro-tg-poll"; poller kini cek getWebhookInfo dulu & KELUAR dengan pesan jelas bila webhook sudah terdaftar (dulu deleteWebhook paksa bisa mematikan setup server publik) — TG_FORCE_POLLING=1 untuk memaksa. Status: "Polling bridge jalan" ✓
+- RETENSI LOG: prisma:query dimatikan di produksi (['warn','error']), job retensi 7 hari (file log PM2 aktif di-truncate + ekor 200 KB, arsip > 7 hari dihapus, WaMessage & Notifikasi 7 hari, AuditLog 365 hari), setting log_retensi_hari / log_retensi_audit_hari / log_retensi_mb di Pengaturan
+- .gitignore: db/custom.db-wal, db/custom.db-shm, .cache/ ditambahkan (WAL)
+- TEMUAN YANG TERBUKTUK SALAH (tidak ada masalah): "GET /api/unit & /api/service tanpa auth" → middleware src/middleware.ts sudah melindungi SEMUA /api/* (kecuali daftar PUBLIC_API) → bukan temuan
+- Verifikasi: tsc + eslint kosong; build exit 0; PM2 2 service online (aspro-prod + aspro-tg-poll); E2E via IP LAN → registrasi 201 + notifikasi untuk admin & teknisi, baca per-pengguna ✓; alert engine 118 alert (ALT-01..06) ✓; snapshot Fresh di root repo & tidak ada di folder build ✓; push ke grup Telegram terverifikasi mode REAL ok:true (kirim ke grup toggle sementara, lalu dikembalikan ke default)
+
+Stage Summary:
+- Semua temuan audit tertutup: notifikasi keluar aplikasi (WA/TG) untuk registrasi & permintaan produsen, alert engine benar-benar mengirim (harian) + aturan baru ALT-06, log gateway lengkap, nomor seri yang diisi belakangan ikut memunculkan notifikasi
+- OCR dan scan barcode/OCR foto sekarang benar-benar jalan di produksi (sebelumnya selalu gagal) — penting karena foto Telegram = sumber input registrasi
+- Data runtime (snapshot, backup, foto inbox, logo) kembali ditulis ke root repo, bukan ke folder build; output build jadi ringan & bersih
+- Telegram inbound hidup lagi (poller jalan sebagai service PM2) dan aman terhadap bentrok webhook
+- File baru: src/lib/paths.ts, src/lib/alert-engine.ts, src/lib/alert-scheduler.ts, scripts/fetch-tessdata.mjs
+- File diubah: src/lib/gateway.ts, src/lib/notifikasi.ts, src/lib/vision.ts, src/lib/git-backup.ts, src/lib/gsheets.ts, src/lib/telegram-files.ts, src/lib/db.ts, src/lib/log-retention.ts, src/instrumentation.ts, src/app/api/{unit,unit/[id],unit/import,service,alerts,gateway/kirim,gateway/test,logo,vision/scan}/route.ts, src/components/notif-bell.tsx, src/components/views/settings-view.tsx, src/app/api/service/[id]/route.ts, mini-services/tg-polling.mjs, ecosystem.config.cjs, next.config.ts, scripts/next-build.mjs, scripts/backup-db.mjs, .gitignore, package.json
+- Catatan: sakelar "Kirim notifikasi ke grup" default MATI → nyalakan di Pengaturan → Gateway bila mau pesan keluar ke WhatsApp/Telegram (channel default saat ini WhatsApp; Telegram sudah terkonfigurasi & terverifikasi terkirim)
+
 Stage Summary:
 - Registrasi unit baru kini langsung memunculkan notifikasi lonceng yang terlihat teknisi, admin, dan manager, lengkap dengan toast popup — tidak bisa lagi "terlewat" karena notifikasi hilang saat app belum pernah dibuka / registrasi backdate / beda perangkat
 - Status dibaca tercatat di server per pengguna (bukan localStorage per browser) — multi-user & multi-device konsisten

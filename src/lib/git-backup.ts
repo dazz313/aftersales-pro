@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process'
 import { db } from '@/lib/db'
+import { SNAPSHOT_DIR, APP_ROOT } from '@/lib/paths'
 
 /**
  * Backup otomatis Git untuk SEMUA perubahan data.
@@ -39,7 +40,7 @@ let lastCommitAt = 0
 
 function git(args: string[]): Promise<{ ok: boolean; stdout: string }> {
   return new Promise((resolve) => {
-    execFile('git', args, { cwd: process.cwd(), timeout: 15_000, windowsHide: true }, (err, stdout) => {
+    execFile('git', args, { cwd: APP_ROOT, timeout: 15_000, windowsHide: true }, (err, stdout) => {
       resolve({ ok: !err, stdout: String(stdout ?? '') })
     })
   })
@@ -91,8 +92,8 @@ export async function writeDbSnapshot(): Promise<string | null> {
     ])
     const { mkdir, writeFile } = await import('node:fs/promises')
     const { join } = await import('node:path')
-    const dir = join(process.cwd(), ...SNAP_DIR)
-    await mkdir(dir, { recursive: true })
+    const dir = SNAPSHOT_DIR
+    await mkdir(/*turbopackIgnore: true*/ dir, { recursive: true })
     const payload = {
       generatedAt: new Date().toISOString(),
       masterToko: tokos,
@@ -113,7 +114,7 @@ export async function writeDbSnapshot(): Promise<string | null> {
       backupLog,
     }
     const file = join(dir, LATEST_FILE)
-    await writeFile(file, JSON.stringify(payload, null, 2), 'utf-8')
+    await writeFile(/*turbopackIgnore: true*/ file, JSON.stringify(payload, null, 2), 'utf-8')
     return file
   } catch {
     return null
@@ -151,8 +152,8 @@ export async function backupSparepartToGit(aksi: string, kodePart: string, aktor
     }))
     const { mkdir, writeFile } = await import('node:fs/promises')
     const { join } = await import('node:path')
-    const dir = join(process.cwd(), ...SNAP_DIR)
-    await mkdir(dir, { recursive: true })
+    const dir = SNAPSHOT_DIR
+    await mkdir(/*turbopackIgnore: true*/ dir, { recursive: true })
     const payload = {
       generatedAt: new Date().toISOString(),
       aksi,
@@ -161,7 +162,7 @@ export async function backupSparepartToGit(aksi: string, kodePart: string, aktor
       total: snapshot.length,
       spareparts: snapshot,
     }
-    await writeFile(join(dir, SPAREPART_FILE), JSON.stringify(payload, null, 2), 'utf-8')
+    await writeFile(/*turbopackIgnore: true*/ join(dir, SPAREPART_FILE), JSON.stringify(payload, null, 2), 'utf-8')
   } catch {
     /* jangan gagalkan request utama */
   }

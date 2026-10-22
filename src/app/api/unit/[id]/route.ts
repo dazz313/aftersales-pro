@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
+import { buatNotifikasi, susunPesanRegistrasi, ROLE_NOTIFIKASI } from '@/lib/notifikasi'
 
 // PATCH /api/unit/[id] - koreksi data unit (termasuk nomor seri,
 // selama belum duplikat unit lain. Unit bertiket terkunci secara default,
@@ -105,6 +106,35 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       deskripsi: `Data unit diperbarui: ${Object.keys(data).join(', ')}${data.serialNumber ? ` (${existing.serialNumber} → ${data.serialNumber})${koreksiSerial ? ' [KOREKSI nomor seri unit bertiket oleh Admin/Manager]' : ''}` : ` (${unit.serialNumber})`}`,
       aktor: body.aktor,
     })
+    // Notifikasi: nomor seri unit diisi belakangan / unit diregistrasi ulang →
+    // technisi & admin perlu tahu unit ini sekarang punya identitas.
+    const serialBaru = typeof data.serialNumber === 'string' ? data.serialNumber.trim().toUpperCase() : ''
+    const serialIsi = Boolean(serialBaru) && serialBaru !== existing.serialNumber.trim().toUpperCase()
+    if (serialIsi || (data.kerusakanAwal && !existing.kerusakanAwal)) {
+      const lengkap = await db.unitAsset.findUnique({
+        where: { id: unit.id },
+        include: { toko: { select: { kodeToko: true, namaToko: true } }, customer: { select: { nama: true } } },
+      })
+      await buatNotifikasi({
+        tipe: 'REGISTRASI_UNIT',
+        judul: serialIsi ? 'Nomor seri unit dilengkapi' : 'Diagnosa awal unit dilengkapi',
+        pesan: susunPesanRegistrasi({
+          nama: lengkap?.nama ?? unit.nama,
+          merk: lengkap?.merk ?? unit.merk,
+          modelUnit: lengkap?.modelUnit ?? unit.modelUnit,
+          serialNumber: lengkap?.serialNumber ?? unit.serialNumber,
+          kerusakanAwal: lengkap?.kerusakanAwal ?? unit.kerusakanAwal,
+          statusGaransi: lengkap?.statusGaransi ?? unit.statusGaransi,
+          toko: lengkap?.toko ?? null,
+          customer: lengkap?.customer ?? null,
+        }),
+        refType: 'unit',
+        refId: unit.id,
+        refLabel: unit.serialNumber || unit.nama,
+        dibuatOleh: body.aktor ?? null,
+        untukRole: ROLE_NOTIFIKASI,
+      })
+    }
     await autoGitBackup('UPDATE', 'unit_asset', unit.serialNumber, body.aktor)
     return NextResponse.json(unit)
   } catch (error) {

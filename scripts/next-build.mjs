@@ -34,6 +34,21 @@ function cp(src, dest) {
   console.log(`✓ Salin ${path.relative(ROOT, src)} → ${path.relative(ROOT, dest)}`)
 }
 
+// Bersihkan folder standalone lama SEBELUM build. Next tidak menghapus isi
+// folder ini saat build → file lama (db/, upload/, logs/, src/) tertinggal dan
+// ikut ter-deploy. Membersihkan di sini juga desalination output: build
+// standalone jadi ringan (tidak ikut menyalin data repo).
+const STANDALONE_DIR = path.join(ROOT, '.next', 'standalone')
+if (fs.existsSync(STANDALONE_DIR)) {
+  try {
+    fs.rmSync(STANDALONE_DIR, { recursive: true, force: true })
+    console.log('✓ Folder .next/standalone lama dibersihkan')
+  } catch (e) {
+    console.warn(`! Gagal membersihkan .next/standalone: ${e.message}`)
+    console.warn('  (server PM2 mungkin masih jalan — stop dulu agar file database Prisma tidak terkunci)')
+  }
+}
+
 console.log('→ next build (standalone)...')
 // Panggil CLI Next.js langsung via node (tanpa shell) agar argumen tidak
 // digabung/di-escape ulang — menghindari deprecation DEP0190 & injection.
@@ -47,10 +62,22 @@ if (fs.existsSync(nextCli)) {
   cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx'
   args = ['next', 'build']
 }
+// DATABASE_URL untuk proses build — WAJIB absolut. Nilai relatif
+// ('file:./db/custom.db') di-resolve relatif terhadap folder schema
+// (prisma/) → Prisma membuka DB yang tidak ada ("Unable to open the database
+// file") saat build.
+function dbUrlAbsolut() {
+  const raw = process.env.DATABASE_URL || 'file:./db/custom.db'
+  if (!raw.startsWith('file:')) return raw
+  let p = raw.slice('file:'.length)
+  if (p.startsWith('./')) p = path.join(ROOT, p.slice(2))
+  return `file:${p.replace(/\\/g, '/')}`
+}
+
 const res = spawnSync(cmd, args, {
   cwd: ROOT,
   stdio: 'inherit',
-  env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || 'file:./db/custom.db', NEXT_TELEMETRY_DISABLED: '1' },
+  env: { ...process.env, DATABASE_URL: dbUrlAbsolut(), NEXT_TELEMETRY_DISABLED: '1' },
 })
 if (res.status !== 0) {
   console.error('✗ next build gagal')
@@ -59,6 +86,28 @@ if (res.status !== 0) {
 
 cp(path.join(ROOT, '.next', 'static'), path.join(ROOT, '.next', 'standalone', '.next', 'static'))
 cp(path.join(ROOT, 'public'), path.join(ROOT, '.next', 'standalone', 'public'))
+
+// Bersihkan folder data/source yang ikut ter-copy ke output standalone.
+// Next menyalin sebagian folder project (src, db, upload, logs, .cache …)
+// ke dalam .next/standalone — bukan bagian dari bundle server, tapi berisi
+// DATA (custom.db, backup, snapshot, foto inbox, cache bahasa Tesseract).
+// Buang supaya output ringan & tidak ada data yang ditulis ke folder build.
+// (Folder prisma/ & package.json TETAP dipakai — jangan dihapus.)
+const BUANG_DARI_STANDALONE = [
+  'src', 'db', 'logs', 'upload', 'download', '.cache',
+  'scripts', 'mcp', 'mini-services', 'electron', 'tests', 'examples',
+  'worklog.md', 'AGENTS.md',
+]
+for (const d of BUANG_DARI_STANDALONE) {
+  const p = path.join(ROOT, '.next', 'standalone', d)
+  if (!fs.existsSync(p)) continue
+  try {
+    fs.rmSync(p, { recursive: true, force: true })
+  } catch (e) {
+    console.warn(`! Gagal buang ${d} dari standalone: ${e.message}`)
+  }
+}
+console.log(`✓ Folder data dibuang dari standalone: ${BUANG_DARI_STANDALONE.join(', ')}`)
 // Sinkronkan .env mesin ini ke standalone: server warunkah chdir ke
 // .next/standalone saat boot, dan salinan .env basi di sana akan
 // membayangi .env asli (pernah menyebabkan AUTH_SECRET "hilang").

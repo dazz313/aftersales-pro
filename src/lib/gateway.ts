@@ -108,6 +108,34 @@ export function labelChannel(channel: string): string {
 }
 
 /**
+ * Kirim pesan keluar DAN catat ke log gateway (WaMessage tipe OUT).
+ * Dipakai SEMUA pemanggil outbound supaya log gateway lengkap & konsisten
+ * (sebelumnya hanya bot #LAPOR & MCP yang menulis WaMessage — hasil kirim
+ * manual & pesan uji tidak tercatat).
+ */
+export async function kirimGateway(
+  channel: GatewayChannel,
+  text: string,
+  opts: { pengirim?: string; meta?: Record<string, unknown> } = {}
+): Promise<SendResult> {
+  const hasil = await sendGatewayMessage(channel, text)
+  try {
+    await db.waMessage.create({
+      data: {
+        pengirim: opts.pengirim || 'GATEWAY',
+        channel,
+        tipe: 'OUT',
+        pesan: text,
+        meta: JSON.stringify({ ...(opts.meta ?? {}), mode: hasil.mode, ok: hasil.ok }),
+      },
+    })
+  } catch (e) {
+    console.error('Gagal menulis log gateway:', (e as Error).message)
+  }
+  return hasil
+}
+
+/**
  * Otorisasi webhook inbound (produksi).
  * Bila env WEBHOOK_SECRET diisi, pemanggil wajib menyertakan nilai yang sama
  * via query `?secret=` atau header `x-webhook-secret` (dibandingkan

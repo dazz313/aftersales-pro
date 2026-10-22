@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, BellRing, ChevronRight, PackagePlus, Ticket, CheckCheck } from 'lucide-react'
+import { Bell, BellRing, ChevronRight, PackagePlus, Ticket, AlertTriangle, CheckCheck } from 'lucide-react'
 import { fetcher, postJson, formatWaktu, type NotifikasiItem, type NotifikasiResponse } from '@/lib/api'
 import { useAppStore } from '@/lib/store'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -87,6 +87,8 @@ export default function NotifBell() {
     if (!item.dibaca) void tandaiDibaca([item.id])
     if (item.refType === 'unit' || item.refType === 'unit-massal') {
       navigateTo('master', { masterTab: 'unit' })
+    } else if (item.refType === 'alert') {
+      navigateTo('dashboard')
     } else {
       navigateTo('service')
     }
@@ -136,30 +138,28 @@ export default function NotifBell() {
           ) : (
             daftar.slice(0, 30).map((item) => {
               const isUnit = item.tipe === 'REGISTRASI_UNIT'
+              const isAlert = item.tipe === 'ALERT'
+              const Ikon = isUnit ? PackagePlus : isAlert ? AlertTriangle : Ticket
               return (
                 <button
                   key={item.id}
                   type="button"
                   className={cn(
                     'block w-full border-b border-slate-100 px-3 py-2 text-left transition-colors last:border-b-0',
-                    item.dibaca ? 'opacity-60 hover:bg-slate-50' : isUnit ? 'hover:bg-sky-50/60' : 'hover:bg-emerald-50/60'
+                    item.dibaca ? 'opacity-60 hover:bg-slate-50' : isUnit ? 'hover:bg-sky-50/60' : isAlert ? 'hover:bg-amber-50/60' : 'hover:bg-emerald-50/60'
                   )}
                   onClick={() => void bukaNotif(item)}
                   aria-label={`Buka notifikasi ${item.judul}`}
                 >
                   <div className="flex items-center gap-1.5">
-                    {isUnit ? (
-                      <PackagePlus className="h-3.5 w-3.5 shrink-0 text-sky-600" aria-hidden />
-                    ) : (
-                      <Ticket className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden />
-                    )}
+                    <Ikon className={cn('h-3.5 w-3.5 shrink-0', isUnit ? 'text-sky-600' : isAlert ? 'text-amber-600' : 'text-emerald-600')} aria-hidden />
                     <span
                       className={cn(
                         'rounded-full px-1.5 py-0.5 text-[9px] font-bold',
-                        isUnit ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'
+                        isUnit ? 'bg-sky-100 text-sky-800' : isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                       )}
                     >
-                      {isUnit ? 'REGISTRASI' : 'TIKET'}
+                      {isUnit ? 'REGISTRASI' : isAlert ? 'ALERT' : 'TIKET'}
                     </span>
                     {item.refLabel && (
                       <span className="truncate font-mono text-[11px] font-semibold text-slate-800">{item.refLabel}</span>

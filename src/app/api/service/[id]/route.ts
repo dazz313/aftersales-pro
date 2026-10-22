@@ -7,6 +7,7 @@ import { requireActiveSession } from '@/lib/auth-server'
 import type { SessionPayload } from '@/lib/auth'
 import { catatBankKode } from '@/lib/bank-kode'
 import { konfigurasiEmail, kirimSmtp, susunEmailOrder } from '@/lib/order-email'
+import { APP_ROOT } from '@/lib/paths'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -143,7 +144,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (smtpLengkap) {
         const lampiran = existing.lampiranEmail
           ? {
-              path: join(process.cwd(), 'upload', 'lampiran-email', basename(existing.lampiranEmail)),
+              path: join(/*turbopackIgnore: true*/ APP_ROOT, 'upload', 'lampiran-email', basename(existing.lampiranEmail)),
               filename: existing.lampiranEmail,
             }
           : undefined

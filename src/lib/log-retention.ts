@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { db } from '@/lib/db'
+import { APP_ROOT } from '@/lib/paths'
 
 /**
  * Retensi Log 7 Hari
@@ -47,31 +48,13 @@ function folderLogPm2(): string | null {
 }
 
 /**
- * Root repo. Server standalone Next.js melakukan `process.chdir(__dirname)`
- * (cwd = .next/standalone), dan folder standalone berisi SALINAN repo
- * (package.json, prisma/, src/ …) → cwd tidak bisa dipakai langsung.
- * Cari ke atas sampai ketemu root project yang BUKAN di dalam folder .next.
+ * Root repo — memakai resolver yang sama dengan aplikasi (src/lib/paths.ts):
+ * server standalone berjalan di .next/standalone (salinan repo), jadi path
+ * relatif harus dihitung dari root project yang sebenarnya.
  */
 function rootRepo(): string {
-  let dir = process.cwd()
-  for (let i = 0; i < 8; i++) {
-    const segmen = dir.split(/[\\/]/)
-    const diDalamNext = segmen.includes('.next')
-    if (
-      !diDalamNext &&
-      fs.existsSync(path.join(dir, 'package.json')) &&
-      fs.existsSync(path.join(dir, 'prisma', 'schema.prisma')) &&
-      fs.existsSync(path.join(dir, 'src'))
-    ) {
-      return dir
-    }
-    const parent = path.dirname(dir)
-    if (parent === dir) break
-    dir = parent
-  }
-  return process.cwd()
+  return APP_ROOT
 }
-
 /**
  * Potong file log aktif: sisakan ekor (200 KB terakhir) supaya error terbaru
  * tetap terbaca. Truncate in-place aman di Windows (sudah diuji) selama PM2

@@ -2,8 +2,8 @@ import { db } from '@/lib/db'
 import { logAudit, generateNoTiket, generateNoSttb } from '@/lib/audit'
 import { isGaransi } from '@/lib/types'
 import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
-import { sendGatewayMessage, labelChannel, type GatewayChannel } from '@/lib/gateway'
-import { buatNotifikasi } from '@/lib/notifikasi'
+import { kirimGateway, labelChannel, getGatewayConfig, type GatewayChannel } from '@/lib/gateway'
+import { buatNotifikasi, kirimNotifikasiGateway } from '@/lib/notifikasi'
 
 export type { GatewayChannel }
 
@@ -22,11 +22,8 @@ export function parseLaporanCommand(text: string) {
 }
 
 async function balas(channel: GatewayChannel, text: string, meta: Record<string, unknown>) {
-  const fwd = await sendGatewayMessage(channel, text)
-  await db.waMessage.create({
-    data: { pengirim: 'GATEWAY-BOT', channel, tipe: 'OUT', pesan: text, meta: JSON.stringify({ ...meta, mode: fwd.mode }) },
-  })
-  return fwd
+  // kirim + catat ke log gateway (WaMessage tipe OUT)
+  return kirimGateway(channel, text, { pengirim: 'GATEWAY-BOT', meta })
 }
 
 /**
@@ -167,8 +164,25 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
         parts: { create: [{ sparepartId: sparepart.id, qty: 1, statusPart: 'ORDER_PRODUSEN', statusKonfirmasi: 'MENUNGGU' }] },
       },
     })
-    const replyText = `🎫 ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Terbuat.*\n⚠️ Part *KOSONG*: ${sparepart.namaPart} (${sparepart.kodePart}).\n🔴 Notifikasi permintaan sparepart otomatis dikirim ke pihak Produsen.\n\nMenunggu pengiriman sparepart dari produsen.`
-    const fwd = await balas(channel, replyText, { noTiket, aksi: 'PART_ORDER_PRODUSEN', notifikasiProdusen: true })
+    // Permintaan sparepart ke produsen — benar-benar dikirim ke grup (kalau
+    // sakelar notifikasi gateway menyala), bukan sekadar dijanjikan di teks.
+    const hasilProdusen = await kirimNotifikasiGateway(
+      `🏭 *Permintaan sparepart ke Produsen*\nTiket *${noTiket}* · part *${sparepart.kodePart}* — ${sparepart.namaPart}\nUnit ${unit.serialNumber || unit.nama}${tokoInfo ? ` · ${tokoInfo}` : ''}\nQty: 1\n\nMohon segera dikirim.`,
+      'produsen',
+      { noTiket, kodePart: sparepart.kodePart, aksi: 'PART_ORDER_PRODUSEN' },
+    )
+    const barisProdusen = hasilProdusen.ok
+      ? '🔴 Permintaan sparepart sudah dikirim ke Produsen (grup).'
+      : hasilProdusen.mode === 'SIMULASI'
+        ? '🟡 Permintaan sparepart dicatat (gateway belum dikonfigurasi — kirim manual ke Produsen).'
+        : '🟡 Permintaan sparepart BELUM terkirim ke Produsen — kirim manual lewat menu tiket (Kirim ke Produsen).'
+    const replyText = `🎫 ${garansiInfo} ${tokoInfo}.\n\n*Tiket #${noTiket} Terbuat.*\n⚠️ Part *KOSONG*: ${sparepart.namaPart} (${sparepart.kodePart}).\n${barisProdusen}\n\nMenunggu pengiriman sparepart dari produsen.`
+    const fwd = await balas(channel, replyText, {
+      noTiket,
+      aksi: 'PART_ORDER_PRODUSEN',
+      notifikasiProdusen: hasilProdusen.ok,
+      notifikasiProdusenMode: hasilProdusen.mode,
+    })
     // Notifikasi lonceng: tiket baru dari bot → teknisi/admin/manager langsung tahu.
     await buatNotifikasi({
       tipe: 'TIKET_BARU',
@@ -183,7 +197,7 @@ async function prosesLaporanTeksInner(input: LaporanInput) {
       aksi: 'CREATE_SERVICE_REQUEST',
       entitas: 'service_request',
       entitasId: noTiket,
-      deskripsi: `Tiket otomatis via ${labelChannel(channel)} Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} KOSONG → ORDER_PRODUSEN, notifikasi dikirim ke produsen`,
+      deskripsi: `Tiket otomatis via ${labelChannel(channel)} Bot: unit ${unit.serialNumber}, part ${sparepart.kodePart} KOSONG → ORDER_PRODUSEN, notifikasi produsen ${hasilProdusen.ok ? 'terkirim (' + hasilProdusen.mode + ')' : 'belum terkirim (' + hasilProdusen.mode + ')'}`,
       aktor: `${labelChannel(channel)}-BOT`,
     })
     return { ok: true, reply: replyText, aksi: 'PART_ORDER_PRODUSEN', noTiket, tiketId: ticket.id, channel, mode: fwd.mode }

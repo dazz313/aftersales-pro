@@ -1,5 +1,6 @@
 import { join, basename, normalize } from 'node:path'
 import { db } from '@/lib/db'
+import { dariRoot } from '@/lib/paths'
 
 export type InboxKind = 'KUNJUNGAN' | 'SERVICE'
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
@@ -29,9 +30,9 @@ export async function inboxDirRel(kind: InboxKind): Promise<string> {
 
 export async function ensureInboxDir(kind: InboxKind): Promise<string> {
   const { mkdir } = await import('node:fs/promises')
-  // turbopackIgnore: path runtime (isi Pengaturan), bukan saat build
-  const dir = join(/*turbopackIgnore: true*/ process.cwd(), await inboxDirRel(kind))
-  await mkdir(dir, { recursive: true })
+  // path runtime (isi Pengaturan), bukan saat build
+  const dir = dariRoot(await inboxDirRel(kind))
+  await mkdir(/*turbopackIgnore: true*/ dir, { recursive: true })
   return dir
 }
 
@@ -49,7 +50,7 @@ export async function saveInboxFile(buffer: Buffer, ext: string, kind: InboxKind
 export async function listInboxFiles(kind: InboxKind, limit = 50): Promise<string[]> {
   try {
     const { readdir } = await import('node:fs/promises')
-    const files = await readdir(join(/*turbopackIgnore: true*/ process.cwd(), await inboxDirRel(kind)))
+    const files = await readdir(/*turbopackIgnore: true*/ dariRoot(await inboxDirRel(kind)))
     return files.sort().reverse().slice(0, limit)
   } catch {
     return []
@@ -61,14 +62,14 @@ export async function readInboxFile(kind: InboxKind, fileName: string): Promise<
   const { readFile } = await import('node:fs/promises')
   const safe = basename(fileName)
   const candidates = [
-    join(/*turbopackIgnore: true*/ process.cwd(), await inboxDirRel(kind), safe),
-    join(/*turbopackIgnore: true*/ process.cwd(), await inboxDirRel(kind === 'KUNJUNGAN' ? 'SERVICE' : 'KUNJUNGAN'), safe),
-    join(/*turbopackIgnore: true*/ process.cwd(), LEGACY_INBOX_REL, safe),
+    dariRoot(`${await inboxDirRel(kind)}/${safe}`),
+    dariRoot(`${await inboxDirRel(kind === 'KUNJUNGAN' ? 'SERVICE' : 'KUNJUNGAN')}/${safe}`),
+    dariRoot(`${LEGACY_INBOX_REL}/${safe}`),
   ]
   let lastErr: unknown = null
   for (const p of candidates) {
     try {
-      return await readFile(p)
+      return await readFile(/*turbopackIgnore: true*/ p)
     } catch (e) {
       lastErr = e
     }
@@ -81,6 +82,6 @@ export async function moveInboxFile(from: InboxKind, to: InboxKind, fileName: st
   const { rename } = await import('node:fs/promises')
   const safe = basename(fileName)
   const toDir = await ensureInboxDir(to)
-  await rename(join(/*turbopackIgnore: true*/ process.cwd(), await inboxDirRel(from), safe), join(/*turbopackIgnore: true*/ toDir, safe))
+  await rename(/*turbopackIgnore: true*/ dariRoot(`${await inboxDirRel(from)}/${safe}`), join(/*turbopackIgnore: true*/ toDir, safe))
   return `${await inboxDirRel(to)}/${safe}`
 }

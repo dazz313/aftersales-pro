@@ -416,7 +416,7 @@ export interface WaMessage {
  */
 export interface NotifikasiItem {
   id: number
-  tipe: 'REGISTRASI_UNIT' | 'TIKET_BARU'
+  tipe: 'REGISTRASI_UNIT' | 'TIKET_BARU' | 'ALERT'
   judul: string
   pesan: string
   refType: string | null

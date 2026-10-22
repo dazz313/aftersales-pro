@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getGatewayConfig, sendGatewayMessage, type GatewayChannel } from '@/lib/gateway'
+import { getGatewayConfig, kirimGateway, type GatewayChannel } from '@/lib/gateway'
 import { requireActiveSession } from '@/lib/auth-server'
 
 const mask = (s: string) => (s ? '••••••••' : '')
@@ -44,7 +44,10 @@ export async function POST(request: Request) {
     void session
     const body = await request.json().catch(() => ({}))
     const channel: GatewayChannel = body.channel === 'TELEGRAM' ? 'TELEGRAM' : 'WHATSAPP'
-    const hasil = await sendGatewayMessage(channel, 'Tes koneksi gateway AfterSales Pro — abaikan pesan ini.')
+    const hasil = await kirimGateway(channel, 'Tes koneksi gateway AfterSales Pro — abaikan pesan ini.', {
+      pengirim: 'TES-GATEWAY',
+      meta: { aksi: 'TES_KONEKSI' },
+    })
     return NextResponse.json({ ok: hasil.ok, mode: hasil.mode, detail: hasil.detail, channel })
   } catch (error) {
     console.error('Gateway test error:', error)

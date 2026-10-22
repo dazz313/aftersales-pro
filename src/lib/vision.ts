@@ -3,10 +3,12 @@ import {
   MultiFormatReader, DecodeHintType, BarcodeFormat,
 } from '@zxing/library'
 import { createWorker } from 'tesseract.js'
-import os from 'node:os'
+import { existsSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import jpeg from 'jpeg-js'
 import { PNG } from 'pngjs'
+import { TESSDATA_DIR } from '@/lib/paths'
 
 /**
  * Vision (barcode + OCR) TANPA dependensi native.
@@ -124,13 +126,56 @@ export async function decodeBarcode(buffer: Buffer): Promise<{ text: string; for
   }
 }
 
+/**
+ * Path worker Tesseract.
+ *
+ * MASALAH: tesseract.js menghitung workerPath dari `__dirname` modulnya
+ * (`path.join(__dirname, '..', '..', 'worker-script', 'node', 'index.js')`).
+ * Di build standalone Next.js, __dirname diganti placeholder "/ROOT" →
+ * runtime menjadi "C:\ROOT\node_modules\tesseract.js\..." → MODULE_NOT_FOUND
+ * (OCR selalu gagal di produksi). Jadi workerPath dihitung sendiri saat
+ * runtime, dari lokasi file yang benar-benar ada di disk.
+ */
+function workerPathTesseract(): string | undefined {
+  const suffix = join('node_modules', 'tesseract.js', 'src', 'worker-script', 'node', 'index.js')
+  const kandidat: string[] = []
+  try {
+    const req = createRequire(join(process.cwd(), 'noop.js'))
+    kandidat.push(req.resolve('tesseract.js/src/worker-script/node/index.js'))
+  } catch {
+    /* abaikan — lanjut kandidat manual */
+  }
+  kandidat.push(join(process.cwd(), suffix))
+  kandidat.push(join(process.cwd(), '..', suffix))
+  kandidat.push(join(process.cwd(), '..', '..', suffix))
+  for (const p of kandidat) {
+    try {
+      if (existsSync(p)) return p
+    } catch {
+      /* abaikan */
+    }
+  }
+  return undefined
+}
+
 /** OCR tulisan dalam foto (Indonesia + Inggris). Gagal → string kosong. */
-export async function ocrImage(buffer: Buffer, timeoutMs = 60_000): Promise<{ text: string; confidence: number | null }> {
+export async function ocrImage(buffer: Buffer, timeoutMs = 120_000): Promise<{ text: string; confidence: number | null }> {
   try {
     const run = async (langs: string) => {
-      const worker = await createWorker(langs, undefined, {
-        cachePath: join(os.tmpdir(), 'aspro-tesseract-cache'),
-      } as never)
+      const opts: Record<string, unknown> = {
+        // Cache bahasa (traineddata) di folder repo — bukan %TEMP% yang bisa
+        // dihapus Windows; dipakai offline & tidak perlu unduh ulang.
+        cachePath: TESSDATA_DIR,
+      }
+      const wp = workerPathTesseract()
+      if (wp) opts.workerPath = wp
+      try {
+        const { mkdir } = await import('node:fs/promises')
+        await mkdir(/*turbopackIgnore: true*/ TESSDATA_DIR, { recursive: true })
+      } catch {
+        /* abaikan */
+      }
+      const worker = await createWorker(langs, undefined, opts as never)
       try {
         const { data } = await worker.recognize(buffer)
         return { text: (data.text ?? '').trim(), confidence: typeof data.confidence === 'number' ? data.confidence : null }

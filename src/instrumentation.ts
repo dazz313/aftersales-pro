@@ -19,5 +19,7 @@ export async function register() {
     startBackupScheduler()
     const { startLogRetention } = await import('@/lib/log-retention')
     startLogRetention()
+    const { startAlertScheduler } = await import('@/lib/alert-scheduler')
+    startAlertScheduler()
   }
 }

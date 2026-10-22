@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { logAudit } from '@/lib/audit'
-import { sendGatewayMessage, type GatewayChannel } from '@/lib/gateway'
+import { kirimGateway, type GatewayChannel } from '@/lib/gateway'
 import { requireActiveSession } from '@/lib/auth-server'
 
 /**
@@ -20,7 +20,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Pesan maksimal 3000 karakter' }, { status: 400 })
     }
     const channel: GatewayChannel = body?.channel === 'TELEGRAM' ? 'TELEGRAM' : 'WHATSAPP'
-    const hasil = await sendGatewayMessage(channel, pesan)
+    const hasil = await kirimGateway(channel, pesan, {
+      pengirim: session!.nama,
+      meta: { aksi: 'KIRIM_MANUAL' },
+    })
     await logAudit({
       aksi: 'KIRIM_GATEWAY',
       entitas: 'gateway_message',

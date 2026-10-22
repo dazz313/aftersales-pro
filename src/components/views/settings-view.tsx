@@ -22,7 +22,7 @@ import { useAppStore } from '@/lib/store'
 import {
   Building2, Save, ScrollText, ShieldCheck, DatabaseBackup, History,
   Radio, Smartphone, Send, CloudUpload, RefreshCw, CheckCircle2, XCircle, CircleAlert,
-  Mail, Monitor, Bot, Copy, Inbox, ChevronDown, Download, Upload, Clock, ImagePlus, Tags, Trash2, Plus,
+  Mail, Monitor, Bot, Copy, Inbox, ChevronDown, Download, Upload, Clock, ImagePlus, Tags, Trash2, Plus, Bell,
 } from 'lucide-react'
 import { parseBrandRules, type BrandRule } from '@/lib/brand'
 import { cn } from '@/lib/utils'
@@ -643,6 +643,43 @@ export default function SettingsView() {
                   <SelectItem value="TELEGRAM">Telegram</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Notifikasi keluar aplikasi (grup WA/Telegram) */}
+            <div className="space-y-2.5 rounded-lg border border-emerald-200 bg-emerald-50/40 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
+                  <Bell className="h-3.5 w-3.5 text-emerald-600" /> Kirim notifikasi ke grup
+                </p>
+                <Switch
+                  checked={gw('notifikasi_gateway_aktif') === 'true'}
+                  onCheckedChange={(v) => setGwForm({ ...gwForm, notifikasi_gateway_aktif: String(v) })}
+                  aria-label="Aktifkan pengiriman notifikasi ke grup"
+                />
+              </div>
+              <p className="text-[11px] leading-relaxed text-slate-500">
+                Master switch. Bila mati, notifikasi tetap muncul di lonceng dalam aplikasi, tapi tidak
+                dikirim ke WhatsApp/Telegram. Bila menyala, pesan dikirim ke channel default di atas.
+              </p>
+              <div className="space-y-2">
+                {(
+                  [
+                    ['notifikasi_registrasi_gateway', 'Registrasi unit baru'],
+                    ['notifikasi_produsen_gateway', 'Permintaan sparepart ke Produsen'],
+                    ['notifikasi_alert_gateway', 'Ringkasan alert harian'],
+                  ] as [string, string][]
+                ).map(([key, label]) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <Label htmlFor={key} className="text-xs font-normal">{label}</Label>
+                    <Switch
+                      id={key}
+                      checked={gw('notifikasi_gateway_aktif') !== 'true' ? false : gw(key) !== 'false'}
+                      onCheckedChange={(v) => setGwForm({ ...gwForm, [key]: String(v) })}
+                      aria-label={label}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Penampungan Telegram — 2 kantong sesuai konsumen fitur */}

@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
-import { buatNotifikasi, susunPesanRegistrasi, ROLE_NOTIFIKASI } from '@/lib/notifikasi'
+import { buatNotifikasi, susunPesanRegistrasi, ROLE_NOTIFIKASI, kirimNotifikasiGateway } from '@/lib/notifikasi'
 
 // GET /api/unit - list unit asset + data barcode
 export async function GET() {
@@ -131,25 +131,33 @@ export async function POST(request: Request) {
     })
     // Notifikasi lonceng: unit baru teregistrasi → teknisi/admin/manager tahu
     // ada unit yang harus ditindaklanjuti (unit ini belum jadi tiket service).
+    const pesanNotif = susunPesanRegistrasi({
+      nama: unit.nama,
+      merk: unit.merk,
+      modelUnit: unit.modelUnit,
+      serialNumber: unit.serialNumber,
+      kerusakanAwal: unit.kerusakanAwal,
+      statusGaransi: unit.statusGaransi,
+      toko: unit.toko,
+      customer: unit.customer,
+    })
     await buatNotifikasi({
       tipe: 'REGISTRASI_UNIT',
       judul: 'Registrasi unit baru',
-      pesan: susunPesanRegistrasi({
-        nama: unit.nama,
-        merk: unit.merk,
-        modelUnit: unit.modelUnit,
-        serialNumber: unit.serialNumber,
-        kerusakanAwal: unit.kerusakanAwal,
-        statusGaransi: unit.statusGaransi,
-        toko: unit.toko,
-        customer: unit.customer,
-      }),
+      pesan: pesanNotif,
       refType: 'unit',
       refId: unit.id,
       refLabel: unit.serialNumber || unit.nama,
       dibuatOleh: body.aktor ?? session?.nama ?? null,
       untukRole: ROLE_NOTIFIKASI,
     })
+    // Notifikasi keluar aplikasi (WA/Telegram) — hanya bila sakelar di
+    // Pengaturan menyalakannya (default: grup).
+    void kirimNotifikasiGateway(
+      `📦 *Registrasi unit baru*\n${pesanNotif}\n\nUnit ini belum punya tiket service — segera buat tiketnya.`,
+      'registrasi',
+      { unitId: unit.id, noTiket: '' },
+    ).catch(() => undefined)
     await autoGitBackup('CREATE', 'unit_asset', unit.serialNumber, body.aktor)
     return NextResponse.json(unit, { status: 201 })
   } catch (error) {

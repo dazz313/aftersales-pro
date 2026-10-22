@@ -5,8 +5,9 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { getActiveSession } from '@/lib/auth-server'
+import { LOGO_DIR } from '@/lib/paths'
 
-const LOGO_DIR = ['upload', 'logo']
+const LOGO_DIR_REL = ['upload', 'logo']
 const MAX_FILE_BYTES = 2 * 1024 * 1024
 const ALLOWED_EXT: Record<string, string> = {
   '.png': 'image/png',
@@ -18,8 +19,8 @@ const ALLOWED_EXT: Record<string, string> = {
 
 async function logoPath(): Promise<string | null> {
   try {
-    const dir = join(process.cwd(), ...LOGO_DIR)
-    const files = await readdir(dir)
+    const dir = LOGO_DIR
+    const files = await readdir(/*turbopackIgnore: true*/ dir)
     const hit = files.find((f) => f.startsWith('logo.'))
     return hit ? join(dir, hit) : null
   } catch {
@@ -35,7 +36,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Logo belum diunggah' }, { status: 404 })
     }
     const dot = file.lastIndexOf('.')
-    const buf = await readFile(file)
+    // Path logo ditentukan saat runtime (folder upload) → jangan traced Next
+    // (kalau traced, seluruh project ikut disalin ke output standalone).
+    const buf = await readFile(/*turbopackIgnore: true*/ file)
     return new NextResponse(new Uint8Array(buf), {
       headers: {
         'Content-Type': ALLOWED_EXT[file.slice(dot).toLowerCase()] ?? 'application/octet-stream',
@@ -68,17 +71,17 @@ export async function POST(request: Request) {
     if (!ALLOWED_EXT[ext]) {
       return NextResponse.json({ error: 'Format harus PNG, JPG, WebP, atau GIF' }, { status: 400 })
     }
-    const dir = join(process.cwd(), ...LOGO_DIR)
-    await mkdir(dir, { recursive: true })
+    const dir = LOGO_DIR
+    await mkdir(/*turbopackIgnore: true*/ dir, { recursive: true })
     // Hapus logo lama bila ekstensi berbeda
     try {
-      for (const f of await readdir(dir)) {
+      for (const f of await readdir(/*turbopackIgnore: true*/ dir)) {
         if (f.startsWith('logo.') && f !== `logo${ext}`) await unlink(join(dir, f))
       }
     } catch {
       /* abaikan */
     }
-    await writeFile(join(dir, `logo${ext}`), Buffer.from(await file.arrayBuffer()))
+    await writeFile(/*turbopackIgnore: true*/ join(dir, `logo${ext}`), Buffer.from(await file.arrayBuffer()))
     await db.pengaturan.upsert({
       where: { kunci: 'logo_perusahaan' },
       update: { nilai: '/api/logo' },
