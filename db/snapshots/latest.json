@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T12:10:10.709Z",
+  "generatedAt": "2026-10-22T21:24:07.128Z",
   "masterToko": [
     {
       "id": 216,
@@ -2735,19 +2735,6 @@
       "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
-      "id": 243,
-      "serialNumber": "",
-      "modelUnit": "M-AKHIR",
-      "merk": "",
-      "nama": "Uji Final 3",
-      "kerusakanAwal": "Cek akhir",
-      "tokoId": null,
-      "customerId": 27,
-      "statusGaransi": "GARANSI",
-      "tglPembelian": null,
-      "createdAt": "2026-10-22T12:10:10.628Z"
-    },
-    {
       "id": 199,
       "serialNumber": ".",
       "modelUnit": "KG-502C",
@@ -3864,6 +3851,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-21T16:00:00.000Z"
+    },
+    {
+      "id": 244,
+      "serialNumber": "ZN294188",
+      "modelUnit": "",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "macet tidak berputar",
+      "tokoId": 225,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
       "id": 171,
@@ -8448,7 +8448,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-10-22"
+      "nilai": "2026-10-23"
     },
     {
       "id": 57,
@@ -8478,7 +8478,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-10-22 19:01"
+      "nilai": "2026-10-23 05:06"
     },
     {
       "id": 54,
@@ -8528,13 +8528,13 @@
   ],
   "auditLog": [
     {
-      "id": 891,
+      "id": 892,
       "aksi": "CREATE_UNIT_ASSET",
       "entitas": "unit_asset",
-      "entitasId": "",
-      "deskripsi": "Unit baru teregistrasi: Uji Final 3 (GARANSI) — diagnosa awal kerusakan tercatat",
-      "aktor": "Uji Akhir",
-      "createdAt": "2026-10-22T12:10:10.676Z"
+      "entitasId": "ZN294188",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T21:24:07.092Z"
     },
     {
       "id": 885,
