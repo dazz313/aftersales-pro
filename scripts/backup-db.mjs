@@ -8,7 +8,8 @@
  * Pemakaian:
  *   node scripts/backup-db.mjs          (manual / via Task Scheduler / via build)
  * Restore (bila perlu):
- *   1. Stop server, 2. salin file backup → db/custom.db, 3. start server lagi.
+ *   1. Stop server, 2. hapus db/custom.db-wal & db/custom.db-shm (bila ada),
+ *      3. salin file backup → db/custom.db, 4. start server lagi.
  */
 import fs from 'node:fs'
 import path from 'node:path'

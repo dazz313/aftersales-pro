@@ -63,8 +63,8 @@ export async function buatNotifikasi(input: BuatNotifikasiInput): Promise<number
   }
 }
 
-/** Notifikasi lebih tua dari 30 hari dibersihkan (biar tabel tidak membengkak). */
-const UMUR_NOTIFIKASI_HARI = 30
+/** Notifikasi lebih tua dari 7 hari dibersihkan (biar tabel tidak membengkak & sesuai kebijakan retensi log). */
+const UMUR_NOTIFIKASI_HARI = 7
 
 export async function bersihkanNotifikasiLama(): Promise<void> {
   try {

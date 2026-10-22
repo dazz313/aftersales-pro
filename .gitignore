@@ -67,3 +67,8 @@ upload/
 *.bak-*
 db/backups/
 db/custom.db
+# SQLite WAL — file ikutan saat mode WAL aktif (jangan commit)
+db/custom.db-wal
+db/custom.db-shm
+# Salinan DB di folder build standalone
+.next/standalone/db/

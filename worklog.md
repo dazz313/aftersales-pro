@@ -16,13 +16,39 @@ Work Log:
 - DB: prisma db push (tabel baru, tanpa kehilangan data) + prisma generate; backup db/custom-backup-pre-notifikasi-20261022-180056.db; build standalone (npm run build → backup DB otomatis) & PM2 restart aspro-prod (build sempat gagal EPERM query_engine-windows.dll.node karena PM2 masih memegang file → stop → build → start)
 - Verifikasi E2E (skrip sementara, lalu dihapus): POST /api/unit → 201 + notifikasi REGISTRASI_UNIT dibuat; admin & teknisi (2 user berbeda) sama-sama melihat notifikasi tsb; admin menandai terbaca → admin 0 unread, teknisi tetap 1 unread (baca per pengguna ✓); data uji dibersihkan (unit/notifikasi/audit = 0 sisa)
 - Verifikasi kode: npx tsc --noEmit kosong, npx eslint (9 file) kosong
+- Mode LAN (app belum di server sungguhan): notifikasi ini 100% server-side (API + SQLite lokal) → TIDAK butuh internet/push eksternal, tetap jalan di LAN. Ditemukan & diperbaiki risiko LAN: SQLite masih journal_mode=delete → pembaca (polling lonceng tiap klien) memblokir penulis (registrasi). Fix: src/lib/db.ts ensure PRAGMA journal_mode=WAL saat boot + file DB di-set WAL permanen (db/custom.db-wal & -shm muncul); scripts/backup-db.mjs tetap aman (pakai VACUUM INTO = online backup konsisten) + catatan restore dihapus custom.db-wal/-shm
+- Uji LAN nyata: akses http://192.168.18.2:3000 (IP LAN mesin ini, server PM2 bind 0.0.0.0) → GET /api/notifikasi 200 & POST /api/unit 201; beban konkuren 9 request (5 poll notifikasi + 4 registrasi) → 9/9 sukses tanpa "database is locked"; notifikasi terlihat semua role; data uji dibersihkan
+
+---
+Task ID: 37
+Agent: MiniMax M3.1 Flash (opencode)
+Task: Kebijakan retensi log 7 hari otomatis (file log + log gateway) & query log dimatikan di produksi
+
+Work Log:
+- Baseline diukur: aspro-prod-out-0.log = 11,27 MB / 32.249 baris → 99,1% berisi "prisma:query" (worklog Task sebelumnya sudah catat ±3 MB/hari); "prisma:warn/error" = 0 baris (level error Prisma memang tidak pernah aktif)
+- src/lib/db.ts: log Prisma jadi conditional — produksi ['warn','error'] (query log mati), development ['query','warn','error'] (trace SQL tetap penuh untuk debugging lokal). Level warn/error di produksi justru MENAMBAH visibilitas yang sebelumnya nol
+- src/lib/log-retention.ts (baru): job retensi harian di sisi SERVER (bukan per browser) — 1) file log PM2 AKTIF (aspro-prod-out-0.log / -error-0.log) TIDAK PERNAH dihapus (Windows mengunci handle; menghapus = PM2 menulis ke file hantu → log hilang tanpa jejak, sudah diuji), tapi dipotong (truncate in-place, sisakan ekor 200 KB) bila ukurannya > batas; 2) file log rotasi/arsip + *.log di folder logs/ dan root repo yang umur > 7 hari → dihapus; 3) tabel log DB: WaMessage > 7 hari dihapus, Notifikasi > 7 hari dihapus, AuditLog > 365 hari dihapus
+- Scheduler: src/instrumentation.ts memanggil startLogRetention() (satu proses dengan backup-scheduler); tick pertama 90 detik setelah boot, lalu tiap 30 menit; penanda harian "log_retensi_terakhir" di tabel Pengaturan → cukup jalan 1×/hari
+- Konfigurasi (tabel Pengaturan, opsional & bisa diubah via PUT /api/pengaturan): log_retensi_hari (default 7), log_retensi_audit_hari (default 365), log_retensi_mb (default 25 = batas ukuran file log aktif)
+- src/lib/notifikasi.ts: pruning notifikasi diubah 30 → 7 hari (selaras kebijakan retensi)
+- Ekstensi yang TERJAGA: db/custom.db, db/snapshots, db/backups, source code — tidak disentuh (hanya file .log)
+- Bug yang ketemu & diperbaiki saat implementasi: (a) DELETE file log yang di-held PM2 = PM2 lanjut menulis ke file hantu → harus TRUNCATE, bukan delete (dibuktikan lewat uji); (b) resolver root repo salah pilih .next/standalone (folder standalone berisi SALINAN repo: package.json + prisma/ + src/) → Trash lama terhapus dari root yang salah; diperbaiki dengan syarat root TIDAK berada di dalam segmen ".next" + harus punya prisma/schema.prisma + src/
+- Verifikasi: setelah rebuild + pm2 restart → out log 11,27 MB → 0,6 KB; tick retention menghapus bass_project2\server.log (8,8 hari) + logs\server-error.log, mempertahankan log 5–6 hari; E2E ulang via IP LAN (registrasi → notifikasi untuk admin & teknisi) tetap jalan; tsc + eslint kosong
+- Temuan sampingan (belum diperbaiki): (1) .next/standalone berisi SALINAN SELURUH repo (src, scripts, db, logs) → tiap build menyalin belasan MB & app menulis snapshot/backup ke .next/standalone/db (repo db/snapshots/latest.json ter stagnan sejak 19/10); (2) OCR tesseract rusak di build produksi ("Cannot find module 'C:\ROOT\node_modules\tesseract.js\...'") → scan barcode/OCR fotolikely gagal di produksi
+
+Stage Summary:
+- Log tidak lagi membengkak: query log mati di produksi (±3 MB/hari → ~0) + file log lama (>7 hari) terhapus otomatis tiap hari oleh job di server, tanpa restart & tanpa dependency baru
+- File log yang sedang ditulis PM2 aman (truncate + ekor 200 KB, tidak pernah dihapus)
+- Retensi log gateway/DB ikut rapi: WaMessage & Notifikasi 7 hari, AuditLog 365 hari
+- File baru: src/lib/log-retention.ts
+- File diubah: src/lib/db.ts, src/instrumentation.ts, src/lib/notifikasi.ts
 
 Stage Summary:
 - Registrasi unit baru kini langsung memunculkan notifikasi lonceng yang terlihat teknisi, admin, dan manager, lengkap dengan toast popup — tidak bisa lagi "terlewat" karena notifikasi hilang saat app belum pernah dibuka / registrasi backdate / beda perangkat
 - Status dibaca tercatat di server per pengguna (bukan localStorage per browser) — multi-user & multi-device konsisten
 - Ticket service baru (manual & bot WA) juga masuk lonceng yang sama
 - File baru: src/lib/notifikasi.ts, src/app/api/notifikasi/route.ts
-- File diubah: prisma/schema.prisma, src/app/api/unit/route.ts, src/app/api/unit/import/route.ts, src/app/api/service/route.ts, src/lib/laporan.ts, src/lib/types.ts, src/lib/api.ts, src/components/notif-bell.tsx
+- File diubah: prisma/schema.prisma, src/app/api/unit/route.ts, src/app/api/unit/import/route.ts, src/app/api/service/route.ts, src/lib/laporan.ts, src/lib/types.ts, src/lib/api.ts, src/components/notif-bell.tsx, src/lib/db.ts (WAL), scripts/backup-db.mjs (catatan restore)
 - Sisa gap (belum dikerjakan, perlu konfirmasi): push ke WhatsApp/Telegram gateway untuk registrasi (kalau mau notifikasi keluar aplikasi), alert engine ALT-01..05 belum pernah mengirim otomatis, unit teregistrasi tanpa tiket belum masuk reminder berkala, notifikasi "nomor seri diisi belakangan" (PATCH /api/unit/[id]) belum ada
 
 ---

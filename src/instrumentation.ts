@@ -3,6 +3,7 @@
  * - Wajibkan AUTH_SECRET di production (gagal boot bila absen, kecuali
  *   mode desktop Electron yang single-user lokal).
  * - Memulai scheduler backup harian — lihat src/lib/backup-scheduler.ts.
+ * - Memulai job retensi log 7 hari — lihat src/lib/log-retention.ts.
  */
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
@@ -16,5 +17,7 @@ export async function register() {
     }
     const { startBackupScheduler } = await import('@/lib/backup-scheduler')
     startBackupScheduler()
+    const { startLogRetention } = await import('@/lib/log-retention')
+    startLogRetention()
   }
 }
