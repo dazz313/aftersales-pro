@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T21:29:19.868Z",
+  "generatedAt": "2026-10-22T21:31:29.538Z",
   "masterToko": [
     {
       "id": 216,
@@ -3799,6 +3799,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-21T16:00:00.000Z"
+    },
+    {
+      "id": 246,
+      "serialNumber": "ZL007489",
+      "modelUnit": "PS-135 E",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "SUARA RIBUT MENDENGING",
+      "tokoId": 225,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
       "id": 123,
@@ -8540,6 +8553,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 895,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZL007489",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T21:31:29.526Z"
+    },
     {
       "id": 894,
       "aksi": "UPDATE_UNIT_ASSET",
