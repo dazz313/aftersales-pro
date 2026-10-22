@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T12:07:20.784Z",
+  "generatedAt": "2026-10-22T12:10:10.709Z",
   "masterToko": [
     {
       "id": 216,
@@ -2735,17 +2735,17 @@
       "createdAt": "2026-10-22T00:00:00.000Z"
     },
     {
-      "id": 242,
+      "id": 243,
       "serialNumber": "",
-      "modelUnit": "TES-2",
+      "modelUnit": "M-AKHIR",
       "merk": "",
-      "nama": "Uji Notifikasi Grup 2",
-      "kerusakanAwal": "Cek mode kirim",
+      "nama": "Uji Final 3",
+      "kerusakanAwal": "Cek akhir",
       "tokoId": null,
       "customerId": 27,
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
-      "createdAt": "2026-10-22T12:07:20.764Z"
+      "createdAt": "2026-10-22T12:10:10.628Z"
     },
     {
       "id": 199,
@@ -8461,11 +8461,6 @@
       "nilai": "haripin@bhakti.co.id"
     },
     {
-      "id": 179,
-      "kunci": "gateway_channel_default",
-      "nilai": "TELEGRAM"
-    },
-    {
       "id": 73,
       "kunci": "gateway_tg_aktif",
       "nilai": "true"
@@ -8494,11 +8489,6 @@
       "id": 55,
       "kunci": "nama_perusahaan",
       "nilai": "CV ERACOOL TEKNIK SOLUTION"
-    },
-    {
-      "id": 178,
-      "kunci": "notifikasi_gateway_aktif",
-      "nilai": "true"
     },
     {
       "id": 58,
@@ -8538,13 +8528,13 @@
   ],
   "auditLog": [
     {
-      "id": 890,
+      "id": 891,
       "aksi": "CREATE_UNIT_ASSET",
       "entitas": "unit_asset",
       "entitasId": "",
-      "deskripsi": "Unit baru teregistrasi: Uji Notifikasi Grup 2 (GARANSI) — diagnosa awal kerusakan tercatat",
-      "aktor": "Uji Otomatis",
-      "createdAt": "2026-10-22T12:07:20.771Z"
+      "deskripsi": "Unit baru teregistrasi: Uji Final 3 (GARANSI) — diagnosa awal kerusakan tercatat",
+      "aktor": "Uji Akhir",
+      "createdAt": "2026-10-22T12:10:10.676Z"
     },
     {
       "id": 885,
