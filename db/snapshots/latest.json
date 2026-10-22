@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T06:59:50.415Z",
+  "generatedAt": "2026-10-22T12:02:46.678Z",
   "masterToko": [
     {
       "id": 216,
@@ -26,7 +26,7 @@
       "frekuensiVisit": 7,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-13T03:32:00.000Z",
+      "tglVisitTerakhir": "2026-10-15T10:39:00.000Z",
       "barcodeToko": "BC-TOK-002",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -151,7 +151,7 @@
       "namaToko": "Toko Varia Mulia",
       "alamat": "Watampone",
       "kontak": "082192239239",
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 10,
       "aktif": true,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": "2026-09-29T04:49:00.000Z",
@@ -632,7 +632,7 @@
       "alamat": "Jl. Komp. Pasar Sentral Palakka",
       "kontak": null,
       "frekuensiVisit": 14,
-      "aktif": false,
+      "aktif": true,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-040",
@@ -666,7 +666,7 @@
       "frekuensiVisit": 5,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-15T14:42:00.000Z",
+      "tglVisitTerakhir": "2026-10-21T06:38:00.000Z",
       "barcodeToko": "BC-TOK-042",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -1272,7 +1272,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T08:14:34.755Z"
@@ -1418,6 +1418,20 @@
       "createdAt": "2026-10-18T06:20:35.068Z"
     },
     {
+      "id": 356,
+      "kodePart": "GCXX-MX219-CE-KGX",
+      "namaPart": "TOP BODY 202 CE",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-20T13:42:52.096Z"
+    },
+    {
       "id": 347,
       "kodePart": "IP90273 A",
       "namaPart": "Casing PS 135 E",
@@ -1440,7 +1454,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T04:46:04.875Z"
@@ -1496,7 +1510,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T06:09:17.855Z"
@@ -1528,6 +1542,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T11:55:18.365Z"
+    },
+    {
+      "id": 355,
+      "kodePart": "MCMX-AX406-XX-KGX",
+      "namaPart": "OUT CASE ASSY 609",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-20T13:15:18.964Z"
     },
     {
       "id": 313,
@@ -1602,16 +1630,30 @@
     {
       "id": 286,
       "kodePart": "MCMX-PX562-WH-KGX",
-      "namaPart": "OUT CASE ASSY 602",
+      "namaPart": "TOP COVER 528 (TUTUP ATAS)",
       "brandKompatibel": "Miyako",
       "supplier": "",
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T04:45:01.732Z"
+    },
+    {
+      "id": 354,
+      "kodePart": "MCMX-PX563-WH-KGX",
+      "namaPart": "CASE RING 528",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-20T13:12:27.951Z"
     },
     {
       "id": 300,
@@ -1748,7 +1790,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T04:25:03.963Z"
@@ -1770,13 +1812,13 @@
     {
       "id": 338,
       "kodePart": "RI-602-150-5X02",
-      "namaPart": "REAL PANEL (BODY BELAKANG) RI-602AG",
+      "namaPart": "REAR PANEL",
       "brandKompatibel": "Rinnai",
       "supplier": "",
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T07:00:59.251Z"
@@ -1804,7 +1846,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T05:09:59.953Z"
@@ -1832,7 +1874,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 2,
+      "totalTerpakai": 3,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T05:56:54.444Z"
@@ -1888,7 +1930,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T05:54:13.612Z"
@@ -1978,6 +2020,20 @@
       "createdAt": "2026-10-13T21:53:41.514Z"
     },
     {
+      "id": 353,
+      "kodePart": "RU-602-150-5X02",
+      "namaPart": "REAR PANEL",
+      "brandKompatibel": "RINNAI",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-20T11:05:45.821Z"
+    },
+    {
       "id": 222,
       "kodePart": "SFMX-AX022-XX-KGX",
       "namaPart": "GEAR BOX ASSY 16 INCH",
@@ -2018,6 +2074,20 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 357,
+      "kodePart": "SFMX-AX286-BK-KGX",
+      "namaPart": "PIPE SUB ASSY 1607",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-21T01:05:04.544Z"
     },
     {
       "id": 294,
@@ -2168,7 +2238,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T05:51:46.823Z"
@@ -2652,6 +2722,19 @@
   ],
   "unitAsset": [
     {
+      "id": 232,
+      "serialNumber": "",
+      "modelUnit": "",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "ribut",
+      "tokoId": 225,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-22T00:00:00.000Z"
+    },
+    {
       "id": 199,
       "serialNumber": ".",
       "modelUnit": "KG-502C",
@@ -2715,6 +2798,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-18T00:00:00.000Z"
+    },
+    {
+      "id": 221,
+      "serialNumber": "030010039782",
+      "modelUnit": "MCN-508 SBC",
+      "merk": "Miyako",
+      "nama": "",
+      "kerusakanAwal": "PENUTUP PECAH DAN BODY",
+      "tokoId": 257,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-08-04T00:00:00.000Z"
     },
     {
       "id": 163,
@@ -2858,6 +2954,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
+      "id": 220,
+      "serialNumber": "2504373436",
+      "modelUnit": "RI-522C",
+      "merk": "Rinnai",
+      "nama": "",
+      "kerusakanAwal": "BODY PENYOK",
+      "tokoId": 257,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-08-04T00:00:00.000Z"
     },
     {
       "id": 161,
@@ -3224,6 +3333,19 @@
       "createdAt": "2026-10-15T04:41:23.577Z"
     },
     {
+      "id": 222,
+      "serialNumber": "3050090799",
+      "modelUnit": "KAS-1607 PL",
+      "merk": "Miyako",
+      "nama": "",
+      "kerusakanAwal": "PENGUNCI PIPA",
+      "tokoId": 223,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-07-16T00:00:00.000Z"
+    },
+    {
       "id": 164,
       "serialNumber": "40090574358",
       "modelUnit": "MCM-508 SBC DG",
@@ -3255,12 +3377,12 @@
       "modelUnit": "MCM.558 SBC",
       "merk": "MIYAKO",
       "nama": "",
-      "kerusakanAwal": "ga berputar",
+      "kerusakanAwal": "PANCI TIDAK COCOK",
       "tokoId": 257,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
-      "createdAt": "2026-10-15T04:41:23.577Z"
+      "createdAt": "2026-09-26T00:00:00.000Z"
     },
     {
       "id": 156,
@@ -3811,6 +3933,16 @@
   ],
   "kunjungan": [
     {
+      "id": 70,
+      "tokoId": 257,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-21T06:38:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 55,
       "tokoId": 253,
       "teknisiId": 27,
@@ -3845,6 +3977,16 @@
       "tokoId": 257,
       "teknisiId": 27,
       "tglKunjungan": "2026-10-15T14:42:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 71,
+      "tokoId": 217,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-15T10:39:00.000Z",
       "metodeCheckin": "MANUAL",
       "barcodeTerscan": null,
       "fotoOnsite": null,
@@ -4143,15 +4285,260 @@
   ],
   "serviceRequest": [
     {
-      "id": 80,
-      "noTiket": "SVC-2609-0002",
-      "unitAssetId": 183,
+      "id": 85,
+      "noTiket": "SVC-2607-0006",
+      "unitAssetId": 222,
       "status": "REQUEST",
-      "noSttb": "STTB-2609-0002",
+      "noSttb": "STTB-2607-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
       "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "PENGUNCI TIANG PIPA",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-07-16T00:00:00.000Z",
+      "createdAt": "2026-10-21T01:05:04.566Z",
+      "updatedAt": "2026-10-21T01:05:04.566Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 96,
+          "serviceRequestId": 85,
+          "sparepartId": 357,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "noTiket": "SVC-2610-0044",
+      "unitAssetId": 220,
+      "status": "PROSES",
+      "noSttb": "STTB-2610-0044",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-20T00:00:00.000Z",
+      "createdAt": "2026-10-20T13:50:05.749Z",
+      "updatedAt": "2026-10-21T06:28:06.732Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 95,
+          "serviceRequestId": 84,
+          "sparepartId": 312,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI52-201-2-4-3X01-PR",
+          "namaPartCache": "Top Plate 522 C",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 83,
+      "noTiket": "SVC-2608-0014",
+      "unitAssetId": 153,
+      "status": "FINISH",
+      "noSttb": "STTB-2608-0014",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "TARIK_WORKSHOP",
+      "noSuratJalan": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:43:33.028Z",
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0014.jpg",
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": "2026-10-20T13:43:33.028Z",
+      "tglTiket": "2026-08-03T00:00:00.000Z",
+      "createdAt": "2026-10-20T13:42:52.119Z",
+      "updatedAt": "2026-10-20T13:43:33.029Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 94,
+          "serviceRequestId": 83,
+          "sparepartId": 356,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "GCXX-MX219-CE-KGX",
+          "namaPartCache": "TOP BODY 202 CE",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "noTiket": "SVC-2608-0013",
+      "unitAssetId": 160,
+      "status": "FINISH",
+      "noSttb": "STTB-2608-0013",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "TARIK_WORKSHOP",
+      "noSuratJalan": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:28:03.397Z",
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0013.jpg",
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": "2026-10-20T13:28:03.397Z",
+      "tglTiket": "2026-08-07T00:00:00.000Z",
+      "createdAt": "2026-10-20T13:27:30.183Z",
+      "updatedAt": "2026-10-20T13:28:03.399Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 93,
+          "serviceRequestId": 82,
+          "sparepartId": 289,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI52-201-1-1X01-PR",
+          "namaPartCache": "TOP PLATE RI- 522 A",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "noTiket": "SVC-2608-0012",
+      "unitAssetId": 221,
+      "status": "FINISH",
+      "noSttb": "STTB-2608-0012",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "TARIK_WORKSHOP",
+      "noSuratJalan": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:00:37.836Z",
+      "deskripsiKerusakan": "TUTUP PECAH DAN BODY",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0012.jpg",
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": "2026-10-20T13:00:37.836Z",
+      "tglTiket": "2026-08-04T00:00:00.000Z",
+      "createdAt": "2026-10-20T12:59:43.159Z",
+      "updatedAt": "2026-10-20T13:00:37.837Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 91,
+          "serviceRequestId": 81,
+          "sparepartId": 335,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX219-RG-KGX",
+          "namaPartCache": "Out Case 508 ROSE GOLD",
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "noTiket": "SVC-2609-0002",
+      "unitAssetId": 183,
+      "status": "PROSES",
+      "noSttb": "STTB-2609-0002",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -4166,11 +4553,12 @@
       "tglFinish": null,
       "tglTiket": "2026-09-24T00:00:00.000Z",
       "createdAt": "2026-10-19T00:59:48.355Z",
-      "updatedAt": "2026-10-19T00:59:48.355Z",
+      "updatedAt": "2026-10-20T11:57:23.531Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4181,6 +4569,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "MCMX-AX354-HF-KGX",
+          "namaPartCache": "Out Case 558 red flower",
           "editedAt": null,
           "editedBy": null
         }
@@ -4210,11 +4602,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-02T00:00:00.000Z",
       "createdAt": "2026-10-18T22:38:03.135Z",
-      "updatedAt": "2026-10-19T00:02:55.820Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4225,6 +4618,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI52-201-2-4-3X01-PR",
+          "namaPartCache": "Top Plate 522 C",
           "editedAt": null,
           "editedBy": null
         }
@@ -4254,11 +4651,12 @@
       "tglFinish": null,
       "tglTiket": "2026-07-16T00:00:00.000Z",
       "createdAt": "2026-10-18T11:55:18.409Z",
-      "updatedAt": "2026-10-19T00:02:55.791Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4269,6 +4667,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX364-WH-KGX",
+          "namaPartCache": "TOTAL TOP COVER 508",
           "editedAt": null,
           "editedBy": null
         }
@@ -4303,6 +4705,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": []
     },
@@ -4335,6 +4738,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": []
     },
@@ -4367,6 +4771,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": []
     },
@@ -4394,11 +4799,12 @@
       "tglFinish": null,
       "tglTiket": "2026-07-30T00:00:00.000Z",
       "createdAt": "2026-10-18T10:35:29.360Z",
-      "updatedAt": "2026-10-19T00:02:55.799Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4409,6 +4815,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "IP90273 A",
+          "namaPartCache": "Casing PS 135 E",
           "editedAt": null,
           "editedBy": null
         }
@@ -4438,11 +4848,12 @@
       "tglFinish": null,
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T08:42:04.882Z",
-      "updatedAt": "2026-10-19T00:02:55.815Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4453,6 +4864,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-E488-XX-KGX",
+          "namaPartCache": "TOTAL HEATING PLATE ASSY",
           "editedAt": null,
           "editedBy": null
         }
@@ -4487,6 +4902,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4497,6 +4913,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "2M90330B",
+          "namaPartCache": "STATOR ASM (W/FRAME) 125W - COMMON SPARE PART",
           "editedAt": null,
           "editedBy": null
         }
@@ -4531,6 +4951,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4541,6 +4962,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX112-XX-KGX",
+          "namaPartCache": "OUT CASE ASSY 171 WITH PRINTING LABEL",
           "editedAt": null,
           "editedBy": null
         }
@@ -4570,11 +4995,12 @@
       "tglFinish": null,
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T08:18:57.829Z",
-      "updatedAt": "2026-10-19T00:02:55.811Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4585,6 +5011,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "1KG0042A",
+          "namaPartCache": "Top Plate KG-302 C",
           "editedAt": null,
           "editedBy": null
         }
@@ -4594,31 +5024,32 @@
       "id": 61,
       "noTiket": "SVC-2608-0007",
       "unitAssetId": 151,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0007",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:53:33.311Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0007.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:53:33.311Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T08:14:34.826Z",
-      "updatedAt": "2026-10-19T00:02:55.810Z",
+      "updatedAt": "2026-10-20T13:53:33.312Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4626,9 +5057,13 @@
           "serviceRequestId": 61,
           "sparepartId": 340,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "BT71-TF23-132-BX",
+          "namaPartCache": "BODY SET RH-127 SS",
           "editedAt": null,
           "editedBy": null
         }
@@ -4638,31 +5073,32 @@
       "id": 59,
       "noTiket": "SVC-2608-0006",
       "unitAssetId": 159,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:55:01.704Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0006.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:55:01.704Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T07:00:59.263Z",
-      "updatedAt": "2026-10-19T00:02:55.808Z",
+      "updatedAt": "2026-10-20T13:55:01.705Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4673,6 +5109,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI-602-150-5X02",
+          "namaPartCache": "REAR PANEL",
           "editedAt": null,
           "editedBy": null
         }
@@ -4702,11 +5142,12 @@
       "tglFinish": null,
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T06:56:44.935Z",
-      "updatedAt": "2026-10-19T00:02:55.807Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4717,6 +5158,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "SFMX-PX494-BK-KGX",
+          "namaPartCache": "BIG PIPE LOCK BLACK",
           "editedAt": null,
           "editedBy": null
         }
@@ -4726,31 +5171,32 @@
       "id": 57,
       "noTiket": "SVC-2608-0004",
       "unitAssetId": 161,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0004",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:34:01.786Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0004.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:34:01.786Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T06:47:16.043Z",
-      "updatedAt": "2026-10-19T00:02:55.806Z",
+      "updatedAt": "2026-10-20T13:34:01.787Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4761,6 +5207,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI52-201-2-6-1X01-PR",
+          "namaPartCache": "Top Plate Ri 522 CE",
           "editedAt": null,
           "editedBy": null
         }
@@ -4770,31 +5220,32 @@
       "id": 56,
       "noTiket": "SVC-2610-0002",
       "unitAssetId": 145,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0002",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:30:59.466Z",
       "deskripsiKerusakan": "PECAH TOP BODY",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0002.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:30:59.466Z",
       "tglTiket": "2026-10-08T00:00:00.000Z",
       "createdAt": "2026-10-18T06:20:35.080Z",
-      "updatedAt": "2026-10-19T00:02:55.822Z",
+      "updatedAt": "2026-10-20T13:30:59.468Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4805,6 +5256,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "GCXX-MX218-CX-KGX",
+          "namaPartCache": "TOP BODY 502C PRINTING",
           "editedAt": null,
           "editedBy": null
         }
@@ -4814,31 +5269,32 @@
       "id": 55,
       "noTiket": "SVC-2610-0043",
       "unitAssetId": 156,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0043",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "BODY PENYOK",
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:13:25.140Z",
+      "deskripsiKerusakan": "TUTUP ATAS PECAH DAN RING TUTUP PECAH",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0043.jpg",
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:13:25.140Z",
       "tglTiket": "2026-10-18T00:00:00.000Z",
       "createdAt": "2026-10-18T06:12:07.494Z",
-      "updatedAt": "2026-10-19T06:59:50.215Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-20T13:13:25.141Z",
+      "editedAt": "2026-10-20T13:11:33.073Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4846,9 +5302,28 @@
           "serviceRequestId": 55,
           "sparepartId": 286,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-PX562-WH-KGX",
+          "namaPartCache": "TOP COVER 528 (TUTUP ATAS)",
+          "editedAt": "2026-10-20T13:11:33.062Z",
+          "editedBy": "dazz"
+        },
+        {
+          "id": 92,
+          "serviceRequestId": 55,
+          "sparepartId": 354,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "KATALOG",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-PX563-WH-KGX",
+          "namaPartCache": "CASE RING 528",
           "editedAt": null,
           "editedBy": null
         }
@@ -4858,31 +5333,32 @@
       "id": 54,
       "noTiket": "SVC-2608-0003",
       "unitAssetId": 158,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0003",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T12:50:32.776Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0003.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T12:50:32.776Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T05:54:13.624Z",
-      "updatedAt": "2026-10-19T00:02:55.805Z",
+      "updatedAt": "2026-10-20T12:50:32.777Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4890,9 +5366,13 @@
           "serviceRequestId": 54,
           "sparepartId": 334,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI7-207-2-2-1-PR",
+          "namaPartCache": "FRONT PANEL ASSY712 GA",
           "editedAt": null,
           "editedBy": null
         }
@@ -4902,31 +5382,32 @@
       "id": 53,
       "noTiket": "SVC-2608-0002",
       "unitAssetId": 143,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0002",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T12:52:03.198Z",
       "deskripsiKerusakan": "SFMX-PX022-AS-KGX",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0002.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T12:52:03.198Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T05:51:46.835Z",
-      "updatedAt": "2026-10-19T00:02:55.804Z",
+      "updatedAt": "2026-10-20T12:52:03.199Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -4934,9 +5415,13 @@
           "serviceRequestId": 53,
           "sparepartId": 333,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "SFMX-PX022-AS-KGX",
+          "namaPartCache": "BLADE (AS)1697 DRW",
           "editedAt": null,
           "editedBy": null
         }
@@ -4971,6 +5456,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -4981,6 +5467,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MJXX-AX017-XX-KGX",
+          "namaPartCache": "Out Case 709",
           "editedAt": null,
           "editedBy": null
         }
@@ -5015,6 +5505,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5025,6 +5516,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "WDXX-PX318-WH-KGX",
+          "namaPartCache": "RESERVOIR GRILL186",
           "editedAt": null,
           "editedBy": null
         },
@@ -5036,6 +5531,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "WDXX-PX317-WH-KGX",
+          "namaPartCache": "RESERVOIR GRILL186 WHITE",
           "editedAt": null,
           "editedBy": null
         }
@@ -5065,11 +5564,12 @@
       "tglFinish": null,
       "tglTiket": "2026-09-21T00:00:00.000Z",
       "createdAt": "2026-10-17T23:14:52.956Z",
-      "updatedAt": "2026-10-19T00:02:55.819Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -5080,6 +5580,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "1P90273A",
+          "namaPartCache": "Casing PS 135 E",
           "editedAt": null,
           "editedBy": null
         }
@@ -5114,6 +5618,7 @@
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5124,6 +5629,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "3P90145B",
+          "namaPartCache": "Press Switch Cover",
           "editedAt": null,
           "editedBy": null
         }
@@ -5158,6 +5667,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5168,6 +5678,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "3M90119D",
+          "namaPartCache": "Fan cover ( model Lama pake Baut )",
           "editedAt": null,
           "editedBy": null
         }
@@ -5202,6 +5716,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5212,6 +5727,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "READY",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RIT-0013-3-PL",
+          "namaPartCache": "Rear panel reinforcemen",
           "editedAt": null,
           "editedBy": null
         },
@@ -5223,6 +5742,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "READY",
           "sumberPart": "KATALOG",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI7-310-1-P",
+          "namaPartCache": "Side Panel RHS (Kanan)",
           "editedAt": null,
           "editedBy": null
         },
@@ -5234,6 +5757,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "READY",
           "sumberPart": "KATALOG",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI7-312-1X01-P",
+          "namaPartCache": "Rear Panel (body belakang)",
           "editedAt": null,
           "editedBy": null
         }
@@ -5268,6 +5795,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5278,6 +5806,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI52-201-2-5-1X01-PR",
+          "namaPartCache": "Top Plate RI-522 S",
           "editedAt": null,
           "editedBy": null
         }
@@ -5307,11 +5839,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T06:01:29.030Z",
       "createdAt": "2026-10-15T06:01:29.046Z",
-      "updatedAt": "2026-10-19T00:02:55.862Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -5322,6 +5855,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "B74-TF23-153-BB",
+          "namaPartCache": "Body Grit black RH 127B",
           "editedAt": null,
           "editedBy": null
         }
@@ -5356,6 +5893,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5366,6 +5904,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI52-201-2-4-3X01-PR",
+          "namaPartCache": "Top Plate 522 C",
           "editedAt": null,
           "editedBy": null
         }
@@ -5395,11 +5937,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:59:23.518Z",
       "createdAt": "2026-10-15T05:59:23.534Z",
-      "updatedAt": "2026-10-19T00:02:55.861Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -5410,6 +5953,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX435-RH-KGX",
+          "namaPartCache": "Out Case Assy 528 red",
           "editedAt": null,
           "editedBy": null
         }
@@ -5444,6 +5991,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5454,6 +6002,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI52-201-2-4-3X01-PR",
+          "namaPartCache": "Top Plate 522 C",
           "editedAt": null,
           "editedBy": null
         }
@@ -5483,11 +6035,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:55:55.873Z",
       "createdAt": "2026-10-15T05:55:55.879Z",
-      "updatedAt": "2026-10-19T00:02:55.859Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -5498,6 +6051,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "SFMX-EA434-XX-KGX",
+          "namaPartCache": "MOTOR ASSY 1606\\1607",
           "editedAt": null,
           "editedBy": null
         }
@@ -5527,11 +6084,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:52:36.180Z",
       "createdAt": "2026-10-15T05:52:36.199Z",
-      "updatedAt": "2026-10-19T00:02:55.858Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -5542,6 +6100,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MX251-GY-KGX",
+          "namaPartCache": "Aluminium Pan 2 L grey",
           "editedAt": null,
           "editedBy": null
         }
@@ -5576,6 +6138,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5586,6 +6149,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "GCXX-MX218-CW-KGX",
+          "namaPartCache": "Top Body 502 C printing Wayang. Wyg",
           "editedAt": null,
           "editedBy": null
         },
@@ -5597,6 +6164,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "GCXX-MX216-PN-KGX",
+          "namaPartCache": "Right Cover",
           "editedAt": null,
           "editedBy": null
         }
@@ -5631,6 +6202,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5641,6 +6213,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI-602-110-3X01-SUS",
+          "namaPartCache": "Top Plate 602 SUS",
           "editedAt": null,
           "editedBy": null
         }
@@ -5670,11 +6246,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:42:09.929Z",
       "createdAt": "2026-10-15T05:42:09.946Z",
-      "updatedAt": "2026-10-19T00:51:19.376Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": "2026-10-19T00:51:19.374Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -5685,6 +6262,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI-602-142-10X1-P",
+          "namaPartCache": "Side Panel LHS 602 E (W)",
           "editedAt": "2026-10-19T00:51:19.362Z",
           "editedBy": "dazz"
         }
@@ -5698,14 +6279,14 @@
       "noSttb": "STTB-2610-0029",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
-      "deskripsiKerusakan": "BODY PENYOK",
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-21T04:43:00.000Z",
+      "deskripsiKerusakan": "BOody penyok bagian depan",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0029.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
@@ -5714,11 +6295,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T05:40:17.497Z",
       "createdAt": "2026-10-15T05:40:17.513Z",
-      "updatedAt": "2026-10-19T00:02:55.854Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-21T12:30:48.866Z",
+      "editedAt": "2026-10-21T12:30:48.864Z",
+      "editedBy": "Admin Workshop",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5729,6 +6311,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI202-001-2-1X02-PR",
+          "namaPartCache": "Top Plate RI 202 S",
           "editedAt": null,
           "editedBy": null
         }
@@ -5738,31 +6324,32 @@
       "id": 30,
       "noTiket": "SVC-2610-0028",
       "unitAssetId": 166,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0028",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T03:42:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0028.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T03:42:00.000Z",
       "tglTiket": "2026-10-15T05:38:49.930Z",
       "createdAt": "2026-10-15T05:38:49.947Z",
-      "updatedAt": "2026-10-19T00:02:55.853Z",
+      "updatedAt": "2026-10-21T03:42:18.523Z",
       "editedAt": "2026-10-18T06:09:17.926Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5773,6 +6360,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "MCMX-AX219-RG-KGX",
+          "namaPartCache": "Out Case 508 ROSE GOLD",
           "editedAt": "2026-10-18T06:09:17.915Z",
           "editedBy": "dazz"
         }
@@ -5807,6 +6398,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5817,6 +6409,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX435-SH-KGX",
+          "namaPartCache": "Out Case 528 silver flower",
           "editedAt": null,
           "editedBy": null
         }
@@ -5826,31 +6422,32 @@
       "id": 28,
       "noTiket": "SVC-2610-0026",
       "unitAssetId": 181,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0026",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-21T04:43:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0026.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-21T04:43:00.000Z",
       "tglTiket": "2026-10-15T05:36:57.892Z",
       "createdAt": "2026-10-15T05:36:57.908Z",
-      "updatedAt": "2026-10-19T00:02:55.850Z",
+      "updatedAt": "2026-10-21T04:43:33.468Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5861,6 +6458,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI52-201-2-6-1X01-PR",
+          "namaPartCache": "Top Plate Ri 522 CE",
           "editedAt": null,
           "editedBy": null
         }
@@ -5870,31 +6471,32 @@
       "id": 27,
       "noTiket": "SVC-2610-0025",
       "unitAssetId": 180,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0025",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-21T04:43:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0025.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-21T04:43:00.000Z",
       "tglTiket": "2026-10-15T05:36:01.333Z",
       "createdAt": "2026-10-15T05:36:01.349Z",
-      "updatedAt": "2026-10-19T00:02:55.849Z",
+      "updatedAt": "2026-10-21T04:43:17.475Z",
       "editedAt": "2026-10-18T15:24:49.946Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5905,6 +6507,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI-602-141-9-I-P",
+          "namaPartCache": "Side panel RHS 602",
           "editedAt": "2026-10-18T15:24:49.936Z",
           "editedBy": "dazz"
         }
@@ -5939,6 +6545,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5949,6 +6556,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI-602-132-26X03-PR",
+          "namaPartCache": "FRONT PANEL 602 BGX",
           "editedAt": null,
           "editedBy": null
         }
@@ -5958,31 +6569,32 @@
       "id": 25,
       "noTiket": "SVC-2610-0023",
       "unitAssetId": 178,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0023",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-21T04:42:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0023.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-21T04:42:00.000Z",
       "tglTiket": "2026-10-15T05:29:49.815Z",
       "createdAt": "2026-10-15T05:29:49.831Z",
-      "updatedAt": "2026-10-19T00:02:55.847Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-21T04:42:46.632Z",
+      "editedAt": "2026-10-20T11:35:14.715Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -5993,8 +6605,27 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI-602-110X01-EG",
+          "namaPartCache": "Top Plate 602 AG",
           "editedAt": null,
           "editedBy": null
+        },
+        {
+          "id": 90,
+          "serviceRequestId": 25,
+          "sparepartId": 338,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "KATALOG",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI-602-150-5X02",
+          "namaPartCache": "REAR PANEL",
+          "editedAt": "2026-10-20T11:35:14.703Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -6002,31 +6633,32 @@
       "id": 24,
       "noTiket": "SVC-2610-0022",
       "unitAssetId": 177,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0022",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T03:43:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0022.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T03:43:00.000Z",
       "tglTiket": "2026-10-15T05:28:56.200Z",
       "createdAt": "2026-10-15T05:28:56.216Z",
-      "updatedAt": "2026-10-19T00:02:55.846Z",
+      "updatedAt": "2026-10-21T03:43:20.187Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6037,6 +6669,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI-602-110-3X01-SUS",
+          "namaPartCache": "Top Plate 602 SUS",
           "editedAt": null,
           "editedBy": null
         }
@@ -6071,6 +6707,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6081,6 +6718,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MJXX-AX017-XX-KGX",
+          "namaPartCache": "Out Case 709",
           "editedAt": null,
           "editedBy": null
         }
@@ -6090,31 +6731,32 @@
       "id": 22,
       "noTiket": "SVC-2610-0020",
       "unitAssetId": 176,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0020",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T03:42:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0020.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T03:42:00.000Z",
       "tglTiket": "2026-10-15T04:53:14.467Z",
       "createdAt": "2026-10-15T04:53:14.493Z",
-      "updatedAt": "2026-10-19T00:53:34.903Z",
+      "updatedAt": "2026-10-21T03:42:46.677Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6125,6 +6767,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:48:41.904Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI-52-201-1-2X01-PR",
+          "namaPartCache": "5208958403",
           "editedAt": null,
           "editedBy": null
         }
@@ -6154,11 +6800,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-15T04:51:23.765Z",
       "createdAt": "2026-10-15T04:51:23.800Z",
-      "updatedAt": "2026-10-19T00:02:55.843Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": "2026-10-17T23:18:16.325Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6169,6 +6816,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "2M90061 A",
+          "namaPartCache": "FAN COVER PS 226",
           "editedAt": "2026-10-17T23:18:16.312Z",
           "editedBy": "dazz"
         }
@@ -6203,6 +6854,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6213,6 +6865,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:57:02.357Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "WDXX-MX196-PN-KGX",
+          "namaPartCache": "SIDE COVER RIGHT WDP300",
           "editedAt": null,
           "editedBy": null
         }
@@ -6247,6 +6903,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6257,6 +6914,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "READY",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:57:02.357Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "SMXX-AX069-XX-KGX",
+          "namaPartCache": "MOTOR MIXER ASSY 610 WHITE SOCKET",
           "editedAt": null,
           "editedBy": null
         }
@@ -6291,6 +6952,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6301,6 +6963,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": "2026-10-20T06:57:02.357Z",
+          "pasangOleh": "DAZZ",
+          "kodePartCache": "RI-602-132-26X03-PR",
+          "namaPartCache": "FRONT PANEL 602 BGX",
           "editedAt": null,
           "editedBy": null
         }
@@ -6335,6 +7001,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6345,6 +7012,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "SFMX-AX298-XX-KGX",
+          "namaPartCache": "CONTROLLER ASSY 1607",
           "editedAt": null,
           "editedBy": null
         }
@@ -6374,11 +7045,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:14:58.997Z",
       "createdAt": "2026-10-14T05:14:59.014Z",
-      "updatedAt": "2026-10-19T00:02:55.837Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6389,6 +7061,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "SFMX-EA434-XX-KGX",
+          "namaPartCache": "MOTOR ASSY 1606\\1607",
           "editedAt": null,
           "editedBy": null
         }
@@ -6418,11 +7094,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:13:45.740Z",
       "createdAt": "2026-10-14T05:13:45.757Z",
-      "updatedAt": "2026-10-19T00:02:55.836Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6433,6 +7110,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX027-XX-KGX",
+          "namaPartCache": "TOTAL SIDE ELEMEN (BAWAH)",
           "editedAt": null,
           "editedBy": null
         }
@@ -6467,6 +7148,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6477,6 +7159,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "EXXX-AX506-TP-KGX",
+          "namaPartCache": "THERMOSTAT ASSY 83'N",
           "editedAt": null,
           "editedBy": null
         }
@@ -6506,11 +7192,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:11:24.317Z",
       "createdAt": "2026-10-14T05:11:24.334Z",
-      "updatedAt": "2026-10-19T00:02:55.834Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6521,6 +7208,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "SFMX-EA434-XXKGX",
+          "namaPartCache": "MOTOR KAS 1607 GB",
           "editedAt": null,
           "editedBy": null
         }
@@ -6550,11 +7241,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:09:59.922Z",
       "createdAt": "2026-10-14T05:09:59.965Z",
-      "updatedAt": "2026-10-19T00:02:55.833Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6565,6 +7257,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI52-201-1-1X01-PR",
+          "namaPartCache": "TOP PLATE RI- 522 A",
           "editedAt": null,
           "editedBy": null
         }
@@ -6599,6 +7295,7 @@
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
         {
@@ -6609,6 +7306,10 @@
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI52-201-1-2X01-PR",
+          "namaPartCache": "TOP PLATE 522 E",
           "editedAt": null,
           "editedBy": null
         }
@@ -6618,31 +7319,32 @@
       "id": 10,
       "noTiket": "SVC-2610-0008",
       "unitAssetId": 128,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0008",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T12:48:51.968Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0008.jpg",
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T12:48:51.968Z",
       "tglTiket": "2026-10-14T04:46:04.860Z",
       "createdAt": "2026-10-14T04:46:04.887Z",
-      "updatedAt": "2026-10-19T00:02:55.831Z",
+      "updatedAt": "2026-10-20T12:48:51.969Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6650,9 +7352,13 @@
           "serviceRequestId": 10,
           "sparepartId": 287,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-207-2-2-1-PR",
+          "namaPartCache": "FRONT PANEL ASSY 712 T",
           "editedAt": null,
           "editedBy": null
         }
@@ -6662,43 +7368,48 @@
       "id": 9,
       "noTiket": "SVC-2610-0007",
       "unitAssetId": 127,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0007",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:15:47.569Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0007.jpg",
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:15:47.569Z",
       "tglTiket": "2026-10-14T04:45:01.727Z",
       "createdAt": "2026-10-14T04:45:01.744Z",
-      "updatedAt": "2026-10-19T00:02:55.829Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-20T13:15:47.570Z",
+      "editedAt": "2026-10-20T13:15:19.006Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
           "id": 17,
           "serviceRequestId": 9,
-          "sparepartId": 286,
+          "sparepartId": 355,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
-          "editedAt": null,
-          "editedBy": null
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "MCMX-AX406-XX-KGX",
+          "namaPartCache": "OUT CASE ASSY 609",
+          "editedAt": "2026-10-20T13:15:18.996Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -6726,11 +7437,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T04:29:50.983Z",
       "createdAt": "2026-10-14T04:29:51.001Z",
-      "updatedAt": "2026-10-19T00:02:55.828Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": []
     },
@@ -6758,11 +7470,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T04:28:45.514Z",
       "createdAt": "2026-10-14T04:28:45.532Z",
-      "updatedAt": "2026-10-19T00:02:55.826Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6773,6 +7486,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "ZX389116",
+          "namaPartCache": "NN",
           "editedAt": null,
           "editedBy": null
         }
@@ -6802,11 +7519,12 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T04:27:49.344Z",
       "createdAt": "2026-10-14T04:27:50.190Z",
-      "updatedAt": "2026-10-19T00:02:55.824Z",
+      "updatedAt": "2026-10-20T06:16:01.026Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6817,6 +7535,10 @@
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "ZL009032",
+          "namaPartCache": "NN",
           "editedAt": null,
           "editedBy": null
         }
@@ -6826,31 +7548,32 @@
       "id": 5,
       "noTiket": "SVC-2610-0003",
       "unitAssetId": 122,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0003",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-20T13:32:22.473Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0003.jpg",
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T13:32:22.473Z",
       "tglTiket": "2026-10-14T04:25:03.957Z",
       "createdAt": "2026-10-14T04:25:03.982Z",
-      "updatedAt": "2026-10-19T00:02:55.823Z",
+      "updatedAt": "2026-10-20T13:32:22.475Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
+      "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
         {
@@ -6858,9 +7581,13 @@
           "serviceRequestId": 5,
           "sparepartId": 282,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": "RI-602-142-10-I-P",
+          "namaPartCache": "SIDE PANEL CHS (KIRI) 602",
           "editedAt": null,
           "editedBy": null
         }
@@ -6881,7 +7608,7 @@
       "tokoKode": "TOK-042",
       "tokoNama": "Toko Semeru Ahmad Yani",
       "catatan": "Reorder part inden — tiket SV-20261018-0001",
-      "status": "PENDING",
+      "status": "DATANG",
       "emailTujuan": null,
       "emailKirimAt": null,
       "emailOleh": null,
@@ -6889,7 +7616,7 @@
       "emailPesanGagal": null,
       "diinputOleh": "Admin Workshop",
       "createdAt": "2026-10-18T23:30:06.919Z",
-      "updatedAt": "2026-10-18T23:30:06.919Z",
+      "updatedAt": "2026-10-20T13:09:21.918Z",
       "serviceRequestId": 55
     },
     {
@@ -6941,8 +7668,157 @@
   ],
   "suratJalanMasuk": [
     {
+      "id": 7,
+      "noSuratJalan": "20261020",
+      "refSjrNo": null,
+      "tglSurat": null,
+      "produsen": null,
+      "namaFile": "Rekap_Faktur_Mutasi_Bhakti_Idola_Tama.xlsx",
+      "totalItem": 9,
+      "cocokCount": 1,
+      "tanpaTiket": 8,
+      "catatan": null,
+      "createdAt": "2026-10-20T16:11:31.607Z",
+      "createdBy": "Admin Workshop",
+      "status": "DIPERIKSA",
+      "cekManual": false,
+      "diperiksaAt": "2026-10-20T16:14:09.448Z",
+      "diperiksaOleh": "Admin Workshop",
+      "diterapkanAt": null,
+      "diterapkanOleh": null,
+      "items": [
+        {
+          "id": 48,
+          "suratJalanMasukId": 7,
+          "kodePart": "RI52-201-2-4-3x01-PR",
+          "namaPart": "TOP PLATE (PRINT) RI-522 C (ORANGE)",
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "COCOK",
+          "cocokTipe": "TIKET_PART",
+          "cocokTiketId": 84,
+          "cocokUnitId": 220,
+          "cocokPartId": 312,
+          "alasan": "Dipilih manual — tiket SVC-2610-0044"
+        },
+        {
+          "id": 49,
+          "suratJalanMasukId": 7,
+          "kodePart": "RI52-201-1-2X01-PR",
+          "namaPart": "TOP PLATE (PRINT) RI-522 E",
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 50,
+          "suratJalanMasukId": 7,
+          "kodePart": "5. Catatan",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 51,
+          "suratJalanMasukId": 7,
+          "kodePart": "- Data dibaca dari hasil scan 10 file PDF (18 faktur). Scan_1.pdf sama dengan faktur MTTSMS021883 yang sudah diproses sebelumnya, sehingga tidak dihitung dua kali.",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 52,
+          "suratJalanMasukId": 7,
+          "kodePart": "- Harga satuan, diskon, dan jumlah (Rp) kosong di semua faktur, jadi tidak ada total nilai rupiah.",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 53,
+          "suratJalanMasukId": 7,
+          "kodePart": "- Kolom 'Kelompok Barang' adalah pengelompokan saya berdasarkan nama barang, bukan dari dokumen. Ubah di sheet Detail Barang bila perlu, rangkuman ikut berubah.",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 54,
+          "suratJalanMasukId": 7,
+          "kodePart": "- Kolom 'Centang di Dokumen' mencatat tanda centang tulisan tangan di sebelah kode barang (kemungkinan tanda sudah dicek). Beberapa tanda kurang jelas, mohon cek ulang.",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 55,
+          "suratJalanMasukId": 7,
+          "kodePart": "- Nama barang pada MTTSMS021883 terpotong di dokumen asli.",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        },
+        {
+          "id": 56,
+          "suratJalanMasukId": 7,
+          "kodePart": "- Tanggal pada faktur diambil dari tanggal tercetak di kanan atas. Sel biru di bagian Per Bulan adalah input tanggal awal bulan.",
+          "namaPart": null,
+          "qty": 1,
+          "serialNumber": null,
+          "statusMatch": "TANPA_TIKET",
+          "cocokTipe": null,
+          "cocokTiketId": null,
+          "cocokUnitId": null,
+          "cocokPartId": null,
+          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
+        }
+      ]
+    },
+    {
       "id": 6,
       "noSuratJalan": "20261018",
+      "refSjrNo": null,
       "tglSurat": null,
       "produsen": null,
       "namaFile": "surat-jalan-masuk-matching.xlsx",
@@ -7559,12 +8435,12 @@
     {
       "id": 57,
       "kunci": "email_perusahaan",
-      "nilai": ""
+      "nilai": "eracoolteknik@gmail.com"
     },
     {
       "id": 82,
       "kunci": "email_produsen",
-      "nilai": ""
+      "nilai": "haripin@bhakti.co.id"
     },
     {
       "id": 73,
@@ -7580,6 +8456,11 @@
       "id": 64,
       "kunci": "gateway_tg_token",
       "nilai": "***"
+    },
+    {
+      "id": 173,
+      "kunci": "log_retensi_terakhir",
+      "nilai": "2026-10-22 19:01"
     },
     {
       "id": 54,
@@ -7599,7 +8480,7 @@
     {
       "id": 95,
       "kunci": "smtp_dari",
-      "nilai": ""
+      "nilai": "eracoolteknik@gmail.com"
     },
     {
       "id": 91,
@@ -7619,7 +8500,7 @@
     {
       "id": 96,
       "kunci": "smtp_secure",
-      "nilai": ""
+      "nilai": "true"
     },
     {
       "id": 93,
@@ -7628,6 +8509,987 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 885,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-22T10-59-56.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-22T10:59:57.053Z"
+    },
+    {
+      "id": 884,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "71",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Laris Jaya (TOK-002) · tgl 15/10/2026, 18.39.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-22T10:39:53.599Z"
+    },
+    {
+      "id": 883,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "70",
+      "deskripsi": "Teknisi SYAFRIL ARFFANDI check-in manual di Toko Semeru Ahmad Yani (TOK-042) · tgl 21/10/2026, 14.38.00",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-22T10:38:58.869Z"
+    },
+    {
+      "id": 882,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-040",
+      "deskripsi": "Data toko diperbarui: aktif",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-22T10:37:25.553Z"
+    },
+    {
+      "id": 876,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input):  — ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T10:33:36.022Z"
+    },
+    {
+      "id": 875,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-22T10:33:07.911Z"
+    },
+    {
+      "id": 873,
+      "aksi": "BUKA_ULANG_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0029",
+      "deskripsi": "Status FINISH → PROSES (buka ulang; tglFinish 21/10/2026, 12.43.00 dibatalkan) — Setelah pemasangan part ditemukan bagian lain yang rusak — perlu order & pasang part tambahan [TIKET FINISH — buka ulang Admin/Manager]",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T12:30:48.902Z"
+    },
+    {
+      "id": 872,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-21T10-59-55.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-21T10:59:55.494Z"
+    },
+    {
+      "id": 871,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0044",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0044 diterbitkan untuk penarikan unit 2504373436 ke workshop",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-10-21T06:28:06.751Z"
+    },
+    {
+      "id": 870,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0044",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-10-21T06:27:58.801Z"
+    },
+    {
+      "id": 869,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-21T05:30:23.566Z"
+    },
+    {
+      "id": 868,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input):  — ",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-21T05:29:36.013Z"
+    },
+    {
+      "id": 867,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "syafril01@gmail.com",
+      "deskripsi": "Login berhasil: SYAFRIL ARFFANDI (TEKNISI)",
+      "aktor": "syafril01@gmail.com",
+      "createdAt": "2026-10-21T05:29:11.933Z"
+    },
+    {
+      "id": 866,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:18:11.422Z"
+    },
+    {
+      "id": 865,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input):  — ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:17:30.349Z"
+    },
+    {
+      "id": 864,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:17:03.435Z"
+    },
+    {
+      "id": 863,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input):  — ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:10:36.821Z"
+    },
+    {
+      "id": 862,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:10:07.024Z"
+    },
+    {
+      "id": 861,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input):  — ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:09:29.434Z"
+    },
+    {
+      "id": 860,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:09:11.715Z"
+    },
+    {
+      "id": 859,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input):  — ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:06:50.035Z"
+    },
+    {
+      "id": 858,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T05:04:19.572Z"
+    },
+    {
+      "id": 857,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AUTO-MVHLS8FQ-K1F",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): AUTO-MVHLS8FQ-K1F — pompa air",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T05:00:38.943Z"
+    },
+    {
+      "id": 856,
+      "aksi": "DELETE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0045",
+      "deskripsi": "Tiket SVC-2610-0045 dihapus (membersihkan data uji registrasi AUTO-…): unit 223, status REQUEST, tanpa part/lampiran",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T05:00:38.919Z"
+    },
+    {
+      "id": 855,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AUTO-MVHMTMOA-BT8",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): AUTO-MVHMTMOA-BT8 — ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T04:50:39.271Z"
+    },
+    {
+      "id": 854,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AUTO-MVHMTMOA-BT8",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T04:48:41.506Z"
+    },
+    {
+      "id": 853,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0029",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0029.jpg) — tglFinish diatur manual: 21/10/2026, 12.43.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T04:43:51.881Z"
+    },
+    {
+      "id": 852,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0026",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0026.jpg) — tglFinish diatur manual: 21/10/2026, 12.43.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T04:43:33.480Z"
+    },
+    {
+      "id": 851,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0025",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0025.jpg) — tglFinish diatur manual: 21/10/2026, 12.43.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T04:43:17.488Z"
+    },
+    {
+      "id": 850,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0023",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0023.jpg) — tglFinish diatur manual: 21/10/2026, 12.42.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T04:42:46.643Z"
+    },
+    {
+      "id": 849,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0045",
+      "deskripsi": "Tiket manual dibuat untuk unit AUTO-MVHLS8FQ-K1F (pompa air, STOK TOKO — garansi otomatis) — bypass: catatan unit masuk, unit otomatis terdaftar di master tanpa no seri/model",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T04:19:36.797Z"
+    },
+    {
+      "id": 848,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0022",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0022.jpg) — tglFinish diatur manual: 20/10/2026, 11.43.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T03:43:20.201Z"
+    },
+    {
+      "id": 847,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0020",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0020.jpg) — tglFinish diatur manual: 20/10/2026, 11.42.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T03:42:46.688Z"
+    },
+    {
+      "id": 846,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0028",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0028.jpg) — tglFinish diatur manual: 20/10/2026, 11.42.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-21T03:42:18.540Z"
+    },
+    {
+      "id": 845,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-010",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit, aktif, modeSiklus, jarakKm",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T03:07:42.714Z"
+    },
+    {
+      "id": 844,
+      "aksi": "ALT02_SLA_FLAG",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0044",
+      "deskripsi": "Flag merah ALT-02 dipasang: REQUEST > 24 jam tanpa konfirmasi part",
+      "aktor": "CRON-ENGINE",
+      "createdAt": "2026-10-21T02:55:30.755Z"
+    },
+    {
+      "id": 843,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0006",
+      "deskripsi": "Tiket manual dibuat untuk unit 3050090799 (KAS-1607 PL, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2607-0006 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T01:05:04.587Z"
+    },
+    {
+      "id": 842,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "3050090799",
+      "deskripsi": "Unit baru teregistrasi: KAS-1607 PL (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-21T01:04:11.131Z"
+    },
+    {
+      "id": 841,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP)",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-20T22:45:48.401Z"
+    },
+    {
+      "id": 840,
+      "aksi": "SURAT_JALAN_CEK",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "20261020",
+      "deskripsi": "Cek berlapis: 0 blokir · 0 peringatan · 7 info",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T16:14:09.461Z"
+    },
+    {
+      "id": 839,
+      "aksi": "ANALISA_SJ",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "20261020",
+      "deskripsi": "Analisa Kirim vs Terima (TIDAK_ADA): 7 pasangan · 1 saran AI — tanpa perubahan data",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T16:12:52.005Z"
+    },
+    {
+      "id": 838,
+      "aksi": "SURAT_JALAN_DRAFT",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "20261020",
+      "deskripsi": "Draft surat jalan masuk disimpan: 9 baris · 1 cocok (belum diterapkan)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T16:11:31.635Z"
+    },
+    {
+      "id": 837,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T15:00:53.481Z"
+    },
+    {
+      "id": 836,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T14:57:14.771Z"
+    },
+    {
+      "id": 835,
+      "aksi": "CETAK_ULANG_PASANG",
+      "entitas": "service_request_part",
+      "entitasId": "PMS-20261020-1448",
+      "deskripsi": "Cetak ulang dokumen pemasangan PMS-20261020-1448: 16 item",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T14:45:50.884Z"
+    },
+    {
+      "id": 834,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0006",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0006.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:55:01.720Z"
+    },
+    {
+      "id": 833,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0007",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0007.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:53:33.324Z"
+    },
+    {
+      "id": 832,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0007",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0007 diterbitkan untuk penarikan unit 2601008866 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:53:26.719Z"
+    },
+    {
+      "id": 831,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0007",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:53:24.660Z"
+    },
+    {
+      "id": 830,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0044",
+      "deskripsi": "Tiket manual dibuat untuk unit 2504373436 (RI-522C, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2610-0044 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T13:50:05.762Z"
+    },
+    {
+      "id": 829,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0014",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0014.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:43:33.042Z"
+    },
+    {
+      "id": 828,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0014",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0014 diterbitkan untuk penarikan unit 44070013614 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:43:27.452Z"
+    },
+    {
+      "id": 827,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0014",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:43:24.519Z"
+    },
+    {
+      "id": 826,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0014",
+      "deskripsi": "Tiket manual dibuat untuk unit 44070013614 (KG-202 CE, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2608-0014 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T13:42:52.131Z"
+    },
+    {
+      "id": 825,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0004",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0004.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:34:01.798Z"
+    },
+    {
+      "id": 824,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0003",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0003.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:32:22.488Z"
+    },
+    {
+      "id": 823,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0003",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0003 diterbitkan untuk penarikan unit 2602316915 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:32:18.708Z"
+    },
+    {
+      "id": 822,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0003",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:32:16.089Z"
+    },
+    {
+      "id": 821,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0002",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0002.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:30:59.478Z"
+    },
+    {
+      "id": 820,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0013",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0013.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:28:03.410Z"
+    },
+    {
+      "id": 819,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0013",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0013 diterbitkan untuk penarikan unit 2505637174 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:27:56.763Z"
+    },
+    {
+      "id": 818,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0013",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:27:54.162Z"
+    },
+    {
+      "id": 817,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0013",
+      "deskripsi": "Tiket manual dibuat untuk unit 2505637174 (RI-522 A, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2608-0013 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T13:27:30.198Z"
+    },
+    {
+      "id": 816,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0007",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0007.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:15:47.582Z"
+    },
+    {
+      "id": 815,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0007",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0007 diterbitkan untuk penarikan unit 43100173715 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:15:41.120Z"
+    },
+    {
+      "id": 814,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0007",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:15:38.708Z"
+    },
+    {
+      "id": 813,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0007",
+      "deskripsi": "Koreksi part [edited]: kode MCMX-PX562-WH-KGX → MCMX-AX406-XX-KGX, nama \"TOP COVER 528 (TUTUP ATAS)\" → \"OUT CASE ASSY 609\"",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:15:19.018Z"
+    },
+    {
+      "id": 812,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "MCMX-AX406-XX-KGX",
+      "deskripsi": "Kode koreksi part otomatis masuk katalog: OUT CASE ASSY 609 (tiket SVC-2610-0007)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:15:18.986Z"
+    },
+    {
+      "id": 811,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0043.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:13:25.152Z"
+    },
+    {
+      "id": 810,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:13:03.220Z"
+    },
+    {
+      "id": 809,
+      "aksi": "TAMBAH_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Tambah part saat pengerjaan: MCMX-PX563-WH-KGX ×1 stok tidak cukup → ORDER ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:12:28.003Z"
+    },
+    {
+      "id": 808,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "MCMX-PX563-WH-KGX",
+      "deskripsi": "Part tambahan dari workshop otomatis masuk katalog: CASE RING 528",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:12:27.967Z"
+    },
+    {
+      "id": 807,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Koreksi part [edited]: kode MCMX-PX562-WH-KGX, nama \"OUT CASE ASSY 602\" → \"TOP COVER 528 (TUTUP ATAS)\"",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:11:33.087Z"
+    },
+    {
+      "id": 806,
+      "aksi": "UPDATE_BIAYA_JASA",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Deskripsi & biaya jasa tiket diperbarui (jasa Rp 0)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:09:52.973Z"
+    },
+    {
+      "id": 805,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0043 diterbitkan untuk penarikan unit 42110363216 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:09:24.770Z"
+    },
+    {
+      "id": 804,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1) — 1 item order email ikut DATANG",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:09:21.930Z"
+    },
+    {
+      "id": 803,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0012",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0012.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:00:37.848Z"
+    },
+    {
+      "id": 802,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0012",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0012 diterbitkan untuk penarikan unit 030010039782 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:00:28.168Z"
+    },
+    {
+      "id": 801,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0012",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T13:00:25.555Z"
+    },
+    {
+      "id": 800,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0012",
+      "deskripsi": "Tiket manual dibuat untuk unit 030010039782 (MCN-508 SBC, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2608-0012 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T12:59:43.175Z"
+    },
+    {
+      "id": 799,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "030010039782",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (030010039782)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T12:56:29.342Z"
+    },
+    {
+      "id": 798,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "030010039782",
+      "deskripsi": "Unit baru teregistrasi: KAS-1607 DRW (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T12:54:13.777Z"
+    },
+    {
+      "id": 797,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0002",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0002.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:52:03.210Z"
+    },
+    {
+      "id": 796,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0002",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0002 diterbitkan untuk penarikan unit 44020001427 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:51:51.580Z"
+    },
+    {
+      "id": 795,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0002",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:51:02.998Z"
+    },
+    {
+      "id": 794,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0003",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0003.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:50:32.789Z"
+    },
+    {
+      "id": 793,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0003",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0003 diterbitkan untuk penarikan unit 2511015067 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:50:12.621Z"
+    },
+    {
+      "id": 792,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0003",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:49:51.598Z"
+    },
+    {
+      "id": 791,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0008",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0008.jpg)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:48:51.979Z"
+    },
+    {
+      "id": 790,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2605388515",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (2605388515)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T12:48:14.409Z"
+    },
+    {
+      "id": 789,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0008",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0008 diterbitkan untuk penarikan unit 2605388515 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:47:10.191Z"
+    },
+    {
+      "id": 788,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0008",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T12:47:02.580Z"
+    },
+    {
+      "id": 787,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2504373436",
+      "deskripsi": "Unit baru teregistrasi: RI-522C (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T12:40:12.706Z"
+    },
+    {
+      "id": 786,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0002",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2609-0002 diterbitkan untuk penarikan unit 44080132792 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T11:57:23.543Z"
+    },
+    {
+      "id": 785,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "42100119093",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian, createdAt (42100119093)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T11:51:52.119Z"
+    },
+    {
+      "id": 784,
+      "aksi": "UPDATE_BIAYA_JASA",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0029",
+      "deskripsi": "Deskripsi & biaya jasa tiket diperbarui (jasa Rp 0)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T11:40:40.251Z"
+    },
+    {
+      "id": 783,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0023",
+      "deskripsi": "Koreksi part [edited]: kode RU-602-150-5X02 → RI-602-150-5X02 — terpakai RU-602-150-5X02 -1 → RI-602-150-5X02 +1",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T11:35:14.727Z"
+    },
+    {
+      "id": 782,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0023",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T11:09:29.820Z"
+    },
+    {
+      "id": 781,
+      "aksi": "TAMBAH_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0023",
+      "deskripsi": "Tambah part saat pengerjaan: RU-602-150-5X02 ×1 stok tidak cukup → ORDER ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T11:05:45.881Z"
+    },
+    {
+      "id": 780,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "RU-602-150-5X02",
+      "deskripsi": "Part tambahan dari workshop otomatis masuk katalog: REAR PANEL",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-20T11:05:45.843Z"
+    },
+    {
+      "id": 779,
+      "aksi": "CETAK_ULANG_PASANG",
+      "entitas": "service_request_part",
+      "entitasId": "PMS-20261020-1448",
+      "deskripsi": "Cetak ulang dokumen pemasangan PMS-20261020-1448: 16 item",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T07:37:34.242Z"
+    },
+    {
+      "id": 778,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-20T07-03-57.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-20T07:03:57.877Z"
+    },
+    {
+      "id": 777,
+      "aksi": "PASANG_PART",
+      "entitas": "service_request_part",
+      "entitasId": "items:3",
+      "deskripsi": "Pemasangan part disahkan: 3 item · 1 toko · SVC-2610-0016, SVC-2610-0017, SVC-2610-0018",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T06:57:02.446Z"
+    },
+    {
+      "id": 776,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T06:53:36.431Z"
+    },
+    {
+      "id": 775,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-20T06:53:16.873Z"
+    },
+    {
+      "id": 774,
+      "aksi": "PASANG_PART",
+      "entitas": "service_request_part",
+      "entitasId": "items:16",
+      "deskripsi": "Pemasangan part disahkan: 16 item · 1 toko · SVC-2610-0020, SVC-2610-0022, SVC-2610-0023, SVC-2610-0025, SVC-2610-0026, …",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T06:48:41.922Z"
+    },
+    {
+      "id": 773,
+      "aksi": "CETAK_SJ_REQUEST",
+      "entitas": "surat_jalan_request",
+      "entitasId": "SJR-20261020-0003",
+      "deskripsi": "Surat jalan request part: 28 tiket · 27 item · 27 pcs",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T06:30:24.230Z"
+    },
+    {
+      "id": 772,
+      "aksi": "CETAK_SJ_REQUEST",
+      "entitas": "surat_jalan_request",
+      "entitasId": "SJR-20261020-0002",
+      "deskripsi": "Surat jalan request part: 28 tiket · 27 item · 27 pcs",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T06:29:21.930Z"
+    },
+    {
+      "id": 771,
+      "aksi": "CETAK_SJ_REQUEST",
+      "entitas": "surat_jalan_request",
+      "entitasId": "SJR-20261020-0001",
+      "deskripsi": "Surat jalan request part: 28 tiket · 27 item · 27 pcs",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-20T06:16:01.046Z"
+    },
     {
       "id": 770,
       "aksi": "BACKUP_DATA",
@@ -12589,6 +14451,36 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 22,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 439,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-22T10-59-56.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-22T10:59:56.995Z"
+    },
+    {
+      "id": 21,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 437,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-21T10-59-55.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-21T10:59:55.381Z"
+    },
+    {
+      "id": 20,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 414,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-20T07-03-57.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-20T07:03:57.864Z"
+    },
     {
       "id": 19,
       "status": "LOCAL",
