@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T12:03:31.414Z",
+  "generatedAt": "2026-10-22T12:04:47.487Z",
   "masterToko": [
     {
       "id": 216,
@@ -2733,6 +2733,19 @@
       "statusGaransi": "GARANSI",
       "tglPembelian": null,
       "createdAt": "2026-10-22T00:00:00.000Z"
+    },
+    {
+      "id": 240,
+      "serialNumber": "",
+      "modelUnit": "TES-NOTIF",
+      "merk": "",
+      "nama": "Uji Notifikasi Grup",
+      "kerusakanAwal": "Pemeriksaan fitur notifikasi",
+      "tokoId": null,
+      "customerId": 27,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-10-22T12:04:47.466Z"
     },
     {
       "id": 199,
@@ -8478,6 +8491,11 @@
       "nilai": "CV ERACOOL TEKNIK SOLUTION"
     },
     {
+      "id": 175,
+      "kunci": "notifikasi_gateway_aktif",
+      "nilai": "true"
+    },
+    {
       "id": 58,
       "kunci": "partner_produsen",
       "nilai": "PT. BHAKTI IDOLA TAMA"
@@ -8514,6 +8532,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 888,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "",
+      "deskripsi": "Unit baru teregistrasi: Uji Notifikasi Grup (GARANSI) — diagnosa awal kerusakan tercatat",
+      "aktor": "Uji Otomatis",
+      "createdAt": "2026-10-22T12:04:47.472Z"
+    },
     {
       "id": 885,
       "aksi": "BACKUP_DATA",
