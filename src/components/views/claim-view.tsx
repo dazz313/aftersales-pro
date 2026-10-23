@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, formatRupiah, formatTanggal, type ServiceTicket } from '@/lib/api'
+import type { NotaData } from '@/lib/nota'
+import NotaKlaimDialog from '@/components/nota/nota-klaim-dialog'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
-import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Wand2 } from 'lucide-react'
+import { FileSpreadsheet, Send, DollarSign, FileCheck2, Wallet, CircleCheck, Wand2, FileText } from 'lucide-react'
 import SuratJalanDialog from '@/components/surat-jalan-dialog'
 import KodeSparepart from '@/components/kode-sparepart'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
@@ -28,7 +30,7 @@ const TAB_STYLES: Record<string, string> = {
 export default function ClaimView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role, navIntent, clearNavIntent } = useAppStore()
+  const { role, navIntent, clearNavIntent, navigateTo } = useAppStore()
   const [exporting, setExporting] = useState(false)
   // Draft surat jalan terisi otomatis (unit berkode+nama part) — tanpa centang manual
   const [sjTickets, setSjTickets] = useState<ServiceTicket[]>([])
@@ -108,6 +110,21 @@ export default function ClaimView() {
     a.remove()
     setTimeout(() => setExporting(false), 1500)
     toast({ title: 'Export Excel dimulai', description: 'File .xlsx rekap klaim sesuai templat produsen sedang diunduh.' })
+  }
+
+  // ===== NOTA SERVIS BASS: saat ajukan klaim, duplikasi nota terisi data muncul =====
+  const [notaKlaim, setNotaKlaim] = useState<{ nota: NotaData; tiket: ServiceTicket } | null>(null)
+  const bukaNotaKlaim = async (t: ServiceTicket) => {
+    try {
+      const n = await postJson<NotaData & { dibuatBaru?: boolean }>('/api/nota/dari-tiket', { noTiket: t.noTiket, cariBuat: true })
+      setNotaKlaim({ nota: n, tiket: t })
+      toast({
+        title: n.dibuatBaru ? 'Nota klaim dibuat' : 'Nota klaim tiket ini dibuka ulang',
+        description: `Nota BASS ${n.nomorBass} terisi otomatis dari data tiket — boleh diedit manual.`,
+      })
+    } catch (e) {
+      toast({ title: 'Nota gagal dibuat', description: (e as Error).message, variant: 'destructive' })
+    }
   }
 
   // ===== Draft otomatis: unit yang sudah input kode+nama part & belum terkirim =====
@@ -205,9 +222,21 @@ export default function ClaimView() {
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1.5">
                     {t.statusKlaimProdusen === 'DRAFT' && (
-                      <Button size="sm" className="h-7 bg-amber-600 px-2 text-[11px] hover:bg-amber-700"
-                        onClick={() => aksiMutation.mutate({ id: t.id, aksi: 'SUBMIT_CLAIM' })}>
-                        <Send className="mr-1 h-3 w-3" /> Ajukan
+                      <>
+                        <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]"
+                          onClick={() => bukaNotaKlaim(t)} title={'Duplikasi nota "SERVICE CENTER" terisi data dari tiket'}>
+                          <FileText className="mr-1 h-3 w-3" /> Nota BASS
+                        </Button>
+                        <Button size="sm" className="h-7 bg-amber-600 px-2 text-[11px] hover:bg-amber-700"
+                          onClick={() => bukaNotaKlaim(t)}>
+                          <Send className="mr-1 h-3 w-3" /> Ajukan
+                        </Button>
+                      </>
+                    )}
+                    {t.statusKlaimProdusen !== 'DRAFT' && (
+                      <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]"
+                        onClick={() => bukaNotaKlaim(t)} title="Buka nota klaim tiket ini">
+                        <FileText className="mr-1 h-3 w-3" /> Nota BASS
                       </Button>
                     )}
                     {t.statusKlaimProdusen === 'SUBMITTED' && (
@@ -320,6 +349,27 @@ export default function ClaimView() {
       </Card>
 
       <SuratJalanDialog open={sjOpen} onOpenChange={setSjOpen} tickets={sjTickets} />
+
+      {/* Duplikasi Nota Servis BASS — muncul saat tombol Ajukan / Nota BASS ditekan */}
+      {notaKlaim && (
+        <NotaKlaimDialog
+          nota={notaKlaim.nota}
+          tiket={notaKlaim.tiket}
+          onClose={() => setNotaKlaim(null)}
+          onEditManual={() => {
+            const id = notaKlaim.nota.id
+            setNotaKlaim(null)
+            if (id) navigateTo('nota', { notaId: id })
+          }}
+          onSubmitClaim={() => {
+            aksiMutation.mutate({ id: notaKlaim.tiket.id, aksi: 'SUBMIT_CLAIM' })
+            // Klaim sudah seluruhnya diajukan → tutup dialog setelah toast.
+            setTimeout(() => setNotaKlaim(null), 500)
+          }}
+          sedangAju={aksiMutation.isPending}
+          sudahDiajukan={notaKlaim.tiket.statusKlaimProdusen !== 'DRAFT'}
+        />
+      )}
     </div>
   )
 }

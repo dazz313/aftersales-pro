@@ -120,3 +120,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* == Nota Servis BASS — cetak PDF A5 landscape ================================= \
+   Elemen .nota-printonly disorot saat print; semua UI lain disembunyikan         \
+   (visibility) sehingga hasil PDF identik dengan pratinjau nota.                 \
+================================================================================ */
+.nota-printonly { display: none; }
+
+@media print {
+  @page { size: A5 landscape; margin: 4mm; }
+  html, body { background: #fff !important; }
+  body * { visibility: hidden !important; box-shadow: none !important; }
+  .nota-printroot, .nota-printroot * { visibility: visible !important; }
+  .nota-printroot[data-print='off'] { display: none !important; }
+  .nota-printroot { position: absolute; top: 0; left: 0; z-index: 2147483000; }
+  .nota-printonly { display: block !important; position: relative; top: 0; left: 0; }
+}

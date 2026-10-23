@@ -569,3 +569,68 @@ model NotifikasiBaca {
   @@unique([notifikasiId, penggunaId])
   @@index([penggunaId])
 }
+
+// ==========================================
+// Nota Servis BASS (nota + nota_item) — nota servis "SERVICE CENTER"
+// persis seperti nota kertas asli: header statis (logo montir, kontak CSO),
+// kotak Indoor/Outdoor + nomor BASS 6 digit, panel data konsumen (kiri),
+// panel teknis (kanan), tabel suku cadang maks 7 baris, ringkasan biaya,
+// dan 3 tanda tangan (customer serah, teknisi, customer ambil).
+// Tanggal/jam disimpan sebagai string "YYYY-MM-DD"/"HH:MM" agar setia
+// dengan input form & sorting leksikografis tetap urut waktu.
+// ==========================================
+model Nota {
+  id                Int        @id @default(autoincrement())
+  nomorBass         String     @unique @map("nomor_bass") // angka 6 digit (digit) — unik
+  lokasi            String? // Indoor | Outdoor (dilingkari di nota)
+  tanggal           String? // "YYYY-MM-DD" — tampil "D-M-YYYY"
+  jamMasuk          String? @map("jam_masuk")
+  nama              String
+  alamat            String?
+  telp              String?
+  hp                String?
+  merk              String?
+  lp                String? // LP (L-Pil/eks cerc) — teks bebas sesuai nota
+  model             String?
+  noSeri            String? @map("no_seri")
+  tglBeli           String? @map("tgl_beli")
+  garansi           String? // Ya | Tdk (dilingkari di nota)
+  tglSelesai        String? @map("tgl_selesai")
+  jamSelesai        String? @map("jam_selesai")
+  pengaduan         String?
+  kelengkapan       String?
+  penyebab          String?
+  perbaikan         String?
+  biayaService      Float      @default(0) @map("biaya_service")
+  biayaTransportasi Float      @default(0) @map("biaya_transportasi")
+  ppnPersen         Float      @default(0) @map("ppn_persen")
+  total             Float      @default(0) // Total Biaya Service (disimpan & bisa di-override)
+  tglAmbil          String? @map("tgl_ambil")
+  ttdCustomer1      String? @map("ttd_customer1") // dataURL PNG — Diserahkan oleh (customer)
+  ttdTeknisi        String? @map("ttd_teknisi")
+  ttdCustomer2      String? @map("ttd_customer2") // Diambil oleh (customer)
+  namaCustomer1     String? @map("nama_customer1")
+  namaTeknisi       String? @map("nama_teknisi")
+  namaCustomer2     String? @map("nama_customer2")
+  status            String     @default("draft") // draft | selesai | diambil
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  items             NotaItem[]
+
+  @@index([status])
+  @@index([nama])
+  @@index([tanggal])
+  @@index([createdAt])
+}
+
+model NotaItem {
+  id     Int    @id @default(autoincrement())
+  notaId Int    @map("nota_id")
+  kode   String?
+  nama   String?
+  harga  Float  @default(0) // harga satuan (Rp)
+  qty    Int    @default(1)
+  nota   Nota   @relation(fields: [notaId], references: [id], onDelete: Cascade)
+
+  @@index([notaId])
+}

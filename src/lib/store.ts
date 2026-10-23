@@ -13,6 +13,7 @@ export type ViewKey =
   | 'lacak'
   | 'master'
   | 'claim'
+  | 'nota'
   | 'settings'
 
 export type RoleKey = 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN'
@@ -34,6 +35,8 @@ export interface NavIntent {
   masterTab?: 'toko' | 'customer' | 'unit' | 'karyawan'
   /** Klik "cek" kode sparepart di view lain → Lacak Sparepart membaca ini sebagai kata kunci. */
   lacakQuery?: string
+  /** Buka editor Nota Servis BASS langsung ke nota tertentu (dari tombol nota/klaim). */
+  notaId?: number
   ts: number
 }
 

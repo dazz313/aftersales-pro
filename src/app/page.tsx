@@ -13,6 +13,7 @@ import {
   SearchCheck,
   Database,
   FileSpreadsheet,
+  FileText,
   Settings2,
   Menu,
   WrenchIcon,
@@ -42,6 +43,7 @@ const InventoryView = dynamic(() => import('@/components/views/inventory-view'),
 const SparepartFinderView = dynamic(() => import('@/components/views/sparepart-finder-view'), { ssr: false })
 const MasterDataView = dynamic(() => import('@/components/views/master-data-view'), { ssr: false })
 const ClaimView = dynamic(() => import('@/components/views/claim-view'), { ssr: false })
+const NotaView = dynamic(() => import('@/components/views/nota-view'), { ssr: false })
 const SettingsView = dynamic(() => import('@/components/views/settings-view'), { ssr: false })
 import AutoBackupWatcher from '@/components/auto-backup-watcher'
 import CompanyLogo from '@/components/company-logo'
@@ -63,6 +65,7 @@ const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ clas
   { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
   { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
+  { key: 'nota', label: 'Nota Servis BASS', icon: FileText, desc: 'Nota "SERVICE CENTER" — isi, duplikat, cetak' },
   { key: 'lacak', label: 'Lacak Sparepart', icon: SearchCheck, desc: 'Cari part dari riwayat kerusakan' },
   { key: 'ai', label: 'Analisa AI', icon: Sparkles, desc: 'Ringkasan, jadwal & part via AI' },
   { key: 'inbox', label: 'Inbox', icon: Inbox, desc: 'Penampungan data Telegram' },
@@ -435,6 +438,7 @@ export default function Home() {
           {view === 'lacak' && <SparepartFinderView />}
           {view === 'master' && <MasterDataView />}
           {view === 'claim' && <ClaimView />}
+          {view === 'nota' && <NotaView />}
           {view === 'settings' && <SettingsView />}
         </main>
 

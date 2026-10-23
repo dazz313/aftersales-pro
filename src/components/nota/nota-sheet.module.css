@@ -1,0 +1,271 @@
+/* Nota Servis BASS — tampilan nota kertas "SERVICE CENTER" (rasio 936×690).
+   Font: Times New Roman utk label/isi, sans-serif tebal utk judul, monospaceDigital utk nomor BASS.
+   Semuakelas diprefix `ns` (scoped module). Cetak via aturan global di globals.css. */
+
+.nsSheet {
+  width: 936px;
+  height: 690px;
+  border: 2px solid #111;
+  background: #fff;
+  transform-origin: top left;
+  color: #111;
+  box-sizing: content-box;
+}
+
+.nsSheetInner {
+  width: 936px;
+  height: 690px;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+/* ===== Header ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 10px;
+  border-bottom: 1.5px solid #111;
+  padding-bottom: 4px;
+  min-height: 86px;
+}
+
+.headerKiri {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.logoBox {
+  width: 62px;
+  height: 62px;
+  flex: 0 0 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.logoBox img {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.headerTeks { min-width: 0; }
+
+.judul {
+  font-family: Arial, Verdana, sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: 1px;
+  line-height: 1.15;
+}
+
+.kontakLine { font-size: 9.5px; }
+
+.csoTitle {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 10.5px;
+  border-bottom: 1px solid #111;
+  padding-bottom: 1px;
+  margin: 1px 0;
+}
+
+.kotakKanan { width: 240px; flex: 0 0 240px; display: flex; flex-direction: column; gap: 6px; }
+
+.lokasiRow { display: flex; align-items: center; gap: 6px; font-size: 10px; }
+
+.lokasiLabel { font-weight: 700; }
+
+.lokasiOpt {
+  display: inline-block;
+  border-radius: 50%;
+  padding: 1px 8px 2px;
+  font-size: 9.5px;
+  color: #999;
+}
+
+.bassRow {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #111;
+  height: 56px;
+}
+
+.bassLabel {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-right: 1.5px solid #111;
+  font-family: Arial, Verdana, sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* Nomor BASS 6 digit — font monospace tebal seperti tampilan digital nota */
+.bassNomor {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', 'Courier', monospace;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 5px;
+}
+
+/* ===== Panel kiri (data konsumen) & kanan (teknis) ===== */
+.panel {
+  display: flex;
+  border-bottom: 1.5px solid #111;
+}
+
+.panelKiri {
+  width: 54%;
+  flex: 0 0 54%;
+  border-right: 1.5px solid #111;
+  padding: 3px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dataRow {
+  display: flex;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.dataRow > span { width: 76px; flex: 0 0 76px; }
+
+.dataRow > b { font-weight: 400; flex: 1; min-height: 13px; overflow: hidden; }
+
+.garansiOps { display: flex; gap: 10px; align-items: center; }
+
+.panelKanan {
+  width: 46%;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tekdo {
+  flex: 1;
+  padding: 3px 6px;
+  border-bottom: 1px solid #111;
+  overflow: hidden;
+}
+
+.tekdo:last-child { border-bottom: none; }
+
+.tekdoLabel { font-weight: 700; font-size: 9.5px; }
+
+.tekdoIsi {
+  font-size: 9.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 52px;
+  overflow: hidden;
+}
+
+/* ===== Tabel suku cadang ===== */
+.tabel {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 9.5px;
+}
+
+.tabel th,
+.tabel td {
+  border: 1px solid #111;
+  padding: 2px 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tabel th { text-align: center; font-weight: 700; background: #ececec; }
+
+/* ===== Tanda tangan + ringkasan biaya ===== */
+.bawah { display: flex; align-items: stretch; flex: 1; padding-top: 4px; }
+
+.ttdRow {
+  width: 63%;
+  flex: 0 0 63%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.ttdBloks { text-align: center; display: flex; flex-direction: column; }
+
+.ttdLabel { font-size: 8.5px; line-height: 1.15; min-height: 24px; }
+
+.ttdKotak { position: relative; height: 48px; display: flex; align-items: flex-end; justify-content: center; }
+
+.ttdImg { max-height: 46px; max-width: 100%; object-fit: contain; }
+
+.ttdGaris { position: absolute; bottom: 0; left: 0; right: 0; border-bottom: 1px solid #111; }
+
+.ttdNama { font-size: 9px; min-height: 12px; }
+
+.dataRowAmbil { margin-top: auto; padding-top: 4px; font-size: 10px; display: flex; gap: 6px; }
+
+.biayaBox {
+  width: 34%;
+  border: 1.5px solid #111;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+}
+
+.biayaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  border-bottom: 1px solid #111;
+  padding: 3px 6px;
+  font-size: 9.5px;
+}
+
+.biayaVal { font-weight: 700; white-space: nowrap; }
+
+.biayaRowTot {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 4px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: #ececec;
+}
+
+.biayaGaransi { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px 4px; font-weight: 700; font-size: 10.5px; }
+
+/* ===== Footer ===== */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid #111;
+  padding-top: 2px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+}
+
+/* Salinan layar tak dibutuhkan saat cetak — salinan .nota-printonly di globals.css yang tampil */
+@media print {
+  [class*='nsWrap'] { display: none !important; }
+}
