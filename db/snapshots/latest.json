@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T00:10:06.188Z",
+  "generatedAt": "2026-10-23T00:13:09.732Z",
   "masterToko": [
     {
       "id": 216,
@@ -3390,6 +3390,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-03T16:00:00.000Z"
+    },
+    {
+      "id": 247,
+      "serialNumber": "43050017846",
+      "modelUnit": "WDP-300",
+      "merk": "Miyako",
+      "nama": "dispenser",
+      "kerusakanAwal": "air tidak memompa",
+      "tokoId": null,
+      "customerId": 30,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": "2026-08-06T00:00:00.000Z",
+      "createdAt": "2026-10-23T00:00:00.000Z"
     },
     {
       "id": 141,
@@ -8565,6 +8578,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 906,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "43050017846",
+      "deskripsi": "Unit baru teregistrasi: dispenser (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-23T00:13:09.715Z"
+    },
     {
       "id": 905,
       "aksi": "CREATE_MASTER_CUSTOMER",
