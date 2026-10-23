@@ -267,5 +267,5 @@
 
 /* Salinan layar tak dibutuhkan saat cetak — salinan .nota-printonly di globals.css yang tampil */
 @media print {
-  [class*='nsWrap'] { display: none !important; }
+  .nsWrap { display: none !important; }
 }
