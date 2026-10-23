@@ -120,6 +120,10 @@ model UnitAsset {
   customer        MasterCustomer?  @relation(fields: [customerId], references: [id])
   serviceRequests ServiceRequest[]
   orderEmailParts OrderEmailPart[]
+
+  @@index([tokoId])
+  @@index([customerId])
+  @@index([serialNumber])
 }
 
 // ==========================================
@@ -136,6 +140,10 @@ model Kunjungan {
   catatanStokRusak String?
   toko             MasterToko @relation(fields: [tokoId], references: [id])
   teknisi          Pengguna   @relation(fields: [teknisiId], references: [id])
+
+  @@index([tokoId])
+  @@index([teknisiId])
+  @@index([tglKunjungan])
 }
 
 // ==========================================
@@ -193,6 +201,11 @@ model ServiceRequest {
   lampiranEmail       String?
   // Item kekurangan part (OrderEmailPart) yang menempuh alur email produsen
   orderEmailParts     OrderEmailPart[]
+
+  @@index([unitAssetId])
+  @@index([status])
+  @@index([tglTiket])
+  @@index([createdAt])
 }
 
 // ==========================================
@@ -223,6 +236,9 @@ model ServiceRequestPart {
   editedBy         String?
   serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
   sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
+
+  @@index([serviceRequestId])
+  @@index([sparepartId])
 }
 
 // ==========================================
@@ -265,6 +281,8 @@ model AuditLog {
   deskripsi String
   aktor     String   @default("SYSTEM")
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ==========================================
@@ -282,6 +300,8 @@ model WaMessage {
   pesan     String
   meta      String? // JSON: noTiket, aksi bot, dll
   createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ==========================================
@@ -373,6 +393,8 @@ model InboxItem {
   direviewOleh  String?
   direviewAt    DateTime?
   createdAt     DateTime  @default(now())
+
+  @@index([status, createdAt])
 }
 
 // ==========================================
@@ -406,6 +428,8 @@ model OrderEmailPart {
   // Tiket "REQUEST EMAIL" (kode service) yang terbit otomatis saat part kurang disimpan.
   serviceRequestId Int?
   service          ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+
+  @@index([serviceRequestId])
 }
 
 // ==========================================
@@ -460,6 +484,8 @@ model SuratJalanMasukItem {
   cocokPartId       Int? // MasterSparepart id bila kode terbaca di katalog
   alasan            String? // penjelasan singkat cara mencocokkan
   suratJalanMasuk   SuratJalanMasuk @relation(fields: [suratJalanMasukId], references: [id])
+
+  @@index([suratJalanMasukId])
 }
 
 // ==========================================
@@ -498,6 +524,8 @@ model SuratJalanRequestItem {
   serialNumber        String?
   modelUnit           String?
   suratJalanRequest   SuratJalanRequest @relation(fields: [suratJalanRequestId], references: [id])
+
+  @@index([suratJalanRequestId])
 }
 
 // ==========================================
