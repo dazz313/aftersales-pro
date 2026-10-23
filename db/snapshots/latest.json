@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T00:33:55.991Z",
+  "generatedAt": "2026-10-23T23:11:49.659Z",
   "masterToko": [
     {
       "id": 216,
@@ -8483,19 +8483,6 @@
       "wilayahKerja": "BONE",
       "aktif": true,
       "createdAt": "2026-10-14T03:41:36.776Z"
-    },
-    {
-      "id": 31,
-      "nama": "E2E Nota",
-      "email": "e2e-nota-temp@temp.local",
-      "username": "e2enota",
-      "kodeTeknisi": null,
-      "passwordHash": "***",
-      "role": "ADMIN_WORKSHOP",
-      "noWa": null,
-      "wilayahKerja": null,
-      "aktif": true,
-      "createdAt": "2026-10-23T00:33:55.134Z"
     }
   ],
   "pengaturan": [
@@ -8592,22 +8579,13 @@
   ],
   "auditLog": [
     {
-      "id": 917,
-      "aksi": "DELETE_NOTA",
-      "entitas": "nota",
-      "entitasId": "2",
-      "deskripsi": "Nota BASS 620490 (Toko Uji Nota) dihapus",
-      "aktor": "E2E Nota",
-      "createdAt": "2026-10-23T00:33:55.978Z"
-    },
-    {
-      "id": 916,
-      "aksi": "DELETE_NOTA",
-      "entitas": "nota",
-      "entitasId": "1",
-      "deskripsi": "Nota BASS 620489 (Toko Uji Nota) dihapus",
-      "aktor": "E2E Nota",
-      "createdAt": "2026-10-23T00:33:55.949Z"
+      "id": 918,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-23T23-11-49.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-23T23:11:49.631Z"
     },
     {
       "id": 915,
@@ -8626,15 +8604,6 @@
       "deskripsi": "Nota BASS 620491 dibuat dari klaim tiket SVC-2607-0006 |T:SVC-2607-0006| — Toko Sentral Elektric",
       "aktor": "E2E Nota",
       "createdAt": "2026-10-23T00:33:55.848Z"
-    },
-    {
-      "id": 913,
-      "aksi": "DUPLICATE_NOTA",
-      "entitas": "nota",
-      "entitasId": "2",
-      "deskripsi": "Nota BASS 620490 diduplikat dari nota 620489 (Toko Uji Nota)",
-      "aktor": "E2E Nota",
-      "createdAt": "2026-10-23T00:33:55.789Z"
     },
     {
       "id": 912,
@@ -8662,24 +8631,6 @@
       "deskripsi": "Nota BASS 620489 diubah — status draft → draft",
       "aktor": "E2E Nota",
       "createdAt": "2026-10-23T00:33:55.608Z"
-    },
-    {
-      "id": 909,
-      "aksi": "CREATE_NOTA",
-      "entitas": "nota",
-      "entitasId": "1",
-      "deskripsi": "Nota BASS 620489 dibuat — Toko Uji Nota",
-      "aktor": "E2E Nota",
-      "createdAt": "2026-10-23T00:33:55.503Z"
-    },
-    {
-      "id": 908,
-      "aksi": "LOGIN",
-      "entitas": "auth",
-      "entitasId": "e2e-nota-temp@temp.local",
-      "deskripsi": "Login berhasil: E2E Nota (ADMIN_WORKSHOP)",
-      "aktor": "e2e-nota-temp@temp.local",
-      "createdAt": "2026-10-23T00:33:55.454Z"
     },
     {
       "id": 907,
@@ -14722,6 +14673,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 23,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 444,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-23T23-11-49.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-23T23:11:49.592Z"
+    },
     {
       "id": 22,
       "status": "LOCAL",
