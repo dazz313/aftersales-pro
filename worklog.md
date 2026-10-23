@@ -1,6 +1,34 @@
 # Worklog
 
 ---
+Task ID: 43
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Fitur baru "Nota Servis BASS" — nota servis "SERVICE CENTER" (mobile-first, live preview, cetak A5 landscape, duplikasi nota terisi saat ajukan klaim, bisa edit manual)
+
+Work Log:
+- MODEL DB sesuai prompt (prisma/schema.prisma + prisma db push saat PM2 stop, tanpa data loss): tabel `nota` (kolom snake_case persis: nomor_bass unik, lokasi, tanggal, jam_masuk, nama, alamat, telp, hp, merk, lp, model, no_seri, tgl_beli, garansi, tgl_selesai, jam_selesai, pengaduan, kelengkapan, penyebab, perbaikan, biaya_service, biaya_transportasi, ppn_persen, total, tgl_ambil, ttd_customer1, ttd_teknisi, ttd_customer2, nama_customer1/2, nama_teknisi, status draft|selesai|diambil, created_at, updated_at) + tabel `nota_item` (nota_id, kode, nama, harga, qty). Tanggal/jam = string "YYYY-MM-DD"/"HH:MM" (input native, sort leksikografis, tampil "D-M-YYYY"). Index: status, nama, tanggal, createdAt, notaId.
+- API (semua guard requireActiveSession + logAudit + autoGitBackup):
+  • GET/POST `/api/nota` — daftar (?q nomor/nama/merk/model/noseri &status &dari &sampai) + buat (validasi nomor 6 digit & unik → 409/400).
+  • GET/PATCH/DELETE `/api/nota/[id]` — PATCH = autosave & edit; replace items; VALIDASI status selesai/diambil BUTUH Nama, Merk, Model, Pengaduan (400 bila kosong). `total` bisa di-override manual (disimpan); bila tidak dikirim tetap.
+  • POST `/api/nota/[id]/duplikat` — salin nota lama → nota baru: nomor BASS otomatis (maks+1 pad 6 digit), tanggal/jam ke NOW, ttd & tgl selesai/ambil & status direset draft, items tersalin.
+  • POST `/api/nota/dari-tiket` { noTiket, cariBuat } — "PADA SAAT AJUKAN KLAIM MUNCUL DUPLIKASI NOTA YG SUDAH TERISI DATA": prefilled dari ServiceRequest+UnitAsset (nama toko/customer, alamat+kontak, merk, model, no seri, tgl beli, garansi Ya/Tdk dari statusGaransi, tglTiket→tanggal, createdAt→jam masuk, tglFinish→tgl/jam selesai, deskripsiKerusakan→pengaduan, items dari parts: kode/nama part + harga=hargaKlaim). cariBuat=true → idempoten (periksa marker `|T:noTiket|` di audit nota CREATE → buka ulang nota yang sama, TIDAK buat duplikat baru tiap klik).
+- UI (semua Indonesia, mobile-first, tombol besar):
+  • `src/components/nota/nota-sheet.tsx` + module CSS — tampilan nota kertas 936×690 landscape: header (placeholder logo montir /public/nota-logo.png fallback 🔧, judul sans-serif tebal "SERVICE CENTER", telp, "LAYANAN KONSUMEN NASIONAL", telp/bebas/WA/email CSO), kotak kanan (Indoor/Outdoor dilingkari + label BASS + nomor font monospace tebal), panel kiri 54% data konsumen 14 baris (garansi Ya/Tdk dilingkari), panel kanan teknis (Pengaduan/Kelengkapan/Penyebab/Perbaikan dipisah garis), tabel suku cadang (kolom 22/36/14/7/18%, maks 7 baris + placeholder kosong), bawah 3 blok ttd + Tgl Ambil, kotak 6 baris biaya (Sub Total, PPN %, Total; garansi Ya+total 0 → banner "BIAYA DITANGGUNG GARANSI"), footer "* Lembar Putih : Bukti Pembayaran" + "Lembar N dari 2". Live preview discalakan mengikuti lebar kontainer (ResizeObserver) → tampil setia di HP.
+  • Cetak/PDF: salinan DOM `.nota-printonly` (scale 0.775) + @page A5 landscape (globals.css) → window.print() → PDF IDENTIK dengan pratinjau; pilihan Lembar 1/2 dari 2.
+  • `src/components/nota/signature-pad.tsx` — canvas pointer (mouse+HP), simpan dataURL PNG, tombol Hapus, tampil ulang saat edit.
+  • `src/components/views/nota-view.tsx` — daftar kartu (nomor BASS mono, badge status, filter SEMUA/draft/selesai/diambil + QuickSearch) + editor: form dibagi Header/Data Konsumen & Unit/Pengaduan & Teknis/Suku Cadang (add/del maks 7)/Ringkasan Biaya/+Tanda Tangan; MERK datalist (10 merk + ketik bebas); autosave debounced 1.2s (indikator "menyimpan…/tersimpan ✓"); tombol Simpan/Tandai Selesai (validasi wajib)/Tandai Diambil; duplikat & hapus; live preview sticky + pilih lembar + Cetak/PDF. Nav intent `notaId` membuka editor langsung.
+  • `src/components/nota/nota-klaim-dialog.tsx` — dialog klaim: preview nota terisi, pilih lembar, Cetak/PDF, "Edit Manual" (navigateTo('nota',{notaId})), tombol "Lanjut: Ajukan Klaim" (aksi SUBMIT_CLAIM lama tetap dipakai).
+  • claim-view: tombol "Nota BASS" (semua baris klaim) & tombol "Ajukan" kini membuka dialog duplikasi nota (cari-buat) sebelum klaim diajukan — prompt literal terpenuhi.
+  • page.tsx NAV_ITEMS + view 'nota' (lazy), store ViewKey 'nota' + NavIntent.notaId.
+- Build/Turbopack: CSS module tak menerima selector `[class*=…]` (bukan "pure") → ganti class lokal; build siap standalone; PM2 online (pid 11168).
+- Verifikasi: tsc 0; eslint 0; E2E 23 cek LULUS (post-build, server hidup): guard 401 tanpa sesi; POST/GET list/PATCH/DELETE; nomor salah→400, duplikat→409; PATCH autosave & total override manual tersimpan; status selesai ditolak bila pengaduan kosong; duplikat (nomor baru, items salin, ttd reset, tanggal NOW); dari-tiket prefilled (Toko Sentral Elektric dari SVC-2607-0006) + cariBuat idempoten + tanpa cariBuat = nota baru; GET / 200. Seluruh data uji & user temp e2e dihapus (DB nota kosong kembali); audit uji begini juga dibersihkan.
+- Git: commit `52b2056` (fitur). Rollback: revert 1 komit + `prisma db push` bila mau buang tabel (tidak dianjurkan).
+
+Stage Summary:
+- Fitur "Nota Servis BASS" lengkap: isi → autosave draft → tandai selesai (validasi) → tanda tangan → diambil → cetak A5 landscape persis pratinjau (Lembar 1/2 dari 2) → database nota/nota_item → daftar+cari+filter → duplikat/edit.
+- Integrasi klaim: saat menekan Ajukan Klaim, duplikasi nota yang SUDAH TERISI DARI DATA TIKET muncul — bisa dicetak, deadited manual (navig ke view Nota), dan klaim tetap diajukan; tidak ada aplikasi terpisah (semuanya di dalam AfterSales Pro).
+
+---
 Task ID: 42
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Lakukan saja" — bersihkan 19 vulnerability npm audit, migrasi middleware→proxy, indeks DB (efisiensi READ)
