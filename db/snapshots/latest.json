@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T00:13:09.732Z",
+  "generatedAt": "2026-10-23T00:13:56.092Z",
   "masterToko": [
     {
       "id": 216,
@@ -4753,13 +4753,13 @@
       "fotoNotaStempel": "nota-stempel-SVC-2607-0005.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
+      "statusKlaimProdusen": "SUBMITTED",
+      "tglKlaim": "2026-10-23T00:13:56.074Z",
       "biayaJasa": 0,
       "tglFinish": "2026-10-19T00:17:07.919Z",
       "tglTiket": "2026-07-30T00:00:00.000Z",
       "createdAt": "2026-10-18T11:45:21.502Z",
-      "updatedAt": "2026-10-19T00:17:07.922Z",
+      "updatedAt": "2026-10-23T00:13:56.075Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8578,6 +8578,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 907,
+      "aksi": "SUBMIT_CLAIM",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0005",
+      "deskripsi": "Klaim diverifikasi & diajukan ke produsen (DRAFT → SUBMITTED)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-23T00:13:56.081Z"
+    },
     {
       "id": 906,
       "aksi": "CREATE_UNIT_ASSET",
