@@ -1,6 +1,33 @@
 # Worklog
 
 ---
+Task ID: 42
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Lakukan saja" — bersihkan 19 vulnerability npm audit, migrasi middleware→proxy, indeks DB (efisiensi READ)
+
+Work Log:
+- BASELINE npm audit: 19 vuln (5 moderate/13 high/1 critical). Pemetaan & tindakan per akar:
+  • next-auth, react-syntax-highlighter, @mdxeditor/editor → TIDAK dipakai sama sekali (0 import di seluruh repo; sisa scaffold) → npm uninstall → kutranyo树下 188 dependensi hilang, js-yaml & prismjs(& refractor) kanal hilang.
+  • nodemailer ^7.0.13 (SMTP command injection dlsb.) → TERPAKAI src/lib/order-email.ts (dynamic import; createTransport+sendMail — API stabil ke v10) → bump nodemailer@^10.2.1 + @types/nodemailer@latest.
+  • sharp ^0.34.3 (libvips/libheif/librsvg CVE) → next image optimizer internal (0 import src) → bump sharp@^0.35.5.
+  • dompurify (CRITICAL, SAFE_FOR_TEMPLATES bypass) + ip-address (moderate) → dibersihkan npm audit fix NON-force.
+  • deepmerge-ts (high, via @prisma/config prisma 6.19.3) → override package.json "deepmerge-ts": "^8.0.0" — prisma -v/generate/db push/laporan E2E jalan normal dengan override (proxy upgrade major prisma 6→8 TIDAK dilakukan — out of scope).
+  • braces (high — advisory 2026 no-fix upstream: versi terbaru braces 3.0.3 tetap ditandai) → override "^3.0.3" memastikan VERSI TERBARU; kanalnya DEV-ONLY (eslint-config-next→plugin→fast-glob→micromatch; tidak masuk bundle produksi, tidak dieksekusi runtime) → risiko terdokumentasi-diterima tunggal; force saran npm (turunkan eslint-config ke 14.2.35 = DOWNGRADE major) TIDAK diikuti.
+  • xlsx ^0.18.5 (prototype pollution + ReDoS; NO fix di npm registry) → TERPAKAI 5 route (4 export tulis + 1 XLSX.read buffer di surat-jalan.ts mem-parse Excel produsen = input tidak terpercaya!) → diganti ke build resmi terpatch dari CDN SheetJS: `npm install https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz` (0.20.3 = versi konvensional saat ini per docs.sheetjs.com; API sama, runtime bukti "xlsx 0.20.3").
+  HASIL: 19 vuln → 0 di runtime; hanya 1 akar dev-only (braces, no upstream fix) tersisa; 1026 → 1018 paket.
+- MIGRASI middleware→proxy: codemod resmi peringatkan stash — sikap: commit rapi b9fc67c (deps+indeks) dulu. `npx --yes @next/codemod@canary middleware-to-proxy .` → src/middleware.ts → src/proxy.ts + fungsi middleware→export proxy (logika publik/401/redirect UTUH). Peringatan deprecation di build hilang habit.
+- INDEKS DB (schema.prisma, prisma db push tanpa destructive change saat PM2 stop): ServiceRequest(unitAssetId/status/tglTiket/createdAt), UnitAsset(tokoId/customerId/serialNumber), Kunjungan(tokoId/teknisiId/tglKunjungan), ServiceRequestPart(serviceRequestId/sparepartId), OrderEmailPart(serviceRequestId), SuratJalanMasukItem(suratJalanMasukId), SuratJalanRequestItem(suratJalanRequestId), AuditLog(createdAt), WaMessage(createdAt), InboxItem(status,createdAt) — FK join & filter listing & delete retensi sudah terindeks. CATATAN efisiensi READ Tambahan bila data memberanak: pagination GET /api/service & /api/unit butuh perubahan UI (KPI menghitung client-side) — belum dipasang sekarang, index terpasang sebagai langkah aman pertama.
+- Deploy: pm2 stop → prisma db push + generate → npm run build (standalone; backup DB custom-2026-10-23-*; TIDAK ada deprecation middleware lagu-lagu) → pm2 start online (pid 8704).
+- Verifikasi: tsc 0; eslint (proxy & file tersentuh) 0; prisma db push "database is now in sync". E2E SIKLUS (user admin temp dihapus habis + audit uji 0 sisa): /api/notifikasi TANPA sesi → 401 (guard PROXY membuktikan diri ✓); login 200; /api/notifikasi 200 (7 item); /api/pending/export 200 (PDF 137 KB — salah satu endpoint export jalan); /api/alerts 200 (total=123); `node -e require('xlsx')` → "xlsx runtime: 0.20.3" ✓.
+- Git: b9fc67c (audit-deps + indeks), bd687fc (migrasi proxy). Rollback: revert kedua komit.
+
+Stage Summary:
+- Keamanan dependency bersih: 19 vuln → 0 runtime (sisa 1 advisory dev-only tanpa fix upstream, versi terbaru sudah dipakai); 3 paket scaffold tak-dipakai dibuang; nodemailer v10 & sharp 0.35 & xlsx SheetJS CDN 0.20.3 (patch prototype pollution &amp; ReDoS — penting: file Excel dari produsen diparse server)
+- Konvensi Next 16: middleware → proxy selesai (peringatan deprecation hilang), guard auth terbukti 401
+- DB siap tumbuh: 16 indeks baru di tabel panas (join FK, listing, retensi) tanpa perubahan data
+- Semua diuji E2E lewat server produksi hidup; PM2 online
+
+---
 Task ID: 41
 Agent: GLM-5.3-Flash Free (opencode)
 Task: Apply upgrade Next.js 16.4.2 ke produksi (approval user) + verifikasi penuh
