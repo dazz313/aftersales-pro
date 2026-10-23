@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T00:13:56.092Z",
+  "generatedAt": "2026-10-23T00:33:55.530Z",
   "masterToko": [
     {
       "id": 216,
@@ -8483,6 +8483,19 @@
       "wilayahKerja": "BONE",
       "aktif": true,
       "createdAt": "2026-10-14T03:41:36.776Z"
+    },
+    {
+      "id": 31,
+      "nama": "E2E Nota",
+      "email": "e2e-nota-temp@temp.local",
+      "username": "e2enota",
+      "kodeTeknisi": null,
+      "passwordHash": "***",
+      "role": "ADMIN_WORKSHOP",
+      "noWa": null,
+      "wilayahKerja": null,
+      "aktif": true,
+      "createdAt": "2026-10-23T00:33:55.134Z"
     }
   ],
   "pengaturan": [
@@ -8578,6 +8591,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 909,
+      "aksi": "CREATE_NOTA",
+      "entitas": "nota",
+      "entitasId": "1",
+      "deskripsi": "Nota BASS 620489 dibuat — Toko Uji Nota",
+      "aktor": "E2E Nota",
+      "createdAt": "2026-10-23T00:33:55.503Z"
+    },
+    {
+      "id": 908,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "e2e-nota-temp@temp.local",
+      "deskripsi": "Login berhasil: E2E Nota (ADMIN_WORKSHOP)",
+      "aktor": "e2e-nota-temp@temp.local",
+      "createdAt": "2026-10-23T00:33:55.454Z"
+    },
     {
       "id": 907,
       "aksi": "SUBMIT_CLAIM",
