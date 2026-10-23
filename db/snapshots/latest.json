@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T22:07:08.480Z",
+  "generatedAt": "2026-10-23T00:10:06.188Z",
   "masterToko": [
     {
       "id": 216,
@@ -784,6 +784,13 @@
       "noWa": "0853234234",
       "alamat": "WATAMPONE",
       "createdAt": "2026-10-13T22:43:52.572Z"
+    },
+    {
+      "id": 30,
+      "nama": "ardi ",
+      "noWa": "085",
+      "alamat": "Jl. MT.haryono",
+      "createdAt": "2026-10-23T00:10:05.851Z"
     }
   ],
   "masterSparepart": [
@@ -4112,8 +4119,8 @@
       "catatanStokRusak": null
     },
     {
-      "id": 42,
-      "tokoId": 245,
+      "id": 43,
+      "tokoId": 243,
       "teknisiId": 27,
       "tglKunjungan": "2026-10-12T11:06:00.000Z",
       "metodeCheckin": "MANUAL",
@@ -4122,8 +4129,8 @@
       "catatanStokRusak": null
     },
     {
-      "id": 43,
-      "tokoId": 243,
+      "id": 42,
+      "tokoId": 245,
       "teknisiId": 27,
       "tglKunjungan": "2026-10-12T11:06:00.000Z",
       "metodeCheckin": "MANUAL",
@@ -4292,8 +4299,8 @@
       "catatanStokRusak": null
     },
     {
-      "id": 64,
-      "tokoId": 263,
+      "id": 65,
+      "tokoId": 225,
       "teknisiId": 27,
       "tglKunjungan": "2026-09-29T04:49:00.000Z",
       "metodeCheckin": "MANUAL",
@@ -4302,8 +4309,8 @@
       "catatanStokRusak": null
     },
     {
-      "id": 65,
-      "tokoId": 225,
+      "id": 64,
+      "tokoId": 263,
       "teknisiId": 27,
       "tglKunjungan": "2026-09-29T04:49:00.000Z",
       "metodeCheckin": "MANUAL",
@@ -8463,19 +8470,6 @@
       "wilayahKerja": "BONE",
       "aktif": true,
       "createdAt": "2026-10-14T03:41:36.776Z"
-    },
-    {
-      "id": 28,
-      "nama": "E2E Verifikasi",
-      "email": "e2e-verifikasi-temp@temp.local",
-      "username": "e2everif",
-      "kodeTeknisi": null,
-      "passwordHash": "***",
-      "role": "ADMIN_WORKSHOP",
-      "noWa": null,
-      "wilayahKerja": null,
-      "aktif": true,
-      "createdAt": "2026-10-22T22:07:08.124Z"
     }
   ],
   "pengaturan": [
@@ -8572,31 +8566,22 @@
   ],
   "auditLog": [
     {
-      "id": 901,
-      "aksi": "UPDATE_PENGATURAN",
-      "entitas": "pengaturan",
-      "entitasId": null,
-      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, alert_kirim_tanggal, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, log_retensi_terakhir, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user, alert_lonceng_aktif",
-      "aktor": "VERIFIKASI-E2E",
-      "createdAt": "2026-10-22T22:07:08.454Z"
+      "id": 905,
+      "aksi": "CREATE_MASTER_CUSTOMER",
+      "entitas": "master_customer",
+      "entitasId": "30",
+      "deskripsi": "Customer baru: ardi ",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-23T00:10:06.157Z"
     },
     {
-      "id": 900,
-      "aksi": "UPDATE_PENGATURAN",
-      "entitas": "pengaturan",
+      "id": 904,
+      "aksi": "CETAK_LAPORAN_PENDING",
+      "entitas": "laporan_pending",
       "entitasId": null,
-      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, alert_kirim_tanggal, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, log_retensi_terakhir, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user, alert_lonceng_aktif",
-      "aktor": "VERIFIKASI-E2E",
-      "createdAt": "2026-10-22T22:07:08.297Z"
-    },
-    {
-      "id": 899,
-      "aksi": "LOGIN",
-      "entitas": "auth",
-      "entitasId": "e2e-verifikasi-temp@temp.local",
-      "deskripsi": "Login berhasil: E2E Verifikasi (ADMIN_WORKSHOP)",
-      "aktor": "e2e-verifikasi-temp@temp.local",
-      "createdAt": "2026-10-22T22:07:08.212Z"
+      "deskripsi": "Cetak laporan unit pending (PDF): 11 unit >24 jam tanpa kode+nama part",
+      "aktor": "E2E Siklus",
+      "createdAt": "2026-10-23T00:06:02.236Z"
     },
     {
       "id": 898,
