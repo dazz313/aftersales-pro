@@ -134,3 +134,21 @@ test.describe('Tampilan HP: tabel jadi kartu', () => {
     await expect(page.getByRole('dialog')).toBeVisible()
   })
 })
+
+test.describe('Dashboard hidup', () => {
+  test('kartu Ringkasan Progres & Tren tampil dan segmennya bisa drill-down', async ({ page }) => {
+    await page.goto('/login')
+    await page.fill('#email', ADMIN.email)
+    await page.fill('#password', ADMIN.password)
+    await page.click('button[type="submit"]')
+    await expect(page.getByRole('heading', { name: 'Dashboard KPI' })).toBeVisible()
+
+    await expect(page.getByText('Ringkasan Progres & Tren')).toBeVisible()
+    await expect(page.getByText(/tiket FINISH dari \d+ tiket/)).toBeVisible()
+    await expect(page.getByText('Tiket masuk 14 hari', { exact: true })).toBeVisible()
+
+    // Klik segmen batang "Finish" → lompat ke Proses Service.
+    await page.getByRole('button', { name: /Buka tiket Finish:/ }).click()
+    await expect(page.getByRole('heading', { name: 'Proses Service' })).toBeVisible()
+  })
+})

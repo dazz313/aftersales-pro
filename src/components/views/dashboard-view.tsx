@@ -211,10 +211,107 @@ export default function DashboardView() {
     { title: 'Total Tiket', value: String(dash.tiket.total), sub: `${dash.klaim.submitted} klaim SUBMITTED menunggu pembayaran`, icon: ClipboardList, tone: 'bg-teal-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
   ]
 
+  // ===== Ringkasan progres & tren (semua dihitung dari data /api/dashboard) =====
+  const totalTiket = dash.tiket.total
+  const pctFinish = totalTiket > 0 ? Math.round((dash.tiket.finish / totalTiket) * 100) : 0
+  const segmenProgres = [
+    { key: 'finish', label: 'Finish', jumlah: dash.tiket.finish, warna: 'bg-emerald-500', onClick: () => navigateTo('service', { serviceStatus: 'FINISH' }) },
+    { key: 'proses', label: 'Proses', jumlah: dash.tiket.proses, warna: 'bg-violet-500', onClick: () => navigateTo('service', { serviceStatus: 'PROSES' }) },
+    { key: 'request', label: 'Request', jumlah: dash.tiket.request, warna: 'bg-amber-500', onClick: () => navigateTo('service', { serviceStatus: 'REQUEST' }) },
+  ].map((s) => ({ ...s, persen: totalTiket > 0 ? (s.jumlah / totalTiket) * 100 : 0 }))
+
+  // Denyut tiket masuk: bandingkan 7 hari terakhir dengan 7 hari sebelumnya
+  const tren = dash.tren14hari ?? []
+  const pekanIni = tren.slice(-7).reduce((a, d) => a + d.tiket, 0)
+  const pekanLalu = tren.slice(0, Math.max(0, tren.length - 7)).reduce((a, d) => a + d.tiket, 0)
+  const deltaPct = pekanLalu > 0 ? Math.round(((pekanIni - pekanLalu) / pekanLalu) * 100) : null
+  const maxTiket = Math.max(1, ...tren.map((d) => d.tiket))
+  const alertKritis = alerts?.alerts.filter((a) => a.severity === 'critical').length ?? 0
+
   return (
     <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
       {/* Panel indikator — ringkas 9 kartu dalam 2 baris agar terpantau di halaman pertama */}
       <KpiGrid items={[...kpiUtama, ...kpiSekunder]} compact />
+
+      {/* Ringkasan progres + denyut tiket masuk — satu pandangan sebelum grafik detail */}
+      <Card>
+        <CardHeader className="flex-row items-start justify-between space-y-0">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardList className="h-4 w-4 text-emerald-600" /> Ringkasan Progres &amp; Tren
+            </CardTitle>
+            <CardDescription>Proporsi tiket selesai vs berjalan, dan denyut tiket masuk 14 hari terakhir — klik untuk membuka sumbernya</CardDescription>
+          </div>
+          {deltaPct !== null && (
+            <Badge
+              variant="outline"
+              className={cn('shrink-0 text-[10px]', deltaPct >= 0 ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-rose-300 bg-rose-50 text-rose-700')}
+              title={`Tiket masuk 7 hari terakhir: ${pekanIni} · 7 hari sebelumnya: ${pekanLalu}`}
+            >
+              {deltaPct > 0 ? '+' : ''}{deltaPct}% vs pekan lalu
+            </Badge>
+          )}
+        </CardHeader>
+        <CardContent className="grid gap-5 lg:grid-cols-2">
+          {/* Progres penyelesaian tiket */}
+          <div>
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-3xl font-extrabold tracking-tight text-slate-900">{pctFinish}%</span>
+              <span className="text-xs text-slate-500">tiket FINISH dari {totalTiket} tiket</span>
+            </div>
+            <div
+              className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-slate-100"
+              role="group"
+              aria-label={`Progres tiket: ${dash.tiket.finish} finish, ${dash.tiket.proses} proses, ${dash.tiket.request} request`}
+            >
+              {segmenProgres.filter((s) => s.jumlah > 0).map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={s.onClick}
+                  style={{ width: `${s.persen}%` }}
+                  title={`${s.label}: ${s.jumlah} tiket (${Math.round(s.persen)}%)`}
+                  aria-label={`Buka tiket ${s.label}: ${s.jumlah}`}
+                  className={cn('h-full transition-all hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500', s.warna)}
+                />
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs">
+              {segmenProgres.map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={s.onClick}
+                  className="flex items-center gap-1.5 rounded text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                >
+                  <span className={cn('h-2.5 w-2.5 rounded-sm', s.warna)} />
+                  {s.label} <span className="font-bold text-slate-900">{s.jumlah}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Denyut tiket masuk 14 hari (batang mini) */}
+          <div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Tiket masuk 14 hari</span>
+              <span className="text-xs text-slate-500"><span className="font-bold text-slate-900">{pekanIni}</span> dalam 7 hari terakhir</span>
+            </div>
+            <div className="mt-3 flex h-20 items-end gap-1">
+              {tren.map((d, i) => (
+                <div key={`${d.tanggal}-${i}`} className="group flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${d.tanggal}: ${d.tiket} tiket`}>
+                  <span className="text-[10px] font-semibold text-slate-400 opacity-0 transition-opacity group-hover:opacity-100">{d.tiket}</span>
+                  <div
+                    className={cn('w-full rounded-t', i >= tren.length - 7 ? 'bg-emerald-500' : 'bg-emerald-200')}
+                    style={{ height: `${Math.max(5, Math.round((d.tiket / maxTiket) * 100))}%` }}
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-slate-400">Batang hijau tua = 7 hari terakhir · sorot batang untuk melihat jumlah per hari</p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Grafik: 3 sejajar (Tren + Toko + Garansi) / Tren Model (2) + Brand */}
       <div className="grid gap-4 lg:grid-cols-3">
@@ -522,7 +619,9 @@ export default function DashboardView() {
                     <AlertTriangle className="h-4 w-4 text-amber-500" />
                     System Alert Engine
                     {alerts && alerts.total > 0 && (
-                      <Badge variant="destructive" className="ml-1">{alerts.total} aktif</Badge>
+                      <Badge variant="destructive" className="ml-1">
+                        {alerts.total} aktif{alertKritis > 0 ? ` · ${alertKritis} kritis` : ''}
+                      </Badge>
                     )}
                   </CardTitle>
                   <CardDescription>
