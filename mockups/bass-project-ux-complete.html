@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASS Project - Complete UX Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Theme Variables */
+        :root {
+            --bg-light: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-dark: #0f172a;
+            --card-light: rgba(255, 255, 255, 0.95);
+            --card-dark: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            --text-light: #1e293b;
+            --text-dark: #e2e8f0;
+            --border-light: #e2e8f0;
+            --border-dark: rgba(255, 255, 255, 0.1);
+        }
+
+        body.light-mode {
+            background: var(--bg-light);
+            color: var(--text-light);
+        }
+
+        body.dark-mode {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        /* Navigation Menu */
+        .nav-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 600px;
+            justify-content: flex-end;
+        }
+
+        .nav-btn {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        body.light-mode .nav-btn:not(.active) {
+            background: white;
+            color: #475569;
+        }
+
+        body.dark-mode .nav-btn:not(.active) {
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Page Container */
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 80px 20px 20px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .header {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+        }
+
+        body.light-mode .logo-text p {
+            color: #666;
+        }
+
+        body.dark-mode .logo-text p {
+            color: #94a3b8;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .notification-btn {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .notification-btn {
+            background: #f5f5f5;
+        }
+
+        body.dark-mode .notification-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notification-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f43f5e;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        body.light-mode .notification-badge {
+            border: 3px solid white;
+        }
+
+        body.dark-mode .notification-badge {
+            border: 3px solid #0f172a;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .user-profile {
+            background: #f5f5f5;
+        }
+
+        body.dark-mode .user-profile {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.light-mode .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        body.light-mode .stat-number {
+            color: #1e293b;
+        }
+
+        body.dark-mode .stat-number {
+            color: #f1f5f9;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        body.light-mode .stat-label {
+            color: #64748b;
+        }
+
+        body.dark-mode .stat-label {
+            color: #94a3b8;
+        }
+
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .stat-trend.up {
+            color: #16a34a;
+        }
+
+        .stat-trend.down {
+            color: #dc2626;
+        }
+
+        body.light-mode .stat-trend.up {
+            background: #dcfce7;
+        }
+
+        body.light-mode .stat-trend.down {
+            background: #fee2e2;
+        }
+
+        body.dark-mode .stat-trend.up {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        body.dark-mode .stat-trend.down {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .quick-actions {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .quick-actions {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        body.light-mode .section-title {
+            color: #1e293b;
+        }
+
+        body.dark-mode .section-title {
+            color: #f1f5f9;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn-icon {
+            font-size: 32px;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .content-card {
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .content-card {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .content-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Activity */
+        .activity-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .activity-item:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .activity-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        body.light-mode .activity-icon.service { background: #dbeafe; color: #2563eb; }
+        body.light-mode .activity-icon.visit { background: #dcfce7; color: #16a34a; }
+        body.light-mode .activity-icon.order { background: #fef3c7; color: #f59e0b; }
+
+        body.dark-mode .activity-icon.service { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
+        body.dark-mode .activity-icon.visit { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        body.dark-mode .activity-icon.order { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 14px;
+        }
+
+        body.light-mode .activity-title {
+            color: #1e293b;
+        }
+
+        body.dark-mode .activity-title {
+            color: #f1f5f9;
+        }
+
+        .activity-desc {
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        body.light-mode .activity-desc {
+            color: #64748b;
+        }
+
+        body.dark-mode .activity-desc {
+            color: #94a3b8;
+        }
+
+        .activity-time {
+            font-size: 12px;
+        }
+
+        body.light-mode .activity-time {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .activity-time {
+            color: #64748b;
+        }
+
+        /* Alerts */
+        .alert-item {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+
+        .alert-item.urgent {
+            border-color: #ef4444;
+        }
+
+        .alert-item.warning {
+            border-color: #f59e0b;
+        }
+
+        .alert-item.info {
+            border-color: #3b82f6;
+        }
+
+        body.light-mode .alert-item.urgent { background: #fef2f2; }
+        body.light-mode .alert-item.warning { background: #fffbeb; }
+        body.light-mode .alert-item.info { background: #eff6ff; }
+
+        body.dark-mode .alert-item.urgent { background: rgba(239, 68, 68, 0.1); }
+        body.dark-mode .alert-item.warning { background: rgba(245, 158, 11, 0.1); }
+        body.dark-mode .alert-item.info { background: rgba(59, 130, 246, 0.1); }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        body.light-mode .alert-title {
+            color: #1e293b;
+        }
+
+        body.dark-mode .alert-title {
+            color: #f1f5f9;
+        }
+
+        .alert-desc {
+            font-size: 13px;
+        }
+
+        body.light-mode .alert-desc {
+            color: #64748b;
+        }
+
+        body.dark-mode .alert-desc {
+            color: #94a3b8;
+        }
+
+        /* Service Request Page Styles */
+        .breadcrumb {
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .breadcrumb {
+            background: rgba(255, 255, 255, 0.95);
+            color: #64748b;
+        }
+
+        body.dark-mode .breadcrumb {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .header-card {
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .header-card {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .header-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ticket-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        body.light-mode .ticket-number {
+            color: #1e293b;
+        }
+
+        body.dark-mode .ticket-number {
+            color: #f1f5f9;
+        }
+
+        .badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge.request {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .badge.sla-flag {
+            background: #fee2e2;
+            color: #dc2626;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .ticket-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.light-mode .meta-label {
+            color: #64748b;
+        }
+
+        body.dark-mode .meta-label {
+            color: #94a3b8;
+        }
+
+        .meta-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        body.light-mode .meta-value {
+            color: #1e293b;
+        }
+
+        body.dark-mode .meta-value {
+            color: #f1f5f9;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            color: #475569;
+        }
+
+        body.light-mode .btn-secondary {
+            background: #f1f5f9;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        body.light-mode .timeline-date {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .timeline-date {
+            color: #64748b;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        body.light-mode .timeline-title {
+            color: #1e293b;
+        }
+
+        body.dark-mode .timeline-title {
+            color: #f1f5f9;
+        }
+
+        .timeline-desc {
+            font-size: 14px;
+        }
+
+        body.light-mode .timeline-desc {
+            color: #64748b;
+        }
+
+        body.dark-mode .timeline-desc {
+            color: #94a3b8;
+        }
+
+        /* Inventory Page */
+        .filter-bar {
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .filter-bar {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .filter-bar {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-content {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode .search-input {
+            background: white;
+            color: #1e293b;
+        }
+
+        body.dark-mode .search-input {
+            background: rgba(0, 0, 0, 0.2);
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #94a3b8;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .inventory-table thead {
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        body.light-mode .inventory-table thead {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .inventory-table thead {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .inventory-table th {
+            padding: 15px 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        body.light-mode .inventory-table th {
+            color: #64748b;
+        }
+
+        body.dark-mode .inventory-table th {
+            color: #94a3b8;
+        }
+
+        .inventory-table td {
+            padding: 18px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+        body.dark-mode .inventory-table td {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .inventory-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        body.light-mode .inventory-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .inventory-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .part-code {
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        body.light-mode .part-code {
+            color: #1e293b;
+        }
+
+        body.dark-mode .part-code {
+            color: #e2e8f0;
+        }
+
+        .stock-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .stock-badge.stock-good {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .stock-badge.stock-low {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .stock-badge.stock-critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-menu {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-bottom: 20px;
+            }
+
+            .page {
+                padding-top: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ticket-number {
+                font-size: 20px;
+            }
+
+            .ticket-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <!-- Navigation Menu -->
+    <div class="nav-menu">
+        <button class="nav-btn active" onclick="showPage('dashboard')">🏠 Dashboard</button>
+        <button class="nav-btn" onclick="showPage('service')">🔧 Service Detail</button>
+        <button class="nav-btn" onclick="showPage('inventory')">📦 Inventory</button>
+        <button class="nav-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard" class="page active">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">
+                    <div class="logo-icon">⚡</div>
+                    <div class="logo-text">
+                        <h1>BASS Project</h1>
+                        <p>After-Sales Management System</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn">
+                        🔔
+                        <span class="notification-badge">8</span>
+                    </button>
+                    <div class="user-profile">
+                        <div class="user-avatar">AD</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">Admin</div>
+                            <div style="font-size: 11px; opacity: 0.7;">Manager</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">47</div>
+                            <div class="stat-label">Service Aktif</div>
+                            <span class="stat-trend up">↑ +12%</span>
+                        </div>
+                        <div class="stat-icon">🔧</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">Kunjungan Hari Ini</div>
+                            <span class="stat-trend up">↑ +8%</span>
+                        </div>
+                        <div class="stat-icon">📍</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Part Order</div>
+                            <span class="stat-trend down">↓ -5%</span>
+                        </div>
+                        <div class="stat-icon">📦</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">92%</div>
+                            <div class="stat-label">SLA On Time</div>
+                            <span class="stat-trend up">↑ +3%</span>
+                        </div>
+                        <div class="stat-icon">⚡</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="section-title">⚡ Aksi Cepat</div>
+                <div class="actions-grid">
+                    <button class="action-btn">
+                        <span class="action-btn-icon">➕</span>
+                        <span>Service Baru</span>
+                    </button>
+                    <button class="action-btn">
+                        <span class="action-btn-icon">📱</span>
+                        <span>Scan Barcode</span>
+                    </button>
+                    <button class="action-btn">
+                        <span class="action-btn-icon">📋</span>
+                        <span>Kunjungan Toko</span>
+                    </button>
+                    <button class="action-btn">
+                        <span class="action-btn-icon">📦</span>
+                        <span>Order Sparepart</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-grid">
+                <!-- Recent Activity -->
+                <div class="content-card">
+                    <div class="section-title">📊 Aktivitas Terbaru</div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon service">🔧</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Service Request #SV-2410-0047</div>
+                            <div class="activity-desc">Unit Kipas Miyako - Toko Maju Jaya</div>
+                            <div class="activity-time">5 menit yang lalu</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon visit">📍</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Kunjungan Teknisi</div>
+                            <div class="activity-desc">TKN-001 check-in di Toko Berkah</div>
+                            <div class="activity-time">15 menit yang lalu</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon order">📦</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Order Sparepart</div>
+                            <div class="activity-desc">Part KMP-075 diterima dari produsen</div>
+                            <div class="activity-time">1 jam yang lalu</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon service">🔧</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Service Selesai #SV-2410-0042</div>
+                            <div class="activity-desc">Unit kembali ke Toko Sejahtera</div>
+                            <div class="activity-time">2 jam yang lalu</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon visit">📍</div>
+                        <div class="activity-content">
+                            <div class="activity-title">Kunjungan Selesai</div>
+                            <div class="activity-desc">TKN-002 selesai di Toko Makmur - 3 unit checked</div>
+                            <div class="activity-time">3 jam yang lalu</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts & Reminders -->
+                <div class="content-card">
+                    <div class="section-title">⚠️ Alert & Pengingat</div>
+
+                    <div class="alert-item urgent">
+                        <div class="alert-title">🚨 Part Hampir Habis</div>
+                        <div class="alert-desc">PRT-KMP-075 tersisa 3 unit (limit: 5)</div>
+                    </div>
+
+                    <div class="alert-item urgent">
+                        <div class="alert-title">⏰ Kunjungan Telat</div>
+                        <div class="alert-desc">Toko Maju - 3 hari lewat jadwal</div>
+                    </div>
+
+                    <div class="alert-item warning">
+                        <div class="alert-title">📋 STTB Pending</div>
+                        <div class="alert-desc">8 unit menunggu pengiriman ke workshop</div>
+                    </div>
+
+                    <div class="alert-item warning">
+                        <div class="alert-title">📦 Part Menunggu</div>
+                        <div class="alert-desc">12 tiket menunggu konfirmasi produsen</div>
+                    </div>
+
+                    <div class="alert-item info">
+                        <div class="alert-title">📊 Laporan Bulanan</div>
+                        <div class="alert-desc">Deadline: 3 hari lagi</div>
+                    </div>
+
+                    <div class="alert-item info">
+                        <div class="alert-title">👥 Meeting Tim</div>
+                        <div class="alert-desc">Besok, 10:00 - Review kinerja bulan ini</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Request Detail Page -->
+    <div id="service" class="page">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb">
+                <a href="#" onclick="showPage('dashboard')">🏠 Dashboard</a> / <a href="#">Service Request</a> / <strong>SV-2410-0047</strong>
+            </div>
+
+            <!-- Header Card -->
+            <div class="header-card">
+                <div class="ticket-number">
+                    SV-2410-0047
+                    <span class="badge request">📋 REQUEST</span>
+                    <span class="badge sla-flag">🚨 SLA</span>
+                </div>
+                
+                <div class="ticket-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Tanggal Tiket</div>
+                        <div class="meta-value">24 Okt 2026, 14:30</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Toko</div>
+                        <div class="meta-value">Toko Maju Jaya</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Model Unit</div>
+                        <div class="meta-value">Kipas Miyako KAW-1629RC</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Serial Number</div>
+                        <div class="meta-value">MYK2026001234</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Status Garansi</div>
+                        <div class="meta-value">🛡️ GARANSI</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Lokasi Unit</div>
+                        <div class="meta-value">🏪 TOKO</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
+                    <button class="btn btn-primary">📄 Surat Jalan</button>
+                    <button class="btn btn-secondary">✏️ Edit</button>
+                    <button class="btn btn-primary">✅ Proses</button>
+                    <button class="btn btn-secondary">🖨️ Print</button>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="main-grid">
+                <!-- Left Column -->
+                <div style="display: flex; flex-direction: column; gap: 25px;">
+                    <!-- Parts List -->
+                    <div class="content-card">
+                        <div class="section-title">🔧 Sparepart yang Dibutuhkan</div>
+                        <div style="overflow-x: auto;">
+                            <table class="inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Part</th>
+                                        <th>Nama Part</th>
+                                        <th>Qty</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="part-code">PRT-KMP-075</span></td>
+                                        <td>Kapasitor 2.5uF</td>
+                                        <td>1</td>
+                                        <td><span class="stock-badge stock-good">✓ READY</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="part-code">PRT-MTR-120</span></td>
+                                        <td>Motor DC 12V</td>
+                                        <td>1</td>
+                                        <td><span class="stock-badge stock-low">⏳ ORDER</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 15px;">➕ Tambah Part</button>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div class="content-card">
+                        <div class="section-title">📊 Timeline Service</div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-date">24 Okt 2026, 14:30</div>
+                                <div class="timeline-title">Tiket Dibuat</div>
+                                <div class="timeline-desc">Service request dibuat oleh Admin</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">24 Okt 2026, 14:45</div>
+                                <div class="timeline-title">Part Ditambahkan</div>
+                                <div class="timeline-desc">2 sparepart ditambahkan ke tiket</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">24 Okt 2026, 15:00</div>
+                                <div class="timeline-title">Request Part Produsen</div>
+                                <div class="timeline-desc">Menunggu konfirmasi untuk PRT-MTR-120</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div style="display: flex; flex-direction: column; gap: 25px;">
+                    <!-- Unit Info -->
+                    <div class="content-card">
+                        <div class="section-title">🔍 Info Unit</div>
+                        <div style="display: grid; gap: 15px;">
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">Merk</div>
+                                <div class="meta-value">Miyako</div>
+                            </div>
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">Model</div>
+                                <div class="meta-value">KAW-1629RC</div>
+                            </div>
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">Serial Number</div>
+                                <div class="meta-value">MYK2026001234</div>
+                            </div>
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">Status Garansi</div>
+                                <div class="meta-value">🛡️ Dalam Garansi</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Info -->
+                    <div class="content-card">
+                        <div class="section-title">👤 Info Customer</div>
+                        <div style="display: grid; gap: 15px;">
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">Nama Toko</div>
+                                <div class="meta-value">Toko Maju Jaya</div>
+                            </div>
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">Alamat</div>
+                                <div class="meta-value">Jl. Raya Utama No. 123</div>
+                            </div>
+                            <div style="padding: 15px; border-radius: 12px; border-left: 4px solid #667eea;" class="alert-item info">
+                                <div class="meta-label">WhatsApp</div>
+                                <div class="meta-value">📱 0812-3456-7890</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Page -->
+    <div id="inventory" class="page">
+        <div class="container">
+            <!-- Header -->
+            <div class="header-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                    <div class="section-title" style="margin: 0;">📦 Inventory Sparepart</div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary">📊 Export Excel</button>
+                        <button class="btn btn-primary">➕ Tambah Sparepart</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">247</div>
+                            <div class="stat-label">Total Jenis Part</div>
+                        </div>
+                        <div class="stat-icon">📦</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">1,834</div>
+                            <div class="stat-label">Stok Tersedia</div>
+                        </div>
+                        <div class="stat-icon">✓</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">Stok Menipis</div>
+                        </div>
+                        <div class="stat-icon">⚠️</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Stok Habis</div>
+                        </div>
+                        <div class="stat-icon">🚨</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-content">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Cari kode part, nama, atau brand...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="content-card">
+                <div style="overflow-x: auto;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Kode Part</th>
+                                <th>Nama Part</th>
+                                <th>Brand</th>
+                                <th>Stok Jual</th>
+                                <th>Stok Garansi</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Supplier</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="part-code">PRT-KMP-075</span></td>
+                                <td>Kapasitor 2.5uF</td>
+                                <td>Miyako, Shimizu</td>
+                                <td><strong>15</strong></td>
+                                <td>8</td>
+                                <td><strong>23</strong></td>
+                                <td><span class="stock-badge stock-good">✓ Aman</span></td>
+                                <td>PT Elektro Jaya</td>
+                            </tr>
+                            <tr>
+                                <td><span class="part-code">PRT-MTR-120</span></td>
+                                <td>Motor DC 12V</td>
+                                <td>Miyako</td>
+                                <td><strong>3</strong></td>
+                                <td>2</td>
+                                <td><strong>5</strong></td>
+                                <td><span class="stock-badge stock-low">⚠️ Menipis</span></td>
+                                <td>PT Motor Prima</td>
+                            </tr>
+                            <tr>
+                                <td><span class="part-code">PRT-BLD-090</span></td>
+                                <td>Baling-baling 16"</td>
+                                <td>Universal</td>
+                                <td><strong>0</strong></td>
+                                <td>0</td>
+                                <td><strong>0</strong></td>
+                                <td><span class="stock-badge stock-critical">🚨 Habis</span></td>
+                                <td>CV Plastik Jaya</td>
+                            </tr>
+                            <tr>
+                                <td><span class="part-code">PRT-SWC-045</span></td>
+                                <td>Saklar On/Off</td>
+                                <td>Universal</td>
+                                <td><strong>32</strong></td>
+                                <td>12</td>
+                                <td><strong>44</strong></td>
+                                <td><span class="stock-badge stock-good">✓ Aman</span></td>
+                                <td>PT Elektro Jaya</td>
+                            </tr>
+                            <tr>
+                                <td><span class="part-code">PRT-PCB-210</span></td>
+                                <td>PCB Control Board</td>
+                                <td>Miyako</td>
+                                <td><strong>7</strong></td>
+                                <td>3</td>
+                                <td><strong>10</strong></td>
+                                <td><span class="stock-badge stock-good">✓ Aman</span></td>
+                                <td>PT Elektronik Mandiri</td>
+                            </tr>
+                            <tr>
+                                <td><span class="part-code">PRT-FAN-180</span></td>
+                                <td>Fan Guard Ring 18"</td>
+                                <td>Universal</td>
+                                <td><strong>18</strong></td>
+                                <td>6</td>
+                                <td><strong>24</strong></td>
+                                <td><span class="stock-badge stock-good">✓ Aman</span></td>
+                                <td>CV Logam Jaya</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('BASS Project UX Preview loaded!');
+        });
+    </script>
+</body>
+</html>
