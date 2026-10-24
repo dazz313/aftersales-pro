@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-24T00:22:13.517Z",
+  "generatedAt": "2026-10-24T00:22:41.143Z",
   "masterToko": [
     {
       "id": 216,
@@ -5342,13 +5342,13 @@
       "fotoNotaStempel": "nota-stempel-SVC-2610-0043.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
-      "statusKlaimProdusen": "SUBMITTED",
+      "statusKlaimProdusen": "PAID",
       "tglKlaim": "2026-10-24T00:22:13.494Z",
       "biayaJasa": 0,
       "tglFinish": "2026-10-20T13:13:25.140Z",
       "tglTiket": "2026-10-18T00:00:00.000Z",
       "createdAt": "2026-10-18T06:12:07.494Z",
-      "updatedAt": "2026-10-24T00:22:13.495Z",
+      "updatedAt": "2026-10-24T00:22:41.120Z",
       "editedAt": "2026-10-20T13:11:33.073Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
@@ -8578,6 +8578,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 920,
+      "aksi": "MARK_CLAIM_PAID",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Pembayaran klaim diterima dari produsen (SUBMITTED → PAID)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-24T00:22:41.124Z"
+    },
     {
       "id": 919,
       "aksi": "SUBMIT_CLAIM",
