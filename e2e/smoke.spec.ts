@@ -17,6 +17,23 @@ test.describe('Kesehatan & proteksi API', () => {
   })
 })
 
+test.describe('Proteksi CSRF', () => {
+  test('mutasi dengan Origin asing → 403', async ({ request }) => {
+    const res = await request.post('/api/service', {
+      headers: { origin: 'https://penyerang.example' },
+      data: { unitAssetId: 1, deskripsiKerusakan: 'percobaan csrf' },
+    })
+    expect(res.status()).toBe(403)
+  })
+
+  test('mutasi tanpa indikator lintas situs lolos CSRF → lanjut cek sesi (401)', async ({ request }) => {
+    const res = await request.post('/api/service', {
+      data: { unitAssetId: 1, deskripsiKerusakan: 'tanpa origin' },
+    })
+    expect(res.status()).toBe(401)
+  })
+})
+
 test.describe('Autentikasi', () => {
   test('halaman login tampil', async ({ page }) => {
     await page.goto('/login')

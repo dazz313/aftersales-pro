@@ -125,6 +125,13 @@ untuk range IP Cloudflare (agar tidak bisa dilewati dengan menyambung langsung).
 > cookie otomatis menjadi `SameSite=None` yang mematikan proteksi CSRF.
 > Itulah alasan `SESSION_COOKIE_SAMESITE=lax` penting di sini.
 
+**Lapisan kedua (selalu aktif):** middleware (`src/proxy.ts` +
+`src/lib/csrf.ts`) menolak **403** setiap request mutasi (POST/PUT/PATCH/DELETE)
+yang berasal dari situs lain, berdasarkan `Origin`/`Referer`/`Sec-Fetch-Site`.
+Jadi meski cookie dalam mode `SameSite=None`, permintaan forge lintas situs
+tetap ditolak. Request ber-`Authorization: Bearer` dan webhook eksternal
+dikecualikan (webhook diamankan lewat `WEBHOOK_SECRET`).
+
 ---
 
 ## 5. IP klien asli

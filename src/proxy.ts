@@ -1,9 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { SESSION_COOKIE, verifySessionToken, type SessionPayload } from '@/lib/auth'
+import { isMutasi, permintaanSamaAsal } from '@/lib/csrf'
 
 /**
  * Middleware proteksi Log In:
  * - API non-publik tanpa sesi (cookie ATAU Authorization: Bearer) → 401 JSON
+ * - Proteksi CSRF: request MUTASI (POST/PUT/PATCH/DELETE) lintas situs ditolak
+ *   403 berdasarkan Origin/Referer/Sec-Fetch-Site (lihat src/lib/csrf.ts).
+ *   Request dengan Bearer diabaikan; webhook eksternal dikecualikan.
  * - Halaman TIDAK diblokir server-side: diserahkan ke client gate di "/"
  *   (fetch /api/auth/me → redirect /login bila 401). Ini WAJIB agar mode
  *   fallback Bearer (localStorage, dipakai saat cookie diblokir iframe)
@@ -17,6 +21,25 @@ import { SESSION_COOKIE, verifySessionToken, type SessionPayload } from '@/lib/a
  * Catatan: aplikasi single-route — semua view di "/" dengan navigasi internal.
  */
 const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/logo', '/api/health', '/api/wa/webhook', '/api/telegram/webhook']
+
+// Webhook dipanggil layanan eksternal (bisa menyertakan Origin domain sendiri) —
+// dikecualikan dari cek CSRF; pengamannya WEBHOOK_SECRET + Cloudflare Access.
+const WEBHOOK_API = ['/api/wa/webhook', '/api/telegram/webhook']
+
+/**
+ * Proteksi CSRF: tolak request MUTASI lintas situs yang tidak memakai Bearer.
+ * Browser selalu mengirim Origin (atau Sec-Fetch-Site: cross-site) pada
+ * permintaan lintas situs, jadi asal yang asing = percobaan forge.
+ */
+function ditolakCsrf(request: NextRequest): boolean {
+  const method = request.method
+  if (!isMutasi(method)) return false
+  const pakaiBearer = (request.headers.get('authorization') ?? '').toLowerCase().startsWith('bearer ')
+  if (pakaiBearer) return false
+  const { pathname } = request.nextUrl
+  if (WEBHOOK_API.some((p) => pathname === p || pathname.startsWith(p + '/'))) return false
+  return !permintaanSamaAsal(request)
+}
 
 async function getSessionFrom(request: NextRequest): Promise<SessionPayload | null> {
   const authz = request.headers.get('authorization')
@@ -42,6 +65,13 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname.startsWith('/api')) {
+    // CSRF lebih dulu: tolak mutasi lintas situs sebelum apa pun.
+    if (ditolakCsrf(request)) {
+      return NextResponse.json(
+        { error: 'Permintaan ditolak: asal permintaan tidak dikenal (proteksi CSRF).' },
+        { status: 403 }
+      )
+    }
     if (PUBLIC_API.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
       return NextResponse.next()
     }

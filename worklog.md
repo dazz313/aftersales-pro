@@ -947,3 +947,23 @@ Stage Summary:
 - Alur bisnis inti kini terjaga uji end-to-end (dari tiket sampai nota) dan hasilnya diverifikasi di UI.
 - File baru: e2e/flow.spec.ts, .env.example (kini ter-commit)
 - File diubah: e2e/prepare-db.mjs, playwright.config.ts, src/lib/git-backup.ts, .gitignore
+
+---
+Task ID: 13
+Agent: Main Agent (Super Z)
+Task: Proteksi CSRF (Origin/Referer/Sec-Fetch-Site) di middleware tanpa perubahan klien
+
+Work Log:
+- Audit permukaan mutasi klien: selain postJson(), ada ~9 fetch langsung (upload FormData: surat-jalan, logo, restore, vision scan; logout; serta 3 POST di service-view). Menambah token CSRF ke semua jalur itu berisiko tinggi mematahkan fitur bila ada yang terlewat.
+- Keputusan: pertahanan CSRF berbasis header asal, dijalankan di middleware, TANPA mengubah klien sama sekali.
+- File baru src/lib/csrf.ts (edge-safe, murni): isMutasi(), hostPermintaan() (hormati X-Forwarded-Host/Cloudflare; buang port; dukung IPv6), permintaanSamaAsal() -> false bila Sec-Fetch-Site: cross-site, atau Origin/Referer ada tapi host tidak cocok (Origin "null" ditolak); true bila tidak ada indikator browser (webhook/curl/service-to-service, bukan vektor CSRF).
+- src/proxy.ts: ditolakCsrf() menolak 403 semua request MUTASI (POST/PUT/PATCH/DELETE) berbasis cookie yang asalnya bukan host aplikasi. Dikecualikan: request dengan Authorization: Bearer (tak bisa di-forge lintas situs) dan webhook eksternal (/api/wa/webhook, /api/telegram/webhook — diamankan WEBHOOK_SECRET). Cek CSRF dijalankan sebelum cek sesi.
+- Kompatibilitas dijaga: iframe lintas situs mengirim request ke origin-nya sendiri (Origin cocok) -> lolos; Electron memuat http://127.0.0.1:PORT (same-origin) -> lolos; mini-service/MCP tanpa Origin -> lolos.
+- Uji: tambah tests/unit/csrf.test.ts (15 kasus: metode, host termasuk proxy/IPv6, Origin cocok/asing/null, Referer, Sec-Fetch-Site, tanpa indikator). Tambah 2 kasus E2E di smoke.spec.ts: mutasi Origin asing -> 403; mutasi tanpa indikator -> lanjut cek sesi 401.
+- Dokumentasi: README-DEPLOY-CLOUDFLARE.md bagian cookie/CSRF dijelaskan lapisan kedua ini.
+- Verifikasi: npm test 81/81 lulus; npm run test:e2e 9/9 lulus (alur penuh tetap hijau -> CSRF tidak mematahkan penulisan data); npm run typecheck bersih; npm run lint bersih.
+
+Stage Summary:
+- CSRF kini terlindungi berlapis: SameSite (Lax di localhost, dapat diatur untuk Cloudflare) + verifikasi Origin di middleware.
+- File baru: src/lib/csrf.ts, tests/unit/csrf.test.ts
+- File diubah: src/proxy.ts, e2e/smoke.spec.ts, README-DEPLOY-CLOUDFLARE.md
