@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T23:11:49.659Z",
+  "generatedAt": "2026-10-24T00:22:13.517Z",
   "masterToko": [
     {
       "id": 216,
@@ -5342,13 +5342,13 @@
       "fotoNotaStempel": "nota-stempel-SVC-2610-0043.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
-      "statusKlaimProdusen": "DRAFT",
-      "tglKlaim": null,
+      "statusKlaimProdusen": "SUBMITTED",
+      "tglKlaim": "2026-10-24T00:22:13.494Z",
       "biayaJasa": 0,
       "tglFinish": "2026-10-20T13:13:25.140Z",
       "tglTiket": "2026-10-18T00:00:00.000Z",
       "createdAt": "2026-10-18T06:12:07.494Z",
-      "updatedAt": "2026-10-20T13:13:25.141Z",
+      "updatedAt": "2026-10-24T00:22:13.495Z",
       "editedAt": "2026-10-20T13:11:33.073Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
@@ -8494,7 +8494,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-10-23"
+      "nilai": "2026-10-24"
     },
     {
       "id": 199,
@@ -8529,7 +8529,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-10-23 05:06"
+      "nilai": "2026-10-24 07:13"
     },
     {
       "id": 54,
@@ -8578,6 +8578,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 919,
+      "aksi": "SUBMIT_CLAIM",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0043",
+      "deskripsi": "Klaim diverifikasi & diajukan ke produsen (DRAFT → SUBMITTED)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-24T00:22:13.505Z"
+    },
     {
       "id": 918,
       "aksi": "BACKUP_DATA",
