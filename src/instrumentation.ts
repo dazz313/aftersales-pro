@@ -15,6 +15,17 @@ export async function register() {
           'sebelum menjalankan mode produksi (lihat .env.example).'
       )
     }
+    // Webhook WA/Telegram bersifat publik (mudah dijangkau lewat Cloudflare),
+    // jadi tanpa WEBHOOK_SECRET siapa pun bisa memicu proses inbound.
+    // Sengaja hanya PERINGATAN (bukan gagal boot) agar tidak mematahkan
+    // deployment lama — segera isi WEBHOOK_SECRET di produksi.
+    if (isProd && !isDesktop && !process.env.WEBHOOK_SECRET) {
+      console.warn(
+        '[PERINGATAN] WEBHOOK_SECRET belum diisi. Endpoint webhook (/api/wa/webhook, ' +
+          '/api/telegram/webhook) dapat dipanggil siapa saja. Disarankan mengisi ' +
+          'WEBHOOK_SECRET dan/atau melindunginya dengan Cloudflare Access (Zero Trust).'
+      )
+    }
     const { startBackupScheduler } = await import('@/lib/backup-scheduler')
     startBackupScheduler()
     const { startLogRetention } = await import('@/lib/log-retention')

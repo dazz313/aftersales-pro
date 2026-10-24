@@ -9,23 +9,19 @@ import {
   signSession,
   type SessionRole,
 } from '@/lib/auth'
+import { ipClient } from '@/lib/client-ip'
 
 /**
  * POST /api/auth/login
  * Body: { email: string (email atau username), password: string }
  * Sukses: set cookie httpOnly aspro_session (JWT HS256, 7 hari) + token di body
  * (token dipakai client sebagai fallback Bearer saat cookie diblokir iframe).
- * Proteksi brute-force: jeda 400ms + throttle 10x gagal / 5 menit per IP.
+ * Proteksi brute-force: jeda 400ms + throttle 10x gagal / 5 menit per IP
+ * (IP klien asli diambil dari CF-Connecting-IP / X-Forwarded-For — lihat client-ip.ts).
  */
 const gagalPerIp = new Map<string, { count: number; resetAt: number }>()
 const BATAS_GAGAL = 10
 const JANJI_THROTTLE_MS = 5 * 60_000
-
-function ipClient(request: Request): string {
-  const fwd = request.headers.get('x-forwarded-for')
-  if (fwd) return fwd.split(',')[0].trim()
-  return request.headers.get('x-real-ip')?.trim() || 'unknown'
-}
 
 export async function POST(request: Request) {
   try {
@@ -54,14 +50,14 @@ export async function POST(request: Request) {
     )
 
     if (!user || !verifyPassword(password, user.passwordHash)) {
-      const cur = gagalPerIp.get(ipClient(request)) ?? { count: 0, resetAt: Date.now() + JANJI_THROTTLE_MS }
+      const cur = gagalPerIp.get(ip) ?? { count: 0, resetAt: Date.now() + JANJI_THROTTLE_MS }
       cur.count += 1
-      gagalPerIp.set(ipClient(request), cur)
+      gagalPerIp.set(ip, cur)
       await logAudit({
         aksi: 'LOGIN_GAGAL',
         entitas: 'auth',
         entitasId: identifier.slice(0, 120),
-        deskripsi: `Percobaan login gagal untuk "${identifier.slice(0, 60)}"`,
+        deskripsi: `Percobaan login gagal untuk "${identifier.slice(0, 60)}" (IP ${ip})`,
         aktor: identifier.slice(0, 60) || 'UNKNOWN',
       })
       await new Promise((r) => setTimeout(r, 400)) // perlambat brute-force
@@ -75,7 +71,7 @@ export async function POST(request: Request) {
       username: user.username,
       role: user.role as SessionRole,
     })
-    gagalPerIp.delete(ipClient(request))
+    gagalPerIp.delete(ip)
 
     const res = NextResponse.json({
       ok: true,
@@ -88,7 +84,7 @@ export async function POST(request: Request) {
       aksi: 'LOGIN',
       entitas: 'auth',
       entitasId: user.email,
-      deskripsi: `Login berhasil: ${user.nama} (${user.role})`,
+      deskripsi: `Login berhasil: ${user.nama} (${user.role}) dari IP ${ip}`,
       aktor: user.email,
     })
     return res

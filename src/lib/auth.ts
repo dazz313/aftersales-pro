@@ -86,19 +86,44 @@ function isHttps(request: Request): boolean {
   }
 }
 
+export type SamesiteMode = 'auto' | 'lax' | 'strict' | 'none'
+
 /**
- * Opsi cookie sesi adaptif:
- * - HTTPS (preview web / hosting): SameSite=None + Secure + Partitioned (CHIPS)
- *   agar cookie TIDAK diblokir saat app di-embed dalam iframe lintas situs.
- * - HTTP (localhost dev / desktop Electron): SameSite=Lax (first-party).
+ * Mode SameSite cookie sesi, dikonfigurasi lewat env SESSION_COOKIE_SAMESITE.
+ *
+ *  - 'auto' (default): perilaku lama — HTTPS → None+Secure+Partitioned
+ *    (agar cookie tetap terkirim saat app di-embed dalam iframe lintas situs),
+ *    HTTP → Lax.
+ *  - 'lax' (DISARANKAN untuk deployment top-level, mis. server sendiri di
+ *    belakang Cloudflare): proteksi CSRF tetap aktif. Cookie Bearer di
+ *    localStorage tetap menjadi fallback bila app dibuka dalam iframe
+ *    lintas situs yang memblokir cookie.
+ *  - 'strict': paling ketat (cookie tidak terkirim saat navigasi antar situs).
+ *  - 'none': eksplisit None+Secure+Partitioned (butuh HTTPS).
+ *
+ * Deployment self-host + Cloudflare umumnya diakses top-level, jadi menyalakan
+ * 'lax' menutup celah CSRF yang muncul saat cookie otomatis menjadi None di HTTPS.
+ */
+function sameSiteMode(): SamesiteMode {
+  const v = (process.env.SESSION_COOKIE_SAMESITE ?? '').trim().toLowerCase()
+  if (v === 'auto' || v === 'lax' || v === 'strict' || v === 'none') return v
+  return 'auto'
+}
+
+/**
+ * Opsi cookie sesi adaptif (lihat sameSiteMode).
+ * SameSite=None WAJIB disertai Secure (dipaksa true).
  */
 export function sessionCookieOptions(request: Request, maxAge: number) {
   const https = isHttps(request)
+  const mode = sameSiteMode()
+  const sameSite: 'lax' | 'strict' | 'none' = mode === 'auto' ? (https ? 'none' : 'lax') : mode
+  const secure = https || sameSite === 'none'
   return {
     httpOnly: true,
-    sameSite: (https ? 'none' : 'lax') as 'none' | 'lax',
-    secure: https,
-    ...(https ? { partitioned: true } : {}),
+    sameSite,
+    secure,
+    ...(sameSite === 'none' ? { partitioned: true } : {}),
     maxAge,
     path: '/',
   }

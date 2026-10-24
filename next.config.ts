@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "same-origin" },
+          // HSTS: paksa HTTPS pada kunjungan berikutnya. Diabaikan browser saat
+          // diakses via HTTP (mis. Electron http://127.0.0.1), jadi aman untuk
+          // dev/desktop. Tanpa includeSubDomains agar tidak berdampak ke
+          // subdomain lain. Deployment di belakang Cloudflare juga sebaiknya
+          // menyalakan HSTS di sisi edge (SSL/TLS → Edge Certificates).
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
           // Kamera dibutuhkan untuk scan barcode; mic & geolocation dimatikan
           { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
         ],

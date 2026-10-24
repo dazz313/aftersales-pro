@@ -907,3 +907,25 @@ Stage Summary:
 - Aplikasi punya uji end-to-end browser untuk alur kritis (kesehatan, proteksi API, login) + satu celah otorisasi ditutup
 - File baru: playwright.config.ts, e2e/prepare-db.mjs, e2e/smoke.spec.ts, .github/workflows/e2e.yml
 - File diubah: package.json (+@playwright/test, script test:e2e), package-lock.json, src/app/api/toko/[id]/route.ts (guard pin), .gitignore
+
+---
+Task ID: 11
+Agent: Main Agent (Super Z)
+Task: Kesiapan deployment server sendiri + Cloudflare (cookie/CSRF, IP asli, HSTS, webhook, dokumentasi)
+
+Work Log:
+- Konteks baru: aplikasi akan dijalankan di server sendiri dan diekspos lewat Cloudflare. Ini mengubah beberapa rekomendasi sebelumnya.
+- Cookie sesi: sessionCookieOptions() kini dikonfigurasi lewat env SESSION_COOKIE_SAMESITE (auto | lax | strict | none). Default tetap auto (perilaku lama: HTTPS -> None+Secure+Partitioned, HTTP -> Lax) sehingga TIDAK ada perubahan perilaku. Untuk server sendiri yang diakses top-level, disarankan lax agar proteksi CSRF aktif; login tetap jalan karena ada fallback Bearer di localStorage. Mode none selalu dipaksa Secure+Partitioned.
+- IP klien asli: helper baru src/lib/client-ip.ts (ipClient: CF-Connecting-IP -> X-Forwarded-For entri kiri -> X-Real-IP -> unknown; plus lewatCloudflare()). Route login memakainya untuk throttle brute-force & jejak audit, menggantikan pembacaan x-forwarded-for langsung.
+- instrumentation.ts: peringatan (bukan gagal boot) di produksi bila WEBHOOK_SECRET kosong, sebab webhook WA/Telegram jadi publik saat diekspos lewat Cloudflare.
+- next.config.ts: tambah header Strict-Transport-Security (HSTS max-age 1 tahun, tanpa includeSubDomains). Diabaikan browser pada HTTP sehingga aman untuk dev/desktop.
+- Dokumentasi baru README-DEPLOY-CLOUDFLARE.md: build standalone + systemd, tabel env produksi, Cloudflare Tunnel vs Proxied DNS, penjelasan cookie/CSRF, IP asli, keamanan webhook + Cloudflare Access, batas Cloudflare (timeout origin ~100s -> error 524 untuk backup/impor/restore/PDF; body 100MB vs cap restore 50MB), HSTS di edge, monitoring /api/health, dan checklist produksi.
+- .env.example: dokumentasi SESSION_COOKIE_SAMESITE + penegasan WEBHOOK_SECRET (kini hanya memperingatkan, bukan menolak boot).
+- Uji: tambah tests/unit/client-ip.test.ts (5 kasus) dan tests/unit/auth-cookie.test.ts (9 kasus) mencakup mode auto/lax/strict/none dan deteksi proxy.
+- Verifikasi: npm test 66/66 lulus; npm run test:e2e 6/6 lulus; npm run typecheck bersih; npm run lint bersih.
+
+Stage Summary:
+- Aplikasi siap deploy di server sendiri di belakang Cloudflare dengan default aman (tanpa perubahan perilaku) dan lever konfigurasi jelas.
+- File baru: src/lib/client-ip.ts, tests/unit/client-ip.test.ts, tests/unit/auth-cookie.test.ts, README-DEPLOY-CLOUDFLARE.md
+- File diubah: src/lib/auth.ts, src/app/api/auth/login/route.ts, src/instrumentation.ts, next.config.ts, .env.example
+- Keputusan terbuka untuk pengguna: apakah default SESSION_COOKIE_SAMESITE sebaiknya diubah ke lax (butuh konfirmasi model akses: top-level vs iframe).
