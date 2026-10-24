@@ -97,8 +97,8 @@ export function tanggalNota(iso: string | null | undefined): string {
   if (!iso) return ''
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
   if (!m) return iso
-  const d = Number(m[2])
-  const mo = Number(m[3])
+  const d = Number(m[3]) // hari (DD)
+  const mo = Number(m[2]) // bulan (MM)
   return `${d}-${mo}-${m[1]}`
 }
 

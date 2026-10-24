@@ -16,7 +16,7 @@ import { SESSION_COOKIE, verifySessionToken, type SessionPayload } from '@/lib/a
  * jalur terautentikasi / langsung via lib.
  * Catatan: aplikasi single-route — semua view di "/" dengan navigasi internal.
  */
-const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/logo', '/api/wa/webhook', '/api/telegram/webhook']
+const PUBLIC_API = ['/api/auth/login', '/api/auth/logout', '/api/auth/me', '/api/logo', '/api/health', '/api/wa/webhook', '/api/telegram/webhook']
 
 async function getSessionFrom(request: NextRequest): Promise<SessionPayload | null> {
   const authz = request.headers.get('authorization')

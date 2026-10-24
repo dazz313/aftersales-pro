@@ -870,3 +870,22 @@ Stage Summary:
 - Semua angka/grafik/alert di Dashboard kini bisa diklik → langsung membuka view data sumber dengan filter yang tepat sudah aktif (chip bisa dihapus), lengkap dengan akses keyboard & aria-label
 - File diubah: src/lib/store.ts, src/components/views/{dashboard-view,service-view,claim-view,inventory-view,field-ops-view}.tsx
 - Tanpa perubahan schema/db/API; kompatibel desktop & MCP; kredensial tidak berubah
+
+---
+Task ID: 9
+Agent: Main Agent (Super Z)
+Task: Peningkatan mutu & kesiapan produksi - (1) health check, (2) unit test Vitest + fix bug tanggal nota, (3) gate CI typecheck/lint/test, (4) rapikan lockfile & .gitignore
+
+Work Log:
+- Health check: route baru src/app/api/health/route.ts - GET publik (tanpa sesi) dengan ping DB (SELECT 1); 200 {status:"ok",database:"up",latencyMs,uptimeDetik,node,waktu} atau 503 degraded bila DB tak terjangkau; ditambahkan ke PUBLIC_API di src/proxy.ts supaya bisa dipanggil monitoring (PM2/uptime checker)
+- Vitest: devDependency vitest 5.0.5 + vitest.config.mts (alias @ -> ./src, environment node, include tests/unit/**/*.test.ts); script baru package.json: "test" (vitest run), "test:watch", "typecheck" (tsc --noEmit)
+- Unit test 52 kasus (4 file, semua lulus): tests/unit/csv.test.ts (parseCsv delimiter/BOM/kutip, parseNum ribuan ID/EN, parseDateFlexible, parseStatusGaransi, mapHeaders, validateTokoRows), tests/unit/umur.test.ts (umurTiketJam basis tglTiket + fallback, formatUmur, isDataLama), tests/unit/nota.test.ts (nomorBassValid, rupiah, tanggalNota, hitungBiayaNota), tests/unit/auth.test.ts (signSession/verifySessionToken ronde-penuh, tolak token tampered/sampah/secret beda)
+- BUG DITEMUKAN & DIPERBAIKI: tanggalNota() menukar hari & bulan (mengembalikan M-D-YYYY padahal komentar kontrak D-M-YYYY) - src/lib/nota.ts diperbaiki (m[3]=hari, m[2]=bulan). Ditemukan oleh unit test baru
+- CI: .github/workflows/ci.yml (ubuntu, node 22, npm ci -> prisma generate -> next typegen -> typecheck -> lint -> vitest) pada push semua branch & pull_request
+- Kebersihan repo: .gitignore ditambah /dist (artefak electron-builder) + /bun.lock; bun.lock di-untrack (git rm --cached) agar acuan dependency tunggal (npm/package-lock.json)
+- Verifikasi: npm test 52/52 lulus; npm run typecheck bersih (setelah npx next typegen); npm run lint bersih
+
+Stage Summary:
+- Aplikasi kini punya jaring pengaman mutu: unit test otomatis + gate CI (typecheck/lint/test) + health check untuk monitoring
+- File baru: src/app/api/health/route.ts, vitest.config.mts, tests/unit/{csv,umur,nota,auth}.test.ts, .github/workflows/ci.yml
+- File diubah: package.json (+vitest, script test/typecheck/test:watch), package-lock.json, src/proxy.ts (PUBLIC_API +/api/health), src/lib/nota.ts (fix bug tanggal), .gitignore, hapus-tracking bun.lock

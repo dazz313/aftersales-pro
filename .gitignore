@@ -74,3 +74,10 @@ db/custom.db-shm
 .next/standalone/db/
 # Cache data bahasa Tesseract (30 MB, diunduh ulang via npm run tessdata)
 .cache/
+
+# Output build desktop (electron-builder) - artefak, jangan di-commit
+/dist/
+
+# Acuan dependency tunggal: npm (package-lock.json). bun.lock dibiarkan lokal
+# saja agar tidak terjadi drift dua lockfile.
+/bun.lock
