@@ -889,3 +889,21 @@ Stage Summary:
 - Aplikasi kini punya jaring pengaman mutu: unit test otomatis + gate CI (typecheck/lint/test) + health check untuk monitoring
 - File baru: src/app/api/health/route.ts, vitest.config.mts, tests/unit/{csv,umur,nota,auth}.test.ts, .github/workflows/ci.yml
 - File diubah: package.json (+vitest, script test/typecheck/test:watch), package-lock.json, src/proxy.ts (PUBLIC_API +/api/health), src/lib/nota.ts (fix bug tanggal), .gitignore, hapus-tracking bun.lock
+
+---
+Task ID: 10
+Agent: Main Agent (Super Z)
+Task: E2E Playwright (alur kritis) + penutupan celah otorisasi set/reset pin toko
+
+Work Log:
+- Otorisasi: PATCH /api/toko/[id] kini mewajibkan Admin Workshop/Manager HANYA saat mengirim latitude/longitude (set/reset pin peta) - selaras dengan gate UI bisaSetPin; field lain (nama/alamat/kontak/siklus/aktif) tetap terbuka seperti semula. Menutup celah: role apa pun (termasuk PRODUSEN) bisa menimpa koordinat toko lewat API. Audit otorisasi menyeluruh: kebijakan UI ternyata longgar & konsisten (import CSV, hapus unit, toggle siklus memang terbuka untuk semua role) sehingga TIDAK diubah agar tidak mematahkan alur kerja
+- E2E Playwright: devDependency @playwright/test + chromium; playwright.config.ts (testDir e2e, 1 worker, webServer menjalankan node e2e/prepare-db.mjs lalu next dev -p 3100, baseURL localhost karena 127.0.0.1 diblokir Next 16 sebagai origin dev cross-site); e2e/prepare-db.mjs (prisma db push ke DB TERPISAH e2e/.tmp/e2e.db + seed admin uji scrypt, tanpa menyentuh db/custom.db); e2e/smoke.spec.ts 6 kasus: /api/health 200, API terlindungi 401 tanpa sesi, halaman login tampil, login salah - alert, login benar - Dashboard KPI, navigasi ke Proses Service
+- Script npm baru: test:e2e (playwright test)
+- CI: .github/workflows/e2e.yml (ubuntu, node 22, npm ci - prisma generate - playwright install --with-deps chromium - test:e2e; upload artefak saat gagal)
+- .gitignore: tambah /test-results/, /playwright-report/, /blob-report/, /e2e/.tmp/
+- Verifikasi: npm run test:e2e 6/6 lulus (~11.5s); npm test 52/52; npm run typecheck bersih; npm run lint bersih
+
+Stage Summary:
+- Aplikasi punya uji end-to-end browser untuk alur kritis (kesehatan, proteksi API, login) + satu celah otorisasi ditutup
+- File baru: playwright.config.ts, e2e/prepare-db.mjs, e2e/smoke.spec.ts, .github/workflows/e2e.yml
+- File diubah: package.json (+@playwright/test, script test:e2e), package-lock.json, src/app/api/toko/[id]/route.ts (guard pin), .gitignore

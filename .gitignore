@@ -81,3 +81,9 @@ db/custom.db-shm
 # Acuan dependency tunggal: npm (package-lock.json). bun.lock dibiarkan lokal
 # saja agar tidak terjadi drift dua lockfile.
 /bun.lock
+
+# Playwright (E2E) — artefak & DB uji, jangan di-commit
+/test-results/
+/playwright-report/
+/blob-report/
+/e2e/.tmp/

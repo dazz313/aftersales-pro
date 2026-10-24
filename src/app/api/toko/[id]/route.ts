@@ -9,9 +9,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
-    void session
     const { id } = await params
     const body = await request.json()
+    // Koordinat toko (set/reset pin peta) = aksi administratif: dibatasi
+    // Admin Workshop/Manager, selaras dengan gate UI `bisaSetPin` pada dialog
+    // peta. Field lain (nama/alamat/kontak/siklus/aktif) tetap terbuka untuk
+    // semua role operasional seperti sebelumnya.
+    if (body.latitude !== undefined || body.longitude !== undefined) {
+      const roleDenied = requireManagerSession(session)
+      if (roleDenied) return roleDenied
+    }
     const data: Record<string, unknown> = {}
     if (body.namaToko !== undefined) data.namaToko = body.namaToko
     if (body.alamat !== undefined) data.alamat = body.alamat
