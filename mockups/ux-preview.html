@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AfterSales Pro — Preview UX (mockup statis)</title>
+<style>
+  /* ============================================================
+     AfterSales Pro — Design Tokens (usulan)
+     Tujuan: warna brand konsisten + netral yang tenang.
+     ============================================================ */
+  :root{
+    --brand-50:#ecfdf5; --brand-100:#d1fae5; --brand-200:#a7f3d0;
+    --brand-500:#10b981; --brand-600:#059669; --brand-700:#047857;
+    --teal-500:#14b8a6; --teal-600:#0d9488;
+    --ink-900:#0f172a; --ink-800:#1e293b; --ink-700:#334155;
+    --ink-600:#475569; --ink-500:#64748b; --ink-400:#94a3b8; --ink-300:#cbd5e1;
+    --line:#e6eaf1; --line-soft:#eef2f7;
+    --bg:#f5f7fb; --card:#ffffff;
+    --amber-50:#fffbeb; --amber-200:#fde68a; --amber-500:#f59e0b; --amber-700:#b45309;
+    --rose-50:#fff1f2; --rose-200:#fecdd3; --rose-500:#f43f5e; --rose-700:#be123c;
+    --sky-50:#f0f9ff; --sky-200:#bae6fd; --sky-500:#0ea5e9; --sky-700:#0369a1;
+    --violet-50:#f5f3ff; --violet-200:#ddd6fe; --violet-600:#7c3aed;
+    --radius:14px; --radius-sm:10px;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+    --shadow:0 1px 2px rgba(15,23,42,.04), 0 12px 28px -16px rgba(15,23,42,.22);
+    --sidebar:#0b1220;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink-900);
+    font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+
+  /* -------- banner catatan mockup -------- */
+  .note{
+    display:flex; gap:10px; align-items:flex-start;
+    background:linear-gradient(90deg,var(--brand-700),var(--teal-600));
+    color:#fff; padding:14px 20px;
+  }
+  .note b{font-size:14px}
+  .note p{margin:2px 0 0; font-size:12.5px; opacity:.92}
+
+  /* ============================ APP SHELL ============================ */
+  .shell{display:flex; min-height:100vh; align-items:stretch}
+  .sidebar{
+    width:246px; flex:0 0 246px; background:var(--sidebar);
+    color:#cbd5e1; padding:18px 14px; display:flex; flex-direction:column; gap:6px;
+  }
+  .brandrow{display:flex; align-items:center; gap:11px; padding:6px 8px 16px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:10px}
+  .logo{
+    width:38px; height:38px; border-radius:11px; flex:0 0 38px;
+    background:linear-gradient(135deg,var(--brand-500),var(--teal-500));
+    display:grid; place-items:center; color:#06231a; font-weight:800; font-size:16px;
+    box-shadow:0 6px 16px -6px rgba(16,185,129,.7);
+  }
+  .brandrow .t{font-weight:700; color:#fff; font-size:13.5px; line-height:1.15}
+  .brandrow .s{font-size:11.5px; color:var(--ink-400)}
+  .navitem{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px;
+    font-size:13px; color:#cbd5e1; position:relative;
+  }
+  .navitem .ic{width:18px; text-align:center; opacity:.85}
+  .navitem.active{background:rgba(16,185,129,.16); color:#6ee7b7; font-weight:600}
+  .navitem.active::before{
+    content:""; position:absolute; left:-14px; top:8px; bottom:8px; width:3px;
+    background:var(--brand-500); border-radius:0 3px 3px 0;
+  }
+  .navitem .sub{display:block; font-size:11px; color:var(--ink-500); font-weight:400}
+  .navitem.active .sub{color:#34d399}
+  .navgroup{padding-left:12px; margin-left:8px; border-left:1px solid rgba(255,255,255,.10); display:flex; flex-direction:column; gap:2px; margin-bottom:6px}
+  .navgroup span{font-size:12px; color:#94a3b8; padding:5px 8px; border-radius:8px}
+  .navgroup span.on{background:rgba(16,185,129,.14); color:#6ee7b7; font-weight:600}
+
+  .content{flex:1; min-width:0; padding:20px 22px 40px}
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+    margin:-20px -22px 18px; padding:16px 22px;
+    background:linear-gradient(180deg,#ffffff, #fbfdff);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar h1{margin:0; font-size:19px; letter-spacing:-.2px}
+  .topbar p{margin:2px 0 0; font-size:12.5px; color:var(--ink-500)}
+  .search{
+    display:flex; align-items:center; gap:8px; min-width:280px;
+    background:#fff; border:1px solid var(--line); border-radius:11px; padding:9px 12px;
+    color:var(--ink-400); font-size:13px; box-shadow:var(--shadow-sm);
+  }
+
+  /* ============================ KPI ============================ */
+  .kpis{display:grid; gap:14px; grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:16px}
+  .kpi{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 15px; box-shadow:var(--shadow-sm); position:relative; overflow:hidden;
+  }
+  .kpi::after{content:""; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent,var(--brand-500)); opacity:.9}
+  .kpi .top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .chip{width:34px; height:34px; border-radius:10px; display:grid; place-items:center; font-size:16px;
+        background:var(--chip-bg,#ecfdf5); color:var(--chip-fg,#047857)}
+  .kpi .label{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-500); font-weight:700; margin-top:11px}
+  .kpi .val{font-size:26px; font-weight:800; letter-spacing:-.6px; margin-top:2px}
+  .kpi .val small{font-size:12px; font-weight:600; color:var(--ink-500); letter-spacing:0}
+  .kpi .foot{display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap}
+  .pill{font-size:11px; font-weight:700; border-radius:999px; padding:3px 8px}
+  .up{background:var(--brand-50); color:var(--brand-700)}
+  .down{background:var(--rose-50); color:var(--rose-700)}
+  .flat{background:var(--line-soft); color:var(--ink-500)}
+  .spark{display:block; width:100%; height:30px; margin-top:10px}
+
+  /* ============================ CARDS/GRID ============================ */
+  .grid2{display:grid; gap:14px; grid-template-columns:1.25fr .95fr; margin-bottom:16px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm)}
+  .card .hd{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; border-bottom:1px solid var(--line-soft)}
+  .card .hd h3{margin:0; font-size:14.5px}
+  .card .hd p{margin:2px 0 0; font-size:12px; color:var(--ink-500)}
+  .card .bd{padding:15px}
+
+  .target .rowline{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px}
+  .target .big{font-size:30px; font-weight:800; letter-spacing:-.8px}
+  .track{height:10px; border-radius:999px; background:var(--line-soft); overflow:hidden}
+  .fill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--brand-500),var(--teal-500))}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; font-size:12px; color:var(--ink-600)}
+  .legend i{display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:6px}
+  .mini-bars{display:flex; align-items:flex-end; gap:6px; height:70px; margin-top:16px}
+  .mini-bars div{flex:1; border-radius:5px 5px 2px 2px; background:linear-gradient(180deg,var(--brand-400,#34d399),var(--brand-600)); opacity:.92}
+  .mini-bars div.warn{background:linear-gradient(180deg,#fbbf24,var(--amber-500))}
+
+  .alert-row{display:flex; gap:11px; padding:11px 12px; border-radius:11px; border:1px solid var(--amber-200); background:var(--amber-50); margin-bottom:9px}
+  .alert-row.crit{border-color:var(--rose-200); background:var(--rose-50)}
+  .alert-row .ic{font-size:15px; line-height:1.4}
+  .alert-row .t{font-weight:700; font-size:13px}
+  .alert-row .d{font-size:12px; color:var(--ink-600); margin-top:2px}
+  .code{font-size:10.5px; font-weight:700; border:1px solid currentColor; border-radius:6px; padding:1px 6px; opacity:.8}
+
+  /* ============================ TABLE ============================ */
+  .toolbar{display:flex; gap:9px; align-items:center; flex-wrap:wrap; padding:12px 15px; border-bottom:1px solid var(--line-soft)}
+  .tab{padding:6px 11px; border-radius:999px; font-size:12.5px; color:var(--ink-600); border:1px solid transparent}
+  .tab.on{background:var(--brand-50); color:var(--brand-700); border-color:var(--brand-200); font-weight:700}
+  .btn{display:inline-flex; align-items:center; gap:7px; border-radius:10px; padding:8px 12px; font-size:12.5px; font-weight:600; border:1px solid var(--line); background:#fff; color:var(--ink-700); cursor:default}
+  .btn.primary{background:linear-gradient(135deg,var(--brand-600),var(--teal-600)); border-color:transparent; color:#fff; box-shadow:0 8px 18px -10px rgba(5,150,105,.9)}
+  .btn.sm{padding:6px 10px; font-size:12px}
+
+  table{width:100%; border-collapse:separate; border-spacing:0}
+  thead th{
+    position:sticky; top:0; background:#fbfdff; z-index:1;
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--ink-500); padding:11px 14px; border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--line-soft); vertical-align:middle; font-size:13px}
+  tbody tr:hover{background:#fafcff}
+  .cell-title{font-weight:700; color:var(--ink-900)}
+  .cell-sub{font-size:11.5px; color:var(--ink-500); margin-top:2px}
+  .badge{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; border-radius:999px; padding:3.5px 9px; border:1px solid}
+  .b-request{background:var(--amber-50); border-color:var(--amber-200); color:var(--amber-700)}
+  .b-proses{background:var(--sky-50); border-color:var(--sky-200); color:var(--sky-700)}
+  .b-finish{background:var(--brand-50); border-color:var(--brand-200); color:var(--brand-700)}
+  .b-claim{background:var(--violet-50); border-color:var(--violet-200); color:var(--violet-600)}
+  .b-plain{background:#fff; border-color:var(--line); color:var(--ink-500)}
+  .age{font-weight:700}
+  .age.ok{color:var(--brand-700)} .age.mid{color:var(--amber-700)} .age.bad{color:var(--rose-700)}
+
+  .loadmore{display:flex; flex-direction:column; align-items:center; gap:8px; padding:14px; border-top:1px solid var(--line-soft); background:#fbfdff}
+  .loadmore span{font-size:12px; color:var(--ink-500)}
+
+  /* ============================ MOBILE (kartu) ============================ */
+  .cards{display:none; padding:12px; gap:10px; flex-direction:column}
+  .tcard{border:1px solid var(--line); border-radius:12px; padding:12px; background:#fff; box-shadow:var(--shadow-sm)}
+  .tcard .r1{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .tcard .no{font-weight:800; font-size:13.5px}
+  .tcard .meta{display:grid; grid-template-columns:88px 1fr; gap:4px 10px; margin-top:10px; font-size:12.5px}
+  .tcard .meta dt{color:var(--ink-500)}
+  .tcard .meta dd{margin:0; color:var(--ink-800); font-weight:600}
+  .tcard .acts{display:flex; gap:8px; margin-top:12px}
+  .tcard .acts .btn{flex:1; justify-content:center}
+
+  @media (max-width: 980px){
+    .tablewrap{display:none}
+    .cards{display:flex}
+    .toolbar .desktop-only{display:none}
+  }
+
+  /* ============================ SHOWCASE ============================ */
+  .sectionwrap{padding:26px 22px; max-width:1180px; margin:0 auto}
+  .section-title{margin:0 0 4px; font-size:17px}
+  .section-sub{margin:0 0 18px; color:var(--ink-500); font-size:13px}
+  .showcase{display:grid; gap:22px; grid-template-columns:340px 1fr; align-items:start}
+  .phone{
+    width:340px; border-radius:34px; border:9px solid #0b1220; background:#fff; overflow:hidden;
+    box-shadow:0 30px 60px -30px rgba(15,23,42,.5);
+  }
+  .phone .notch{height:26px; background:#0b1220; display:flex; justify-content:center}
+  .phone .notch i{width:96px; height:9px; border-radius:99px; background:#243044; margin-top:9px}
+  .phone .ph-top{padding:12px 14px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between}
+  .phone .ph-top b{font-size:14px}
+  .phscroll{max-height:560px; overflow:auto}
+  .bullets{margin:0; padding-left:20px; color:var(--ink-700); font-size:13.5px}
+  .bullets li{margin:7px 0}
+  .bullets b{color:var(--ink-900)}
+
+  /* ============================ TOKENS ============================ */
+  .swatches{display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .sw{border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff}
+  .sw .c{height:56px}
+  .sw .n{padding:8px 10px; font-size:11.5px; color:var(--ink-600)}
+  .sw .n b{display:block; color:var(--ink-900); font-size:12.5px; font-family:ui-monospace,Menlo,Consolas,monospace}
+
+  .demo-row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .empty{text-align:center; padding:36px 20px; color:var(--ink-500)}
+  .empty .bigicon{font-size:34px}
+  .empty h4{margin:10px 0 4px; color:var(--ink-800)}
+  .empty p{margin:0 0 14px; font-size:13px}
+
+  @media (max-width: 1180px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} .grid2{grid-template-columns:1fr} }
+  @media (max-width: 900px){
+    .shell{display:block}
+    .sidebar{display:none}
+    .showcase{grid-template-columns:1fr}
+    .phone{margin:0 auto}
+  }
+</style>
+</head>
+<body>
+
+<div class="note">
+  <span style="font-size:18px">🎨</span>
+  <div>
+    <b>Preview UX — mockup statis (belum ada perubahan pada aplikasi)</b>
+    <p>Isi: polish visual &amp; warna brand · tabel berubah jadi kartu di HP · dashboard lebih hidup.
+       Coba <b>kecilkan lebar jendela</b> &lt; 980px untuk melihat tabel otomatis berubah menjadi kartu.</p>
+  </div>
+</div>
+
+<!-- ============================ 1. DESKTOP SHELL ============================ -->
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brandrow">
+      <div class="logo">AS</div>
+      <div>
+        <div class="t">AfterSales Pro</div>
+        <div class="s">Workshop × Produsen</div>
+      </div>
+    </div>
+
+    <div class="navitem"><span class="ic">▦</span><span>Dashboard KPI<small class="sub">Monitoring &amp; Alert Engine</small></span></div>
+    <div class="navitem active"><span class="ic">◆</span><span>Master Data<small class="sub">Toko, Customer, Unit, Karyawan</small></span></div>
+    <div class="navgroup">
+      <span>Toko</span>
+      <span>Customer</span>
+      <span class="on">Unit Asset</span>
+      <span>Karyawan</span>
+    </div>
+    <div class="navitem"><span class="ic">🔧</span><span>Proses Service<small class="sub">REQUEST → PROSES → FINISH</small></span></div>
+    <div class="navitem"><span class="ic">📍</span><span>Field Ops<small class="sub">Kunjungan toko &amp; scan barcode</small></span></div>
+    <div class="navitem"><span class="ic">📦</span><span>Stok Inventory<small class="sub">Sparepart titipan produsen</small></span></div>
+    <div class="navitem"><span class="ic">📄</span><span>Klaim &amp; Rekap<small class="sub">Klaim produsen &amp; export Excel</small></span></div>
+    <div class="navitem"><span class="ic">🧾</span><span>Nota Servis BASS<small class="sub">Isi, duplikat, cetak</small></span></div>
+    <div class="navitem"><span class="ic">⚙</span><span>Pengaturan<small class="sub">Profil, Gateway, AI, Backup</small></span></div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div>
+        <h1>Dashboard KPI</h1>
+        <p>Otomasi after-sales · STTB QR · inventory · klaim Excel</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="search">🔎 <span>Cari tiket / serial / toko / part…</span> <span style="margin-left:auto;font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px">Ctrl K</span></div>
+        <div class="btn">⟳ Refresh</div>
+        <div class="btn primary">＋ Tiket Baru</div>
+      </div>
+    </header>
+
+    <!-- KPI -->
+    <section class="kpis">
+      <div class="kpi" style="--accent:var(--sky-500);--chip-bg:var(--sky-50);--chip-fg:var(--sky-700)">
+        <div class="top"><span class="chip">🕐</span><span class="pill up">▲ 12%</span></div>
+        <div class="label">Tiket Berjalan</div>
+        <div class="val">38 <small>/ 71 total</small></div>
+        <svg class="spark" viewBox="0 0 120 30" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#0ea5e9" stroke-width="2" points="0,22 15,18 30,20 45,13 60,15 75,9 90,12 105,6 120,8"/>
+        </svg>
+      </div>
+
+      <div class="kpi" style="--accent:var(--brand-500);--chip-bg:var(--brand-50);--chip-fg:var(--brand-700)">
+        <div class="top"><span class="chip">✅</span><span class="pill up">▲ 6%</span></div>
+        <div class="label">Selesai Bulan Ini</div>
+        <div class="val">128</div>
+        <svg class="spark" viewBox="0 0 120 30" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#10b981" stroke-width="2" points="0,26 15,24 30,19 45,20 60,14 75,12 90,13 105,8 120,5"/>
+        </svg>
+      </div>
+
+      <div class="kpi" style="--accent:var(--amber-500);--chip-bg:var(--amber-50);--chip-fg:var(--amber-700)">
+        <div class="top"><span class="chip">⚠</span><span class="pill down">▲ 3 baru</span></div>
+        <div class="label">Unit Pending &gt; 24 jam</div>
+        <div class="val">9 <small>unit</small></div>
+        <svg class="spark" viewBox="0 0 120 30" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#f59e0b" stroke-width="2" points="0,10 15,12 30,8 45,14 60,11 75,16 90,13 105,18 120,15"/>
+        </svg>
+      </div>
+
+      <div class="kpi" style="--accent:var(--rose-500);--chip-bg:var(--rose-50);--chip-fg:var(--rose-700)">
+        <div class="top"><span class="chip">🚚</span><span class="pill flat">— stabil</span></div>
+        <div class="label">Kunjungan Terlambat</div>
+        <div class="val">4 <small>toko</small></div>
+        <svg class="spark" viewBox="0 0 120 30" preserveAspectRatio="none">
+          <polyline fill="none" stroke="#f43f5e" stroke-width="2" points="0,16 15,14 30,17 45,15 60,18 75,16 90,19 105,17 120,18"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- target + alert -->
+    <section class="grid2">
+      <div class="card target">
+        <div class="hd">
+          <div>
+            <h3>Target Penyelesaian Bulan Ini</h3>
+            <p>Oktober 2026 · dihitung dari tiket berstatus FINISH</p>
+          </div>
+          <span class="badge b-finish">ON TRACK</span>
+        </div>
+        <div class="bd">
+          <div class="rowline">
+            <div class="big">78%</div>
+            <div style="text-align:right;font-size:12.5px;color:var(--ink-500)">128 dari 165 tiket<br><b style="color:var(--ink-800)">sisa 37 tiket · 7 hari</b></div>
+          </div>
+          <div class="track"><div class="fill" style="width:78%"></div></div>
+          <div class="legend">
+            <span><i style="background:var(--brand-500)"></i>Selesai 128</span>
+            <span><i style="background:var(--amber-500)"></i>Proses 38</span>
+            <span><i style="background:var(--ink-300)"></i>Belum part 9</span>
+          </div>
+          <div class="mini-bars">
+            <div style="height:38%"></div><div style="height:52%"></div><div style="height:44%"></div>
+            <div style="height:66%"></div><div style="height:58%"></div><div style="height:74%"></div>
+            <div class="warn" style="height:30%"></div><div style="height:88%"></div><div style="height:70%"></div>
+            <div style="height:96%"></div><div style="height:62%"></div><div style="height:80%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd">
+          <div>
+            <h3>Alert Engine</h3>
+            <p>Klik baris untuk lompat ke sumber masalah</p>
+          </div>
+          <span class="pill down">2 kritis · 3 perhatian</span>
+        </div>
+        <div class="bd">
+          <div class="alert-row crit">
+            <span class="ic">🔴</span>
+            <div style="flex:1;min-width:0">
+              <div class="t">Unit pending tanpa kode part <span class="code">ALT-02</span></div>
+              <div class="d">9 unit &gt; 24 jam belum ada kode + nama sparepart</div>
+            </div>
+            <span style="color:var(--ink-400)">›</span>
+          </div>
+          <div class="alert-row crit">
+            <span class="ic">🔴</span>
+            <div style="flex:1;min-width:0">
+              <div class="t">Stok di bawah reorder point <span class="code">ALT-03</span></div>
+              <div class="d">7 sparepart perlu re-order ke produsen</div>
+            </div>
+            <span style="color:var(--ink-400)">›</span>
+          </div>
+          <div class="alert-row">
+            <span class="ic">🟡</span>
+            <div style="flex:1;min-width:0">
+              <div class="t">Kunjungan toko terlambat <span class="code">ALT-01</span></div>
+              <div class="d">4 toko melewati siklus kunjungan</div>
+            </div>
+            <span style="color:var(--ink-400)">›</span>
+          </div>
+          <div class="alert-row">
+            <span class="ic">🟡</span>
+            <div style="flex:1;min-width:0">
+              <div class="t">Klaim menunggu diajukan <span class="code">ALT-04</span></div>
+              <div class="d">12 tiket FINISH belum di-submit ke produsen</div>
+            </div>
+            <span style="color:var(--ink-400)">›</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABEL: Proses Service -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h3>Proses Service</h3>
+          <p>Workflow REQUEST → PROSES → FINISH · 71 tiket</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <div class="btn sm">⬇ Export</div>
+          <div class="btn sm primary">＋ Tiket</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <span class="tab on">Semua 71</span>
+        <span class="tab">Request 12</span>
+        <span class="tab">Proses 38</span>
+        <span class="tab">Finish 21</span>
+        <span class="desktop-only" style="margin-left:auto">
+          <span class="search" style="min-width:230px">🔎 <span>Cari no. tiket / serial…</span></span>
+        </span>
+      </div>
+
+      <!-- Desktop: tabel -->
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:34px"></th>
+              <th>No. Tiket</th>
+              <th>Toko / Customer</th>
+              <th>Unit</th>
+              <th>Part</th>
+              <th>Status</th>
+              <th>Umur</th>
+              <th style="text-align:right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="cell-title mono">SVC-2610-0043</div>
+                <div class="cell-sub">STTB · 24 Okt 2026</div>
+              </td>
+              <td>
+                <div class="cell-title">Toko Sentral Elektric</div>
+                <div class="cell-sub">E2E-TOKO · Jl. Melati 12</div>
+              </td>
+              <td>
+                <div class="cell-title">Miyako KAS-1620</div>
+                <div class="cell-sub">SN-E2E-001 · NON-GARANSI</div>
+              </td>
+              <td><span class="badge b-finish">READY · Kapasitor 4uF</span></td>
+              <td><span class="badge b-proses">PROSES</span></td>
+              <td><span class="age mid">28 jam</span></td>
+              <td style="text-align:right"><span class="btn sm">Detail</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="cell-title mono">SVC-2610-0044</div>
+                <div class="cell-sub">24 Okt 2026</div>
+              </td>
+              <td>
+                <div class="cell-title">Toko Berkah Jaya</div>
+                <div class="cell-sub">TKB-002</div>
+              </td>
+              <td>
+                <div class="cell-title">Rinnai RI-522</div>
+                <div class="cell-sub">SN-BULK-007 · GARANSI</div>
+              </td>
+              <td><span class="badge b-request">ORDER · Elemen Pemanas</span></td>
+              <td><span class="badge b-request">REQUEST</span></td>
+              <td><span class="age bad">4 hari</span></td>
+              <td style="text-align:right"><span class="btn sm">Detail</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="cell-title mono">SVC-2610-0045</div>
+                <div class="cell-sub">23 Okt 2026</div>
+              </td>
+              <td>
+                <div class="cell-title">Bpk. Andi (Perorangan)</div>
+                <div class="cell-sub">0812-1111-2222</div>
+              </td>
+              <td>
+                <div class="cell-title">Shimizu PC-260</div>
+                <div class="cell-sub">SN-BULK-021 · NON-GARANSI</div>
+              </td>
+              <td><span class="cell-sub">— tanpa part —</span></td>
+              <td><span class="badge b-finish">FINISH</span></td>
+              <td><span class="age ok">5 jam</span></td>
+              <td style="text-align:right"><span class="btn sm">Detail</span></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <div class="cell-title mono">SVC-2610-0046</div>
+                <div class="cell-sub">23 Okt 2026</div>
+              </td>
+              <td>
+                <div class="cell-title">CV Mandiri Teknik</div>
+                <div class="cell-sub">MDR-011</div>
+              </td>
+              <td>
+                <div class="cell-title">Panasonic F-300</div>
+                <div class="cell-sub">SN-BULK-033 · STOK TOKO</div>
+              </td>
+              <td><span class="badge b-finish">READY · Kapasitor 6uF</span></td>
+              <td><span class="badge b-claim">KLAIM PAID</span></td>
+              <td><span class="age ok">11 jam</span></td>
+              <td style="text-align:right"><span class="btn sm">Detail</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="loadmore">
+          <span>Menampilkan 4 dari 71 tiket</span>
+          <span class="btn sm">▾ Tampilkan lebih banyak (sisa 67)</span>
+        </div>
+      </div>
+
+      <!-- Mobile: kartu (otomatis aktif < 980px) -->
+      <div class="cards">
+        <div class="tcard">
+          <div class="r1">
+            <span class="no mono">SVC-2610-0043</span>
+            <span class="badge b-proses">PROSES</span>
+          </div>
+          <dl class="meta">
+            <dt>Toko</dt><dd>Toko Sentral Elektric</dd>
+            <dt>Unit</dt><dd>Miyako KAS-1620</dd>
+            <dt>Seri</dt><dd class="mono">SN-E2E-001</dd>
+            <dt>Part</dt><dd><span class="badge b-finish">READY · Kapasitor 4uF</span></dd>
+            <dt>Umur</dt><dd><span class="age mid">28 jam</span></dd>
+          </dl>
+          <div class="acts">
+            <span class="btn sm">Detail</span>
+            <span class="btn sm primary">Selesaikan</span>
+          </div>
+        </div>
+
+        <div class="tcard">
+          <div class="r1">
+            <span class="no mono">SVC-2610-0044</span>
+            <span class="badge b-request">REQUEST</span>
+          </div>
+          <dl class="meta">
+            <dt>Toko</dt><dd>Toko Berkah Jaya</dd>
+            <dt>Unit</dt><dd>Rinnai RI-522</dd>
+            <dt>Seri</dt><dd class="mono">SN-BULK-007</dd>
+            <dt>Part</dt><dd><span class="badge b-request">ORDER · Elemen Pemanas</span></dd>
+            <dt>Umur</dt><dd><span class="age bad">4 hari</span></dd>
+          </dl>
+          <div class="acts">
+            <span class="btn sm">Detail</span>
+            <span class="btn sm">Surat Jalan</span>
+          </div>
+        </div>
+
+        <div class="tcard">
+          <div class="r1">
+            <span class="no mono">SVC-2610-0045</span>
+            <span class="badge b-finish">FINISH</span>
+          </div>
+          <dl class="meta">
+            <dt>Customer</dt><dd>Bpk. Andi</dd>
+            <dt>Unit</dt><dd>Shimizu PC-260</dd>
+            <dt>Seri</dt><dd class="mono">SN-BULK-021</dd>
+            <dt>Part</dt><dd style="color:var(--ink-500)">— tanpa part —</dd>
+            <dt>Umur</dt><dd><span class="age ok">5 jam</span></dd>
+          </dl>
+          <div class="acts">
+            <span class="btn sm">Detail</span>
+            <span class="btn sm primary">Buat Nota</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============================ 2. PENJELASAN TABEL → KARTU ============================ -->
+<div class="sectionwrap" style="border-top:1px solid var(--line); margin-top:20px">
+  <h2 class="section-title">Tabel → Kartu di HP</h2>
+  <p class="section-sub">Satu markup, dua wajah. Di desktop tetap tabel (padat, bisa sortir &amp; centang massal);
+     di HP berubah jadi kartu agar tidak ada geser horizontal.</p>
+
+  <div class="showcase">
+    <div class="phone">
+      <div class="notch"><i></i></div>
+      <div class="ph-top">
+        <b>Proses Service</b>
+        <span class="badge b-plain">71 tiket</span>
+      </div>
+      <div class="phscroll">
+        <div style="padding:10px 12px 0"><div class="search" style="min-width:0">🔎 <span>Cari tiket / serial…</span></div></div>
+        <div class="cards" style="display:flex">
+          <div class="tcard">
+            <div class="r1">
+              <span class="no mono">SVC-2610-0043</span>
+              <span class="badge b-proses">PROSES</span>
+            </div>
+            <dl class="meta">
+              <dt>Toko</dt><dd>Toko Sentral Elektric</dd>
+              <dt>Unit</dt><dd>Miyako KAS-1620</dd>
+              <dt>Seri</dt><dd class="mono">SN-E2E-001</dd>
+              <dt>Part</dt><dd><span class="badge b-finish">READY · Kapasitor 4uF</span></dd>
+              <dt>Umur</dt><dd><span class="age mid">28 jam</span></dd>
+            </dl>
+            <div class="acts">
+              <span class="btn sm">Detail</span>
+              <span class="btn sm primary">Selesaikan</span>
+            </div>
+          </div>
+          <div class="tcard">
+            <div class="r1">
+              <span class="no mono">SVC-2610-0044</span>
+              <span class="badge b-request">REQUEST</span>
+            </div>
+            <dl class="meta">
+              <dt>Toko</dt><dd>Toko Berkah Jaya</dd>
+              <dt>Unit</dt><dd>Rinnai RI-522</dd>
+              <dt>Seri</dt><dd class="mono">SN-BULK-007</dd>
+              <dt>Part</dt><dd><span class="badge b-request">ORDER · Elemen Pemanas</span></dd>
+              <dt>Umur</dt><dd><span class="age bad">4 hari</span></dd>
+            </dl>
+            <div class="acts">
+              <span class="btn sm">Detail</span>
+              <span class="btn sm">Surat Jalan</span>
+            </div>
+          </div>
+          <div class="tcard">
+            <div class="r1">
+              <span class="no mono">SVC-2610-0045</span>
+              <span class="badge b-finish">FINISH</span>
+            </div>
+            <dl class="meta">
+              <dt>Customer</dt><dd>Bpk. Andi</dd>
+              <dt>Unit</dt><dd>Shimizu PC-260</dd>
+              <dt>Seri</dt><dd class="mono">SN-BULK-021</dd>
+              <dt>Umur</dt><dd><span class="age ok">5 jam</span></dd>
+            </dl>
+            <div class="acts">
+              <span class="btn sm">Detail</span>
+              <span class="btn sm primary">Buat Nota</span>
+            </div>
+          </div>
+        </div>
+        <div class="loadmore"><span class="btn sm">▾ Tampilkan lebih banyak (sisa 67)</span></div>
+      </div>
+    </div>
+
+    <div>
+      <ul class="bullets">
+        <li><b>Tanpa geser horizontal</b> — kolom penting jadi baris label→nilai di kartu; sisanya tetap ada di halaman Detail.</li>
+        <li><b>Tombol aksi langsung terlihat</b> — mis. "Selesaikan" / "Surat Jalan" / "Buat Nota" sesuai status tiket (bukan disembunyikan di menu 3 titik).</li>
+        <li><b>Badge status &amp; umur tetap</b> menonjol supaya tiket overdue kelihatan merah sekilas.</li>
+        <li><b>Centang massal tetap ada di desktop</b> (mis. cetak Surat Jalan banyak tiket sekaligus).</li>
+        <li><b>Pencarian &amp; tab tetap sama</b> — ditambah area sentuh ≥ 44px agar enak dipakai teknisi di lapangan.</li>
+        <li>Bertahap: mulai dari <b>Proses Service</b> → <b>Stok Inventory</b> → <b>Master Data</b> (Unit/Toko).</li>
+      </ul>
+
+      <h3 style="margin:22px 0 6px;font-size:15px">Contoh keadaan kosong (empty state)</h3>
+      <div class="card">
+        <div class="empty">
+          <div class="bigicon">🔧</div>
+          <h4>Tidak ada tiket pada status ini</h4>
+          <p>Semua tiket REQUEST sudah diproses. Bagus! 🎉</p>
+          <span class="btn primary">＋ Buat Tiket Baru</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ 3. TOKENS & KOMPONEN ============================ -->
+<div class="sectionwrap" style="border-top:1px solid var(--line)">
+  <h2 class="section-title">Warna Brand (design tokens)</h2>
+  <p class="section-sub">Diambil dari palet yang sudah dipakai sekarang (emerald/teal + slate + amber/rose), lalu dijadikan token
+    supaya konsisten di semua view. Primary saat ini masih abu-abu — mockup ini mengusulkan primary = brand.</p>
+
+  <div class="swatches">
+    <div class="sw"><div class="c" style="background:#059669"></div><div class="n"><b>brand-600</b>#059669</div></div>
+    <div class="sw"><div class="c" style="background:#10b981"></div><div class="n"><b>brand-500</b>#10b981</div></div>
+    <div class="sw"><div class="c" style="background:#d1fae5"></div><div class="n"><b>brand-100</b>#d1fae5</div></div>
+    <div class="sw"><div class="c" style="background:#0d9488"></div><div class="n"><b>teal-600</b>#0d9488</div></div>
+    <div class="sw"><div class="c" style="background:#0f172a"></div><div class="n"><b>ink-900</b>#0f172a</div></div>
+    <div class="sw"><div class="c" style="background:#64748b"></div><div class="n"><b>ink-500</b>#64748b</div></div>
+    <div class="sw"><div class="c" style="background:#e6eaf1"></div><div class="n"><b>line</b>#e6eaf1</div></div>
+    <div class="sw"><div class="c" style="background:#f59e0b"></div><div class="n"><b>amber-500</b>#f59e0b</div></div>
+    <div class="sw"><div class="c" style="background:#f43f5e"></div><div class="n"><b>rose-500</b>#f43f5e</div></div>
+    <div class="sw"><div class="c" style="background:#0ea5e9"></div><div class="n"><b>sky-500</b>#0ea5e9</div></div>
+  </div>
+
+  <h3 style="margin:26px 0 10px;font-size:15px">Komponen dasar</h3>
+  <div class="demo-row">
+    <span class="btn primary">Simpan</span>
+    <span class="btn">Batal</span>
+    <span class="btn sm">Tampilkan lebih banyak</span>
+    <span class="badge b-request">REQUEST</span>
+    <span class="badge b-proses">PROSES</span>
+    <span class="badge b-finish">FINISH</span>
+    <span class="badge b-claim">KLAIM</span>
+    <span class="badge b-plain">NETRAL</span>
+    <span class="pill up">▲ naik</span>
+    <span class="pill down">▼ turun</span>
+  </div>
+</div>
+
+</body>
+</html>
