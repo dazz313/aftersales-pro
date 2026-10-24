@@ -32,6 +32,6 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    env: { DATABASE_URL },
+    env: { DATABASE_URL, DISABLE_GIT_BACKUP: '1' },
   },
 })

@@ -929,3 +929,21 @@ Stage Summary:
 - File baru: src/lib/client-ip.ts, tests/unit/client-ip.test.ts, tests/unit/auth-cookie.test.ts, README-DEPLOY-CLOUDFLARE.md
 - File diubah: src/lib/auth.ts, src/app/api/auth/login/route.ts, src/instrumentation.ts, next.config.ts, .env.example
 - Keputusan terbuka untuk pengguna: apakah default SESSION_COOKIE_SAMESITE sebaiknya diubah ke lax (butuh konfirmasi model akses: top-level vs iframe).
+
+---
+Task ID: 12
+Agent: Main Agent (Super Z)
+Task: E2E alur bisnis penuh (tiket -> finish -> klaim -> nota) + perbaikan repo (.env.example ter-commit)
+
+Work Log:
+- e2e/prepare-db.mjs: mulai dari database BERSIH tiap sesi (hapus e2e.db + -wal/-shm sebelum prisma db push) lalu seed lengkap: admin uji, MasterToko E2E-TOKO, MasterCustomer, UnitAsset SN-E2E-001, dan MasterSparepart E2E-PART-01 (stok 20, hargaKlaim 45000 agar part READY -> tiket otomatis PROSES).
+- e2e/flow.spec.ts (baru): alur penuh lewat HTTP memakai sesi hasil login UI (page.request): buat tiket (part READY -> PROSES + STTB terbit) -> FINISH (wajib foto nota berstempel) -> SUBMIT_CLAIM (DRAFT->SUBMITTED) -> MARK_PAID (->PAID) -> POST /api/nota/dari-tiket (nota BASS terisi otomatis, noSeri SN-E2E-001, memuat part). Ditutup verifikasi TAMPIL DI UI: tiket dicari di Proses Service, nota dicari di layar Nota Servis BASS.
+- Penting: setiap mutasi memanggil autoGitBackup() yang menulis db/snapshots/ dan membuat COMMIT git. Ditambahkan gerbang env DISABLE_GIT_BACKUP=1 (src/lib/git-backup.ts) yang mematikan snapshot+commit; playwright.config.ts menyetelnya di webServer env. Terbukti: setelah E2E, git status tetap bersih dan TIDAK ada commit auto-backup baru.
+- Perbaikan repo: .env.example ternyata ter-ignore oleh pola .env* dan belum pernah ter-commit, padahal dirujuk dokumentasi deploy. .gitignore diberi pengecualian !.env.example; DATABASE_URL di contoh dinetralkan jadi placeholder path absolut (bukan path mesin pengembang).
+- .env.example: dokumentasi SESSION_COOKIE_SAMESITE dan DISABLE_GIT_BACKUP.
+- Verifikasi: npm run test:e2e 7/7 lulus (~28s, termasuk alur penuh 13s); npm test 66/66; npm run typecheck bersih; npm run lint bersih.
+
+Stage Summary:
+- Alur bisnis inti kini terjaga uji end-to-end (dari tiket sampai nota) dan hasilnya diverifikasi di UI.
+- File baru: e2e/flow.spec.ts, .env.example (kini ter-commit)
+- File diubah: e2e/prepare-db.mjs, playwright.config.ts, src/lib/git-backup.ts, .gitignore

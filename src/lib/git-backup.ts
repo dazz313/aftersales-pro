@@ -35,6 +35,15 @@ const SPAREPART_FILE = 'sparepart-latest.json'
 // Maksimal 1 commit otomatis per interval agar riwayat tidak banjir saat banyak request
 const MIN_COMMIT_INTERVAL_MS = 20_000
 
+/**
+ * Gerbang untuk lingkungan uji (E2E/CI): matikan penulisan snapshot & commit
+ * git agar tes tidak mengubah db/snapshots/ dan tidak membuat commit di repo.
+ * Aktif hanya bila DISABLE_GIT_BACKUP=1.
+ */
+function gitBackupDimatikan(): boolean {
+  return process.env.DISABLE_GIT_BACKUP === '1'
+}
+
 let commitQueue: Promise<void> = Promise.resolve()
 let lastCommitAt = 0
 
@@ -126,6 +135,7 @@ export async function writeDbSnapshot(): Promise<string | null> {
  *   await autoGitBackup('CREATE', 'master_toko', kodeToko, aktor)
  */
 export async function autoGitBackup(aksi: string, entitas: string, ringkasan?: string, aktor?: string) {
+  if (gitBackupDimatikan()) return
   const file = await writeDbSnapshot()
   if (!file) return
   const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ')
@@ -135,6 +145,7 @@ export async function autoGitBackup(aksi: string, entitas: string, ringkasan?: s
 
 /** Kompatibilitas: snapshot khusus sparepart, lalu ikut alur backup umum. */
 export async function backupSparepartToGit(aksi: string, kodePart: string, aktor?: string) {
+  if (gitBackupDimatikan()) return
   try {
     const rows = await db.masterSparepart.findMany({ orderBy: { kodePart: 'asc' } })
     const snapshot: SparepartSnapshotRow[] = rows.map((s) => ({
