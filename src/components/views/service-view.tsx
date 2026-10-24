@@ -21,6 +21,8 @@ import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import HistoryInput from '@/components/history-input'
+import LoadMore from '@/components/load-more'
+import { useBertahap } from '@/hooks/use-bertahap'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus, ChevronDown,
@@ -227,7 +229,13 @@ export default function ServiceView() {
       ], cariTiket))
     }
     return list
-  }, [tickets, tab, garansiFilter, modelFilter, cariTiket])
+  }, [tickets, tab, garansiFilter, modelFilter, tokoFilter, brandFilter, cariTiket])
+
+  // Render bertahap: batas otomatis kembali ke awal saat filter/pencarian berubah.
+  const tiketBertahap = useBertahap(
+    filtered,
+    `${tab}|${garansiFilter}|${modelFilter ?? ''}|${tokoFilter ?? ''}|${brandFilter ?? ''}|${cariTiket}`,
+  )
 
   const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null || tokoFilter !== null || brandFilter !== null
 
@@ -854,7 +862,7 @@ export default function ServiceView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filtered.map((t) => {
+                  {tiketBertahap.tampil.map((t) => {
                     const st = STATUS_STYLES[t.status]
                     const kl = KLAIM_STYLES[t.statusKlaimProdusen]
                     // Baris part kembar yg di-nolkan saat gabung FINISH disembunyikan
@@ -1085,6 +1093,12 @@ export default function ServiceView() {
               </Table>
             </div>
           )}
+          <LoadMore
+            tampil={tiketBertahap.tampil.length}
+            total={tiketBertahap.total}
+            onMore={tiketBertahap.tambah}
+            satuan="tiket"
+          />
         </CardContent>
       </Card>
 

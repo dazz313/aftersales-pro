@@ -67,3 +67,44 @@ test.describe('Autentikasi', () => {
     await expect(page.getByRole('heading', { name: 'Proses Service' })).toBeVisible()
   })
 })
+
+test.describe('Render bertahap daftar besar', () => {
+  test('tabel tiket hanya merender 60 baris dulu, lalu bisa ditambah', async ({ page }) => {
+    await page.goto('/login')
+    await page.fill('#email', ADMIN.email)
+    await page.fill('#password', ADMIN.password)
+    await page.click('button[type="submit"]')
+    await expect(page.getByRole('heading', { name: 'Dashboard KPI' })).toBeVisible()
+    await page.getByRole('button', { name: /Proses Service/ }).first().click()
+    await expect(page.getByRole('heading', { name: 'Proses Service' })).toBeVisible()
+
+    // Seed E2E menyiapkan 70 tiket massal → daftar pasti melebihi satu blok.
+    const info = page.getByText(/Menampilkan \d+ dari \d+ tiket/)
+    await expect(info).toBeVisible()
+    await expect(info).toContainText('Menampilkan 60 dari')
+
+    const tombol = page.getByRole('button', { name: /Tampilkan lebih banyak/ })
+    await expect(tombol).toBeVisible()
+    await tombol.click()
+    // Blok pertama (60 baris) sudah bertambah → keterangan "60 dari" tidak berlaku lagi.
+    await expect(page.getByText(/Menampilkan 60 dari \d+ tiket/)).toBeHidden()
+  })
+
+  test('tabel unit di Master Data juga dirender bertahap', async ({ page }) => {
+    await page.goto('/login')
+    await page.fill('#email', ADMIN.email)
+    await page.fill('#password', ADMIN.password)
+    await page.click('button[type="submit"]')
+    await expect(page.getByRole('heading', { name: 'Dashboard KPI' })).toBeVisible()
+    await page.getByRole('button', { name: /Master Data/ }).first().click()
+    await page.getByRole('button', { name: 'Unit Asset' }).click()
+    await expect(page.getByRole('tab', { name: /Belum Ada Part/ })).toBeVisible()
+
+    const info = page.getByText(/Menampilkan \d+ dari \d+ unit/)
+    await expect(info).toBeVisible()
+    await expect(info).toContainText('Menampilkan 60 dari')
+
+    await page.getByRole('button', { name: /Tampilkan lebih banyak/ }).first().click()
+    await expect(page.getByText(/Menampilkan 60 dari \d+ unit/)).toBeHidden()
+  })
+})

@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import LoadMore from '@/components/load-more'
+import { useBertahap, type HasilUseBertahap } from '@/hooks/use-bertahap'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
@@ -565,9 +567,17 @@ export default function MasterDataView() {
     [userList, cariUser]
   )
 
+  // Render bertahap tabel master (lihat src/hooks/use-bertahap.ts): batas otomatis
+  // kembali ke awal begitu kata kunci pencarian berubah.
+  const unitTampilBertahap = useBertahap(unitTampil, `${cariUnit}|unit`)
+  const unitBelumBertahap = useBertahap(unitBelumPart, `${cariUnit}|unit-belum`)
+  const unitSudahBertahap = useBertahap(unitSudahPart, `${cariUnit}|unit-sudah`)
+  const tokoBertahap = useBertahap(tokoTampil, cariToko)
+  const custBertahap = useBertahap(custTampil, cariCust)
+
   // Tabel unit ringkas: scroll vertikal berbatas + header sticky agar tidak panjang ke bawah.
   // showStatus=true dipakai untuk hasil pencarian gabungan agar jelas asal Belum/Part Ready Produsen.
-  const renderUnitTable = (list: UnitAsset[], emptyText: string, showStatus = false) => (
+  const renderUnitTable = (list: UnitAsset[], emptyText: string, bertahap: HasilUseBertahap<UnitAsset>, showStatus = false) => (
     <div className="max-h-[52vh] overflow-auto rounded-md border [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-white [&_thead]:shadow-[0_1px_0_rgb(0_0_0/0.08)]">
       <Table>
         <TableHeader>
@@ -596,7 +606,7 @@ export default function MasterDataView() {
             <TableRow>
               <TableCell colSpan={showStatus ? 11 : 10} className="py-8 text-center text-sm text-slate-500">{emptyText}</TableCell>
             </TableRow>
-          ) : list.map((u) => {
+          ) : bertahap.tampil.map((u) => {
             const info = partInfoByUnit.get(u.id) ?? { count: 0, countAktif: 0, codes: [] as string[] }
             // Unit finish (punya tiket tapi tak ada yang aktif) → abu-abu + label FINISH
             // Unit ber-tiket REQUEST EMAIL → label WAITING PART (menunggu part dari produsen via email)
@@ -756,6 +766,12 @@ export default function MasterDataView() {
           })}
         </TableBody>
       </Table>
+      <LoadMore
+        tampil={bertahap.tampil.length}
+        total={bertahap.total}
+        onMore={bertahap.tambah}
+        satuan="unit"
+      />
     </div>
   )
 
@@ -819,7 +835,7 @@ export default function MasterDataView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {tokoTampil.map((t) => (
+                    {tokoBertahap.tampil.map((t) => (
                       <TableRow key={t.id} className={cn(!t.aktif && 'opacity-60', tokoDipilih.has(t.id) && 'bg-red-50/50')}>
                         {bisaHapusToko && (
                           <TableCell className="pr-0">
@@ -877,6 +893,12 @@ export default function MasterDataView() {
                 </Table>
               </div>
             )}
+            <LoadMore
+              tampil={tokoBertahap.tampil.length}
+              total={tokoBertahap.total}
+              onMore={tokoBertahap.tambah}
+              satuan="toko"
+            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -899,7 +921,7 @@ export default function MasterDataView() {
               <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {custTampil.map((c) => (
+                {custBertahap.tampil.map((c) => (
                   <div key={c.id} className="rounded-xl border p-4">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-semibold text-slate-800">{c.nama}</p>
@@ -922,6 +944,12 @@ export default function MasterDataView() {
                 )}
               </div>
             )}
+            <LoadMore
+              tampil={custBertahap.tampil.length}
+              total={custBertahap.total}
+              onMore={custBertahap.tambah}
+              satuan="customer"
+            />
           </CardContent>
         </Card>
       </TabsContent>
@@ -963,7 +991,7 @@ export default function MasterDataView() {
                 <p className="rounded-md bg-teal-50 px-2.5 py-1.5 text-[11px] text-teal-800">
                   Hasil pencarian mencakup <span className="font-semibold">Belum &amp; Part Ready Produsen</span> — {unitTampil.length} unit cocok &quot;{cariUnit.trim()}&quot;.
                 </p>
-                {renderUnitTable(unitTampil, `Tidak ada unit yang cocok dengan "${cariUnit.trim()}" di Belum maupun Part Ready Produsen.`, true)}
+                {renderUnitTable(unitTampil, `Tidak ada unit yang cocok dengan "${cariUnit.trim()}" di Belum maupun Part Ready Produsen.`, unitTampilBertahap, true)}
               </div>
             ) : (
               <Tabs value={unitPartTab} onValueChange={(v) => setUnitPartTab(v as typeof unitPartTab)}>
@@ -973,13 +1001,13 @@ export default function MasterDataView() {
                   <TabsTrigger value="sudah" className="text-xs">Part Ready Produsen ({unitSudahPart.length})</TabsTrigger>
                 </TabsList>
                 <TabsContent value="semua">
-                  {renderUnitTable(unitTampil, 'Belum ada unit terdaftar.', true)}
+                  {renderUnitTable(unitTampil, 'Belum ada unit terdaftar.', unitTampilBertahap, true)}
                 </TabsContent>
                 <TabsContent value="belum">
-                  {renderUnitTable(unitBelumPart, 'Semua unit sudah dapat kode part — tidak ada yang belum.')}
+                  {renderUnitTable(unitBelumPart, 'Semua unit sudah dapat kode part — tidak ada yang belum.', unitBelumBertahap)}
                 </TabsContent>
                 <TabsContent value="sudah">
-                  {renderUnitTable(unitSudahPart, 'Tidak ada unit dengan part pada tiket berjalan (REQUEST/PROSES).')}
+                  {renderUnitTable(unitSudahPart, 'Tidak ada unit dengan part pada tiket berjalan (REQUEST/PROSES).', unitSudahBertahap)}
                 </TabsContent>
               </Tabs>
             )}

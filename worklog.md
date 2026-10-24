@@ -967,3 +967,25 @@ Stage Summary:
 - CSRF kini terlindungi berlapis: SameSite (Lax di localhost, dapat diatur untuk Cloudflare) + verifikasi Origin di middleware.
 - File baru: src/lib/csrf.ts, tests/unit/csrf.test.ts
 - File diubah: src/proxy.ts, e2e/smoke.spec.ts, README-DEPLOY-CLOUDFLARE.md
+
+---
+Task ID: 14
+Agent: Main Agent (Super Z)
+Task: Pagination daftar besar (render bertahap) tanpa mematahkan filter/pencarian/penyeleksian
+
+Work Log:
+- Audit: endpoint yang benar-benar tak terbatas hanya GET /api/service (semua tiket + relasi), /api/sparepart, /api/unit, /api/toko, /api/customer; sisanya sudah dipagari take (audit 300, kunjungan 100, nota 1000, inbox 100).
+- Keputusan penting: memilih render bertahap di sisi KLIEN, bukan pagination sisi server. Alasannya: filter/tab/pencarian/select-all/select lintas baris pada daftar-daftar itu berjalan di memori; memindahkannya ke server berarti menulis ulang tiap query dan berisiko tinggi mematahkan alur kerja existing. Dengan memotong RENDER (bukan query), biaya DOM turun drastis dan seluruh perilaku filter tetap identik.
+- src/lib/bertahap.ts (baru, murni & teruji): UKURAN_BERTAHAP=60, potongBertahap(items,batas) -> {tampil,total,sisa,adaLagi} (aman untuk null/undefined/NaN/negatif/desimal), serta batasAktif(state,kunci,ukuran) yang mengembalikan batas tersimpan bila "kunci filter" sama, dan kembali ke ukuran awal bila kunci berubah.
+- src/hooks/use-bertahap.ts (baru): useBertahap(items,kunci) -> {tampil,total,sisa,adaLagi,batas,tambah}. Reset ke blok pertama dihitung SAAT RENDER via batasAktif (pola "adjust state during render" yang disetujui React), bukan useEffect+setState, sehingga tidak memicu render berantai (lolos aturan eslint react-hooks/set-state-in-effect).
+- src/components/load-more.tsx (baru): kaki daftar "Menampilkan X dari Y <satuan>" + tombol "Tampilkan lebih banyak (sisa N)"; tidak merender apa pun bila total <= tampil.
+- Diterapkan pada daftar besar: Proses Service (tabel tiket), Stok Inventory (katalog sparepart + tabel order), Nota Servis BASS (grid kartu nota), Master Data (tabel unit - 3 varian tab, tabel toko, kartu customer). Tabel user tidak diubah (jumlah pengguna kecil).
+- Bonus perbaikan bug: useMemo "filtered" di service-view.tsx tidak mencantumkan tokoFilter & brandFilter pada deps -> filter drill-down toko/brand bisa basi; deps dilengkapi.
+- E2E: e2e/prepare-db.mjs menyemai +70 tiket massal (70 unit SN-BULK-xxx NON_GARANSI + tiket PROSES, unit berbeda tiap tiket agar tidak menabrak aturan "tiket aktif") supaya daftar pasti melebihi satu blok. e2e/smoke.spec.ts +2 kasus: Proses Service menampilkan "Menampilkan 60 dari N tiket" lalu bertambah setelah tombol ditekan; Master Data -> Unit Asset menampilkan "Menampilkan 60 dari N unit" lalu bertambah.
+- Verifikasi: npm test 88/88 lulus (5 kasus potongBertahap + 2 kasus batasAktif baru); npm run test:e2e 11/11 lulus (alur penuh tetap hijau -> tidak ada fitur yang rusak); npm run typecheck bersih; npm run lint bersih.
+
+Stage Summary:
+- Daftar besar kini dirender bertahap (60 baris per blok) dengan tombol "Tampilkan lebih banyak": halaman pertama jauh lebih ringan, filter/pencarian/centang tetap berjalan apa adanya, dan batas otomatis kembali ke awal saat filter berubah.
+- Jalur lanjutan bila muatan jaringan kelak jadi masalah: tambahkan pagination sisi server secara opt-in (?page=&limit=) pada endpoint tanpa mengubah kontrak API yang ada.
+- File baru: src/lib/bertahap.ts, src/hooks/use-bertahap.ts, src/components/load-more.tsx, tests/unit/bertahap.test.ts
+- File diubah: src/components/views/{service-view,inventory-view,nota-view,master-data-view}.tsx, e2e/prepare-db.mjs, e2e/smoke.spec.ts

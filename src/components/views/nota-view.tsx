@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import QuickSearch from '@/components/quick-search'
+import LoadMore from '@/components/load-more'
+import { useBertahap } from '@/hooks/use-bertahap'
 import NotaSheet from '@/components/nota/nota-sheet'
 import SignaturePad from '@/components/nota/signature-pad'
 import {
@@ -236,6 +238,9 @@ export default function NotaView() {
     return true
   }
   const tampil = daftarla.filter(cariHasil)
+  // Render bertahap daftar nota (lihat src/hooks/use-bertahap.ts) — hook dipanggil
+  // sebelum early-return mode edit agar urutan hooks tetap konsisten.
+  const notaBertahap = useBertahap(tampil, `${cari}|${statusFilter}`)
 
   /* =============== Editor: kumpul field → satu fungsi pengecek (patch) =============== */
 
@@ -588,7 +593,7 @@ export default function NotaView() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {tampil.map((n) => (
+        {notaBertahap.tampil.map((n) => (
           <Card key={n.id} className="p-4 space-y-2">
             <div className="flex items-start justify-between gap-2">
               <span className="font-mono text-base font-bold tracking-widest">{n.nomorBass}</span>
@@ -620,6 +625,12 @@ export default function NotaView() {
           </Card>
         ))}
       </div>
+      <LoadMore
+        tampil={notaBertahap.tampil.length}
+        total={notaBertahap.total}
+        onMore={notaBertahap.tambah}
+        satuan="nota"
+      />
     </div>
   )
 }

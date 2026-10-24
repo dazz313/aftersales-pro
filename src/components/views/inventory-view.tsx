@@ -19,6 +19,8 @@ import { useAppStore } from '@/lib/store'
 import CsvImportDialog from '@/components/csv-import-dialog'
 import KodeSparepart from '@/components/kode-sparepart'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
+import LoadMore from '@/components/load-more'
+import { useBertahap } from '@/hooks/use-bertahap'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown, Pencil, Trash2, ClipboardList, Truck } from 'lucide-react'
@@ -259,6 +261,9 @@ export default function InventoryView() {
     return (orders ?? []).filter((o) => matchQuery([o.noOrder, o.namaPemesan, o.kodePart, o.namaPart, o.brand, o.status, o.catatan], q))
   }, [orders, cariOrder])
 
+  // Render bertahap daftar order (lihat src/hooks/use-bertahap.ts).
+  const orderBertahap = useBertahap(orderTampil, cariOrder)
+
   const restockMutation = useMutation({
     mutationFn: ({ id, qty, jenis }: { id: number; qty: number; jenis: 'JUAL' | 'GARANSI' }) =>
       postJson(`/api/sparepart/${id}`, jenis === 'GARANSI' ? { tambahStokGaransi: qty, aktor: role } : { tambahStok: qty, aktor: role }, 'PATCH'),
@@ -361,6 +366,10 @@ export default function InventoryView() {
     }
     return list
   }, [parts, stokFilter, cari])
+
+  // Render bertahap katalog sparepart (lihat src/hooks/use-bertahap.ts).
+  const partsBertahap = useBertahap(tampilParts, `${stokFilter}|${cari}`)
+
   const nilaiTotal = (parts ?? []).reduce((a, p) => a + p.stokInventory * p.hargaKlaim, 0)
   const reorderDraft = kritis.map((p) => ({
     kodePart: p.kodePart,
@@ -495,7 +504,7 @@ export default function InventoryView() {
                           Tidak ada item yang cocok dengan filter aktif.
                         </TableCell>
                       </TableRow>
-                    ) : tampilParts.map((p) => {
+                    ) : partsBertahap.tampil.map((p) => {
                       const pct = Math.min((p.stokInventory / Math.max(p.reorderLimit * 3, 1)) * 100, 100)
                       return (
                         <TableRow key={p.id} className={cn(p.kosong && 'bg-rose-50/60', p.ropAlert && !p.kosong && 'bg-amber-50/50')}>
@@ -547,6 +556,12 @@ export default function InventoryView() {
                 </Table>
               </div>
             )}
+            <LoadMore
+              tampil={partsBertahap.tampil.length}
+              total={partsBertahap.total}
+              onMore={partsBertahap.tambah}
+              satuan="part"
+            />
         </SectionCollapse>
 
         {/* Draft Re-Order (ALT-03) */}
@@ -666,7 +681,7 @@ export default function InventoryView() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orderTampil.map((o) => (
+                  {orderBertahap.tampil.map((o) => (
                     <TableRow key={o.id}>
                       <TableCell>
                         <p className="font-mono text-[11px] font-semibold text-slate-800">{o.noOrder}</p>
@@ -733,6 +748,12 @@ export default function InventoryView() {
               </Table>
             </div>
           )}
+          <LoadMore
+            tampil={orderBertahap.tampil.length}
+            total={orderBertahap.total}
+            onMore={orderBertahap.tambah}
+            satuan="order"
+          />
       </SectionCollapse>
 
         </TabsContent>

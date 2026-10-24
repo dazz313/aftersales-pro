@@ -100,7 +100,37 @@ try {
     },
   })
 
-  console.log('[e2e] seed siap — admin, toko, customer, unit SN-E2E-001, part E2E-PART-01')
+  // 6) Data massal untuk menguji render bertahap ("Tampilkan lebih banyak").
+  //    Tiap tiket memakai unit berbeda agar tidak menabrak aturan "tiket aktif".
+  const BULK = 70
+  await prisma.unitAsset.createMany({
+    data: Array.from({ length: BULK }, (_, i) => {
+      const n = String(i + 1).padStart(3, '0')
+      return {
+        serialNumber: `SN-BULK-${n}`,
+        modelUnit: 'Model Bulk',
+        merk: 'E2E',
+        nama: `Unit Bulk ${n}`,
+        tokoId: toko.id,
+        statusGaransi: 'NON_GARANSI',
+      }
+    }),
+  })
+  const bulkUnits = await prisma.unitAsset.findMany({
+    where: { serialNumber: { startsWith: 'SN-BULK-' } },
+    select: { id: true, serialNumber: true },
+    orderBy: { id: 'asc' },
+  })
+  await prisma.serviceRequest.createMany({
+    data: bulkUnits.map((u) => ({
+      noTiket: `E2E-TIKET-${u.serialNumber.slice(-3)}`,
+      unitAssetId: u.id,
+      status: 'PROSES',
+      deskripsiKerusakan: 'Data massal uji render bertahap',
+    })),
+  })
+
+  console.log(`[e2e] seed siap — admin, toko, customer, unit SN-E2E-001, part E2E-PART-01, +${BULK} tiket massal`)
 } finally {
   await prisma.$disconnect()
 }
