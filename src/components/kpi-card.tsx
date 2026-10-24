@@ -38,11 +38,11 @@ export default function KpiCard({
     >
       <div className={cn('absolute inset-x-0 top-0', compact ? 'h-0.5' : 'h-1', tone)} />
       <CardHeader className={cn('flex flex-row items-center justify-between', compact ? 'pb-1' : 'pb-2')}>
-        <CardTitle className={cn('font-medium text-slate-500', compact ? 'text-xs' : 'text-sm')}>{title}</CardTitle>
-        <Icon className={cn('text-slate-400 transition-colors group-hover:text-emerald-500', compact ? 'h-4 w-4' : 'h-5 w-5')} />
+        <CardTitle className={cn('font-semibold uppercase tracking-wide text-slate-500', compact ? 'text-[10px]' : 'text-[11px]')}>{title}</CardTitle>
+        <Icon className={cn('shrink-0 text-slate-400 transition-colors group-hover:text-emerald-500', compact ? 'h-4 w-4' : 'h-5 w-5')} />
       </CardHeader>
       <CardContent className={compact ? 'pb-3' : undefined}>
-        <div className={cn('font-bold text-slate-900', compact ? 'text-xl' : 'text-2xl')}>{value}</div>
+        <div className={cn('font-extrabold tracking-tight text-slate-900', compact ? 'text-xl' : 'text-2xl')}>{value}</div>
         {sub && (
           <p className={cn('text-slate-500', compact ? 'mt-0.5 truncate text-[11px]' : 'mt-1 text-xs')} title={sub}>
             {sub}

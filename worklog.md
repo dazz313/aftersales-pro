@@ -989,3 +989,26 @@ Stage Summary:
 - Jalur lanjutan bila muatan jaringan kelak jadi masalah: tambahkan pagination sisi server secara opt-in (?page=&limit=) pada endpoint tanpa mengubah kontrak API yang ada.
 - File baru: src/lib/bertahap.ts, src/hooks/use-bertahap.ts, src/components/load-more.tsx, tests/unit/bertahap.test.ts
 - File diubah: src/components/views/{service-view,inventory-view,nota-view,master-data-view}.tsx, e2e/prepare-db.mjs, e2e/smoke.spec.ts
+
+---
+Task ID: 15
+Agent: Main Agent (Super Z)
+Task: Refresh UX Tahap 1-2 - token warna brand emerald/teal + tabel tiket jadi kartu di layar HP
+
+Work Log:
+- Mockup statis yang disetujui pengguna (mockups/ux-preview.html) dipakai sebagai acuan: palet emerald/teal, kartu radius ~14px, bayangan lembut, label KPI kapital.
+- Tahap 1 (token warna) di src/app/globals.css: --primary kini brand emerald oklch(0.596 0.145 163.225) (sebelumnya grayscale), --ring emerald-500, netral dipindah ke keluarga slate (foreground slate-900, muted/muted-foreground slate, border/input slate-200), --accent jadi tint emerald (emerald-50 / emerald-700), dan --chart-1..5 diselaraskan (emerald, teal, sky, amber, rose). Blok .dark ikut disesuaikan (primary/ring/accent/chart brand) supaya siap dipakai kelak.
+- Efeknya luas tapi murah: Button default, Badge default, warna fokus ring, serta Checkbox/Switch/Progress yang membaca --primary otomatis sewarna brand - hanya nilai token yang berubah, tidak ada logika yang disentuh.
+- kpi-card.tsx: polish ringan tanpa mengubah kontrak KpiDef - judul jadi kapital + tracking, angka extrabold tracking-tight. Berlaku di Dashboard dan view lain yang memakai KpiGrid.
+- Tahap 2 (tabel -> kartu) di service-view.tsx:
+  - Blok tombol aksi (Email Order/Kirim Email, dropdown Aksi: Proses + STTB, Part Datang, Selesaikan, Ajukan Klaim, Tandai Lunas, tombol Detail) diangkat jadi helper renderAksiTiket(t) di dalam komponen, lalu dipakai bersama tabel desktop dan kartu HP. Jadi tidak ada logika aksi yang diduplikasi dan tidak ada aksi yang hilang di HP.
+  - Tabel penuh dibungkus div "hidden md:block" (data-testid tiket-tabel); ditambah daftar kartu "md:hidden" (data-testid tiket-cards) berisi no tiket + no STTB, badge status/klaim/SLA/edited, unit + serial, toko, ringkasan kode part + "X ready - Y inden", umur/tanggal (hormati data lama), kerusakan, lalu baris aksi yang sama.
+  - Centang massal (surat jalan) tetap khusus desktop; filter/tab/pencarian dan render bertahap (LoadMore) tidak diubah sehingga perilaku lama identik.
+- E2E: e2e/smoke.spec.ts +1 kasus "di layar HP tabel tiket berganti jadi kartu ringkas" - memastikan tabel tampil & kartu tersembunyi di desktop, lalu di viewport 390x844 kartu tampil & tabel tersembunyi, dan klik kartu membuka dialog detail.
+- Verifikasi: npm test 88/88 lulus; npm run test:e2e 12/12 lulus (alur penuh, CSRF, dan render bertahap tetap hijau); npm run typecheck bersih; npm run lint bersih.
+
+Stage Summary:
+- Identitas visual kini satu bahasa desain: primary emerald/teal + netral slate + aksen brand, semuanya dari token, bukan kelas warna ad-hoc.
+- Proses Service sudah nyaman dipakai di HP: tanpa geser horizontal, badge status/umur tetap menonjol, dan semua aksi tiket tetap tersedia dari kartu.
+- Jalur lanjutan yang belum dikerjakan: kartu HP untuk Stok Inventory dan Master Data (Unit/Toko), lalu Tahap 3 Dashboard (sparkline, kartu target, Alert Engine dikelompokkan).
+- File diubah: src/app/globals.css, src/components/kpi-card.tsx, src/components/views/service-view.tsx, e2e/smoke.spec.ts

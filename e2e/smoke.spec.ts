@@ -108,3 +108,29 @@ test.describe('Render bertahap daftar besar', () => {
     await expect(page.getByText(/Menampilkan 60 dari \d+ unit/)).toBeHidden()
   })
 })
+
+test.describe('Tampilan HP: tabel jadi kartu', () => {
+  test('di layar HP tabel tiket berganti jadi kartu ringkas', async ({ page }) => {
+    await page.goto('/login')
+    await page.fill('#email', ADMIN.email)
+    await page.fill('#password', ADMIN.password)
+    await page.click('button[type="submit"]')
+    await expect(page.getByRole('heading', { name: 'Dashboard KPI' })).toBeVisible()
+    await page.getByRole('button', { name: /Proses Service/ }).first().click()
+    await expect(page.getByRole('heading', { name: 'Proses Service' })).toBeVisible()
+
+    // Desktop: tabel penuh yang tampil, kartu disembunyikan.
+    await expect(page.getByTestId('tiket-tabel')).toBeVisible()
+    await expect(page.getByTestId('tiket-cards')).toBeHidden()
+
+    // Layar HP: tabel hilang, kartu ringkas muncul (tanpa geser horizontal).
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(page.getByTestId('tiket-cards')).toBeVisible()
+    await expect(page.getByTestId('tiket-tabel')).toBeHidden()
+    await expect(page.getByTestId('tiket-cards').getByRole('button').first()).toBeVisible()
+
+    // Aksi tetap tersedia dari kartu (buka detail tiket).
+    await page.getByTestId('tiket-cards').getByRole('button').first().click()
+    await expect(page.getByRole('dialog')).toBeVisible()
+  })
+})
