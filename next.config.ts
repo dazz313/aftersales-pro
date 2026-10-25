@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // pdfjs-dist (ekstrak teks PDF faktur surat jalan) tidak di-bundle —
+  // legacy build punya require dinamis (canvas/worker) yang pecah bila
+  // digabung; dipakai sebagai require runtime dari node_modules standar.
+  serverExternalPackages: ["pdfjs-dist"],
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
@@ -30,7 +34,7 @@ const nextConfig: NextConfig = {
   },
   // Sertakan Prisma client + engine di standalone build (wajib untuk versi desktop)
   outputFileTracingIncludes: {
-    "/*": ["./node_modules/.prisma/**", "./node_modules/@prisma/**"],
+    "/*": ["./node_modules/.prisma/**", "./node_modules/@prisma/**", "./node_modules/pdfjs-dist/**"],
   },
   // Jangan salin folder data repo ke dalam output standalone:
   // db/ (custom.db + backup + snapshot), upload/, download/ dan .cache/

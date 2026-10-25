@@ -207,7 +207,9 @@ export function cocokkan(rows: BarisSuratJalan[], kandidat: Kandidat[]): HasilBa
 // Kepala tabel dicari di ±30 baris pertama sehingga file surat jalan produsen
 // dengan judul/logo di atas tabel tetap terbaca. Nama kolom di-NORM-kan
 // (huruf besar, tanpa spasi/tanda baca) lalu dicocokkan ke alias berikut.
-const DAFTAR_ALIAS = {
+// DAFTAR_ALIAS & cariBarisHeader diekspor — dipakai ulang parser teks (PDF/OCR)
+// di src/lib/surat-jalan-teks.ts supaya alias kolom selalu seragam.
+export const DAFTAR_ALIAS = {
   kodePart: ['kodepart', 'kode', 'partno', 'nomorpart', 'partnumber', 'kodebarang', 'kodesparepart', 'kdpart', 'nopart', 'kodeitem', 'itemcode', 'material'],
   namaPart: ['namapart', 'nama', 'namaproduk', 'deskripsi', 'item', 'produk', 'namabarang', 'partname', 'namasparepart', 'namaitem'],
   qty: ['qty', 'jumlah', 'pcs', 'roll', 'quantity'],
@@ -222,7 +224,7 @@ const DAFTAR_ALIAS = {
  * pertama yang salah satu selnya = alias kolom kode part. Kembalikan index
  * baris + pemetaan KOLOM INDEKS → FIELD untuk semua alias di baris itu.
  */
-function cariBarisHeader(matriks: unknown[][]): { idx: number; map: Map<number, string> } | null {
+export function cariBarisHeader(matriks: unknown[][]): { idx: number; map: Map<number, string> } | null {
   for (let i = 0; i < Math.min(matriks.length, 30); i++) {
     const baris = matriks[i] ?? []
     const map = new Map<number, string>()

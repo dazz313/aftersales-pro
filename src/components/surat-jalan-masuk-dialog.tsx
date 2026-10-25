@@ -66,15 +66,43 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
 
   const sjMatchMutation = useMutation({
     mutationFn: () => {
-      if (!sjFile) throw new Error('Pilih file Excel/CSV surat jalan dulu')
+      if (!sjFile) throw new Error('Pilih file surat jalan (Excel/CSV/PDF/foto faktur) dulu')
       const fd = new FormData()
-      fd.append('file', sjFile)
       fd.append('useAi', String(sjGunakanAi))
-      return fetch('/api/surat-jalan/match', { method: 'POST', headers: authHeaders(), body: fd }).then(async (res) => {
-        const j = (await res.json().catch(() => ({}))) as (SJPreview & { error?: string })
-        if (!res.ok) throw new Error(j.error || `Gagal menguraikan file (${res.status})`)
+      fd.append('namaFile', sjFile.name)
+      const nama = sjFile.name.toLowerCase()
+      const isPdf = sjFile.type.includes('pdf') || nama.endsWith('.pdf')
+      const isGambar = sjFile.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp)$/i.test(nama)
+      // Muat darek: async — PDF hasil scan memicu raster+OCR per halaman.
+      const kirim = async function (): Promise<SJPreview> {
+        fd.append('file', sjFile)
+        const res = await fetch('/api/surat-jalan/match', { method: 'POST', headers: authHeaders(), body: fd })
+        if (!res.ok) {
+          const j = (await res.json().catch(() => ({}))) as { error?: string; pesan?: string; jumlahHalaman?: number }
+          if (j.error === 'PDF_HASIL_SCAN') {
+            // PDF hasil scan (tanpa lapisan teks): raster di browser → OCR →
+            // kirim teks gabungan mode `teks` ke ENDPOINT yang sama.
+            toast({
+              title: 'PDF hasil scan — meraster halaman & OCR…',
+              description: j.pesan || 'Aplikasi membaca halaman dengan OCR, ini memerlukan beberapa detik per halaman.',
+            })
+            const { rasterDariPdf } = await import('@/lib/faktur-pdf-client')
+            const teks = await rasterDariPdf(sjFile, j.jumlahHalaman || 0, (selesai, total) => {
+              toast({ title: `OCR halaman ${selesai}/${total} selesai` })
+            })
+            fd.delete('file')
+            fd.append('teks', teks)
+            const res2 = await fetch('/api/surat-jalan/match', { method: 'POST', headers: authHeaders(), body: fd })
+            const j2 = (await res2.json().catch(() => ({}))) as SJPreview & { error?: string }
+            if (!res2.ok) throw new Error(j2.error || `Gagal menguraikan hasil OCR (${res2.status})`)
+            return j2
+          }
+          throw new Error(j.error || `Gagal menguraikan file (${res.status})`)
+        }
+        const j = (await res.json().catch(() => ({}))) as SJPreview & { error?: string }
         return j
-      })
+      }
+      return kirim()
     },
     onSuccess: (p) => {
       setSjPreview(p)
@@ -87,8 +115,13 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
       }))
       toast({
         title: `Surat jalan teruraikan — ${p.cocokCount} dari ${p.items.length} baris otomatis cocok`,
-        description: p.dibantuAi > 0 ? `${p.dibantuAi} baris dicocokkan AI. Periksa hasil → Simpan Draft → cek berlapis.` : 'Preview hanya baca — Simpan Draft lalu lewati cek berlapis sebelum diterapkan.',
+        description: p.dibantuAi > 0 ? `${p.dibantuAi} baris dicocokkan AI${p.aiModel ? ` (${p.aiModel})` : ''}. Periksa hasil → Simpan Draft → cek berlapis.` : 'Preview hanya baca — Simpan Draft lalu lewati cek berlapis sebelum diterapkan.',
       })
+      // AI gagal total → JANGAN diam: pengguna harus tahu hasilnya murni
+      // aturan tanpa koreksi salah-ketik OCR.
+      if (p.aiCatatan) {
+        toast({ title: 'Bantuan AI tidak aktif', description: p.aiCatatan, variant: 'destructive' })
+      }
     },
     onError: (e: Error) => toast({ title: 'Gagal menguraikan surat jalan', description: e.message, variant: 'destructive' }),
   })
@@ -307,11 +340,14 @@ export default function SuratJalanMasukDialog({ open, onOpenChange }: { open: bo
             <div className="flex flex-wrap items-center gap-2">
               <input
                 type="file"
-                accept=".xlsx,.xls,.csv"
+                accept=".xlsx,.xls,.csv,.pdf,image/png,image/jpeg,image/webp"
                 onChange={(e) => { setSjFile(e.target.files?.[0] ?? null); setSjPreview(null) }}
-                aria-label="File surat jalan Excel/CSV"
+                aria-label="File surat jalan / faktur (Excel/CSV/PDF/foto)"
                 className="w-full cursor-pointer rounded-md border border-dashed border-slate-300 p-2 text-xs file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs sm:flex-1"
               />
+              <p className="w-full text-[10px] leading-relaxed text-slate-400">
+                Diterima langsung: Excel/CSV, <b>PDF faktur mutasi</b> (lapisan teks maupun hasil scan — scan di-OCR otomatis), dan foto faktur (JPG/PNG). Tanpa perlu konversi manual.
+              </p>
               <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-slate-600">
                 <Checkbox className="h-3.5 w-3.5" checked={sjGunakanAi} onCheckedChange={(c) => setSjGunakanAi(c === true)} aria-label="Gunakan AI untuk baris yang belum cocok" />
                 Bantuan AI untuk baris belum cocok

@@ -378,7 +378,7 @@ export default function AnalisaAiView() {
             <div>
               <CardTitle className="text-sm font-bold tracking-tight text-slate-900">Surat Jalan Masuk — Penerimaan Part Produsen</CardTitle>
               <CardDescription className="text-[11px] leading-snug">
-                Uraikan Excel hasil scan → pencocokan otomatis (+ bantuan AI) → <b>Simpan Draft → Cek Berlapis (+ Cek Manual per baris) → Cek Akhir → Terapkan Permanen</b>.
+                Unggah <b>PDF/foto faktur mutasi</b> atau Excel/CSV hasil scan → pencocokan otomatis (+ bantuan AI) → <b>Simpan Draft → Cek Berlapis (+ Cek Manual per baris) → Cek Akhir → Terapkan Permanen</b>.
               </CardDescription>
             </div>
           </div>

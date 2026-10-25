@@ -73,6 +73,10 @@ export interface SJPreview {
   namaFile?: string
   terlewati: number
   dibantuAi: number
+  /** Catatan kegagalan AI (fallback semua model mati) — null bila AI sehat/tak perlu. */
+  aiCatatan?: string | null
+  /** Model yang benar-benar dipakai untuk pencocokan AI. */
+  aiModel?: string | null
   cocokCount: number
   items: SJBaris[]
 }
