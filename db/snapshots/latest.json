@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T05:19:51.991Z",
+  "generatedAt": "2026-10-25T05:45:27.541Z",
   "masterToko": [
     {
       "id": 216,
@@ -2729,19 +2729,6 @@
   ],
   "unitAsset": [
     {
-      "id": 199,
-      "serialNumber": ".",
-      "modelUnit": "KG-502C",
-      "merk": "Miyako",
-      "nama": "",
-      "kerusakanAwal": null,
-      "tokoId": 237,
-      "customerId": null,
-      "statusGaransi": "STOK_TOKO",
-      "tglPembelian": null,
-      "createdAt": "2026-10-15T05:09:18.428Z"
-    },
-    {
       "id": 144,
       "serialNumber": "02060012333",
       "modelUnit": "KAS-1607 PL",
@@ -3585,6 +3572,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
+      "id": 199,
+      "serialNumber": "44060074241",
+      "modelUnit": "KG-502C",
+      "merk": "Miyako",
+      "nama": "",
+      "kerusakanAwal": null,
+      "tokoId": 237,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-21T00:00:00.000Z"
     },
     {
       "id": 153,
@@ -8624,6 +8624,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 931,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44060074241",
+      "deskripsi": "Data unit diperbarui: serialNumber, modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian, createdAt (. → 44060074241)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-25T05:45:27.527Z"
+    },
     {
       "id": 930,
       "aksi": "FINISH_SERVICE",
