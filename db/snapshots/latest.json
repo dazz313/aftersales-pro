@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T14:31:06.254Z",
+  "generatedAt": "2026-10-25T14:31:08.552Z",
   "masterToko": [
     {
       "id": 216,
@@ -7228,12 +7228,12 @@
       "id": 15,
       "noTiket": "SVC-2610-0013",
       "unitAssetId": 136,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2610-0013",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -7241,14 +7241,14 @@
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:13:45.740Z",
       "createdAt": "2026-10-14T05:13:45.757Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
+      "updatedAt": "2026-10-25T14:31:08.537Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8673,6 +8673,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 940,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0013",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0013 diterbitkan untuk penarikan unit 02100010647 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-25T14:31:08.542Z"
+    },
     {
       "id": 939,
       "aksi": "TERIMA_PART_PRODUSEN",
