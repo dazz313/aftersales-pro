@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T14:01:33.903Z",
+  "generatedAt": "2026-10-25T14:30:21.350Z",
   "masterToko": [
     {
       "id": 216,
@@ -1853,7 +1853,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T05:09:59.953Z"
@@ -4736,12 +4736,12 @@
       "id": 76,
       "noTiket": "SVC-2610-0001",
       "unitAssetId": 212,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2610-0001",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "PERORANGAN",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -4756,7 +4756,7 @@
       "tglFinish": null,
       "tglTiket": "2026-10-02T00:00:00.000Z",
       "createdAt": "2026-10-18T22:38:03.135Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
+      "updatedAt": "2026-10-25T14:01:41.927Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -7408,7 +7408,7 @@
           "serviceRequestId": 12,
           "sparepartId": 289,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
@@ -8673,6 +8673,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 937,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0010",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-25T14:30:21.311Z"
+    },
+    {
+      "id": 936,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0001",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0001 diterbitkan untuk penarikan unit 2603401242 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-25T14:01:42.130Z"
+    },
     {
       "id": 935,
       "aksi": "TERIMA_PART_PRODUSEN",
