@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen, CalendarClock } from 'lucide-react'
+import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen, CalendarClock, AlertTriangle } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -11,7 +11,23 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 import { authHeaders, formatRupiah, type ServiceTicket } from '@/lib/api'
+import { ALUR_SJ_STYLES, alurSjState, tglPendek, type AlurSj } from '@/lib/alur-sj'
+
+/**
+ * Chip mini alur SJ utk baris pratinjau — "–" bila tiket tak relevan (sudah
+ * tak ada part inden dan belum pernah masuk alur surat jalan apa pun).
+ */
+function ChipAlurSj({ alur }: { alur: AlurSj }) {
+  if (alur === 'TAK_PERLU_SJ') return <span className="text-xs text-slate-300">–</span>
+  const s = ALUR_SJ_STYLES[alur]
+  return (
+    <Badge variant="outline" className={cn('text-[9px]', s.cls)}>
+      {s.label}
+    </Badge>
+  )
+}
 
 /**
  * Dialog cetak Surat Jalan kolektif — request part ke produsen.
@@ -46,6 +62,7 @@ export default function SuratJalanDialog({
       qty: p.qty,
       toko: t.unitAsset.toko?.namaToko ?? '-',
       sn: t.unitAsset.serialNumber,
+      alur: alurSjState(t),
     }))
   )
   const items = mentah.filter((i) => i.kodePart.trim() && i.namaPart.trim())
@@ -55,6 +72,25 @@ export default function SuratJalanDialog({
     tickets.reduce((a, t) => a + (t.nilaiKlaim ?? 0), 0)
   const merkSet = [...new Set(tickets.map((t) => (t.unitAsset.merk || '').trim()).filter(Boolean))]
   const merkUmum = merkSet.length === 1 ? merkSet[0] : ''
+
+  // ===== GUARD — deteksi tiket yang SEBENARNYA sudah pernah masuk alur
+  // surat jalan, supaya dokumen SJR tidak dibuat dua kali tanpa sadar =====
+  // Tiga tingkat (merah paling mendesak): part sudah datang → alat bekas
+  // sudah terkirim (noSuratJalan) → surat jalan sudah dicetak (tglRequestPart).
+  // Peringatan, BUKAN blokir: SJR ke-2 boleh jadi disengaja (part baru
+  // ditambahkan ke tiket sama); server pun tidak menimpa tanggal request lama.
+  interface GuardInfo { t: ServiceTicket; alasan: string; tingkat: 'merah' | 'biru' | 'kuning' }
+  const guard = tickets
+    .map((t): GuardInfo | null => {
+      if (t.tglPartDatang) return { t, tingkat: 'merah', alasan: `Part sudah datang ${tglPendek(t.tglPartDatang)} — surat jalan umumnya tidak perlu lagi` }
+      if (t.noSuratJalan) return { t, tingkat: 'biru', alasan: `Alat bekas sudah terkirim via SJ ${t.noSuratJalan} — jangan buat dokumen dobel` }
+      if (t.tglRequestPart) return { t, tingkat: 'kuning', alasan: `Sudah dibuatkan surat jalan pada ${tglPendek(t.tglRequestPart)} (alat bekas belum tercatat terkirim)` }
+      return null
+    })
+    .filter((g): g is GuardInfo => g !== null)
+    .sort((a, b) => a.tingkat.localeCompare(b.tingkat)) // merah → biru → kuning
+  const merah = guard.filter((g) => g.tingkat === 'merah').length
+  const biru = guard.filter((g) => g.tingkat === 'biru').length
 
   async function download(format: 'pdf' | 'xlsx') {
     if (tickets.length === 0 || busy) return
@@ -129,6 +165,37 @@ export default function SuratJalanDialog({
           ))}
         </div>
 
+        {/* GUARD — tiket yang sudah pernah masuk alur surat jalan */}
+        {guard.length > 0 && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-800">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              {guard.length} dari {tickets.length} tiket sudah pernah masuk alur surat jalan
+              {merah > 0 && <span className="text-rose-700">· {merah} partnya sudah datang</span>}
+              {biru > 0 && <span className="text-sky-700">· {biru} bekasnya sudah terkirim</span>}
+              — pastikan bukan dokumen dobel
+            </p>
+            <ul className="mt-1.5 space-y-0.5 text-[11px] leading-snug">
+              {guard.slice(0, 6).map((g) => (
+                <li key={g.t.noTiket} className="flex min-w-0 gap-1.5">
+                  <span
+                    className={cn(
+                      'mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full',
+                      g.tingkat === 'merah' ? 'bg-rose-500' : g.tingkat === 'biru' ? 'bg-sky-500' : 'bg-amber-500'
+                    )}
+                  />
+                  <span className="font-mono font-semibold text-slate-700">{g.t.noTiket}</span>
+                  <span className={cn(g.tingkat === 'merah' ? 'text-rose-700' : g.tingkat === 'biru' ? 'text-sky-700' : 'text-amber-700')}>{g.alasan}</span>
+                </li>
+              ))}
+              {guard.length > 6 && <li className="text-amber-600">… {guard.length - 6} tiket lainnya</li>}
+            </ul>
+            <p className="mt-1.5 text-[10px] leading-relaxed text-amber-600">
+              Masih bisa dilanjutkan bila memang sengaja (mis. part baru ditambahkan ke tiket sama) — tanggal request lama tidak akan ditimpa.
+            </p>
+          </div>
+        )}
+
         {/* Pratinjau item — scroll dua arah agar tabel panjang tidak meluber keluar dialog */}
         <ScrollArea className="h-56 min-w-0 rounded-lg border border-slate-200">
           {items.length === 0 ? (
@@ -140,7 +207,7 @@ export default function SuratJalanDialog({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="w-full min-w-[520px]">
+              <Table className="w-full min-w-[620px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10">No</TableHead>
@@ -148,6 +215,7 @@ export default function SuratJalanDialog({
                     <TableHead>Sparepart</TableHead>
                     <TableHead className="w-14 text-right">Qty</TableHead>
                     <TableHead className="hidden w-32 sm:table-cell">Toko Asal</TableHead>
+                    <TableHead className="w-44">Alur SJ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -162,6 +230,7 @@ export default function SuratJalanDialog({
                       </TableCell>
                       <TableCell className="text-right text-xs font-bold">{it.qty}</TableCell>
                       <TableCell className="hidden max-w-32 truncate text-xs text-slate-500 sm:table-cell" title={it.toko}>{it.toko}</TableCell>
+                      <TableCell><ChipAlurSj alur={it.alur} /></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -363,6 +363,11 @@ export interface ServiceTicket {
   // Tanggal klik "Surat Jalan" (request part ke produsen) — stamp otomatis dari
   // dokumen SJR; tampil kecil di bawah badge REQUEST agar jelas kapan diorder.
   tglRequestPart?: string | null
+  // Nomor surat jalan produsen & tanggal datangnya part — diisi saat Surat Jalan
+  // Masuk (scan faktur) diterapkan ATAU saat "Part Datang" ditekan manual.
+  // Keduanya adalah tahap terakhir alur surat jalan unit (deteksi per tiket).
+  noSuratJalanProdusen?: string | null
+  tglPartDatang?: string | null
   biayaJasa: number
   tglFinish: string | null
   tglTiket: string

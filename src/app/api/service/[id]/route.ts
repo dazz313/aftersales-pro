@@ -1324,11 +1324,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         where: { serviceRequestId: ticketId, status: { in: ['PENDING', 'TERKIRIM'] } },
         data: { status: 'DATANG' },
       })
+      // Stamp tglPartDatang pada tiket — sebelumnya hanya diisi otomatis via
+      // Surat Jalan Masuk (scan faktur produsen); aksi manual "Part Datang"
+      // kini mencatat tanggal yang sama supaya deteksi alur surat jalan unit
+      // (badge/filters Belum SJ → Bekas terkirim → Part datang) konsisten.
+      const stampDatang = !existing.tglPartDatang
+      if (stampDatang) {
+        await db.serviceRequest.update({ where: { id: ticketId }, data: { tglPartDatang: new Date() } })
+      }
       await logAudit({
         aksi: 'TERIMA_PART_PRODUSEN',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `${parts.length} part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +${parts.reduce((n, p) => n + p.qty, 0)})${emailKena.count > 0 ? ` — ${emailKena.count} item order email ikut DATANG` : ''}`,
+        deskripsi: `${parts.length} part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +${parts.reduce((n, p) => n + p.qty, 0)})${emailKena.count > 0 ? ` — ${emailKena.count} item order email ikut DATANG` : ''}${stampDatang ? ' — tgl datang part tercatat' : ''}`,
         aktor,
       })
       await backupSparepartToGit('TERIMA_PART', existing.noTiket, aktor)

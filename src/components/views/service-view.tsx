@@ -30,6 +30,7 @@ import {
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { formatUmur } from '@/lib/umur'
+import { alurSjState, ALUR_SJ_STYLES, tglPendek, type AlurSj } from '@/lib/alur-sj'
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
   REQUEST: { label: 'REQUEST', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
@@ -61,6 +62,32 @@ const dtLocalFrom = (d: Date) => {
 }
 const dtLocalNow = () => dtLocalFrom(new Date())
 
+// ===== Alur Surat Jalan per tiket (DETETEKSI UNIT SUDAH/BELUM KE PRODUSEN) =====
+// Logika, warna & label chip dipusatkan di src/lib/alur-sj.ts supaya dialog
+// Surat Jalan (guard dokumen dobel) memakai definisi yang sama persis.
+
+/** Chip alur surat jalan pada baris tiket — sekilas tahu unit sudah/belum ke produsen. */
+function BadgeAlurSj({ t }: { t: ServiceTicket }) {
+  const st = alurSjState(t)
+  if (st === 'TAK_PERLU_SJ') return null
+  const s = ALUR_SJ_STYLES[st]
+  const label =
+    st === 'BELUM_SJ' ? s.label
+    : st === 'SJR_TANPA_KIRIM' ? `${s.label} ${tglPendek(t.tglRequestPart as string)}`
+    : st === 'BEKAS_TERKIRIM' ? `${s.label} · ${t.noSuratJalan}`
+    : `${s.label} ${tglPendek(t.tglPartDatang as string)}`
+  const detail =
+    st === 'BELUM_SJ' ? 'Ada part inden ke produsen tapi belum pernah dibuatkan surat jalan — alat bekas masih di sini.'
+    : st === 'SJR_TANPA_KIRIM' ? `Surat jalan dibuat ${tglPendek(t.tglRequestPart as string)} — alat bekas BELUM terkirim ke produsen (bisa beda hari dengan cetak SJ).`
+    : st === 'BEKAS_TERKIRIM' ? `Alat bekas terkirim via surat jalan ${t.noSuratJalan} — menunggu part pengganti datang.`
+    : `Part pengganti datang ${tglPendek(t.tglPartDatang as string)}${t.noSuratJalanProdusen ? ` via surat jalan produsen ${t.noSuratJalanProdusen}` : ''} — alur selesai.`
+  return (
+    <Badge variant="outline" className={cn('text-[9px]', s.cls)} title={detail}>
+      {label}
+    </Badge>
+  )
+}
+
 /** Badge kecil "(edited)" — penanda koreksi data untuk kepentingan pemeriksaan kelak. */
 function BadgeEdited({ waktu, oleh }: { waktu: string; oleh?: string | null }) {
   return (
@@ -84,6 +111,9 @@ export default function ServiceView() {
   const [modelFilter, setModelFilter] = useState<string | null>(null)
   const [tokoFilter, setTokoFilter] = useState<string | null>(null)
   const [brandFilter, setBrandFilter] = useState<string | null>(null)
+  // Filter alur surat jalan — jawab "unit mana yang belum dikirim alat bekasnya
+  // ke produsen" tanpa membuka tiket satu per satu.
+  const [alurFilter, setAlurFilter] = useState<AlurSj | 'SEMUA'>('SEMUA')
   const [cariTiket, setCariTiket] = useState('')
   // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
@@ -211,6 +241,7 @@ export default function ServiceView() {
     if (!tickets) return []
     let list = tab === 'SEMUA' ? tickets : tickets.filter((t) => t.status === tab)
     if (garansiFilter !== 'SEMUA') list = list.filter((t) => garansiFilter === 'GARANSI' ? t.unitAsset.statusGaransi !== 'NON_GARANSI' : t.unitAsset.statusGaransi === 'NON_GARANSI')
+    if (alurFilter !== 'SEMUA') list = list.filter((t) => alurSjState(t) === alurFilter)
     if (modelFilter) list = list.filter((t) => t.unitAsset.modelUnit === modelFilter)
     if (tokoFilter) list = list.filter((t) => t.unitAsset.toko?.kodeToko === tokoFilter)
     if (brandFilter) list = list.filter((t) => (t.unitAsset.merk?.trim() || '').toLowerCase() === brandFilter.toLowerCase())
@@ -229,15 +260,23 @@ export default function ServiceView() {
       ], cariTiket))
     }
     return list
-  }, [tickets, tab, garansiFilter, modelFilter, tokoFilter, brandFilter, cariTiket])
+  }, [tickets, tab, garansiFilter, alurFilter, modelFilter, tokoFilter, brandFilter, cariTiket])
 
   // Render bertahap: batas otomatis kembali ke awal saat filter/pencarian berubah.
   const tiketBertahap = useBertahap(
     filtered,
-    `${tab}|${garansiFilter}|${modelFilter ?? ''}|${tokoFilter ?? ''}|${brandFilter ?? ''}|${cariTiket}`,
+    `${tab}|${garansiFilter}|${alurFilter}|${modelFilter ?? ''}|${tokoFilter ?? ''}|${brandFilter ?? ''}|${cariTiket}`,
   )
 
   const hasDrilldown = garansiFilter !== 'SEMUA' || modelFilter !== null || tokoFilter !== null || brandFilter !== null
+
+  // Hitungan tiap tahap alur (utk label dropdown filter — tetap tampil walau
+  // tab/status lain aktif agar pilihan tidak "menipu" saat kosong).
+  const alurCount = useMemo(() => {
+    const c: Record<AlurSj, number> = { BELUM_SJ: 0, SJR_TANPA_KIRIM: 0, BEKAS_TERKIRIM: 0, PART_DATANG: 0, TAK_PERLU_SJ: 0 }
+    for (const t of tickets ?? []) c[alurSjState(t)]++
+    return c
+  }, [tickets])
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -836,6 +875,29 @@ export default function ServiceView() {
               className="max-w-sm flex-1"
               resultCount={filtered.length}
             />
+            {/* Filter alur surat jalan: deteksi unit sudah/belum dikirim alat bekasnya */}
+            <Select value={alurFilter} onValueChange={(v) => setAlurFilter(v as AlurSj | 'SEMUA')}>
+              <SelectTrigger className="h-9 w-[240px] text-xs" aria-label="Filter alur surat jalan">
+                <SelectValue placeholder="Alur surat jalan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SEMUA">Semua alur ({tickets?.length ?? 0})</SelectItem>
+                <SelectItem value="BELUM_SJ">Belum dibuatkan SJ ({alurCount.BELUM_SJ})</SelectItem>
+                <SelectItem value="SJR_TANPA_KIRIM">SJ dibuat, bekas belum kirim ({alurCount.SJR_TANPA_KIRIM})</SelectItem>
+                <SelectItem value="BEKAS_TERKIRIM">Bekas terkirim, tunggu datang ({alurCount.BEKAS_TERKIRIM})</SelectItem>
+                <SelectItem value="PART_DATANG">Part datang ({alurCount.PART_DATANG})</SelectItem>
+              </SelectContent>
+            </Select>
+            {alurFilter !== 'SEMUA' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-500 hover:text-slate-700"
+                onClick={() => setAlurFilter('SEMUA')}
+              >
+                <X className="mr-1 h-3.5 w-3.5" /> Bersihkan alur
+              </Button>
+            )}
             {selectedIds.size > 0 && (
               <Button
                 variant="ghost"
@@ -998,16 +1060,11 @@ export default function ServiceView() {
                           <div className="flex flex-wrap items-center gap-1">
                             <div className="flex flex-col items-start">
                               <Badge variant="outline" className={st.cls}>{st.label}</Badge>
-                              {/* Tgl request part (kecepatan "Surat Jalan" ditekan) tampil */}
-                              {/* di bawah badge REQUEST — pembanding saat part datang tidak serentak */}
-                              {t.status === 'REQUEST' && t.tglRequestPart && (
-                                <span
-                                  className="mt-0.5 font-mono text-[9px] text-slate-500"
-                                  title={`Request part ke produsen: ${new Date(t.tglRequestPart).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })}`}
-                                >
-                                  Req: {new Date(t.tglRequestPart).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}
-                                </span>
-                              )}
+                              {/* Chip alur surat jalan — DETEKSI PER UNIT: */}
+                              {/* belum dibuatkan SJ → SJ dibuat bekas belum kirim → */}
+                              {/* bekas terkirim (SJ #) → part datang. Menggantikan */}
+                              {/* teks "Req:" lama (tanggal kini ada di chip + hover). */}
+                              <BadgeAlurSj t={t} />
                             </div>
                             {/* Ringkasan part: ✔ READY vs ● INDEN — identifikasi sekilas tanpa buka detail */}
                             {partsTampil.length > 0 && (
