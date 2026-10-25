@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T04:36:31.042Z",
+  "generatedAt": "2026-10-25T04:56:53.825Z",
   "masterToko": [
     {
       "id": 216,
@@ -3949,6 +3949,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-20T16:00:00.000Z"
+    },
+    {
+      "id": 248,
+      "serialNumber": "ZX364621",
+      "modelUnit": "",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "BUNYI BERISIK",
+      "tokoId": 242,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-25T00:00:00.000Z"
     },
     {
       "id": 125,
@@ -8578,6 +8591,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 924,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX364621",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-25T04:56:53.809Z"
+    },
     {
       "id": 923,
       "aksi": "BACKUP_DATA",
