@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T04:56:53.825Z",
+  "generatedAt": "2026-10-25T05:01:43.381Z",
   "masterToko": [
     {
       "id": 216,
@@ -4357,6 +4357,39 @@
   ],
   "serviceRequest": [
     {
+      "id": 87,
+      "noTiket": "SVC-2609-0003",
+      "unitAssetId": 248,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "DI_TOKO",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "STEL IMPELLER",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-21T00:00:00.000Z",
+      "createdAt": "2026-10-25T05:01:43.360Z",
+      "updatedAt": "2026-10-25T05:01:43.360Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
+    {
       "id": 85,
       "noTiket": "SVC-2607-0006",
       "unitAssetId": 222,
@@ -8591,6 +8624,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 925,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0003",
+      "deskripsi": "Tiket manual dibuat untuk unit ZX364621 (, stok toko → GARANSI otomatis) — part READY → otomatis PROSES — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-25T05:01:43.369Z"
+    },
     {
       "id": 924,
       "aksi": "CREATE_UNIT_ASSET",
