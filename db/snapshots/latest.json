@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T13:56:47.147Z",
+  "generatedAt": "2026-10-25T14:01:33.903Z",
   "masterToko": [
     {
       "id": 216,
@@ -1881,7 +1881,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 3,
+      "totalTerpakai": 4,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T05:56:54.444Z"
@@ -4769,7 +4769,7 @@
           "serviceRequestId": 76,
           "sparepartId": 312,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
@@ -8673,6 +8673,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 935,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0001",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-25T14:01:33.870Z"
+    },
     {
       "id": 934,
       "aksi": "MULAI_PROSES_SERVICE",
