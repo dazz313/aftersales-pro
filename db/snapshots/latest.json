@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T05:09:55.075Z",
+  "generatedAt": "2026-10-25T05:19:51.991Z",
   "masterToko": [
     {
       "id": 216,
@@ -4360,27 +4360,27 @@
       "id": 87,
       "noTiket": "SVC-2609-0003",
       "unitAssetId": 248,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
       "penanganan": "DI_TOKO",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-13T05:19:00.000Z",
       "deskripsiKerusakan": "STEL IMPELLER",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2609-0003.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-13T05:19:00.000Z",
       "tglTiket": "2026-09-21T00:00:00.000Z",
       "createdAt": "2026-10-25T05:01:43.360Z",
-      "updatedAt": "2026-10-25T05:01:43.360Z",
+      "updatedAt": "2026-10-25T05:19:51.977Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8624,6 +8624,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 930,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0003",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2609-0003.jpg) — tglFinish diatur manual: 13/10/2026, 13.19.00",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-10-25T05:19:51.982Z"
+    },
+    {
+      "id": 929,
+      "aksi": "CREATE_NOTA",
+      "entitas": "nota",
+      "entitasId": "8",
+      "deskripsi": "Nota BASS 000004 dibuat dari klaim tiket SVC-2607-0002 |T:SVC-2607-0002| — Toko Varia Maju",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-25T05:10:11.918Z"
+    },
     {
       "id": 928,
       "aksi": "CREATE_NOTA",
