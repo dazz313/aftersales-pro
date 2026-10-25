@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T05:45:27.541Z",
+  "generatedAt": "2026-10-25T06:03:49.427Z",
   "masterToko": [
     {
       "id": 216,
@@ -4357,6 +4357,55 @@
   ],
   "serviceRequest": [
     {
+      "id": 88,
+      "noTiket": "SVC-2609-0004",
+      "unitAssetId": 199,
+      "status": "REQUEST",
+      "noSttb": "STTB-2609-0004",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "penyok",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-25T00:00:00.000Z",
+      "createdAt": "2026-10-25T06:03:49.402Z",
+      "updatedAt": "2026-10-25T06:03:49.402Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 97,
+          "serviceRequestId": 88,
+          "sparepartId": 336,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 87,
       "noTiket": "SVC-2609-0003",
       "unitAssetId": 248,
@@ -8624,6 +8673,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 932,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0004",
+      "deskripsi": "Tiket manual dibuat untuk unit 44060074241 (KG-502C, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2609-0004 terbit sejak request part",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-25T06:03:49.411Z"
+    },
     {
       "id": 931,
       "aksi": "UPDATE_UNIT_ASSET",
