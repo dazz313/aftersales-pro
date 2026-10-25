@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T06:04:31.261Z",
+  "generatedAt": "2026-10-25T13:56:47.147Z",
   "masterToko": [
     {
       "id": 216,
@@ -4360,12 +4360,12 @@
       "id": 88,
       "noTiket": "SVC-2609-0004",
       "unitAssetId": 199,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2609-0004",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -4380,7 +4380,7 @@
       "tglFinish": null,
       "tglTiket": "2026-09-25T00:00:00.000Z",
       "createdAt": "2026-10-25T06:03:49.402Z",
-      "updatedAt": "2026-10-25T06:03:49.402Z",
+      "updatedAt": "2026-10-25T13:56:47.087Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8673,6 +8673,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 934,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0004",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2609-0004 diterbitkan untuk penarikan unit 44060074241 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-25T13:56:47.105Z"
+    },
     {
       "id": 933,
       "aksi": "TERIMA_PART_PRODUSEN",
