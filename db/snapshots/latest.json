@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T05:08:15.159Z",
+  "generatedAt": "2026-10-25T05:08:51.776Z",
   "masterToko": [
     {
       "id": 216,
@@ -8624,6 +8624,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 927,
+      "aksi": "CREATE_NOTA",
+      "entitas": "nota",
+      "entitasId": "6",
+      "deskripsi": "Nota BASS 000002 dibuat dari klaim tiket SVC-2610-0041 |T:SVC-2610-0041| — Toko Jaya Bessi",
+      "aktor": "SYAFRIL ARFFANDI",
+      "createdAt": "2026-10-25T05:08:51.766Z"
+    },
     {
       "id": 926,
       "aksi": "CREATE_NOTA",
