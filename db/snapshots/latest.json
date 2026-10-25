@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T21:47:23.506Z",
+  "generatedAt": "2026-10-25T22:06:36.516Z",
   "masterToko": [
     {
       "id": 216,
@@ -7822,154 +7822,6 @@
   ],
   "suratJalanMasuk": [
     {
-      "id": 7,
-      "noSuratJalan": "20261020",
-      "refSjrNo": null,
-      "tglSurat": null,
-      "produsen": null,
-      "namaFile": "Rekap_Faktur_Mutasi_Bhakti_Idola_Tama.xlsx",
-      "totalItem": 9,
-      "cocokCount": 1,
-      "tanpaTiket": 8,
-      "catatan": null,
-      "createdAt": "2026-10-20T16:11:31.607Z",
-      "createdBy": "Admin Workshop",
-      "status": "DIPERIKSA",
-      "cekManual": false,
-      "diperiksaAt": "2026-10-20T16:14:09.448Z",
-      "diperiksaOleh": "Admin Workshop",
-      "diterapkanAt": null,
-      "diterapkanOleh": null,
-      "items": [
-        {
-          "id": 48,
-          "suratJalanMasukId": 7,
-          "kodePart": "RI52-201-2-4-3x01-PR",
-          "namaPart": "TOP PLATE (PRINT) RI-522 C (ORANGE)",
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "COCOK",
-          "cocokTipe": "TIKET_PART",
-          "cocokTiketId": 84,
-          "cocokUnitId": 220,
-          "cocokPartId": 312,
-          "alasan": "Dipilih manual — tiket SVC-2610-0044"
-        },
-        {
-          "id": 49,
-          "suratJalanMasukId": 7,
-          "kodePart": "RI52-201-1-2X01-PR",
-          "namaPart": "TOP PLATE (PRINT) RI-522 E",
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 50,
-          "suratJalanMasukId": 7,
-          "kodePart": "5. Catatan",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 51,
-          "suratJalanMasukId": 7,
-          "kodePart": "- Data dibaca dari hasil scan 10 file PDF (18 faktur). Scan_1.pdf sama dengan faktur MTTSMS021883 yang sudah diproses sebelumnya, sehingga tidak dihitung dua kali.",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 52,
-          "suratJalanMasukId": 7,
-          "kodePart": "- Harga satuan, diskon, dan jumlah (Rp) kosong di semua faktur, jadi tidak ada total nilai rupiah.",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 53,
-          "suratJalanMasukId": 7,
-          "kodePart": "- Kolom 'Kelompok Barang' adalah pengelompokan saya berdasarkan nama barang, bukan dari dokumen. Ubah di sheet Detail Barang bila perlu, rangkuman ikut berubah.",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 54,
-          "suratJalanMasukId": 7,
-          "kodePart": "- Kolom 'Centang di Dokumen' mencatat tanda centang tulisan tangan di sebelah kode barang (kemungkinan tanda sudah dicek). Beberapa tanda kurang jelas, mohon cek ulang.",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 55,
-          "suratJalanMasukId": 7,
-          "kodePart": "- Nama barang pada MTTSMS021883 terpotong di dokumen asli.",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        },
-        {
-          "id": 56,
-          "suratJalanMasukId": 7,
-          "kodePart": "- Tanggal pada faktur diambil dari tanggal tercetak di kanan atas. Sel biru di bagian Per Bulan adalah input tanggal awal bulan.",
-          "namaPart": null,
-          "qty": 1,
-          "serialNumber": null,
-          "statusMatch": "TANPA_TIKET",
-          "cocokTipe": null,
-          "cocokTiketId": null,
-          "cocokUnitId": null,
-          "cocokPartId": null,
-          "alasan": "Tidak ada part diorder produsen yang cocok (kode/nama/SN)"
-        }
-      ]
-    },
-    {
       "id": 6,
       "noSuratJalan": "20261018",
       "refSjrNo": null,
@@ -8673,6 +8525,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 943,
+      "aksi": "HAPUS",
+      "entitas": "surat_jalan_masuk",
+      "entitasId": "20261020",
+      "deskripsi": "Draft surat jalan dihapus (status DIPERIKSA)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-25T22:06:36.502Z"
+    },
+    {
+      "id": 942,
+      "aksi": "UPDATE_NOTA",
+      "entitas": "nota",
+      "entitasId": "9",
+      "deskripsi": "Nota BASS 260579 diubah — status draft → draft",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-25T21:47:25.992Z"
+    },
     {
       "id": 941,
       "aksi": "CREATE_NOTA",
