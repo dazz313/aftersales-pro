@@ -35,18 +35,66 @@ export interface BackupOutcome {
 
 // ---------- 1. Kumpulkan data ----------
 
+const fmtTanggal = (d: Date | null | undefined) => (d ? new Date(d).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '')
+
+/**
+ * Tab "Unit Asset" — SATU sumber kolom untuk backup penuh & sinkron cepat
+ * perubahan (media komunikasi data dgn produsen). Jangan duplikasi mapping
+ * di tempat lain.
+ */
+async function sheetUnitAsset(): Promise<SheetData> {
+  const units = await db.unitAsset.findMany({
+    include: { toko: { select: { kodeToko: true, namaToko: true } }, customer: { select: { nama: true } } },
+    orderBy: { serialNumber: 'asc' },
+  })
+  return {
+    nama: 'Unit Asset',
+    rows: [
+      ['Serial Number', 'Model Unit', 'Merk', 'Nama Unit', 'Toko', 'Pemilik', 'Status Garansi', 'Tgl Pembelian'],
+      ...units.map((u) => [u.serialNumber, u.modelUnit, u.merk ?? '', u.nama ?? '', u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '', u.customer?.nama ?? '', u.statusGaransi, fmtTanggal(u.tglPembelian)]),
+    ],
+  }
+}
+
+/** Tab "Tiket Service" — SATU sumber kolom untuk backup penuh & sinkron cepat. */
+async function sheetTiketService(): Promise<SheetData> {
+  const tikets = await db.serviceRequest.findMany({
+    include: { unitAsset: { include: { toko: { select: { kodeToko: true, namaToko: true } } } }, parts: { include: { sparepart: { select: { kodePart: true, namaPart: true } } } } },
+    orderBy: { createdAt: 'desc' },
+    take: 1000,
+  })
+  return {
+    nama: 'Tiket Service',
+    rows: [
+      ['No. Tiket', 'Status', 'Unit (SN)', 'Model', 'Toko', 'Status Klaim', 'Biaya Jasa (Rp)', 'Dibuat', 'Selesai', 'Parts'],
+      ...tikets.map((t) => [
+        t.noTiket,
+        t.status,
+        t.unitAsset.serialNumber,
+        t.unitAsset.modelUnit,
+        t.unitAsset.toko ? `${t.unitAsset.toko.kodeToko} — ${t.unitAsset.toko.namaToko}` : '',
+        t.statusKlaimProdusen,
+        t.biayaJasa,
+        fmtTanggal(t.createdAt),
+        fmtTanggal(t.tglFinish),
+        t.parts.map((p) => `${p.sparepart.kodePart} x${p.qty}`).join(', '),
+      ]),
+    ],
+  }
+}
+
 export async function collectBackupData(): Promise<SheetData[]> {
-  const [tokos, customers, spareparts, units, kunjungan, tikets, suratJalanList] = await Promise.all([
+  const [tokos, customers, spareparts, tabUnit, kunjungan, tabTiket, suratJalanList] = await Promise.all([
     db.masterToko.findMany({ orderBy: { kodeToko: 'asc' } }),
     db.masterCustomer.findMany({ include: { unitAssets: { select: { modelUnit: true } } }, orderBy: { id: 'asc' } }),
     db.masterSparepart.findMany({ orderBy: { kodePart: 'asc' } }),
-    db.unitAsset.findMany({ include: { toko: { select: { kodeToko: true, namaToko: true } }, customer: { select: { nama: true } } }, orderBy: { serialNumber: 'asc' } }),
+    sheetUnitAsset(),
     db.kunjungan.findMany({ include: { toko: { select: { kodeToko: true, namaToko: true } }, teknisi: { select: { nama: true } } }, orderBy: { tglKunjungan: 'desc' }, take: 1000 }),
-    db.serviceRequest.findMany({ include: { unitAsset: { include: { toko: { select: { kodeToko: true, namaToko: true } } } }, parts: { include: { sparepart: { select: { kodePart: true, namaPart: true } } } } }, orderBy: { createdAt: 'desc' }, take: 1000 }),
+    sheetTiketService(),
     db.suratJalanMasuk.findMany({ include: { items: true }, orderBy: { createdAt: 'desc' }, take: 500 }),
   ])
 
-  const fmt = (d: Date | null | undefined) => (d ? new Date(d).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '')
+  const fmt = fmtTanggal
 
   return [
     {
@@ -70,13 +118,7 @@ export async function collectBackupData(): Promise<SheetData[]> {
         ...spareparts.map((s) => [s.kodePart, s.namaPart, s.brandKompatibel ?? '', s.supplier ?? '', s.stokJual ?? 0, s.stokGaransi ?? 0, s.stokInventory, s.reorderLimit, s.hargaKlaim]),
       ],
     },
-    {
-      nama: 'Unit Asset',
-      rows: [
-        ['Serial Number', 'Model Unit', 'Merk', 'Nama Unit', 'Toko', 'Pemilik', 'Status Garansi', 'Tgl Pembelian'],
-        ...units.map((u) => [u.serialNumber, u.modelUnit, u.merk ?? '', u.nama ?? '', u.toko ? `${u.toko.kodeToko} — ${u.toko.namaToko}` : '', u.customer?.nama ?? '', u.statusGaransi, fmt(u.tglPembelian)]),
-      ],
-    },
+    tabUnit,
     {
       nama: 'Kunjungan',
       rows: [
@@ -84,24 +126,7 @@ export async function collectBackupData(): Promise<SheetData[]> {
         ...kunjungan.map((k) => [fmt(k.tglKunjungan), `${k.toko.kodeToko} — ${k.toko.namaToko}`, k.teknisi.nama, k.metodeCheckin === 'SCAN_BARCODE' ? 'Scan Barcode Toko' : 'Manual', k.catatanStokRusak ?? '']),
       ],
     },
-    {
-      nama: 'Tiket Service',
-      rows: [
-        ['No. Tiket', 'Status', 'Unit (SN)', 'Model', 'Toko', 'Status Klaim', 'Biaya Jasa (Rp)', 'Dibuat', 'Selesai', 'Parts'],
-        ...tikets.map((t) => [
-          t.noTiket,
-          t.status,
-          t.unitAsset.serialNumber,
-          t.unitAsset.modelUnit,
-          t.unitAsset.toko ? `${t.unitAsset.toko.kodeToko} — ${t.unitAsset.toko.namaToko}` : '',
-          t.statusKlaimProdusen,
-          t.biayaJasa,
-          fmt(t.createdAt),
-          fmt(t.tglFinish),
-          t.parts.map((p) => `${p.sparepart.kodePart} x${p.qty}`).join(', '),
-        ]),
-      ],
-    },
+    tabTiket,
     {
       nama: 'Surat Jalan Masuk',
       rows: [
@@ -354,4 +379,87 @@ export async function getBackupStatus() {
       terakhir: map['gs_jadwal_terakhir'] ?? '',
     },
   }
+}
+
+// ---------- 6. Sinkron cepat perubahan (media komunikasi dgn produsen) ----------
+//
+// Permintaan pemilik: setiap perubahan di PROSES SERVICE & UNIT ASSET langsung
+// tercermin di spreadsheet bersama. Mekanisme:
+//  • Trigger otomatis dari middleware Prisma (db.ts) setiap tulis ke
+//    ServiceRequest / ServiceRequestPart / UnitAsset yang berhasil.
+//  • Dikoalesasi: maksimal 1x push per JEDA_SINKRON_MS — banyak perubahan
+//    beruntun (mis. input 5 part) digabung jadi SATU push; perubahan yang
+//    datang saat push berjalan dijemput push tunda berikutnya.
+//  • Gagal TIDAK PERNAH menggagalkan aksi utama pengguna — hanya dicatat
+//    BackupLog (trigger PERUBAHAN); backup berkala tetap jaring pengaman.
+
+const JEDA_SINKRON_MS = 60_000
+let sinkronTerakhir = 0
+let timerSinkron: ReturnType<typeof setTimeout> | null = null
+let sedangSinkron = false
+
+async function eksekusiSinkronCepat(): Promise<void> {
+  if (sedangSinkron) return
+  sedangSinkron = true
+  sinkronTerakhir = Date.now()
+  try {
+    const rows = await db.pengaturan.findMany({ where: { kunci: { startsWith: 'gs_' } } })
+    const map: Record<string, string> = {}
+    for (const r of rows) map[r.kunci] = r.nilai
+    const spreadsheetId = map['gs_spreadsheet_id'] ?? ''
+    const serviceEmail = map['gs_service_email'] ?? ''
+    const privateKey = map['gs_private_key'] ?? ''
+    // Belum dikonfigurasi → senyap. Backup berkala (snapshot lokal) sudah
+    // menutup kasus ini; jangan membanjiri log dengan kegagalan tak berarti.
+    if (!spreadsheetId || !serviceEmail || !privateKey) return
+    const auth = await getAccessToken(serviceEmail, privateKey)
+    if (!auth.ok || !auth.token) throw new Error(auth.detail ?? 'Autentikasi Google gagal')
+    const sheets = await Promise.all([sheetUnitAsset(), sheetTiketService()])
+    const push = await pushSheets(spreadsheetId, auth.token, sheets)
+    await db.backupLog.create({
+      data: {
+        status: 'SUCCESS',
+        trigger: 'PERUBAHAN',
+        sheetsWritten: push.written,
+        rowsTotal: push.rows,
+        tabel: sheets.map((s) => s.nama).join(', '),
+        message: `Sinkron cepat perubahan service/unit → spreadsheet bersama: ${push.detail}`,
+      },
+    })
+  } catch (e) {
+    try {
+      await db.backupLog.create({
+        data: {
+          status: 'FAILED',
+          trigger: 'PERUBAHAN',
+          sheetsWritten: 0,
+          rowsTotal: 0,
+          tabel: 'Unit Asset, Tiket Service',
+          message: `Sinkron cepat perubahan gagal: ${(e as Error).message}`,
+        },
+      })
+    } catch {
+      // Pencatatan log pun gagal — abaikan; backup berkala tetap menutup.
+    }
+  } finally {
+    sedangSinkron = false
+  }
+}
+
+/**
+ * Ajukan sinkron cepat — dipanggil otomatis setelah perubahan service/unit
+ * asset berhasil (middleware db.ts). Aman dipanggil berkali-kali: dipangkas
+ * jadi maksimal 1 push per menit.
+ */
+export function mintaSinkronServiceUnit(): void {
+  if (timerSinkron) return // sudah ada push terjadwal — perubahan ikut di situ
+  const sisa = JEDA_SINKRON_MS - (Date.now() - sinkronTerakhir)
+  if (sisa <= 0 && !sedangSinkron) {
+    void eksekusiSinkronCepat()
+    return
+  }
+  timerSinkron = setTimeout(() => {
+    timerSinkron = null
+    void eksekusiSinkronCepat()
+  }, Math.max(sisa, 5_000))
 }

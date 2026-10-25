@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
-import type { ServiceTicket, Sparepart } from '@/lib/api'
+import { authHeaders, type ServiceTicket, type Sparepart } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import {
   CheckCircle2,
@@ -202,12 +202,54 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
   type TambahRow = { key: number; mode: 'katalog' | 'manual'; sparepartId: string; kode: string; nama: string; qty: string }
   const [tambahRows, setTambahRows] = useState<TambahRow[]>([{ key: 0, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
   const tambahKey = useRef(1)
+  // ===== Kode otomatis dari riwayat input part (Bank Kode) =====
+  // Saat kolom NAMA ditinggalkan (blur) dan kode masih kosong, sistem mencari
+  // nama itu di riwayat part yang pernah diinput: cocok PERSIS satu → kode
+  // diisi langsung; beberapa kandidat → ditawarkan sebagai chip pilihan.
+  type UsulanKode = { kode: string; namaPart: string; sumber: string; skor: number }
+  type UsulanState = { daftar: UsulanKode[]; terisi?: string }
+  const [usulanBalas, setUsulanBalas] = useState<Record<number, UsulanState>>({})
+  const [usulanTambah, setUsulanTambah] = useState<Record<number, UsulanState>>({})
+  const cariKodeOtomatis = async (key: number, nama: string, target: 'balas' | 'tambah') => {
+    const setUsulan = target === 'balas' ? setUsulanBalas : setUsulanTambah
+    const kosongkan = () =>
+      setUsulan((m) => {
+        if (!(key in m)) return m
+        const n = { ...m }
+        delete n[key]
+        return n
+      })
+    if (nama.trim().length < 3) {
+      kosongkan()
+      return
+    }
+    try {
+      const res = await fetch(`/api/bank-kode/cari-nama?nama=${encodeURIComponent(nama.trim())}`, { headers: authHeaders() })
+      const j = (await res.json().catch(() => ({}))) as { items?: UsulanKode[] }
+      const daftar = (j.items ?? []).filter((u) => u.kode)
+      if (daftar.length === 1 && daftar[0].skor >= 100) {
+        // Nama cocok persis dengan SATU riwayat → isi kode langsung.
+        const kode = daftar[0].kode
+        if (target === 'balas') setBalasRows((rows) => rows.map((r) => (r.key === key && !r.kode.trim() ? { ...r, kode } : r)))
+        else setTambahRows((rows) => rows.map((r) => (r.key === key && !r.kode.trim() ? { ...r, kode } : r)))
+        setUsulan((m) => ({ ...m, [key]: { daftar: [], terisi: kode } }))
+      } else if (daftar.length) {
+        setUsulan((m) => ({ ...m, [key]: { daftar } }))
+      } else {
+        kosongkan()
+      }
+    } catch {
+      // Pencarian gagal (jaringan dsb.) — fitur bantu saja, input manual tetap jalan.
+    }
+  }
   // Kerusakan quick-edit (REQUEST/PROSES) — tersimpan via UPDATE_JASA.
   const [rusak, setRusak] = useState(ticket.deskripsiKerusakan ?? '')
   // Ganti tiket → ulangi form dari awal
   useEffect(() => {
     setBalasRows([{ key: balasKey.current++, kode: '', nama: '', qty: '1' }])
     setTambahRows([{ key: tambahKey.current++, mode: 'katalog', sparepartId: '', kode: '', nama: '', qty: '1' }])
+    setUsulanBalas({})
+    setUsulanTambah({})
     setRusak(ticket.deskripsiKerusakan ?? '')
     setSj('')
   }, [ticket.id])
@@ -290,11 +332,12 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
             const kodeRow = row.kode.trim().toUpperCase()
             const dup = kodeRow !== '' && dupBalasKode.has(kodeRow)
             const lengkap = row.kode.trim() !== '' && row.nama.trim() !== ''
+            const usulan = usulanBalas[row.key]
             return (
               <div key={row.key} className="space-y-1">
                 <div className="flex gap-1.5">
                   <Input value={row.kode} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, kode: e.target.value.toUpperCase() } : r)))} placeholder="Kode part" className={cn('h-7 font-mono text-[11px]', dup && 'border-red-400')} aria-label={`Kode sparepart baris ${i + 1}`} />
-                  <Input value={row.nama} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, nama: e.target.value } : r)))} placeholder="Nama part" className="h-7 text-[11px]" aria-label={`Nama sparepart baris ${i + 1}`} />
+                  <Input value={row.nama} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, nama: e.target.value } : r)))} onBlur={() => { if (!row.kode.trim()) void cariKodeOtomatis(row.key, row.nama, 'balas') }} placeholder="Nama part" className="h-7 text-[11px]" aria-label={`Nama sparepart baris ${i + 1}`} />
                   <Input type="number" min="1" value={row.qty} onChange={(e) => setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, qty: e.target.value } : r)))} className="h-7 w-14 shrink-0 text-[11px]" aria-label={`Jumlah baris ${i + 1}`} />
                   <Button
                     size="sm"
@@ -326,6 +369,28 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                 </div>
                 {dup && (
                   <p className="text-[10px] font-medium text-red-600">Kode {kodeRow} sudah ada di baris lain — gabungkan qty-nya jadi satu baris.</p>
+                )}
+                {!kodeRow && (usulan?.daftar.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-[10px] text-slate-500">Kode dari riwayat:</span>
+                    {(usulan?.daftar ?? []).slice(0, 4).map((k) => (
+                      <button
+                        key={k.kode}
+                        type="button"
+                        onClick={() => {
+                          setBalasRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, kode: k.kode } : r)))
+                          setUsulanBalas((m) => ({ ...m, [row.key]: { daftar: [] } }))
+                        }}
+                        className="rounded-full border border-teal-300 bg-white px-2 py-0.5 font-mono text-[10px] text-teal-700 hover:bg-teal-50"
+                        title={`${k.namaPart} — ${k.sumber}${k.skor < 100 ? ` · kemiripan ${k.skor}%` : ''}`}
+                      >
+                        {k.kode}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {usulan?.terisi && row.kode.trim() === usulan.terisi && (
+                  <p className="text-[10px] text-teal-700">Kode {usulan.terisi} terisi otomatis dari riwayat input part — periksa sebelum dicatat.</p>
                 )}
               </div>
             )
@@ -388,6 +453,7 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
           <Label className="text-xs">Tambah sparepart — dari katalog atau tulis kode baru</Label>
           {tambahRows.map((row, i) => {
             const lengkap = row.mode === 'katalog' ? !!row.sparepartId : !!(row.kode.trim() && row.nama.trim())
+            const usulan = usulanTambah[row.key]
             return (
               <div key={row.key} className="space-y-1.5">
                 <div className="flex gap-1">
@@ -425,7 +491,7 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                   ) : (
                     <>
                       <Input value={row.kode} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, kode: e.target.value.toUpperCase() } : r)))} placeholder="Kode part baru" className="h-7 min-w-0 flex-1 font-mono text-[11px]" aria-label={`Kode part tambahan baris ${i + 1}`} />
-                      <Input value={row.nama} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, nama: e.target.value } : r)))} placeholder="Nama part" className="h-7 min-w-0 flex-1 text-[11px]" aria-label={`Nama part tambahan baris ${i + 1}`} />
+                      <Input value={row.nama} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, nama: e.target.value } : r)))} onBlur={() => { if (!row.kode.trim()) void cariKodeOtomatis(row.key, row.nama, 'tambah') }} placeholder="Nama part" className="h-7 min-w-0 flex-1 text-[11px]" aria-label={`Nama part tambahan baris ${i + 1}`} />
                     </>
                   )}
                   <Input type="number" min="1" value={row.qty} onChange={(e) => setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, qty: e.target.value } : r)))} className="h-7 w-16 shrink-0 text-[11px]" aria-label={`Jumlah baris ${i + 1}`} />
@@ -459,10 +525,32 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                     </Button>
                   )}
                 </div>
+                {row.mode === 'manual' && !row.kode.trim() && (usulan?.daftar.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-[10px] text-slate-500">Kode dari riwayat:</span>
+                    {(usulan?.daftar ?? []).slice(0, 4).map((k) => (
+                      <button
+                        key={k.kode}
+                        type="button"
+                        onClick={() => {
+                          setTambahRows((rows) => rows.map((r) => (r.key === row.key ? { ...r, kode: k.kode } : r)))
+                          setUsulanTambah((m) => ({ ...m, [row.key]: { daftar: [] } }))
+                        }}
+                        className="rounded-full border border-teal-300 bg-white px-2 py-0.5 font-mono text-[10px] text-teal-700 hover:bg-teal-50"
+                        title={`${k.namaPart} — ${k.sumber}${k.skor < 100 ? ` · kemiripan ${k.skor}%` : ''}`}
+                      >
+                        {k.kode}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {row.mode === 'manual' && usulan?.terisi && row.kode.trim() === usulan.terisi && (
+                  <p className="text-[10px] text-teal-700">Kode {usulan.terisi} terisi otomatis dari riwayat input part — periksa sebelum ditambah.</p>
+                )}
               </div>
             )
           })}
-          <p className="text-[10px] text-slate-400">Kode baru otomatis masuk katalog. Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen.</p>
+          <p className="text-[10px] text-slate-400">Kode baru otomatis masuk katalog. Stok cukup → READY &amp; terpasang. Stok kurang → otomatis ORDER ke produsen. Tulis nama part &amp; tinggalkan kolom kode — sistem mencarikan kodenya dari riwayat.</p>
         </div>
       )}
 

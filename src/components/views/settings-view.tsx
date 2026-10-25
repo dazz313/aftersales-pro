@@ -54,6 +54,13 @@ const STATUS_TONE: Record<string, string> = {
   FAILED: 'border-rose-300 bg-rose-50 text-rose-700',
 }
 
+/** Label ramah trigger BackupLog — PERUBAHAN = sinkron cepat perubahan service/unit. */
+const TRIGGER_LABEL: Record<string, string> = {
+  MANUAL: 'manual',
+  AUTO: 'otomatis',
+  PERUBAHAN: 'perubahan service/unit',
+}
+
 type SecKey = 'profil' | 'merk' | 'gateway' | 'email' | 'ai' | 'backup' | 'desktop' | 'keamanan'
 
 /** Section dropdown — header selalu terlihat, isi bisa dibuka/tutup agar halaman tidak kepanjangan. */
@@ -898,7 +905,7 @@ export default function SettingsView() {
                   {backupStatus.logs.slice(1, 6).map((l) => (
                     <div key={l.id} className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5 text-[10px]">
                       <Badge variant="outline" className={cn('text-[9px]', STATUS_TONE[l.status])}>{l.status}</Badge>
-                      <span className="text-slate-500">{l.trigger} · {l.rowsTotal} baris</span>
+                      <span className="text-slate-500">{TRIGGER_LABEL[l.trigger] ?? l.trigger} · {l.rowsTotal} baris</span>
                       <span className="text-slate-400">{formatWaktu(l.createdAt)}</span>
                     </div>
                   ))}

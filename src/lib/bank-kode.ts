@@ -1,4 +1,5 @@
 import { db } from '@/lib/db'
+import { normNama, skorNamaPart } from './nama-part'
 
 /**
  * Bank Kode — pencatat terpusat semua kode sparepart yang pernah masuk aplikasi.
@@ -59,4 +60,58 @@ export async function catatBankKode(input: CatatKodeInput): Promise<'baru' | 'di
   if (Object.keys(patch).length === 0) return 'sudah-ada'
   await db.bankKode.update({ where: { kode }, data: patch })
   return 'dilengkapi'
+}
+
+export interface KodeDariNama {
+  kode: string
+  namaPart: string
+  brandKompatibel: string
+  modelTipe: string
+  produsen: string
+  sumber: string
+  skor: number
+}
+
+/**
+ * Cari kode di riwayat Bank Kode berdasarkan NAMA part yang diketik —
+ * inti fitur "kode otomatis" di form tambah part service: pemilik menulis
+ * nama, sistem mengisi/menyarankan kode bila nama itu pernah diinput
+ * sebelumnya (katalog, produsen, workshop, order, CSV…).
+ *
+ * Kandidat diambil lewat token ≥3 huruf (contains — pola sama dgn GET
+ * /api/bank-kode), lalu dinilai murni lewat skorNamaPart; hanya yang kuat
+ * (≥80) dikembalikan, urut skor lalu kode.
+ */
+export async function cariKodeDariNama(nama: string, ambil = 6): Promise<KodeDariNama[]> {
+  const bersih = normNama(nama)
+  if (bersih.length < 3) return []
+  const token = bersih.split(' ').filter((t) => t.length >= 3).slice(0, 4)
+  if (!token.length) return []
+  const or: Record<string, unknown>[] = []
+  for (const t of token) {
+    for (const v of new Set([t, t.toUpperCase()])) {
+      or.push({ namaPart: { contains: v } })
+    }
+  }
+  const kandidat = await db.bankKode.findMany({
+    where: { OR: or },
+    take: 300,
+    orderBy: { updatedAt: 'desc' },
+  })
+  const hasil: KodeDariNama[] = []
+  for (const k of kandidat) {
+    const skor = skorNamaPart(bersih, k.namaPart)
+    if (skor >= 80) {
+      hasil.push({
+        kode: k.kode,
+        namaPart: k.namaPart,
+        brandKompatibel: k.brandKompatibel,
+        modelTipe: k.modelTipe,
+        produsen: k.produsen,
+        sumber: k.sumber,
+        skor,
+      })
+    }
+  }
+  return hasil.sort((a, b) => b.skor - a.skor || a.kode.localeCompare(b.kode)).slice(0, ambil)
 }
