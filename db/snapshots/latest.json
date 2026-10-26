@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T05:13:53.040Z",
+  "generatedAt": "2026-10-26T05:29:00.223Z",
   "masterToko": [
     {
       "id": 216,
@@ -3969,7 +3969,7 @@
       "modelUnit": "PS-130 BIT",
       "merk": "Shimizu",
       "nama": "pompa air",
-      "kerusakanAwal": "BUNYI BERISIK",
+      "kerusakanAwal": "SUARA BERISIK",
       "tokoId": 242,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -7968,6 +7968,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 950,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX364621",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (ZX364621)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-26T05:29:00.212Z"
+    },
     {
       "id": 949,
       "aksi": "UPDATE_UNIT_ASSET",
