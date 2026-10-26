@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T05:29:00.223Z",
+  "generatedAt": "2026-10-26T05:43:55.763Z",
   "masterToko": [
     {
       "id": 216,
@@ -3927,11 +3927,11 @@
     {
       "id": 249,
       "serialNumber": "ZR381135",
-      "modelUnit": "",
+      "modelUnit": "PS-230 BIT",
       "merk": "Shimizu",
       "nama": "pompa air",
       "kerusakanAwal": "MOTOR RUSAK",
-      "tokoId": 242,
+      "tokoId": 243,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
@@ -7968,6 +7968,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 951,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZR381135",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (ZR381135)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-26T05:43:55.750Z"
+    },
     {
       "id": 950,
       "aksi": "UPDATE_UNIT_ASSET",
