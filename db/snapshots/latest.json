@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T02:28:00.241Z",
+  "generatedAt": "2026-10-26T03:38:59.801Z",
   "masterToko": [
     {
       "id": 216,
@@ -3975,6 +3975,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-09-25T00:00:00.000Z"
+    },
+    {
+      "id": 250,
+      "serialNumber": "ZX371772",
+      "modelUnit": "PS-128 BIT",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "PECAH PENUTUP MESIN",
+      "tokoId": 259,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-07T00:00:00.000Z"
     },
     {
       "id": 125,
@@ -7955,6 +7968,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 947,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX371772",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-26T03:38:59.782Z"
+    },
     {
       "id": 946,
       "aksi": "CREATE_UNIT_ASSET",
