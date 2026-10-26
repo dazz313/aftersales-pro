@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-25T22:48:28.197Z",
+  "generatedAt": "2026-10-26T02:28:00.241Z",
   "masterToko": [
     {
       "id": 216,
@@ -3923,6 +3923,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-22T00:00:00.000Z"
+    },
+    {
+      "id": 249,
+      "serialNumber": "ZR381135",
+      "modelUnit": "",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "MOTOR RUSAK",
+      "tokoId": 242,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-21T00:00:00.000Z"
     },
     {
       "id": 172,
@@ -7942,6 +7955,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 946,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZR381135",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-26T02:28:00.202Z"
+    },
     {
       "id": 945,
       "aksi": "FINISH_SERVICE",
