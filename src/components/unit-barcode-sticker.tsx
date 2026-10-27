@@ -8,6 +8,7 @@ import { Barcode } from 'lucide-react'
 import { formatTanggal, type UnitAsset } from '@/lib/api'
 import { GARANSI_LABEL } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { cetakStiker, useStickerPrint } from '@/lib/sticker-print'
 
 /**
  * Stiker Barcode UNIT ASSET — layout:
@@ -17,6 +18,9 @@ import { cn } from '@/lib/utils'
  */
 export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitAsset | null; onOpenChange: (o: boolean) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Mode cetak stiker aktif selama dialog terbuka (ukuran kertas + Ctrl+P manual)
+  useStickerPrint(!!unit)
 
   useEffect(() => {
     if (!unit?.serialNumber) return
@@ -54,14 +58,14 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
 
   return (
     <Dialog open={!!unit} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="stiker-dialog sm:max-w-sm">
         {unit && (
           <>
             <DialogHeader>
               <DialogTitle>Stiker Barcode Unit</DialogTitle>
               <DialogDescription>Tempel di unit — teknisi scan untuk identifikasi garansi &amp; asal toko/customer.</DialogDescription>
             </DialogHeader>
-            <div className="mx-auto w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white p-4 text-center shadow-sm">
+            <div className="stiker-printroot mx-auto w-full max-w-xs rounded-xl border-2 border-slate-200 bg-white p-4 text-center shadow-sm">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Unit Asset Sticker</p>
 
               {/* Barcode visual CODE128 asli — hanya bila nomor seri sudah terisi */}
@@ -148,7 +152,7 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Tutup</Button>
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => window.print()}>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={cetakStiker}>
                 <Barcode className="mr-1 h-4 w-4" /> Cetak Stiker
               </Button>
             </DialogFooter>

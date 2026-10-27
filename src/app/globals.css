@@ -140,3 +140,44 @@
   .nota-printroot { position: absolute; top: 0; left: 0; z-index: 2147483000; }
   .nota-printonly { display: block !important; position: relative; top: 0; left: 0; }
 }
+
+/* == Stiker barcode toko/unit — cetak ========================================== \
+   Tanpa mode ini, cetak mengikuti aturan nota di atas (seluruh halaman           \
+   disembunyikan) sehingga hasilnya kertas kosong. Saat body                      \
+   [data-print-mode='stiker'] — dipasang oleh src/lib/sticker-print.ts — hanya    \
+   stiker .stiker-printroot yang tampil: chrome dialog (judul, deskripsi,         \
+   tombol, close) disembunyikan, kotak dialog dibuang transform/padding-nya dan   \
+   ditempel di pojok kiri atas kertas (ukuran kertas mengikuti printer — @page    \
+   ditimpa dinamis oleh lib/sticker-print.ts).                                    \
+================================================================================== */
+.stiker-printroot {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media print {
+  body[data-print-mode='stiker'] .stiker-printroot,
+  body[data-print-mode='stiker'] .stiker-printroot * {
+    visibility: visible !important;
+  }
+
+  /* Kotak dialog: lepas centering transform/padding/border agar stiker pas di kertas */
+  body[data-print-mode='stiker'] [data-slot='dialog-content'].stiker-dialog {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    translate: none !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Chrome dialog (judul, deskripsi, tombol, close) tidak ikut tercetak */
+  body[data-print-mode='stiker'] [data-slot='dialog-content'].stiker-dialog > *:not(.stiker-printroot) {
+    display: none !important;
+  }
+}
