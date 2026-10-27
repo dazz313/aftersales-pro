@@ -76,8 +76,12 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
   ]
 
   return (
-    <div className={cn('flex min-h-0 flex-1 overflow-hidden', className)}>
-      {/* Sidebar daftar akun (desktop) / dropdown (mini) */}
+    // Compact (widget melayang) = susunan KOLOM: pemilih akun di atas dgn
+    // lebar penuh, pesan di bawah — kalau tidak, pemilih jadi "kolom" kiri
+    // yang memakan lebar dan nama/gelembung pesan di kanan jadi terpotong.
+    // Mode lebar (view Komunikasi) = baris: sidebar kiri + kolom pesan.
+    <div className={cn('flex min-h-0 flex-1 overflow-hidden', compact ? 'flex-col' : undefined, className)}>
+      {/* Pemilih akun: sidebar daftar akun (lebar) / dropdown (compact) */}
       {!compact ? (
         <div className="flex w-52 shrink-0 flex-col border-r bg-slate-50/60">
           <div className="flex items-center gap-1.5 border-b px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
@@ -107,7 +111,8 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
           </ScrollArea>
         </div>
       ) : (
-        <div className="flex shrink-0 items-center gap-1.5 border-b p-2">
+        // Baris atas widget compact: tombol kembali (saat DM) + dropdown akun.
+        <div className="flex items-center gap-1.5 border-b p-2">
           {partner && (
             <Button size="sm" variant="ghost" className="h-8 w-8 shrink-0 p-0" onClick={onKembali} title="Ganti akun tujuan">
               <ArrowLeft className="h-4 w-4" />
