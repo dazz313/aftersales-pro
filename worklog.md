@@ -1,6 +1,23 @@
 # Worklog
 
 ---
+Task ID: 48
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Benar tidak terpotong, tapi MiniChat tidak bisa dipakai chat karena tidak ada kolom untuk menulis dan nama penulis tidak tampil" — laporan lanjutan dgn screenshot
+
+Work Log:
+- DEBUG dgn browser NYATA (Playwright + token sesi sintetis pola smoke-test lama): dev 3100 (DB e2e terisolasi, seed akun nama super-panjang + pesan) dan PROD 3000 (injeksi localStorage `aspro_token` + cookie `aspro_session`; GET /api/chat dipastikan sehat: users & pesan lengkap).
+- Reproduksi persis keluhan di PROD thread DM: kolom pesan MENGAMBIL seluruh panel — baris pemilih akun & header nama terdorong KE ATAS terpotong, textarea/composer terdorong KE BAWAH (y=659 > batas panel 640) → "tidak ada kolom untuk menulis".
+- Akar: pengukuran DOM menunjukkan ScrollArea dibesarkan sampai h=452 (tidak disusutkan flex) saat isi thread panjang — rantai turun: kolom pesan `flex min-w-0 flex-1 flex-col` TANPA `min-h-0`; sebagai flex item dalam kontainer KOLOM, min-height-otomatis-nya menurunkan tinggi ISI (header + seluruh konten scroll + composer) sehingga kolom membengkak melebihi panel; overflow-hidden lalu memotong dua ujung. Thread pendek tidak kena (kelihatan normal) — bug hanya muncul saat isi DM panjang.
+- Fix (`chat-panel.tsx`): kolom pesan → `min-h-0`; header thread & baris pemilih & composer diberi `shrink-0`; (`minichat.tsx`) bar judul panel `shrink-0`. Hasil: ScrollArea menyusut dgn benar, picker/header/composer selalu terlihat.
+- "Nama penulis tidak tampil": nama pengirim kini tampil di SEMUA pesan dari orang lain (broadcast DAN DM) — sebelumnya hanya di broadcast (DM mengandalkan warna bubble saja).
+- Verifikasi visual produksi setelah deploy: screenshot DM (nama penulis & composer tampil) + SEMUA ✓; tsc 0; eslint 0 (--max-warnings=0); vitest 98 lulus; build standalone OK; PM2 online + /api/health ok; E2E 13/13 PASSED; skrip debug/seed/token sementara DIHAPUS (termasuk token sintetis) — tidak meninggalkan artefak.
+- Git: commit `ad7452d`. Rollback: revert 1 komit.
+
+Stage Summary:
+- Widget MiniChat (dan komponen chat pada umumnya) kini tahan terhadap thread panjang: area pesan menyusut sesuai tinggi panel, baris pemilih akun + header nama + kotak tulis selalu terlihat, dan setiap pesan masuk menampilkan nama penulisnya (dot warna role). Sudah diverifikasi di server produksi dgn sesi nyata & thread panjang.
+
+---
 Task ID: 47
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Jika gunakan nama panjang, chat (widget MiniChat compact) tidak kelihatan" — laporan dgn screenshot
