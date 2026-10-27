@@ -1,6 +1,21 @@
 # Worklog
 
 ---
+Task ID: 47
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Jika gunakan nama panjang, chat (widget MiniChat compact) tidak kelihatan" — laporan dgn screenshot
+
+Work Log:
+- Diagnosa akar: BUG STRUKTUR di ChatPanel mode compact (`chat-panel.tsx`). Root panel `flex` (BARIS) memuat elemen pemilih akun (back + Select) sebagai sibling → ia dirender sebagai "kolom" kiri setinggi panel dgn `items-center` (dropdown tampak di TENGAH secara vertikal), memakan `shrink-0` lebar kontennya, sehingga kolom pesan digilas ke kanan jadi ~150px: nama partner header terpotong "SYAFRIL AFFA…" (line-clamp-2 di kontainer sempit → "SYAFRIL"/"AFFA…" + sisanya di-clamp), role "Teknisi L…", dan gelembung pesan menempel/terpotong di tepi. Mode lebar (view Komunikasi) tidak terdampak.
+- Fix (`chat-panel.tsx`): root ChatPanel → `compact ? 'flex-col' : undefined` — mode compact kini KOLOM: baris pemilih akun (back + Select flex-1) di ATAS dgn lebar penuh panel, kolom pesan (header partner + scroll pesan + composer) di bawah memakai sisa lebar penuh. Mode lebar tetap baris (sidebar w-52 + pesan). Komentar penjelasan ditambah.
+- Efek: nama partner header compact kini muat 1 baris (nama lebih panjang tetap terlipat 2 baris dgn line-clamp-2; role `Teknisi Lapangan` utuh), gelembung pesan max-w-85% lebar penuh, dropdown pilih akun lebar penuh (trigger 2 baris utility dari Task 46 tetap).
+- Verifikasi: tsc 0; eslint 0 (--max-warnings=0); vitest 98 lulus; build standalone OK; PM2 online + /api/health ok; E2E Playwright 13/13 PASSED.
+- Git: commit `4183d93`. Rollback: revert 1 komit (murni UI compact, tanpa skema/API).
+
+Stage Summary:
+- Widget MiniChat melayang diperbaiki strukturnya: pemilih akun (tombol kembali + dropdown) kini baris teratas dgn lebar penuh, bukan "kolom" kiri yang menindih area pesan. Nama akun panjang (mis. SYAFRIL AFFANDI — Teknisi Lapangan) tampil utuh di header thread & dropdown, dan gelembung pesan memakai lebar penuh panel — tidak ada lagi teks terpotong "SYAFRIL AFFA…"/"Teknisi L…".
+
+---
 Task ID: 46
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Buat notes dan chat berdampingan kiri dan kanan agar lebih portable; perbaiki nama pengguna chat yang panjang tidak kelihatan"
