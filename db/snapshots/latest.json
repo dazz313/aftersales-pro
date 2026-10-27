@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T07:59:27.809Z",
+  "generatedAt": "2026-10-27T08:00:27.999Z",
   "masterToko": [
     {
       "id": 216,
@@ -4422,27 +4422,27 @@
       "id": 89,
       "noTiket": "SVC-2610-0045",
       "unitAssetId": 252,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0045",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-08T07:59:00.000Z",
       "deskripsiKerusakan": "UNIT KURANG LENGKAP",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0045.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-08T07:59:00.000Z",
       "tglTiket": "2026-10-27T00:00:00.000Z",
       "createdAt": "2026-10-27T07:58:58.879Z",
-      "updatedAt": "2026-10-27T07:59:27.771Z",
+      "updatedAt": "2026-10-27T08:00:27.984Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4460,8 +4460,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "SFMX-PX494-BK-KGX",
+          "namaPartCache": "BIG PIPE LOCK BLACK",
           "editedAt": null,
           "editedBy": null
         }
@@ -8081,6 +8081,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 980,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0045",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0045.jpg) — tglFinish diatur manual: 8/10/2026, 15.59.00",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-10-27T08:00:27.988Z"
+    },
+    {
+      "id": 979,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0045",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0045 diterbitkan untuk penarikan unit 03040022451 ke workshop",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-10-27T07:59:35.737Z"
+    },
     {
       "id": 978,
       "aksi": "TERIMA_PART_PRODUSEN",
