@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T06:47:28.995Z",
+  "generatedAt": "2026-10-27T06:49:56.680Z",
   "masterToko": [
     {
       "id": 216,
@@ -2922,6 +2922,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-05T16:00:00.000Z"
+    },
+    {
+      "id": 251,
+      "serialNumber": "1502014218",
+      "modelUnit": "KAS-1618 PL",
+      "merk": "MIYAKO",
+      "nama": "KIPAS ANGIN",
+      "kerusakanAwal": "MOTOR TIDAK BERPUTAR",
+      "tokoId": 230,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-12T00:00:00.000Z"
     },
     {
       "id": 182,
@@ -7996,6 +8009,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 970,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "1502014218",
+      "deskripsi": "Unit baru teregistrasi: KIPAS ANGIN (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-27T06:49:56.662Z"
+    },
     {
       "id": 969,
       "aksi": "FINISH_SERVICE",
