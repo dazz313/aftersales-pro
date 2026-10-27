@@ -47,6 +47,8 @@ const ROLE_TONE: Record<RoleKey, string> = {
 
 export default function KomunikasiView() {
   const { user, role } = useAppStore()
+  const navIntent = useAppStore((s) => s.navIntent)
+  const clearNavIntent = useAppStore((s) => s.clearNavIntent)
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const meId = user?.id ?? 0
@@ -54,6 +56,22 @@ export default function KomunikasiView() {
 
   // ===== MiniChat data (dipakai tab chat; widget punya query sendiri) =====
   const [thread, setThread] = useState('SEMUA')
+  const [tab, setTab] = useState('minichat')
+
+  // Konsumsi navIntent drill-down dari kartu "Chat Baru" Dashboard → buka
+  // tab MiniChat & thread yang diminta, lalu bersihkan intent (pola view lain:
+  // setTimeout 0 di callback — bukan setState sinkron di body effect).
+  useEffect(() => {
+    if (!navIntent?.komunikasiThread) return
+    const target = navIntent.komunikasiThread
+    const t = setTimeout(() => {
+      setTab('minichat')
+      setThread(target)
+      clearNavIntent()
+    }, 0)
+    return () => clearTimeout(t)
+  }, [navIntent, clearNavIntent])
+
   const { data: chat, isLoading } = useQuery<ChatData>({
     queryKey: ['chat'],
     queryFn: () => fetcher<ChatData>('/api/chat'),
@@ -74,7 +92,6 @@ export default function KomunikasiView() {
   }, [meId, thread, chat?.pesan.length])
 
   // ===== Notes =====
-  const [tab, setTab] = useState('minichat')
   const [cari, setCari] = useState('')
   const [buatBuka, setBuatBuka] = useState(false)
   const [form, setForm] = useState({ judul: '', isi: '', untukRole: '' })

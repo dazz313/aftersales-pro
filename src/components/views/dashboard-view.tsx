@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetcher, postJson, authHeaders, formatRupiah, type DashboardData, type AlertsResponse, type AlertItem } from '@/lib/api'
+import { fetcher, postJson, authHeaders, formatRupiah, formatWaktu, type DashboardData, type AlertsResponse, type AlertItem, type ChatData, type ChatPesanItem } from '@/lib/api'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore, type NavIntent, type ViewKey } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -20,9 +20,10 @@ import {
 import {
   FileClock, Loader, CheckCircle2, Wallet, PackageX, MapPinOff, AlertTriangle,
   RefreshCw, TrendingUp, Store, ClipboardList, ChevronRight, ChevronDown, Hourglass,
-  FileDown, FileSpreadsheet, Send, QrCode, Mail,
+  FileDown, FileSpreadsheet, Send, QrCode, Mail, MessageSquare,
 } from 'lucide-react'
 import { KpiGrid, type KpiDef } from '@/components/kpi-card'
+import { ambilReadMap, threadDariPesan, totalUnread, unreadPerThread } from '@/lib/chat'
 
 const MODEL_SHORT = (m: string) => (m.length > 22 ? m.slice(0, 20) + '…' : m)
 
@@ -46,11 +47,23 @@ export default function DashboardView() {
     refetchInterval: 60_000,
   })
 
-  const { navigateTo } = useAppStore()
+  const { navigateTo, user } = useAppStore()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   // Alert Engine berupa dropdown — diklik baru muncul
   const [alertOpen, setAlertOpen] = useState(false)
+
+  // ===== CHAT-01 — pesan chat internal yang belum dibaca =====
+  // Query ['chat'] dibagi dengan widget MiniChat; status baca dibaca dari
+  // cache modul (lib/chat) sehingga kartu ini muncul/bebas terus segar tanpa
+  // membuka fitur MiniChat.
+  const { data: chat } = useQuery<ChatData>({
+    queryKey: ['chat'],
+    queryFn: () => fetcher<ChatData>('/api/chat'),
+    refetchInterval: 15_000,
+    enabled: !!user,
+    retry: false,
+  })
 
   const unduhPending = async (format: 'pdf' | 'xlsx') => {
     try {
@@ -196,6 +209,34 @@ export default function DashboardView() {
   const BRAND_COLORS = ['#f59e0b', '#0ea5e9', '#10b981']
   const brandData = dash.rusakPerBrand.slice(0, 3).map((d, i) => ({ ...d, fill: BRAND_COLORS[i % BRAND_COLORS.length] }))
 
+  // ===== CHAT-01 — thread dengan pesan chat belum dibaca (kartu "Chat Baru") =====
+  // pesan dari API terurut terbaru dulu (id desc) → kemunculan pertama per
+  // thread = pesan terbaru thread itu. Status baca dari cache modul lib/chat.
+  const chatReadMap = chat ? ambilReadMap(chat.meId) : {}
+  const chatUnreadPer = chat ? unreadPerThread(chat.pesan, chat.meId, chatReadMap) : {}
+  const chatBaruTotal = chat ? totalUnread(chat.pesan, chat.meId, chatReadMap) : 0
+  interface ChatBaruBaris { thread: string; nama: string; pengirim: string; pesan: string; waktu: string; jumlah: number }
+  const chatBaruRows: ChatBaruBaris[] = []
+  if (chat) {
+    const terproses = new Set<string>()
+    for (const p of chat.pesan) {
+      if (p.pengirimId === chat.meId) continue
+      const th = threadDariPesan(p, chat.meId)
+      const jumlah = chatUnreadPer[th] ?? 0
+      if (jumlah === 0 || terproses.has(th)) continue
+      terproses.add(th)
+      const pengirim = chat.users.find((u) => u.id === p.pengirimId)
+      chatBaruRows.push({
+        thread: th,
+        nama: th === 'SEMUA' ? 'Semua Akun' : pengirim?.nama ?? `DM #${p.pengirimId}`,
+        pengirim: pengirim?.nama ?? 'Akun',
+        pesan: p.isi.length > 72 ? `${p.isi.slice(0, 71)}…` : p.isi,
+        waktu: formatWaktu(p.createdAt),
+        jumlah,
+      })
+    }
+  }
+
   // Indikator portable — tambah/pindah/kurangi cukup edit array ini
   const kpiUtama: KpiDef[] = [
     { title: 'Tiket REQUEST', value: String(dash.tiket.request), sub: `${dash.tiket.slaTerlambat} melewati SLA 24 jam`, icon: FileClock, tone: 'bg-amber-400', onClick: () => navigateTo('service', { serviceStatus: 'REQUEST' }) },
@@ -232,6 +273,60 @@ export default function DashboardView() {
     <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
       {/* Panel indikator — ringkas 9 kartu dalam 2 baris agar terpantau di halaman pertama */}
       <KpiGrid items={[...kpiUtama, ...kpiSekunder]} compact />
+
+      {/* CHAT-01 — pesan chat antar akun yang belum dibaca (tanpa membuka MiniChat) */}
+      {chatBaruTotal > 0 && (
+        <Card className="border-emerald-200 bg-emerald-50/40">
+          <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <MessageSquare className="h-4 w-4 text-emerald-600" /> Chat Baru antar Akun
+              <Badge variant="outline" className="font-mono text-[10px]">CHAT-01</Badge>
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-rose-600 text-white hover:bg-rose-600" title="Total pesan belum dibaca">
+                {chatBaruTotal > 99 ? '99+' : chatBaruTotal}
+              </Badge>
+              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => navigateTo('komunikasi')}>
+                Buka Komunikasi
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <p className="pb-1.5 text-[11px] text-slate-500">Pesan MiniChat antar akun yang belum dibaca — klik baris untuk langsung membuka thread-nya:</p>
+            <div className="space-y-1.5">
+              {chatBaruRows.slice(0, 6).map((r) => (
+                <button
+                  key={r.thread}
+                  type="button"
+                  onClick={() => navigateTo('komunikasi', { komunikasiThread: r.thread })}
+                  className="flex w-full items-center gap-3 rounded-lg border border-emerald-200 bg-white p-2.5 text-left transition-all hover:-translate-y-px hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  aria-label={`Buka chat dari ${r.nama}`}
+                >
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                  <span className="w-28 shrink-0 truncate text-xs font-semibold text-slate-800">{r.nama}</span>
+                  <span className="min-w-0 flex-1 truncate text-xs text-slate-600">
+                    <span className="font-medium text-slate-500">{r.pengirim}:</span> {r.pesan}
+                  </span>
+                  <span className="shrink-0 text-[10px] text-slate-400">{r.waktu}</span>
+                  <Badge variant="outline" className="shrink-0 border-rose-300 bg-rose-50 text-[10px] text-rose-700">
+                    {r.jumlah > 99 ? '99+' : r.jumlah}
+                  </Badge>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                </button>
+              ))}
+            </div>
+            {chatBaruRows.length > 6 && (
+              <button
+                type="button"
+                onClick={() => navigateTo('komunikasi')}
+                className="w-full pt-2 text-center text-[11px] font-semibold text-emerald-700 hover:underline"
+              >
+                …dan {chatBaruRows.length - 6} thread lainnya — buka semua di Komunikasi
+              </button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Ringkasan progres + denyut tiket masuk — satu pandangan sebelum grafik detail */}
       <Card>

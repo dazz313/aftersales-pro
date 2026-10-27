@@ -38,6 +38,8 @@ export interface NavIntent {
   lacakQuery?: string
   /** Buka editor Nota Servis BASS langsung ke nota tertentu (dari tombol nota/klaim). */
   notaId?: number
+  /** Drill-down "Chat Baru" (KPI dashboard) → view Komunikasi membuka thread MiniChat ini ('SEMUA' | 'DM:<id>'). */
+  komunikasiThread?: string
   ts: number
 }
 

@@ -179,7 +179,7 @@ export function inboxFileUrl(item: InboxItem): string | null {
   return `/api/vision/file/${item.folder.toLowerCase()}/${encodeURIComponent(item.fileName)}`
 }
 
-export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewayStatus, GatewayTestResult, BackupStatus, BackupLogItem, BackupOutcome, VisionScan, InboxItem, NotifikasiItem, NotifikasiResponse } from '@/lib/types'
+export type { ServiceTicket, WaMessage, AlertsResponse, DashboardData, GatewayStatus, GatewayTestResult, BackupStatus, BackupLogItem, BackupOutcome, VisionScan, InboxItem, NotifikasiItem, NotifikasiResponse, ChatUser, ChatPesanItem, ChatData, CatatanItem, CatatanBalasanItem } from '@/lib/types'
 export type {
   Toko, Customer, Sparepart, UnitAsset, Pengguna, ServicePart,
   Kunjungan, AuditLog, AlertItem, PermintaanOrder, OrderStatus, BankKode,
