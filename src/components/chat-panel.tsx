@@ -112,7 +112,7 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
         </div>
       ) : (
         // Baris atas widget compact: tombol kembali (saat DM) + dropdown akun.
-        <div className="flex items-center gap-1.5 border-b p-2">
+        <div className="flex shrink-0 items-center gap-1.5 border-b p-2">
           {partner && (
             <Button size="sm" variant="ghost" className="h-8 w-8 shrink-0 p-0" onClick={onKembali} title="Ganti akun tujuan">
               <ArrowLeft className="h-4 w-4" />
@@ -143,8 +143,8 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
       )}
 
       {/* Kolom pesan */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
           <div className="min-w-0">
             {/* Nama partner 2 baris — nama panjang tetap terbaca utuh */}
             <p className="line-clamp-2 break-words text-sm font-semibold leading-snug text-slate-800">
@@ -170,7 +170,7 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
               return (
                 <div key={p.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
                   <div className={cn('max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs shadow-sm', mine ? 'bg-emerald-600 text-white' : 'bg-white text-slate-800 ring-1 ring-slate-200')}>
-                    {!mine && thread === 'SEMUA' && pengirim && (
+                    {!mine && pengirim && (
                       <p className={cn('mb-0.5 flex items-center gap-1 text-[10px] font-semibold', 'text-slate-500')}>
                         <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', ROLE_DOT[pengirim.role])} />
                         <span className="min-w-0 break-words">{pengirim.nama}</span>
@@ -188,7 +188,7 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
           </div>
         </ScrollArea>
 
-        <div className="border-t p-2">
+        <div className="shrink-0 border-t p-2">
           <div className="flex items-end gap-1.5">
             <Textarea
               value={teks}

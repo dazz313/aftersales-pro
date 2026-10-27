@@ -90,7 +90,7 @@ export default function MiniChat() {
           aria-label="MiniChat — komunikasi antar akun"
           className="fixed bottom-20 right-5 z-40 flex h-[26rem] w-[21rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-xl border bg-white shadow-2xl sm:h-[28rem] sm:w-[24rem]"
         >
-          <div className="flex items-center justify-between border-b bg-slate-900 px-3 py-2">
+          <div className="flex shrink-0 items-center justify-between border-b bg-slate-900 px-3 py-2">
             <div>
               <p className="text-sm font-bold text-white">MiniChat</p>
               <p className="text-[10px] text-slate-400">Komunikasi antar akun — bukan WA eksternal</p>
