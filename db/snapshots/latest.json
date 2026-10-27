@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-26T05:43:55.763Z",
+  "generatedAt": "2026-10-27T03:56:54.008Z",
   "masterToko": [
     {
       "id": 216,
@@ -7777,6 +7777,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 24,
+      "kodePart": "1P90273A",
+      "namaPart": "Casing PS 135 E",
+      "brand": "Shimizu",
+      "qty": 1,
+      "unitAssetId": 200,
+      "serialNumber": "ZL141514",
+      "modelUnit": "PS-135 E",
+      "tokoKode": "TOK-001",
+      "tokoNama": "Toko Sinar Logam",
+      "catatan": "Reorder part inden — tiket SVC-2609-0001",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-10-27T03:56:53.969Z",
+      "updatedAt": "2026-10-27T03:56:53.969Z",
+      "serviceRequestId": 46
+    },
+    {
       "id": 23,
       "kodePart": "MCMX-PX562-WH-KGX",
       "namaPart": "OUT CASE ASSY 602",
@@ -7884,7 +7907,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-10-26"
+      "nilai": "2026-10-27"
     },
     {
       "id": 199,
@@ -7919,7 +7942,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-10-26 00:48"
+      "nilai": "2026-10-27 00:42"
     },
     {
       "id": 54,
@@ -7968,6 +7991,69 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 958,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0001",
+      "deskripsi": "Reorder 1 part inden via email: 1P90273A ×1 — item menempel ke tiket SVC-2609-0001, siap dikirim ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-27T03:56:53.973Z"
+    },
+    {
+      "id": 957,
+      "aksi": "ORDER_WA_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SV-EM-20261018-0001",
+      "deskripsi": "Draf WA order part 2 item dibuka (gateway belum aktif: WhatsApp gateway belum dikonfigurasi (URL/token kosong) — pesan hanya tercatat di log gateway.) — tiket SV-EM-20261018-0001",
+      "aktor": "SMOKE",
+      "createdAt": "2026-10-27T03:52:04.164Z"
+    },
+    {
+      "id": 956,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SV-EM-20261018-0001",
+      "deskripsi": "Teks order WA part 2 item disalin manual (nomor produsen belum diisi) — tiket SV-EM-20261018-0001",
+      "aktor": "SMOKE",
+      "createdAt": "2026-10-27T03:51:53.281Z"
+    },
+    {
+      "id": 955,
+      "aksi": "CATATAN_HAPUS",
+      "entitas": "catatan",
+      "entitasId": "1",
+      "deskripsi": "Catatan dihapus — SMOKE test (edit)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T03:51:43.091Z"
+    },
+    {
+      "id": 954,
+      "aksi": "CATATAN_UBAH",
+      "entitas": "catatan",
+      "entitasId": "1",
+      "deskripsi": "Catatan diubah — SMOKE test (edit)",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T03:51:43.071Z"
+    },
+    {
+      "id": 953,
+      "aksi": "CATATAN_PIN",
+      "entitas": "catatan",
+      "entitasId": "1",
+      "deskripsi": "Catatan disematkan — SMOKE test",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T03:51:43.055Z"
+    },
+    {
+      "id": 952,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "1",
+      "deskripsi": "Catatan \"SMOKE test\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T03:51:43.021Z"
+    },
     {
       "id": 951,
       "aksi": "UPDATE_UNIT_ASSET",
