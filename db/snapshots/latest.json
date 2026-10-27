@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T03:56:54.008Z",
+  "generatedAt": "2026-10-27T05:00:29.246Z",
   "masterToko": [
     {
       "id": 216,
@@ -7940,6 +7940,11 @@
       "nilai": "***"
     },
     {
+      "id": 245,
+      "kunci": "gs_spreadsheet_id",
+      "nilai": "1WfaovZCUOEXz69qtf_X2eHuLdTX7rRPSBuxING6zD0w/edit?gid=0#gid=0"
+    },
+    {
       "id": 173,
       "kunci": "log_retensi_terakhir",
       "nilai": "2026-10-27 00:42"
@@ -7991,6 +7996,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 962,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, alert_kirim_tanggal, alert_lonceng_aktif, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, log_retensi_terakhir, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user, gs_spreadsheet_id",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T05:00:29.211Z"
+    },
+    {
+      "id": 961,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0001",
+      "deskripsi": "Teks order WA part 1 item disalin manual (nomor produsen belum diisi) — tiket SVC-2609-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-27T04:25:19.591Z"
+    },
+    {
+      "id": 960,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0001",
+      "deskripsi": "Teks order WA part 1 item disalin manual (nomor produsen belum diisi) — tiket SVC-2609-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-27T03:57:02.802Z"
+    },
+    {
+      "id": 959,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0001",
+      "deskripsi": "Teks order WA part 1 item disalin manual (nomor produsen belum diisi) — tiket SVC-2609-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-27T03:56:54.047Z"
+    },
     {
       "id": 958,
       "aksi": "ORDER_EMAIL_REORDER",
