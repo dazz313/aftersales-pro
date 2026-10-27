@@ -1,6 +1,37 @@
 # Worklog
 
 ---
+Task ID: 44
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Selain email order tambahkan opsi WA order, tambahkan fitur MiniChat dan Notes untuk komunikasi antar akun"
+
+Work Log:
+- MODEL DB (prisma/schema.prisma + npm run db:push, tanpa data loss):
+  • `ChatPesan` — pesan internal antar akun: DM (penerimaId = id tujuan) ATAU broadcast (penerimaId null = papan umum "Semua Akun"); relasi ke Pengguna (chatTerkirim/chatDiterima) + index pengirim/penerima/createdAt.
+  • `Catatan` + `CatatanBalasan` — papan notes bersama: judul?, isi, untukRole (null = semua role; else daftar role dipisah koma), pinned, penulis (relasi catatanPenulis), editedAt/editedBy "(edited)", balasan inline; index createdAt+pin.
+- API (semua guard requireActiveSession):
+  • `/api/chat` GET — akun aktif + 500 pesan terakhir yang TERLIHAT sesi (saya⇄dia ATAU penerima null); POST — kirim DM/broadcast (maks 2000 char, tolak DM diri sendiri 400, penerima nonaktif 404). Tanpa audit-log (anti spam), kirim data via autoGitBackup tidak diubah.
+  • `/api/catatan` GET — daftar terfilter role pembaca (contains + filter teliti split-role), urut pinned lalu createdAt; POST — buat (judul?, isi, untukRole) + logAudit CATATAN_BARU.
+  • `/api/catatan/[id]` PATCH — edit (penulis sendiri atau Admin Workshop/Manager + tanda "(edited)"), aksi 'BALAS' (semua role penerima), aksi 'PIN' (hanya Admin/Manager via requireManagerSession); DELETE — hapus (penulis sendiri atau Admin/Manager); semua tercatat audit (CATATAN_BARU/UBAH/PIN/UNPIN/HAPUS).
+- LIB:
+  • `src/lib/order-email.ts` + `susunPesanWaOrder` — teks order ringkas format WA (*bold*, emoji) dari snapshot unit & daftar part PENDING (dipakai aksi WA tiket).
+  • `src/lib/chat.ts` — mapping thread ('SEMUA' | 'DM:<id>'), pesanThread, unreadPerThread/totalUnread + cache modul readMap persist localStorage per-user (tanpa tabel, komponen widget & view selalu senada; penandaan baca berbasis event klik — aman aturan react-hooks/set-state-in-effect).
+  • `src/app/api/service/[id]` aksi baru `KIRIM_WA_ORDER` — TIGA mode hasil: REAL (gateway WA asli terkonfigurasi → item PENDING jadi TERKIRIM emailMode 'WA' + audit ORDER_WA_TERKIRIM), WAME (fallback tautan https://wa.me dari pengaturan `wa_produsen` → fallback `kontak_produsen` → noWa akun PRODUSEN aktif pertama, normalisasi 0812…→62… ; item tetap PENDING + audit ORDER_WA_DRAF), TEKS (nomor belum diisi juga → pesan disalin ke clipboard, audit ORDER_WA_TEKS). Item TERKIRIM tetap dikenali matcher Surat Jalan Masuk (Part Datang) — mode WA hanya menambah kolom emailMode.
+- UI:
+  • Proses Service: tombol "Kirim WA"/"WA Order" (ikon lingkaran chat, hijau emerald) BERDEGATAN dengan tombol email di setiap tiket yang punya part inden — tabel desktop, kartu HP, dan dialog detail (blok per-part). Mutasi `kirimWaTiket` (KIRIM_WA_ORDER) & `orderWaTiket` (ORDER_EMAIL_REORDER lalu WA) — WAME otomatis buka wa.me (bukaLinkEksternal), TEKS copy ke clipboard + toast panduan. Badge item order di detail ikut berganti "WA: PENDING/TERKIRIM" vs "Email: …".
+  • Pengaturan → Email Produsen: kolom "Nomor WA Produsen (opsional…)" (`wa_produsen`) + catatan prioritas fallback.
+  • MiniChat widget melayang (src/components/minichat.tsx): FAB kanan-bawah polling 12 dtk (4 dtk saat panel buka) + badge merah total unread; panel 21-24rem: header gelap, pilih akun (Select di mode compact), thread, kotak pesan Enter=kirim/Shift+Enter=baris; sembunyi otomatis di view Komunikasi & belum login.
+  • `src/components/views/komunikasi-view.tsx` — tab 1 "MiniChat": ChatPanel lebar (sidebar daftar akun) + polling 5 dtk; tab 2 "Notes": cari + buat catatan (judul/isi/target role) kartu pinned-dulu, balasan inline (ScrollArea + Textarea + Enter kirim), pin/unpin Admin/Manager, edit "(edited)" & hapus (bisaKelola), polling 30 dtk.
+  • `ChatPanel` shared (src/components/chat-panel.tsx) — dipakai widget (compact) & view (lebar); role dot warna konsisten, pembaca pesan broadcast menampilkan nama pengirim, scroll-bottom otomatis, teks dikembalikan bila kirim gagal.
+  • page.tsx: nav "Komunikasi" (ikon MessageSquare, desc "MiniChat & Notes antar akun") → dynamic import + `<MiniChat />` mounted global; store ViewKey +'komunikasi'. types.ts + ChatUser/ChatPesanItem/ChatData/CatatanItem/CatatanBalasanItem; OrderEmailRef + emailMode ('WA').
+- Verifikasi: tsc 0; eslint 0 (src penuh); vitest 98 lulus; next build standalone OK (route baru /api/chat & /api/catatan masuk), PM2 restart online + /api/health ok. Smoke API via token sesi sintetis (skrip temp, dihapus setelah uji): broadcast+DM tersimpan & terbaca; catatan buat → balas → pin → edit → hapus OK; KIRIM_WA_ORDER tiket SV-EM-20261018-0001 → mode TEKS (gateway belum diset, teks tersusun benar 2 item) → mode WAME saat `wa_produsen` diuji=0812-9999-8888 (link wa.me/6281299998888 berisi pesan) → pengaturan dipulihkan; reorder tetap idempoten lewat ORDER_EMAIL_REORDER. E2E Playwright 13/13 PASSED (dev-server 3100, db e2e terpisah).
+- Git: commit `c9dd07d` (fitur). Rollback: revert 1 komit; tabel ChatPesan/Catatan/CatatanBalasan bisa dibuang via prisma db push bila perlu.
+
+Stage Summary:
+- Opsi WA order hidup di seluruh titik yang sebelumnya hanya email: tombol menjadi dua kanal berdampingan (Email & WA) pada tiket REQUEST_EMAIL dan reorder part inden tiket biasa; jika gateway aktif → TERKIRIM otomatis (tercatat emailMode 'WA'), jika belum → draf wa.me ke nomor produsen (atau kopi teks), sehingga order tidak pernah "hilang tanpa jejak" dan tetap tertutup saat barang datang.
+- Komunikasi antar akun sekarang punya 2 fasilitas terintegrasi: MiniChat (FAB melayang di semua halaman + halaman penuh di menu Komunikasi; DM antar akun & papan umum; badge belum dibaca) dan Notes (papan catatan bersama, balasan inline, target role, pin Admin/Manager, edit "(edited)") — keduanya mengikuti pola aplikasi (guard sesi, audit log, format Indonesia).
+
+---
 Task ID: 43
 Agent: GLM-5.3-Flash Free (opencode)
 Task: Fitur baru "Nota Servis BASS" — nota servis "SERVICE CENTER" (mobile-first, live preview, cetak A5 landscape, duplikasi nota terisi saat ajukan klaim, bisa edit manual)
