@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T08:00:27.999Z",
+  "generatedAt": "2026-10-27T08:03:06.110Z",
   "masterToko": [
     {
       "id": 216,
@@ -8082,6 +8082,24 @@
   ],
   "auditLog": [
     {
+      "id": 982,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (MANUAL): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-27T08-03-06.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T08:03:06.097Z"
+    },
+    {
+      "id": 981,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SV-EM-20261018-0001",
+      "deskripsi": "Teks order WA part 2 item disalin manual (nomor produsen belum diisi) — tiket SV-EM-20261018-0001",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-27T08:01:00.644Z"
+    },
+    {
       "id": 980,
       "aksi": "FINISH_SERVICE",
       "entitas": "service_request",
@@ -14734,6 +14752,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 28,
+      "status": "LOCAL",
+      "trigger": "MANUAL",
+      "sheetsWritten": 0,
+      "rowsTotal": 404,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-27T08-03-06.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-27T08:03:06.092Z"
+    },
     {
       "id": 27,
       "status": "LOCAL",
