@@ -1,6 +1,24 @@
 # Worklog
 
 ---
+Task ID: 49
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Tambahkan notifikasi sound pada chat"
+
+Work Log:
+- Fitur suara chat baru (`src/lib/suara-chat.ts` + `src/components/notifikasi-suara-chat.tsx`):
+  • Suara = chime 2 nada D6→G6 disintesis Web Audio (rapi tanpa file audio — tidak ada risiko 404/loading asset; volume ringan 0,2, durasi ±0,7 dtk).
+  • Pemicu: komponen pendengar global BERLANGGANAN pada cache TanStack Query `['chat']` (bukan polling baru) — setiap update sukses dari SEMUA polling aktif (widget MiniChat 12/4 dtk, view Komunikasi 5 dtk, Dashboard CHAT-01 15 dtk) dievaluasi; cukup satu komponen karena kunci query sama.
+  • Deteksi (murni & teruji): `deteksiPesanBaru(pesan, meId, idTerakhir)` — pesan ber-id lebih besar & pengirim ≠ saya → bunyi; pesan sendiri hanya menggeser penanda. Muat PERTAMA hanya menginisialisasi penanda (id maks) — page refresh tidak membunyikan riwayat lama.
+  • Autoplay browser: AudioContext dibangunkan pada gesture pertama (pointerdown/keydown sekali, cleanup benar); bila tetap diblokir → SENGAJA diam tanpa error (suara = info tambahan).
+  • Mount global `page.tsx` samping `<MiniChat />` — komponen return null, tanpa UI; ikut bekerja di view Komunikasi walau widget MiniChat disembunyikan di sana.
+- Verifikasi: tsc 0; eslint 0 (--max-warnings=0); vitest 105 lulus (7 test baru `tests/unit/suara-chat.test.ts`); build standalone OK; PM2 online + /api/health ok; E2E Playwright — 1 flake login-salah pada run pertama (lulus 734 ms saat diulang), run ulang penuh 13/13 PASSED (21,9 s); pola flake dikonfirmasi tidak terkait perubahan (komponen tak menyentuh flow login).
+- Git: commit `74b8247`. Rollback: revert 1 komit.
+
+Stage Summary:
+- Chat antar akun kini berbunyi saat ada pesan baru dari orang lain — lintas semua menu: widget MiniChat melayang, view Komunikasi, dan kartu CHAT-01 Dashboard, karena suara mengikuti pembaruan data chat yang sama. Bunyi mulai sejak interaksi pertama (aturan autoplay browser), tidak membunyikan riwayat lama saat halaman dibuka, dan pesan sendiri tidak membunyikan.
+
+---
 Task ID: 48
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Benar tidak terpotong, tapi MiniChat tidak bisa dipakai chat karena tidak ada kolom untuk menulis dan nama penulis tidak tampil" — laporan lanjutan dgn screenshot
