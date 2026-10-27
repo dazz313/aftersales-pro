@@ -1,6 +1,23 @@
 # Worklog
 
 ---
+Task ID: 45
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Tambahkan kode yang bisa dilihat dari dashboard jika ada chat baru tanpa perlu membuka fitur MiniChat"
+
+Work Log:
+- Dashboard: kartu indikator **CHAT-01 — Chat Baru antar Akun** (`src/components/views/dashboard-view.tsx`) — muncul HANYA bila ada pesan MiniChat yang belum dibaca (total > 0), jadi dashboard tetap bersih saat tidak ada chat. Isi kartu: badge kode `CHAT-01` (gaya konsisten kartu alert ALT-xx), badge total unread (maks "99+"), tombol "Buka Komunikasi", dan maksimal 6 baris thread (nama akun/thread, {pengirim}: potongan pesan ≤72 char, formatWaktu, badge jumlah per-thread, chevron) + baris "…dan N thread lainnya". Klik baris → drill-down `navigateTo('komunikasi', { komunikasiThread })`; `>6` → tanpa intent.
+- Polling kartu memakai query `['chat']` yang SAMA dengan widget MiniChat (refetchInterval 15 dtk, `enabled: !!user`) — status baca dibaca dari cache modul `lib/chat` (localStorage per user) sehingga kartu terus segar tanpa membuka panel chat; menandai thread dibaca di tempat lain (view Komunikasi/widget) otomatis mengurangi/menghapus kartu di polling berikutnya.
+- Store (`src/lib/store.ts`): `NavIntent.komunikasiThread?: string` ('SEMUA' | 'DM:<id>') — pola drill-down dashboard yang sama seperti alert ALT-xx.
+- View Komunikasi: konsumsi intent (effect + `setTimeout 0`, pola sama dgn service-view) — `setTab('minichat')` + `setThread(target)` lalu `clearNavIntent()`; state `tab` dinaikkan ke atas (deklarasi sebelum effect) agar aman dgn lint react-hooks.
+- api.ts: ekspor tipe ChatUser/ChatPesanItem/ChatData/CatatanItem/CatatanBalasanItem agar import `@/lib/api` lengkap.
+- Verifikasi: tsc 0; eslint 0 (file tersentuh, --max-warnings=0); vitest 98 lulus; build standalone OK; PM2 restart online & /api/health ok; E2E Playwright 13/13 PASSED. Tidak ada perubahan API/server — murni UI client + intent.
+- Git: auto-snapshot `cd09933` (build mem-commit 4 file tersentuh otomatis). Rollback: revert cd09933.
+
+Stage Summary:
+- Chat baru antar akun kini MUNCUL DI DASHBOARD sebagai kartu berkode CHAT-01 (badge total + daftar pesan terbaru per thread) tanpa harus membuka MiniChat; satu klik langsung membuka thread terkait di menu Komunikasi. Kartu tidak tampil saat unread = 0 — dashboard tetap sebagai pusat keputusan tanpa kebisingan.
+
+---
 Task ID: 44
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Selain email order tambahkan opsi WA order, tambahkan fitur MiniChat dan Notes untuk komunikasi antar akun"
