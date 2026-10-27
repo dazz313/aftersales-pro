@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T21:18:44.030Z",
+  "generatedAt": "2026-10-27T23:22:40.445Z",
   "masterToko": [
     {
       "id": 216,
@@ -327,7 +327,7 @@
       "namaToko": "Toko Melati Bangunan",
       "alamat": "Jl. Ahmad Yani No. 55, Watampone",
       "kontak": "085233220303",
-      "frekuensiVisit": 14,
+      "frekuensiVisit": 7,
       "aktif": true,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": null,
@@ -8137,6 +8137,69 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1003,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-021",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit, aktif, modeSiklus, jarakKm",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T23:22:40.411Z"
+    },
+    {
+      "id": 1002,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 138 katalog + 67 balasan produsen + 0 order (total bank: 148)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T22:00:01.106Z"
+    },
+    {
+      "id": 1001,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 138 katalog + 67 balasan produsen + 0 order (total bank: 148)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T21:59:27.779Z"
+    },
+    {
+      "id": 1000,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 138 katalog + 67 balasan produsen + 0 order (total bank: 148)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T21:59:20.427Z"
+    },
+    {
+      "id": 999,
+      "aksi": "IMPORT_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Import CSV kode produsen: 7 ditambahkan, 0 diperbarui, 1 dilewati, 0 gagal (mode: lewati)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T21:25:41.748Z"
+    },
+    {
+      "id": 998,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 131 kode baru, 0 dilengkapi dari 138 katalog + 67 balasan produsen + 0 order (total bank: 141)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T21:22:01.758Z"
+    },
+    {
+      "id": 997,
+      "aksi": "BANK_KODE_TAMBAH",
+      "entitas": "bank_kode",
+      "entitasId": "MJXX-PX005-BS-KGX",
+      "deskripsi": "Kode produsen baru dicatat manual: MJXX-PX005-BS-KGX",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T21:20:48.535Z"
+    },
     {
       "id": 996,
       "aksi": "BACKUP_DATA",
