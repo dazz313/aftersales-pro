@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T23:30:20.203Z",
+  "generatedAt": "2026-10-27T23:31:13.705Z",
   "masterToko": [
     {
       "id": 216,
@@ -222,8 +222,8 @@
       "barcodeToko": "BC-TOK-014",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -4.544810912157329,
+      "longitude": 120.3226840496063
     },
     {
       "id": 230,
@@ -8137,6 +8137,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1010,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-014",
+      "deskripsi": "Koordinat toko diperbarui: -4.544810912157329, 120.3226840496063",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T23:31:13.694Z"
+    },
+    {
+      "id": 1009,
+      "aksi": "GEOCODE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-014",
+      "deskripsi": "Posisi toko dicari otomatis dari alamat (OpenStreetMap): -4.5421295, 120.3022317",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T23:30:31.266Z"
+    },
     {
       "id": 1008,
       "aksi": "SETPIN_MASTER_TOKO",
