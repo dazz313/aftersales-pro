@@ -1,6 +1,26 @@
 # Worklog
 
 ---
+Task ID: 50
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Sudah pasang id spreadsheet di pengaturan, tapi belum ada data yang pindah ke spreadsheet"
+
+Work Log:
+- Diagnosa read-only DB produksi (Pengaturan gs_* + BackupLog):
+  • HANYA `gs_spreadsheet_id` terisi — dan nilainya KOSONG (ditempel sebagai URL utuh: ID + `/edit?gid=0#gid=0`).
+  • `gs_service_email` & `gs_private_key` TIDAK ADA → `runBackup` selalu bercabang fallback: 10 log BackupLog terakhir semua `LOCAL`/`sheets=0` ("Kredensial Google belum lengkap — snapshot lokal disimpan"). Data 404–405 baris aman di `db/backups/backup-*.json`, tapi TIDAK PERNAH masuk Google.
+- Fix kode:
+  • `bersihkanSpreadsheetId()` (`gsheets.ts`): mengambil ID murni dari nilai yang ditempel (URL utuh, keterangan `?gid`, awalan/akhiran tanda kutip) — dipakai di `runBackup` (runtime, menangani nilai lama yang kotor) dan `PUT /api/pengaturan` (pocokan DB dgn rapi masuk ke depan).
+  • `getBackupStatus` kini menyertakan `terisi: { spreadsheetId, serviceEmail, privateKey }` (spreadsheetId ≥20 karakter; email berformat `@`; private key >40 karakter) + tipe `BackupStatus` diperbarui → endpoint verifikasi produksi: none OK.
+  • UI Pengaturan (kartu "Backup Google Spreadsheet"): label ID diperjelas ("atau URL utuh spreadsheet"), CHECKLIST 3 item (✓/✗ + keterangan "BELUM diisi"), peringatan amber saat salah satu kosong ("data TIDAK masuk ke Google — hanya snapshot JSON lokal"), dan LAPAN berlipat (details) 6 langkah membuat service account Google (aktifkan Sheets API → buat SA → unduh JSON key → salin client_email/private_key → berbagi spreadsheet ke email SA dgn Editor → Simpan + Backup Sekarang).
+- Verifikasi: tsc 0; eslint 0 (--max-warnings=0); vitest 110 lulus (5 test baru `tests/unit/gsheets-id.test.ts` termasuk keterangan pasien ditulis; ID utuh; spasi+kutip; ID pendek tak diubah); build standalone OK; PM2 online + /api/health ok; E2E 13/13 PASSED; endpoint produksi GET /api/backup/sheets membalas `terisi {spreadsheetId:true, serviceEmail:false, privateKey:false}` (sesuai kondisi DB — menunggu izin dari user).
+- BATAS TANGGUNG JAWAB: kredensial service account hanyalah wewenang user (Google Cloud Console + berbagi spreadsheet) — CODING tidak bisa membuatnya. Setelah email & private key diisi, sistem otomatis terima (lintasan runBackup sudah benar, tanpa perubahan lagi).
+- Git: commit `8858d47`. Rollback: revert 1 komit.
+
+Stage Summary:
+- Akar keluhan ditemukan & dikonfirmasi dgn data: sisipan Spreadsheet ID saja TIDAK cukup — masih butuh Service Account Email + Private Key, dan ID yang ditempel sebelumnya ternoda keterangan URL. Aplikasi kini membersihkan ID secara otomatis (bisa menempel URL utuh), menampilkan CHECKLIST kredensial yang persis menunjuk kolom yang masih kosong lengkap dengan peringatan + panduan membuat service account 6 langkah di dalam kartu. Snapshot lokal (405 baris) tetap tersimpan dgn selamat; begitu kredensial lengkap & spreadsheet diberi akses Editor ke service account, backup berikutnya (tombol Sekarang / jadwal) akan menulis ke tab Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan.
+
+---
 Task ID: 49
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Tambahkan notifikasi sound pada chat"
