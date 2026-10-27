@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T08:05:25.132Z",
+  "generatedAt": "2026-10-27T08:07:06.419Z",
   "masterToko": [
     {
       "id": 216,
@@ -4432,6 +4432,39 @@
   ],
   "serviceRequest": [
     {
+      "id": 90,
+      "noTiket": "SVC-2610-0046",
+      "unitAssetId": 253,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "DI_TOKO",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "SWING TIDAK BERFUNGSI",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-08T00:00:00.000Z",
+      "createdAt": "2026-10-27T08:07:06.396Z",
+      "updatedAt": "2026-10-27T08:07:06.396Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
+    {
       "id": 89,
       "noTiket": "SVC-2610-0045",
       "unitAssetId": 252,
@@ -8104,6 +8137,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 992,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0046",
+      "deskripsi": "Tiket manual dibuat untuk unit 03070069694 (KAW-1662, stok toko → GARANSI otomatis) — part READY → otomatis PROSES — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-27T08:07:06.403Z"
+    },
     {
       "id": 991,
       "aksi": "UPDATE_UNIT_ASSET",
