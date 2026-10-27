@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T08:07:06.419Z",
+  "generatedAt": "2026-10-27T08:09:07.327Z",
   "masterToko": [
     {
       "id": 216,
@@ -4435,27 +4435,27 @@
       "id": 90,
       "noTiket": "SVC-2610-0046",
       "unitAssetId": 253,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
       "penanganan": "DI_TOKO",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-08T08:08:00.000Z",
       "deskripsiKerusakan": "SWING TIDAK BERFUNGSI",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0046.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-08T08:08:00.000Z",
       "tglTiket": "2026-10-08T00:00:00.000Z",
       "createdAt": "2026-10-27T08:07:06.396Z",
-      "updatedAt": "2026-10-27T08:07:06.396Z",
+      "updatedAt": "2026-10-27T08:09:07.311Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8137,6 +8137,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 993,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0046",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0046.jpg) — tglFinish diatur manual: 8/10/2026, 16.08.00",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-10-27T08:09:07.315Z"
+    },
     {
       "id": 992,
       "aksi": "CREATE_SERVICE_REQUEST",
