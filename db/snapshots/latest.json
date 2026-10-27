@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T07:47:52.539Z",
+  "generatedAt": "2026-10-27T07:55:00.188Z",
   "masterToko": [
     {
       "id": 216,
@@ -2870,6 +2870,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-23T16:00:00.000Z"
+    },
+    {
+      "id": 252,
+      "serialNumber": "03040022451",
+      "modelUnit": "KST-18 RC",
+      "merk": "MIYAKO",
+      "nama": "KIPAS ANGIN",
+      "kerusakanAwal": "TIDAK ADA DRAK KAKI",
+      "tokoId": 230,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-08T00:00:00.000Z"
     },
     {
       "id": 165,
@@ -8019,6 +8032,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 976,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03040022451",
+      "deskripsi": "Unit baru teregistrasi: KIPAS ANGIN (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-27T07:55:00.173Z"
+    },
     {
       "id": 975,
       "aksi": "CREATE_KUNJUNGAN",
