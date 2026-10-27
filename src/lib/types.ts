@@ -510,7 +510,7 @@ export interface BackupLogItem {
 export interface BackupStatus {
   logs: BackupLogItem[]
   last: BackupLogItem | null
-  config: { autoAktif: boolean; intervalJam: number; spreadsheetId: string; serviceEmail: string; terkonfigurasi: boolean }
+  config: { autoAktif: boolean; intervalJam: number; spreadsheetId: string; serviceEmail: string; terisi: { spreadsheetId: boolean; serviceEmail: boolean; privateKey: boolean }; terkonfigurasi: boolean }
   dueNow: boolean
   lastBackupAt: string | null
   jadwal: { aktif: boolean; jam: string; terakhir: string }

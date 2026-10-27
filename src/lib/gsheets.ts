@@ -156,6 +156,18 @@ export async function collectBackupData(): Promise<SheetData[]> {
 
 // ---------- 2. Autentikasi service account (JWT RS256) ----------
 
+/**
+ * Bersihkan nilai Spreadsheet ID — user kerap menempel URL utuh spreadsheet
+ * (".../edit?gid=0#gid=0") atau ID dengan spasi/tanda kutip. ID spreadsheet
+ * selalu token panjang [a-zA-Z0-9_-]; ambil token panjang pertama. Gagal
+ * (tidak ada token ≥20 char) → kembalikan apa adanya (bersihkan spasi).
+ */
+export function bersihkanSpreadsheetId(raw: string): string {
+  const bersih = raw.trim().replace(/^["']|["']$/g, '')
+  const m = bersih.match(/[a-zA-Z0-9_-]{20,}/)
+  return m?.[0] ?? bersih
+}
+
 function normalizePrivateKey(key: string): string {
   // Private key bisa disimpan dengan "\n" literal saat diketik di input teks
   return key.replace(/\\n/g, '\n').trim()
@@ -279,7 +291,7 @@ export async function runBackup(trigger: 'MANUAL' | 'AUTO', aktor?: string): Pro
   const map: Record<string, string> = {}
   for (const r of rows) map[r.kunci] = r.nilai
 
-  const spreadsheetId = map['gs_spreadsheet_id'] ?? ''
+  const spreadsheetId = bersihkanSpreadsheetId(map['gs_spreadsheet_id'] ?? '')
   const serviceEmail = map['gs_service_email'] ?? ''
   const privateKey = map['gs_private_key'] ?? ''
 
@@ -347,7 +359,12 @@ export async function getBackupStatus() {
 
   const autoAktif = map['gs_auto_aktif'] !== 'false'
   const intervalJam = Number(map['gs_interval_jam']) || 24
-  const terkonfigurasi = !!(map['gs_spreadsheet_id'] && map['gs_service_email'] && map['gs_private_key'])
+  const terisi = {
+    spreadsheetId: bersihkanSpreadsheetId(map['gs_spreadsheet_id'] ?? '').length >= 20,
+    serviceEmail: /@/.test(map['gs_service_email'] ?? ''),
+    privateKey: (map['gs_private_key'] ?? '').length > 40,
+  }
+  const terkonfigurasi = terisi.spreadsheetId && terisi.serviceEmail && terisi.privateKey
   const last = logs[0] ?? null
 
   // dueNow: backup otomatis perlu dijalankan?
@@ -369,6 +386,7 @@ export async function getBackupStatus() {
       intervalJam,
       spreadsheetId: map['gs_spreadsheet_id'] ?? '',
       serviceEmail: map['gs_service_email'] ?? '',
+      terisi,
       terkonfigurasi,
     },
     dueNow,

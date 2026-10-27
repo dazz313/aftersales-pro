@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
+import { bersihkanSpreadsheetId } from '@/lib/gsheets'
 import { requireActiveSession, requireManagerSession } from '@/lib/auth-server'
 
 // GET /api/pengaturan - profile perusahaan
@@ -28,10 +29,16 @@ export async function PUT(request: Request) {
     const entries: Record<string, string> = body.settings ?? {}
     const keys = Object.keys(entries)
     for (const k of keys) {
+      // Spreadsheet ID dirapikan saat simpan: boleh ditempel sebagai URL utuh
+      // (…/d/edit?gid=0#gid=0) — hanya ID murni yang tersimpan.
+      const nilai =
+        k === 'gs_spreadsheet_id'
+          ? bersihkanSpreadsheetId(String(entries[k] ?? ''))
+          : String(entries[k])
       await db.pengaturan.upsert({
         where: { kunci: k },
-        update: { nilai: String(entries[k]) },
-        create: { kunci: k, nilai: String(entries[k]) },
+        update: { nilai },
+        create: { kunci: k, nilai },
       })
     }
     await logAudit({

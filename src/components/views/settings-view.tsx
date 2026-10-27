@@ -862,8 +862,9 @@ export default function SettingsView() {
           onToggle={toggleSec}
         >
             <div className="space-y-1.5">
-              <Label htmlFor="gs-id" className="text-xs">Spreadsheet ID (dari URL spreadsheet)</Label>
+              <Label htmlFor="gs-id" className="text-xs">Spreadsheet ID atau URL utuh spreadsheet</Label>
               <Input id="gs-id" value={gs('gs_spreadsheet_id')} onChange={(e) => setGsForm({ ...gsForm, gs_spreadsheet_id: e.target.value })} placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms" className="font-mono text-xs" />
+              {/* Tempel URL utuh diperkenankan — ID diambil otomatis saat disimpan */}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="gs-email" className="text-xs">Service Account Email</Label>
@@ -873,6 +874,55 @@ export default function SettingsView() {
               <Label htmlFor="gs-key" className="text-xs">Private Key (PEM)</Label>
               <Textarea id="gs-key" value={gs('gs_private_key')} onChange={(e) => setGsForm({ ...gsForm, gs_private_key: e.target.value })} placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvQ...\n-----END PRIVATE KEY-----" className="font-mono text-[10px]" rows={3} />
             </div>
+
+            {/* Checklist kesiapan kredensial — tunjukkan persis mana yang masih kosong */}
+            {backupStatus && (
+              <div className="space-y-2 rounded-lg border bg-slate-50/60 p-3">
+                <p className="text-xs font-semibold text-slate-800">Kesiapan kredensial sinkron ke Google</p>
+                <ul className="space-y-1">
+                  {(
+                    [
+                      { label: 'Spreadsheet ID', ok: backupStatus.config.terisi.spreadsheetId },
+                      { label: 'Service Account Email', ok: backupStatus.config.terisi.serviceEmail },
+                      { label: 'Private Key', ok: backupStatus.config.terisi.privateKey },
+                    ] as const
+                  ).map((c) => (
+                    <li key={c.label} className="flex items-center gap-1.5 text-[11px]">
+                      {c.ok ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                      ) : (
+                        <XCircle className="h-3.5 w-3.5 shrink-0 text-rose-500" />
+                      )}
+                      <span className={cn('font-medium', c.ok ? 'text-slate-700' : 'text-rose-600')}>
+                        {c.label} {c.ok ? 'terisi' : 'BELUM diisi'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                {!backupStatus.config.terkonfigurasi && (
+                  <p className="flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-[10px] leading-relaxed text-amber-700">
+                    <CircleAlert className="mt-0.5 h-3 w-3 shrink-0" />
+                    <span>
+                      Selama salah satu kolom di atas kosong, data TIDAK masuk ke Google — hanya disimpan
+                      sebagai snapshot JSON lokal (status LOCAL). Lengkapi ketiganya agar sinkron ke spreadsheet.
+                    </span>
+                  </p>
+                )}
+                <details className="group">
+                  <summary className="cursor-pointer text-[11px] font-semibold text-teal-700 hover:underline">
+                    Cara membuat service account Google (sekali saja)…
+                  </summary>
+                  <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-[10px] leading-relaxed text-slate-600">
+                    <li>Buka <span className="font-mono">console.cloud.google.com</span> → pilih/buat project.</li>
+                    <li>Menu <b>APIs &amp; Services → Library</b> → cari &amp; aktifkan <b>Google Sheets API</b>.</li>
+                    <li>Menu <b>IAM &amp; Admin → Service Accounts</b> → <b>Create</b> (role boleh kosong) → buka akun tersebut → tab <b>Keys</b> → <b>Add Key → JSON</b> → unduh file.</li>
+                    <li>Dari file JSON: salin nilai <span className="font-mono">client_email</span> ke kolom <b>Service Account Email</b>, dan <span className="font-mono">private_key</span> (yang berisi BEGIN/END PRIVATE KEY) ke kolom <b>Private Key</b>.</li>
+                    <li>Buka spreadsheet Anda → tombol <b>Share</b> → tambahkan email service account tersebut sebagai <b>Editor</b>.</li>
+                    <li>Kembali ke sini → <b>Simpan</b> → <b>Backup Sekarang</b>. Status berubah jadi <b>GOOGLE SHEETS</b> bila berhasil.</li>
+                  </ol>
+                </details>
+              </div>
+            )}
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <p className="text-xs font-semibold text-slate-800">Backup otomatis berkala</p>
