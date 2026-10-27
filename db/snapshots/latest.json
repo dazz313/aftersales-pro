@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T06:49:56.680Z",
+  "generatedAt": "2026-10-27T07:47:52.539Z",
   "masterToko": [
     {
       "id": 216,
@@ -426,7 +426,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-06T14:23:00.000Z",
+      "tglVisitTerakhir": "2026-10-27T07:47:00.000Z",
       "barcodeToko": "BC-TOK-027",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4043,6 +4043,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 72,
+      "tokoId": 242,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-27T07:47:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 70,
       "tokoId": 257,
@@ -8009,6 +8019,51 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 975,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "72",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Jaya Bessi (TOK-027) · tgl 27/10/2026, 15.47.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-27T07:47:52.524Z"
+    },
+    {
+      "id": 974,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "5",
+      "deskripsi": "Catatan \"toko sinar logam\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T07:43:49.916Z"
+    },
+    {
+      "id": 973,
+      "aksi": "CATATAN_UBAH",
+      "entitas": "catatan",
+      "entitasId": "2",
+      "deskripsi": "Catatan diubah — h. sulaiman",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T06:53:32.693Z"
+    },
+    {
+      "id": 972,
+      "aksi": "CATATAN_UBAH",
+      "entitas": "catatan",
+      "entitasId": "4",
+      "deskripsi": "Catatan diubah — pompa air rusak",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T06:53:07.596Z"
+    },
+    {
+      "id": 971,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "4",
+      "deskripsi": "Catatan \"pompa air rusak\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T06:52:48.327Z"
+    },
     {
       "id": 970,
       "aksi": "CREATE_UNIT_ASSET",
