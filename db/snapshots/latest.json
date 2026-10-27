@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T08:04:11.980Z",
+  "generatedAt": "2026-10-27T08:04:30.911Z",
   "masterToko": [
     {
       "id": 216,
@@ -8038,6 +8038,16 @@
       "nilai": "***"
     },
     {
+      "id": 265,
+      "kunci": "gs_jadwal_aktif",
+      "nilai": "true"
+    },
+    {
+      "id": 266,
+      "kunci": "gs_jadwal_terakhir",
+      "nilai": "2026-10-27 16:04"
+    },
+    {
       "id": 245,
       "kunci": "gs_spreadsheet_id",
       "nilai": "1WfaovZCUOEXz69qtf_X2eHuLdTX7rRPSBuxING6zD0w/edit?gid=0#gid=0"
@@ -8094,6 +8104,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 990,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-27T08-04-30.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-27T08:04:30.888Z"
+    },
+    {
+      "id": 989,
+      "aksi": "UPDATE_PENGATURAN",
+      "entitas": "pengaturan",
+      "entitasId": null,
+      "deskripsi": "Pengaturan perusahaan diperbarui: alamat_perusahaan, alert_kirim_tanggal, alert_lonceng_aktif, email_perusahaan, email_produsen, gateway_tg_aktif, gateway_tg_chat_id, gateway_tg_token, gs_spreadsheet_id, log_retensi_terakhir, logo_perusahaan, nama_perusahaan, partner_produsen, smtp_dari, smtp_host, smtp_password, smtp_port, smtp_secure, smtp_user, gs_jadwal_aktif",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T08:04:18.389Z"
+    },
     {
       "id": 988,
       "aksi": "CREATE_UNIT_ASSET",
@@ -14819,6 +14847,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 34,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 405,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-27T08-04-30.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-27T08:04:30.883Z"
+    },
     {
       "id": 33,
       "status": "LOCAL",
