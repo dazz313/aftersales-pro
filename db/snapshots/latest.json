@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T08:04:30.911Z",
+  "generatedAt": "2026-10-27T08:05:25.132Z",
   "masterToko": [
     {
       "id": 216,
@@ -2939,7 +2939,7 @@
     {
       "id": 253,
       "serialNumber": "03070069694",
-      "modelUnit": "",
+      "modelUnit": "KAW-1662",
       "merk": "MIYAKO",
       "nama": "KIPAS ANGIN",
       "kerusakanAwal": "SWING TIDAK BERFUNGSI",
@@ -8104,6 +8104,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 991,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03070069694",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (03070069694)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-27T08:05:25.119Z"
+    },
     {
       "id": 990,
       "aksi": "BACKUP_DATA",
