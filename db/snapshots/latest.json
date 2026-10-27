@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T05:05:36.938Z",
+  "generatedAt": "2026-10-27T05:07:11.493Z",
   "masterToko": [
     {
       "id": 216,
@@ -149,7 +149,7 @@
       "id": 225,
       "kodeToko": "TOK-010",
       "namaToko": "Toko Varia Mulia",
-      "alamat": "Watampone",
+      "alamat": "JL.Poros leppangeng Watampone",
       "kontak": "082192239239",
       "frekuensiVisit": 10,
       "aktif": true,
@@ -7996,6 +7996,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 966,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-010",
+      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit, aktif, modeSiklus, jarakKm",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T05:07:11.479Z"
+    },
     {
       "id": 965,
       "aksi": "UPDATE_PENGGUNA",
