@@ -302,8 +302,8 @@ export default function DashboardView() {
                   className="flex w-full items-center gap-3 rounded-lg border border-emerald-200 bg-white p-2.5 text-left transition-all hover:-translate-y-px hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                   aria-label={`Buka chat dari ${r.nama}`}
                 >
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
-                  <span className="w-28 shrink-0 truncate text-xs font-semibold text-slate-800">{r.nama}</span>
+                  <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                  <span className="w-24 shrink-0 line-clamp-2 break-words text-xs font-semibold leading-tight text-slate-800 sm:w-28">{r.nama}</span>
                   <span className="min-w-0 flex-1 truncate text-xs text-slate-600">
                     <span className="font-medium text-slate-500">{r.pengirim}:</span> {r.pesan}
                   </span>

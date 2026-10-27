@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -56,16 +55,14 @@ export default function KomunikasiView() {
 
   // ===== MiniChat data (dipakai tab chat; widget punya query sendiri) =====
   const [thread, setThread] = useState('SEMUA')
-  const [tab, setTab] = useState('minichat')
 
   // Konsumsi navIntent drill-down dari kartu "Chat Baru" Dashboard → buka
-  // tab MiniChat & thread yang diminta, lalu bersihkan intent (pola view lain:
-  // setTimeout 0 di callback — bukan setState sinkron di body effect).
+  // thread yang diminta, lalu bersihkan intent (pola view lain: setTimeout 0
+  // di callback — bukan setState sinkron di body effect).
   useEffect(() => {
     if (!navIntent?.komunikasiThread) return
     const target = navIntent.komunikasiThread
     const t = setTimeout(() => {
-      setTab('minichat')
       setThread(target)
       clearNavIntent()
     }, 0)
@@ -167,74 +164,74 @@ export default function KomunikasiView() {
   const bisaKelola = (c: CatatanItem) => c.penulisId === meId || isAdminFor
 
   return (
-    <div className="space-y-4">
-      <Tabs value={tab} onValueChange={setTab}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <TabsList>
-            <TabsTrigger value="minichat" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> MiniChat</TabsTrigger>
-            <TabsTrigger value="notes" className="gap-1.5"><StickyNote className="h-3.5 w-3.5" /> Notes</TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* ===== TAB MINICHAT ===== */}
-        <TabsContent value="minichat">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <MessageSquare className="h-4 w-4 text-emerald-600" /> MiniChat — Komunikasi Antar Akun
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex h-[32rem] min-h-0 overflow-hidden rounded-lg border">
-                {isLoading ? (
-                  <div className="flex flex-1 items-center justify-center text-xs text-slate-400"><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Memuat chat…</div>
-                ) : (
-                  <ChatPanel
-                    users={chat?.users ?? []}
-                    pesan={chat?.pesan ?? []}
-                    meId={chat?.meId ?? meId}
-                    thread={thread}
-                    onThread={setThread}
-                    kirim={kirimMut.mutateAsync}
-                    kirimPending={kirimMut.isPending}
-                    className="flex-1"
-                  />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ===== TAB NOTES ===== */}
-        <TabsContent value="notes" className="mt-0 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <Input
-              value={cari}
-              onChange={(e) => setCari(e.target.value)}
-              placeholder="Cari judul, isi, atau penulis catatan…"
-              className="max-w-xs"
-              aria-label="Pencarian catatan"
-            />
-            <Button
-              className="ml-auto bg-emerald-600 hover:bg-emerald-700"
-              onClick={() => {
-                setForm({ judul: '', isi: '', untukRole: '' })
-                setBuatBuka(true)
-              }}
-            >
-              <Plus className="mr-1 h-4 w-4" /> Buat Catatan
-            </Button>
+    <div className="grid gap-4 xl:grid-cols-2 xl:items-start">
+      {/* ===== KIRI — MiniChat (chat antar akun) ===== */}
+      <Card className="flex h-[30rem] min-h-0 flex-col xl:h-[36rem]">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MessageSquare className="h-4 w-4 text-emerald-600" /> MiniChat
+          </CardTitle>
+          <p className="text-xs text-slate-500">Papan umum &amp; DM antar akun — Enter kirim</p>
+        </CardHeader>
+        <CardContent className="flex min-h-0 flex-1 flex-col pt-2">
+          <div className="flex min-h-0 flex-1 overflow-hidden rounded-lg border">
+            {isLoading ? (
+              <div className="flex flex-1 items-center justify-center text-xs text-slate-400"><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Memuat chat…</div>
+            ) : (
+              <ChatPanel
+                users={chat?.users ?? []}
+                pesan={chat?.pesan ?? []}
+                meId={chat?.meId ?? meId}
+                thread={thread}
+                onThread={setThread}
+                kirim={kirimMut.mutateAsync}
+                kirimPending={kirimMut.isPending}
+                className="flex-1"
+              />
+            )}
           </div>
+        </CardContent>
+      </Card>
 
-          {catatanLoading ? (
-            <div className="py-16 text-center text-xs text-slate-400"><RefreshCw className="mr-2 inline h-4 w-4 animate-spin" /> Memuat catatan…</div>
-          ) : tersaring.length === 0 ? (
-            <div className="rounded-xl border border-dashed py-16 text-center text-sm text-slate-400">
-              {items.length === 0 ? 'Belum ada catatan — buat catatan pertama untuk semua akun.' : 'Tidak ada catatan cocok dengan pencarian.'}
-            </div>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {tersaring.map((c) => (
+      {/* ===== KANAN — Notes (papan catatan bersama) ===== */}
+      <Card className="flex h-[30rem] min-h-0 flex-col xl:h-[36rem]">
+        <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
+          <div className="min-w-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <StickyNote className="h-4 w-4 text-amber-500" /> Notes
+              {items.length > 0 && <Badge variant="outline" className="text-[10px] text-slate-500">{items.length} catatan</Badge>}
+            </CardTitle>
+            <p className="text-xs text-slate-500">Catatan bersama antar akun — bisa dibalas inline</p>
+          </div>
+          <Button
+            size="sm"
+            className="shrink-0 bg-emerald-600 hover:bg-emerald-700"
+            onClick={() => {
+              setForm({ judul: '', isi: '', untukRole: '' })
+              setBuatBuka(true)
+            }}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" /> Buat Catatan
+          </Button>
+        </CardHeader>
+        <CardContent className="flex min-h-0 flex-1 flex-col pt-2">
+          <Input
+            value={cari}
+            onChange={(e) => setCari(e.target.value)}
+            placeholder="Cari judul, isi, atau penulis catatan…"
+            aria-label="Pencarian catatan"
+            className="mb-2 text-xs"
+          />
+          <ScrollArea className="min-h-0 flex-1">
+            {catatanLoading ? (
+              <div className="py-16 text-center text-xs text-slate-400"><RefreshCw className="mr-2 inline h-4 w-4 animate-spin" /> Memuat catatan…</div>
+            ) : tersaring.length === 0 ? (
+              <div className="rounded-xl border border-dashed py-16 text-center text-sm text-slate-400">
+                {items.length === 0 ? 'Belum ada catatan — buat catatan pertama untuk semua akun.' : 'Tidak ada catatan cocok dengan pencarian.'}
+              </div>
+            ) : (
+              <div className="space-y-3 pr-2">
+                {tersaring.map((c) => (
                 <Card key={c.id} className={cn('flex flex-col', c.pinned && 'border-amber-300 bg-amber-50/40')}>
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
@@ -351,11 +348,12 @@ export default function KomunikasiView() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
       {/* ===== Dialog buat/ubah catatan ===== */}
       <Dialog

@@ -91,12 +91,16 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
                   onClick={() => onThread(t.key)}
                   aria-current={thread === t.key ? 'true' : undefined}
                   className={cn(
-                    'flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-xs transition-colors',
+                    'flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left text-xs transition-colors',
                     thread === t.key ? 'bg-emerald-500/15 font-semibold text-emerald-700' : 'text-slate-600 hover:bg-slate-200/60'
                   )}
                 >
-                  <span className={cn('h-2 w-2 shrink-0 rounded-full', t.role ? ROLE_DOT[t.role] : 'bg-sky-500')} />
-                  <span className="truncate">{t.nama}</span>
+                  <span className={cn('mt-1.5 h-2 w-2 shrink-0 rounded-full', t.role ? ROLE_DOT[t.role] : 'bg-sky-500')} />
+                  <span className="min-w-0 flex-1">
+                    {/* Nama boleh 2 baris agar nama panjang tetap terlihat utuh — bukan terpotong */}
+                    <span className="line-clamp-2 break-words leading-snug">{t.nama}</span>
+                    {t.role ? <span className="block truncate text-[9px] font-normal text-slate-400">{ROLE_LABELS[t.role]}</span> : <span className="block text-[9px] font-normal text-sky-600">papan umum</span>}
+                  </span>
                 </button>
               ))}
             </div>
@@ -110,7 +114,15 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
             </Button>
           )}
           <Select value={thread} onValueChange={onThread}>
-            <SelectTrigger aria-label="Ganti thread" className="h-8 flex-1 text-xs">
+            {/* Nama panjang tetap tampil 2 baris di trigger — override line-clamp-1 & nowrap bawaan */}
+            <SelectTrigger
+              aria-label="Ganti thread"
+              size="sm"
+              className={cn(
+                'h-auto min-h-8 w-full flex-1 text-xs whitespace-normal!',
+                '[&_[data-slot=select-value]]:h-auto! [&_[data-slot=select-value]]:min-h-5 [&_[data-slot=select-value]]:line-clamp-2! [&_[data-slot=select-value]]:whitespace-normal! [&_[data-slot=select-value]]:break-words!'
+              )}
+            >
               <SelectValue placeholder="Pilih akun…" />
             </SelectTrigger>
             <SelectContent>
@@ -129,7 +141,8 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-800">
+            {/* Nama partner 2 baris — nama panjang tetap terbaca utuh */}
+            <p className="line-clamp-2 break-words text-sm font-semibold leading-snug text-slate-800">
               {partner ? partner.nama : 'Semua Akun'}
             </p>
             <p className="truncate text-[11px] text-slate-500">
@@ -154,8 +167,8 @@ export default function ChatPanel({ compact, users, pesan, meId, thread, onThrea
                   <div className={cn('max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs shadow-sm', mine ? 'bg-emerald-600 text-white' : 'bg-white text-slate-800 ring-1 ring-slate-200')}>
                     {!mine && thread === 'SEMUA' && pengirim && (
                       <p className={cn('mb-0.5 flex items-center gap-1 text-[10px] font-semibold', 'text-slate-500')}>
-                        <span className={cn('h-1.5 w-1.5 rounded-full', ROLE_DOT[pengirim.role])} />
-                        {pengirim.nama}
+                        <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', ROLE_DOT[pengirim.role])} />
+                        <span className="min-w-0 break-words">{pengirim.nama}</span>
                       </p>
                     )}
                     <p className="whitespace-pre-wrap break-words leading-relaxed">{p.isi}</p>
