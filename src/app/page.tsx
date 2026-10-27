@@ -25,6 +25,7 @@ import {
   Users,
   QrCode,
   UserCog,
+  MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { authHeaders, clearSessionToken, fetcher } from '@/lib/api'
@@ -45,10 +46,12 @@ const MasterDataView = dynamic(() => import('@/components/views/master-data-view
 const ClaimView = dynamic(() => import('@/components/views/claim-view'), { ssr: false })
 const NotaView = dynamic(() => import('@/components/views/nota-view'), { ssr: false })
 const SettingsView = dynamic(() => import('@/components/views/settings-view'), { ssr: false })
+const KomunikasiView = dynamic(() => import('@/components/views/komunikasi-view'), { ssr: false })
 import AutoBackupWatcher from '@/components/auto-backup-watcher'
 import CompanyLogo from '@/components/company-logo'
 import QuickActions from '@/components/quick-entry'
 import NotifBell from '@/components/notif-bell'
+import MiniChat from '@/components/minichat'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,6 +70,7 @@ const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ clas
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
   { key: 'nota', label: 'Nota Servis BASS', icon: FileText, desc: 'Nota "SERVICE CENTER" — isi, duplikat, cetak' },
   { key: 'lacak', label: 'Lacak Sparepart', icon: SearchCheck, desc: 'Cari part dari riwayat kerusakan' },
+  { key: 'komunikasi', label: 'Komunikasi', icon: MessageSquare, desc: 'MiniChat & Notes antar akun' },
   { key: 'ai', label: 'Analisa AI', icon: Sparkles, desc: 'Ringkasan, jadwal & part via AI' },
   { key: 'inbox', label: 'Inbox', icon: Inbox, desc: 'Penampungan data Telegram' },
   { key: 'settings', label: 'Pengaturan', icon: Settings2, desc: 'Profil, Gateway, AI, Backup & audit log' },
@@ -439,8 +443,12 @@ export default function Home() {
           {view === 'master' && <MasterDataView />}
           {view === 'claim' && <ClaimView />}
           {view === 'nota' && <NotaView />}
+          {view === 'komunikasi' && <KomunikasiView />}
           {view === 'settings' && <SettingsView />}
         </main>
+
+        {/* MiniChat — widget komunikasi antar akun (melayang di semua view) */}
+        <MiniChat />
 
         {/* Sticky footer */}
         <footer className="mt-auto border-t bg-white px-6 py-4 text-center text-xs text-slate-500 pb-[max(1rem,env(safe-area-inset-bottom))]">

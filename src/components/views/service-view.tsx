@@ -26,6 +26,7 @@ import { useBertahap } from '@/hooks/use-bertahap'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus, ChevronDown,
+  MessageCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -223,6 +224,35 @@ export default function ServiceView() {
     onError: (e: Error) => toast({ title: 'Gagal mengirim email', description: e.message, variant: 'destructive' }),
   })
 
+  // ===== Kirim WA order part ke produsen (opsi kanal kedua selain email) =====
+  // REAL: gateway WA terkonfigurasi → item langsung TERKIRIM (mode 'WA').
+  // WAME: draf wa.me dibuka di WA — item tetap PENDING sampai dikirim.
+  // TEKS: pesan disalin ke clipboard — kirim manual ke WA (item tetap PENDING).
+  type HasilWaOrder = { ok: true; mode: 'REAL' | 'WAME' | 'TEKS'; terkirim?: number; waLink?: string; pesan?: string; noTiket: string }
+  const kirimWaOrder = (id: number) =>
+    postJson<HasilWaOrder>(
+      `/api/service/${id}`,
+      { aksi: 'KIRIM_WA_ORDER', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' },
+      'PATCH'
+    )
+  const notifikasiWaOrder = (r: HasilWaOrder) => {
+    invalidateAll()
+    if (r.mode === 'REAL') {
+      toast({ title: `Order WA terkirim (${r.terkirim} part)`, description: `Tiket ${r.noTiket} — pesan masuk log gateway. Part inden ditandai TERKIRIM; tunggu barang masuk, lalu klik Part Datang.` })
+    } else if (r.mode === 'WAME' && r.waLink) {
+      bukaLinkEksternal(r.waLink)
+      toast({ title: 'Draf WA dibuka', description: `Tiket ${r.noTiket} — pesan terisi otomatis di WhatsApp; klik kirim di WA, order tercatat setelah itu (item tetap PENDING). Set gateway WA di Pengaturan → Gateway agar kirim otomatis.` })
+    } else {
+      void navigator.clipboard?.writeText(r.pesan ?? '').catch(() => {})
+      toast({ title: 'Pesan order disalin', description: `Tiket ${r.noTiket} — nomor produsen belum diisi; tempelkan pesan ke WhatsApp. Set nomor di Pengaturan → Email Produsen (Nomor WA Produsen).` })
+    }
+  }
+  const kirimWaTiket = useMutation({
+    mutationFn: kirimWaOrder,
+    onSuccess: (r) => notifikasiWaOrder(r),
+    onError: (e: Error) => toast({ title: 'Gagal mengirim WA', description: e.message, variant: 'destructive' }),
+  })
+
   // ===== Reorder part inden dari tiket biasa (REQUEST/PROSES) =====
   // Satu klik: daftarkan baris part ORDER_PRODUSEN yang belum diorder jadi item
   // email (server idempoten — baris yang sudah ada dilewati), lalu langsung
@@ -235,6 +265,15 @@ export default function ServiceView() {
     },
     onSuccess: (r) => notifikasiEmailOrder(r),
     onError: (e: Error) => toast({ title: 'Gagal reorder part inden', description: e.message, variant: 'destructive' }),
+  })
+  // Reorder part inden via WA: daftarkan baris inden → langsung kirim WA (KIRIM_WA_ORDER).
+  const orderWaTiket = useMutation({
+    mutationFn: async (id: number) => {
+      await postJson(`/api/service/${id}`, { aksi: 'ORDER_EMAIL_REORDER', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' }, 'PATCH')
+      return kirimWaOrder(id)
+    },
+    onSuccess: (r) => notifikasiWaOrder(r),
+    onError: (e: Error) => toast({ title: 'Gagal reorder part inden (WA)', description: e.message, variant: 'destructive' }),
   })
 
   const filtered = useMemo(() => {
@@ -569,6 +608,27 @@ export default function ServiceView() {
               onClick={() => kirimEmailTiket.mutate(t.id)}>
               <Send className="h-3 w-3" />
               <span className="sr-only">Kirim Email</span>
+            </Button>
+          )
+        )}
+        {emailAktif && (
+          butuhOrderEmail ? (
+            <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-emerald-700"
+              disabled={orderWaTiket.isPending}
+              title="WA Order — reorder part inden (ORDER) ke produsen via WhatsApp; part READY tidak ikut"
+              onClick={() => orderWaTiket.mutate(t.id)}>
+              <MessageCircle className="h-3 w-3" />
+              <span className="sr-only">WA Order</span>
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" className="h-7 w-7 p-0 text-emerald-700"
+              disabled={kirimWaTiket.isPending}
+              title={t.status === 'REQUEST_EMAIL'
+                ? 'Kirim order part ke produsen via WhatsApp (gateway/pengaturan Nomor WA Produsen)'
+                : 'Kirim order part inden via WhatsApp yang belum terkirim'}
+              onClick={() => kirimWaTiket.mutate(t.id)}>
+              <MessageCircle className="h-3 w-3" />
+              <span className="sr-only">WA Order</span>
             </Button>
           )
         )}
@@ -1384,10 +1444,10 @@ export default function ServiceView() {
                                 return em ? (
                                   <Badge
                                     variant="outline"
-                                    className="border-indigo-300 bg-indigo-50 text-[9px] text-indigo-700"
-                                    title={`Item order email aktif (${em.qty} pcs, ${em.status}) — part datang ditandai lewat "Part Datang" / Surat Jalan Masuk`}
+                                    className={cn('text-[9px]', em.emailMode === 'WA' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-indigo-300 bg-indigo-50 text-indigo-700')}
+                                    title={`Item order ${em.emailMode === 'WA' ? 'WA' : 'email'} aktif (${em.qty} pcs, ${em.status}) — part datang ditandai lewat "Part Datang" / Surat Jalan Masuk`}
                                   >
-                                    Email: {em.status}
+                                    {em.emailMode === 'WA' ? 'WA' : 'Email'}: {em.status}
                                   </Badge>
                                 ) : null
                               })()}
@@ -1408,14 +1468,24 @@ export default function ServiceView() {
                                     </Button>
                                   )}
                                   {p.statusPart === 'ORDER_PRODUSEN' && detail.status !== 'FINISH' && !emailAktifUntuk(detail.orderEmailParts, p.sparepart?.kodePart) && (
-                                    <Button
-                                      size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-violet-700"
-                                      title="Reorder part inden ini: daftarkan ke order email & kirim ke produsen (SMTP aktif → kirim; belum → draf mailto)"
-                                      disabled={orderEmailTiket.isPending}
-                                      onClick={() => orderEmailTiket.mutate(detail.id)}
-                                    >
-                                      <MailPlus className="mr-0.5 h-3 w-3" /> Email Order
-                                    </Button>
+                                    <>
+                                      <Button
+                                        size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-violet-700"
+                                        title="Reorder part inden ini: daftarkan ke order email & kirim ke produsen (SMTP aktif → kirim; belum → draf mailto)"
+                                        disabled={orderEmailTiket.isPending}
+                                        onClick={() => orderEmailTiket.mutate(detail.id)}
+                                      >
+                                        <MailPlus className="mr-0.5 h-3 w-3" /> Email Order
+                                      </Button>
+                                      <Button
+                                        size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-emerald-700"
+                                        title="Reorder part inden ini via WhatsApp: daftarkan ke order & kirim (gateway aktif → kirim; belum → draf wa.me)"
+                                        disabled={orderWaTiket.isPending}
+                                        onClick={() => orderWaTiket.mutate(detail.id)}
+                                      >
+                                        <MessageCircle className="mr-0.5 h-3 w-3" /> WA Order
+                                      </Button>
+                                    </>
                                   )}
                                   <Button
                                     size="sm" variant="outline" className="h-6 w-6 p-0" title="Kurangi qty 1"

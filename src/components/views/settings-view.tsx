@@ -762,6 +762,11 @@ export default function SettingsView() {
                 <Label htmlFor="em-dari" className="text-xs">Pengirim (SMTP Dari)</Label>
                 <Input id="em-dari" type="email" value={em('smtp_dari')} onChange={(e) => setEmailForm({ ...emailForm, smtp_dari: e.target.value })} placeholder="Workshop <noreply@workshop.co.id>" />
               </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="em-wa" className="text-xs">Nomor WA Produsen (opsional — draf wa.me bila gateway belum aktif)</Label>
+                <Input id="em-wa" type="tel" value={em('wa_produsen')} onChange={(e) => setEmailForm({ ...emailForm, wa_produsen: e.target.value })} placeholder="62812xxxxxxxxx / 0812xxxxxxxxx" className="font-mono" />
+                <p className="text-[11px] text-slate-500">Dipakai tombol ⬤ WA Order di Proses Service saat gateway WhatsApp belum dicek: draf pesan order terbuka di WhatsApp produsen. Fallback berikutnya: No. WA Produsen / kontak profil.</p>
+              </div>
             </div>
             <div className="space-y-2 rounded-lg border border-sky-200 bg-sky-50/50 p-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">

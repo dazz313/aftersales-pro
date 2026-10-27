@@ -14,6 +14,7 @@ export type ViewKey =
   | 'master'
   | 'claim'
   | 'nota'
+  | 'komunikasi'
   | 'settings'
 
 export type RoleKey = 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN'

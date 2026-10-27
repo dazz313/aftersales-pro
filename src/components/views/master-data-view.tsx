@@ -397,7 +397,7 @@ export default function MasterDataView() {
       setPartKurangUnit(null)
       toast({
         title: `Tiket ${r.noTiket} terbit (REQUEST EMAIL)`,
-        description: `${r.tersimpan} part kurang tersimpan. Lanjut di menu Proses Service → aksi: Kirim Email / Upload Lampiran. PDF Detail Unit otomatis berisi part tsb.`,
+        description: `${r.tersimpan} part kurang tersimpan. Lanjut di menu Proses Service → aksi: Kirim Email / WA Order / Upload Lampiran. PDF Detail Unit otomatis berisi part tsb.`,
       })
     },
     onError: (e: Error) => toast({ title: 'Gagal menyimpan part kurang', description: e.message, variant: 'destructive' }),

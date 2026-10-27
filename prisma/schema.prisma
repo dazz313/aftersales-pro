@@ -24,6 +24,10 @@ model Pengguna {
   createdAt    DateTime    @default(now())
   kunjungan    Kunjungan[]
   notifikasiBaca NotifikasiBaca[]
+  chatTerkirim   ChatPesan[] @relation("chatTerkirim")
+  chatDiterima   ChatPesan[] @relation("chatDiterima")
+  catatans       Catatan[]        @relation("catatanPenulis")
+  catatanBalasan CatatanBalasan[] @relation("catatanBalasan")
 }
 
 // ==========================================
@@ -633,4 +637,61 @@ model NotaItem {
   nota   Nota   @relation(fields: [notaId], references: [id], onDelete: Cascade)
 
   @@index([notaId])
+}
+
+// ==========================================
+// MODUL 8 - Komunikasi Antar Akun (MiniChat & Notes)
+// ==========================================
+// MiniChat — pesan internal antar akun aplikasi (bukan WA nyata):
+//  - DM        : penerimaId = id pengguna tujuan
+//  - Broadcast : penerimaId = null → papan umum, terlihat semua akun aktif
+// Tampil sebagai widget melayang (MiniChat) + tab di view Komunikasi.
+// ==========================================
+model ChatPesan {
+  id         Int       @id @default(autoincrement())
+  pengirimId Int
+  penerimaId Int?      // null = broadcast ke semua akun (papan umum)
+  isi        String
+  createdAt  DateTime  @default(now())
+  pengirim   Pengguna  @relation("chatTerkirim", fields: [pengirimId], references: [id], onDelete: Cascade)
+  penerima   Pengguna? @relation("chatDiterima", fields: [penerimaId], references: [id], onDelete: Cascade)
+
+  @@index([pengirimId])
+  @@index([penerimaId])
+  @@index([createdAt])
+}
+
+// Catatan (Notes) — papan catatan bersama antar akun: pengumuman/kesepakatan
+// kerja yang tidak boleh hilang lewat chat. untukRole: null = semua role,
+// else daftar role dipisah koma (difilter saat GET sesuai role pembaca).
+// Balasan inline memakai CatatanBalasan.
+// ==========================================
+model Catatan {
+  id        Int              @id @default(autoincrement())
+  judul     String?
+  isi       String
+  untukRole String?
+  pinned    Boolean          @default(false)
+  penulisId Int
+  editedAt  DateTime?
+  editedBy  String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  penulis   Pengguna         @relation("catatanPenulis", fields: [penulisId], references: [id], onDelete: Cascade)
+  balasan   CatatanBalasan[]
+
+  @@index([createdAt])
+  @@index([pinned])
+}
+
+model CatatanBalasan {
+  id        Int      @id @default(autoincrement())
+  catatanId Int
+  penulisId Int
+  isi       String
+  createdAt DateTime @default(now())
+  catatan   Catatan  @relation(fields: [catatanId], references: [id], onDelete: Cascade)
+  penulis   Pengguna @relation("catatanBalasan", fields: [penulisId], references: [id])
+
+  @@index([catatanId])
 }

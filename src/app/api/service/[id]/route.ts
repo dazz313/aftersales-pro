@@ -6,7 +6,8 @@ import { autoGitBackup, backupSparepartToGit } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 import type { SessionPayload } from '@/lib/auth'
 import { catatBankKode } from '@/lib/bank-kode'
-import { konfigurasiEmail, kirimSmtp, susunEmailOrder } from '@/lib/order-email'
+import { konfigurasiEmail, kirimSmtp, susunEmailOrder, susunPesanWaOrder } from '@/lib/order-email'
+import { sendGatewayMessage } from '@/lib/gateway'
 import { APP_ROOT } from '@/lib/paths'
 
 // GET /api/service/[id] - detail satu tiket
@@ -25,7 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         parts: { include: { sparepart: true } },
         // Item order-email menempel tiket (REQUEST_EMAIL / Reorder Email) —
         // dipakai UI utk badge "Email: PENDING/TERKIRIM" per baris part inden.
-        orderEmailParts: { select: { id: true, kodePart: true, qty: true, status: true, createdAt: true } },
+        orderEmailParts: { select: { id: true, kodePart: true, qty: true, status: true, emailMode: true, createdAt: true } },
       },
     })
     if (!ticket) {
@@ -50,6 +51,25 @@ function bolehKoreksiSelesai(flag: unknown, session: SessionPayload | null) {
 const NORM_KODE = (s: string | null | undefined) => (s || '').toString().toUpperCase().replace(/[^A-Z0-9#]/g, '')
 
 /**
+ * Nomor WA tujuan order part — normalisasi ke format internasional (62…).
+ * Prioritas: pengaturan `wa_produsen` → `kontak_produsen` → noWa akun PRODUSEN aktif pertama.
+ * Null bila tidak ada nomor valid.
+ */
+async function noWaProdusen(): Promise<string | null> {
+  const [cfg1, cfg2, produsen] = await Promise.all([
+    db.pengaturan.findUnique({ where: { kunci: 'wa_produsen' } }),
+    db.pengaturan.findUnique({ where: { kunci: 'kontak_produsen' } }),
+    db.pengguna.findFirst({ where: { role: 'PRODUSEN', aktif: true }, orderBy: { id: 'asc' }, select: { noWa: true } }),
+  ])
+  const mentah = [cfg1?.nilai, cfg2?.nilai, produsen?.noWa].find((n) => (n ?? '').replace(/\D/g, '').length >= 8)
+  const angka = (mentah ?? '').replace(/\D/g, '')
+  if (angka.length < 8) return null
+  if (angka.startsWith('0')) return `62${angka.slice(1)}`
+  if (angka.startsWith('62')) return angka
+  return `62${angka}`
+}
+
+/**
  * PATCH /api/service/[id] - Transisi workflow tiket
  * Aksi: MULAI_PROSES | FINISH | SUBMIT_CLAIM | MARK_PAID | UPDATE_JASA
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
@@ -58,6 +78,7 @@ const NORM_KODE = (s: string | null | undefined) => (s || '').toString().toUpper
  *   | BUKA_ULANG_PROSES (FINISH → PROSES — Admin/Manager + flag koreksiSelesai)
  *   | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
  *   | ORDER_EMAIL_REORDER (daftarkan baris inden ORDER_PRODUSEN sebagai item email)
+ *   | KIRIM_WA_ORDER (kirim order part kurang via WhatsApp — kanal kedua setelah email)
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
  * → TIDAK_READY: terdaftar & simpan di toko | READY: kerjakan di toko / tarik workshop+STTB
@@ -191,6 +212,88 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         aktor,
       })
       return NextResponse.json({ ok: true, mode: 'MAILTO', ke: cfg.ke || '', mailto, noTiket: existing.noTiket })
+    }
+
+    // ---- Aksi kirim WA order part (Kekurangan Part) ke produsen ----
+    // Opsi kanal kedua selain email (KIRIM_EMAIL_PRODUSEN), alur datanya sama:
+    // item OrderEmailPart berstatus PENDING. Tiga mode hasil:
+    //  - REAL    : gateway WA asli terkonfigurasi → pesan terkirim, item TERKIRIM
+    //              (emailMode 'WA' — badge tiket & Surat Jalan Masuk tetap mengenali).
+    //  - WAME    : gateway belum diset → buat tautan wa.me (nomor dari pengaturan
+    //              `wa_produsen`, fallback `kontak_produsen` atau noWa akun PRODUSEN)
+    //              — item tetap PENDING sampai pesan benar-benar dikirim dari HP.
+    //  - TEKS    : nomor belum ada juga → balas teks pesan untuk kopi-manual.
+    if (aksi === 'KIRIM_WA_ORDER') {
+      const items = await db.orderEmailPart.findMany({
+        where: { serviceRequestId: ticketId, status: 'PENDING' },
+        orderBy: { createdAt: 'asc' },
+      })
+      if (existing.status !== 'REQUEST_EMAIL' && items.length === 0) {
+        return NextResponse.json({ error: 'Tidak ada part menunggu order di tiket ini — daftarkan part inden dulu via Email/WA Order (ORDER_EMAIL_REORDER)' }, { status: 409 })
+      }
+      if (items.length === 0) {
+        return NextResponse.json({ error: 'Tidak ada part menunggu order di tiket ini (semua sudah terkirim)' }, { status: 409 })
+      }
+      const it0 = items[0]
+      const pesan = susunPesanWaOrder({
+        noTiket: existing.noTiket,
+        serialNumber: it0.serialNumber,
+        modelUnit: it0.modelUnit,
+        merk: existing.unitAsset?.merk ?? null,
+        tokoNama: it0.tokoNama,
+        catatan: it0.catatan,
+        items: items.map((i) => ({ kodePart: i.kodePart, namaPart: i.namaPart, qty: i.qty })),
+      })
+      const hasil = await sendGatewayMessage('WHATSAPP', pesan)
+      if (hasil.mode === 'REAL' && hasil.ok) {
+        await db.orderEmailPart.updateMany({
+          where: { serviceRequestId: ticketId, status: 'PENDING' },
+          data: {
+            status: 'TERKIRIM',
+            emailTujuan: 'WA Gateway',
+            emailKirimAt: new Date(),
+            emailOleh: aktor,
+            emailMode: 'WA',
+            emailPesanGagal: null,
+          },
+        })
+        await logAudit({
+          aksi: 'ORDER_WA_TERKIRIM',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Order WA part ${items.length} item dikirim via gateway (${items.map((i) => `${i.kodePart} ×${i.qty}`).join(', ')}) — tiket ${existing.noTiket}`,
+          aktor,
+        })
+        await autoGitBackup('KIRIM_WA_ORDER', 'service_request', existing.noTiket, aktor)
+        return NextResponse.json({ ok: true, mode: 'REAL', terkirim: items.length, noTiket: existing.noTiket, detail: hasil.detail })
+      }
+      // Gateway REAL gagal / belum dikonfigurasi → draf wa.me (item tetap PENDING)
+      const nomor = await noWaProdusen()
+      if (nomor) {
+        await logAudit({
+          aksi: 'ORDER_WA_DRAF',
+          entitas: 'service_request',
+          entitasId: existing.noTiket,
+          deskripsi: `Draf WA order part ${items.length} item dibuka (gateway belum aktif: ${hasil.detail}) — tiket ${existing.noTiket}`,
+          aktor,
+        })
+        return NextResponse.json({
+          ok: true,
+          mode: 'WAME',
+          waLink: `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`,
+          noTiket: existing.noTiket,
+          detail: hasil.detail,
+        })
+      }
+      // Tidak ada nomor sama sekali → mode TEKS (kopi manual ke WhatsApp)
+      await logAudit({
+        aksi: 'ORDER_WA_TEKS',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Teks order WA part ${items.length} item disalin manual (nomor produsen belum diisi) — tiket ${existing.noTiket}`,
+        aktor,
+      })
+      return NextResponse.json({ ok: true, mode: 'TEKS', pesan, noTiket: existing.noTiket, detail: hasil.detail })
     }
 
     // ---- Reorder part inden (ORDER_PRODUSEN) → daftarkan sebagai item order email (PENDING) ----

@@ -307,12 +307,14 @@ export interface ServicePart {
   sparepart?: Sparepart & { reorderLimit?: number }
 }
 
-/** Ref kecil: item order-email yang menempel tiket (alur REQUEST_EMAIL / Reorder Email part inden). */
+/** Ref kecil: item order-email yang menempel tiket (alur REQUEST_EMAIL / Reorder Email part inden).
+ *  emailMode: 'SMTP' email biasa · 'WA' dikirim via WhatsApp gateway/wa.me · 'MANUAL' dilampirkan manual. */
 export interface OrderEmailRef {
   id: number
   kodePart: string
   qty: number
   status: string
+  emailMode?: string | null
   createdAt: string
 }
 
@@ -584,4 +586,57 @@ export interface DashboardData {
   rusakPerBrand: { brand: string; jumlah: number }[]
   garansiCount: { GARANSI: number; NON_GARANSI: number }
   tren14hari: { tanggal: string; tiket: number }[]
+}
+
+// ==========================================
+// MODUL 8 - Komunikasi Antar Akun (MiniChat & Notes)
+// ==========================================
+
+/** Akun aktif — target DM / peserta broadcast MiniChat. */
+export interface ChatUser {
+  id: number
+  nama: string
+  email: string
+  username: string | null
+  role: 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN'
+}
+
+/** Satu pesan MiniChat (DM: penerimaId = id tujuan · broadcast: penerimaId null). */
+export interface ChatPesanItem {
+  id: number
+  pengirimId: number
+  penerimaId: number | null
+  isi: string
+  createdAt: string
+}
+
+export interface ChatData {
+  users: ChatUser[]
+  pesan: ChatPesanItem[]
+  meId: number
+}
+
+/** Papan catatan bersama — bentuk API GET /api/catatan. */
+export interface CatatanItem {
+  id: number
+  judul: string | null
+  isi: string
+  untukRole: string | null
+  pinned: boolean
+  penulisId: number
+  editedAt: string | null
+  editedBy: string | null
+  createdAt: string
+  updatedAt: string
+  penulis: { nama: string; role: 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN' }
+  balasan: CatatanBalasanItem[]
+}
+
+export interface CatatanBalasanItem {
+  id: number
+  catatanId: number
+  penulisId: number
+  isi: string
+  createdAt: string
+  penulis: { nama: string; role: 'ADMIN_WORKSHOP' | 'TEKNISI' | 'MANAGER' | 'PRODUSEN' }
 }

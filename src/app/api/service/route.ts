@@ -20,7 +20,7 @@ export async function GET() {
         parts: { include: { sparepart: true } },
         // Item order-email menempel tiket — dipakai UI: chip Ready/Inden + tombol
         // Email Order/Kirim Email dikondisikan pada item PENDING/TERKIRIM.
-        orderEmailParts: { select: { id: true, kodePart: true, qty: true, status: true, createdAt: true } },
+        orderEmailParts: { select: { id: true, kodePart: true, qty: true, status: true, emailMode: true, createdAt: true } },
       },
       orderBy: [{ tglTiket: 'desc' }, { createdAt: 'desc' }],
     })

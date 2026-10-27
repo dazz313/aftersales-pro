@@ -94,3 +94,33 @@ export function susunEmailOrder(params: {
   return { subjek, isi }
 }
 
+/** Susun pesan order part kurang untuk WHATSAPP (dipakai aksi Kirim WA).
+ *  Format ringkas & ramah WA — item dirapikan per baris, pakai *bold* Markdown WA. */
+export function susunPesanWaOrder(params: {
+  noTiket: string
+  serialNumber: string | null
+  modelUnit: string | null
+  merk: string | null
+  tokoNama: string | null
+  catatan: string | null
+  items: { kodePart: string; namaPart: string; qty: number }[]
+}): string {
+  const { noTiket, serialNumber, modelUnit, merk, tokoNama, catatan, items } = params
+  const baris = items.map((it, i) => `${i + 1}. ${it.kodePart} — ${it.namaPart} ×${it.qty}`)
+  return [
+    `*ORDER SPAREPART ${noTiket}* — Kekurangan Part (${items.length} item)`,
+    '',
+    `📝 Detail unit:`,
+    `- Merk     : ${merk || '-'}`,
+    `- Model    : ${modelUnit || '-'}`,
+    `- No. Seri : ${serialNumber || '-'}`,
+    `- Toko     : ${tokoNama || '-'}`,
+    '',
+    `🧾 *PART YANG KURANG:*`,
+    ...baris,
+    ...(catatan ? ['', `Catatan: ${catatan}`] : []),
+    '',
+    'Mohon konfirmasi harga & ketersediaan. Terima kasih 🙏',
+  ].join('\n')
+}
+
