@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T23:25:43.925Z",
+  "generatedAt": "2026-10-27T23:29:08.686Z",
   "masterToko": [
     {
       "id": 216,
@@ -142,8 +142,8 @@
       "barcodeToko": "BC-TOK-009",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": -3.6333632,
-      "longitude": 119.8325386
+      "latitude": -4.537340345405034,
+      "longitude": 120.3280967473984
     },
     {
       "id": 225,
@@ -8137,6 +8137,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1006,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-009",
+      "deskripsi": "Koordinat toko diperbarui: -4.537340345405034, 120.3280967473984",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-27T23:29:08.674Z"
+    },
     {
       "id": 1005,
       "aksi": "SETPIN_MASTER_TOKO",
