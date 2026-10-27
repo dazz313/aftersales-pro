@@ -52,6 +52,7 @@ import CompanyLogo from '@/components/company-logo'
 import QuickActions from '@/components/quick-entry'
 import NotifBell from '@/components/notif-bell'
 import MiniChat from '@/components/minichat'
+import NotifikasiSuaraChat from '@/components/notifikasi-suara-chat'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -449,6 +450,8 @@ export default function Home() {
 
         {/* MiniChat — widget komunikasi antar akun (melayang di semua view) */}
         <MiniChat />
+        {/* Suara notifikasi chat baru (tak terlihat — mendengar semua update query chat) */}
+        <NotifikasiSuaraChat />
 
         {/* Sticky footer */}
         <footer className="mt-auto border-t bg-white px-6 py-4 text-center text-xs text-slate-500 pb-[max(1rem,env(safe-area-inset-bottom))]">
