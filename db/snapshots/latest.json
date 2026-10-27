@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T08:09:07.327Z",
+  "generatedAt": "2026-10-27T08:19:54.486Z",
   "masterToko": [
     {
       "id": 216,
@@ -3992,10 +3992,10 @@
     {
       "id": 173,
       "serialNumber": "ZX357360",
-      "modelUnit": "PS-135 E",
+      "modelUnit": "PS-130  BIT",
       "merk": "Shimizu",
-      "nama": "",
-      "kerusakanAwal": null,
+      "nama": "pompa air",
+      "kerusakanAwal": "CASING RETAK",
       "tokoId": 242,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -8137,6 +8137,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 994,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX357360",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (ZX357360)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-27T08:19:54.449Z"
+    },
     {
       "id": 993,
       "aksi": "FINISH_SERVICE",
