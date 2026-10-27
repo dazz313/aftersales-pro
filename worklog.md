@@ -1,6 +1,25 @@
 # Worklog
 
 ---
+Task ID: 46
+Agent: GLM-5.3-Flash Free (opencode)
+Task: "Buat notes dan chat berdampingan kiri dan kanan agar lebih portable; perbaiki nama pengguna chat yang panjang tidak kelihatan"
+
+Work Log:
+- View Komunikasi (`komunikasi-view.tsx`) — hapus mekanisme TAB (Tabs/TabsList/TabsContent + state `tab`): sekarang grid dua kolom `xl:grid-cols-2` — KIRI = MiniChat (ChatPanel lebar dgn sidebar akun), KANAN = Notes (input cari + tombol Buat Catatan di header kartu, daftar note dalam ScrollArea internal, kartu/cari/hasil filter tetap), keduanya setinggi `h-[30rem] xl:h-[36rem]` sehingga bisa dipandang sekaligus tanpa pindah tab ("portable"); di layar sempit (HP/tablet) tetap tersusun vertikal. Nav intent `komunikasiThread` dari kartu CHAT-01 dashboard tetap bekerja (tanpa setTab — langsung setThread).
+- Fix nama panjang:
+  • ChatPanel sidebar (view lebar): item akun dari 1 baris `truncate` → nama `line-clamp-2 break-words leading-snug` (utuh 2 baris) + caption role/papan umum di bawah nama (dot warna role tetap).
+  • Header thread: nama partner `truncate` → `line-clamp-2 break-words`.
+  • Widget compact: `SelectTrigger` diset `whitespace-normal!` + override `[&_[data-slot=select-value]]` (`h-auto! min-h-5 line-clamp-2! whitespace-normal! break-words!`, size sm) — mematikan `line-clamp-1`/`whitespace-nowrap` bawaan shadcn sehingga nama panjang terlipat 2 baris; header thread menamai partner utuh juga (pemilih + header saling melengkapi).
+  • Pesan broadcast: nama pengirim pengirim memakai `min-w-0 break-words` — nama panjang tak meluber bubble.
+  • Dashboard kartu CHAT-01: kolom nama `w-24 sm:w-28 line-clamp-2 break-words leading-tight` (2 baris, tak terpotong "…").
+- Verifikasi: tsc 0; eslint 0 (file tersentuh, --max-warnings=0); vitest 98 lulus; build standalone OK; PM2 online + /api/health ok; E2E Playwright 13/13 PASSED (login → navigasi → render bertahap → HP kartu).
+- Git: commit `a927c75`. Rollback: revert 1 komit (murni UI, tanpa skema/API).
+
+Stage Summary:
+- Menu Komunikasi kini papan komunikasi dua kolom: MiniChat (kiri) dan Notes (kanan) terlihat & bisa digunakan berdampingan tanpa berpindah tab — di layar kecil tersusun otomatis vertikal. Semua permukaan nama pengguna chat (sidebar, header, dropdown widget, nama pengirim di broadcast, dan indikator CHAT-01 dashboard) menampilkan nama panjang hingga 2 baris secara utuh, bukan terpotong.
+
+---
 Task ID: 45
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Tambahkan kode yang bisa dilihat dari dashboard jika ada chat baru tanpa perlu membuka fitur MiniChat"
