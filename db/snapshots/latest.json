@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T05:07:11.493Z",
+  "generatedAt": "2026-10-27T06:47:28.995Z",
   "masterToko": [
     {
       "id": 216,
@@ -6862,27 +6862,27 @@
       "id": 23,
       "noTiket": "SVC-2610-0021",
       "unitAssetId": 191,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0021",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-27T06:47:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0021.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-27T06:47:00.000Z",
       "tglTiket": "2026-10-15T05:27:46.945Z",
       "createdAt": "2026-10-15T05:27:46.960Z",
-      "updatedAt": "2026-10-19T00:02:55.845Z",
+      "updatedAt": "2026-10-27T06:47:28.927Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -7996,6 +7996,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 969,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0021",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0021.jpg) — tglFinish diatur manual: 27/10/2026, 14.47.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-27T06:47:28.965Z"
+    },
+    {
+      "id": 968,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "3",
+      "deskripsi": "Catatan \"varia makmur\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T05:21:09.766Z"
+    },
+    {
+      "id": 967,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "2",
+      "deskripsi": "Catatan \"h. sulaiman\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-27T05:20:53.637Z"
+    },
     {
       "id": 966,
       "aksi": "UPDATE_MASTER_TOKO",
