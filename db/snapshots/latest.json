@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T01:38:54.299Z",
+  "generatedAt": "2026-10-28T01:39:59.086Z",
   "masterToko": [
     {
       "id": 216,
@@ -3457,19 +3457,6 @@
       "statusGaransi": "GARANSI",
       "tglPembelian": "2026-08-06T00:00:00.000Z",
       "createdAt": "2026-10-23T00:00:00.000Z"
-    },
-    {
-      "id": 255,
-      "serialNumber": "4305001800",
-      "modelUnit": "WDP-300",
-      "merk": "Miyako",
-      "nama": "MIXER",
-      "kerusakanAwal": "GULUNGAN KONSLET",
-      "tokoId": 246,
-      "customerId": null,
-      "statusGaransi": "STOK_TOKO",
-      "tglPembelian": null,
-      "createdAt": "2026-07-16T00:00:00.000Z"
     },
     {
       "id": 141,
@@ -8371,6 +8358,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1046,
+      "aksi": "DELETE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "4305001800",
+      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 4305001800 — WDP-300",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T01:39:59.075Z"
+    },
     {
       "id": 1045,
       "aksi": "CREATE_UNIT_ASSET",
