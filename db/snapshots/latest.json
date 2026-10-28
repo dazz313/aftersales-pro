@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:28:38.257Z",
+  "generatedAt": "2026-10-28T00:33:03.949Z",
   "masterToko": [
     {
       "id": 216,
@@ -1283,6 +1283,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T08:14:34.755Z"
+    },
+    {
+      "id": 358,
+      "kodePart": "C0050-07000-2X02-TA-0.70",
+      "namaPart": "Gas Single Total Dia 0,70",
+      "brandKompatibel": "Rinnai",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-28T00:33:03.917Z"
     },
     {
       "id": 270,
@@ -4431,6 +4445,55 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 92,
+      "noTiket": "SVC-2606-0002",
+      "unitAssetId": 152,
+      "status": "REQUEST",
+      "noSttb": "STTB-2606-0002",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "LEPAS PEMUTAR DALAMNYA",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-06-22T00:00:00.000Z",
+      "createdAt": "2026-10-28T00:33:03.926Z",
+      "updatedAt": "2026-10-28T00:33:03.926Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 100,
+          "serviceRequestId": 92,
+          "sparepartId": 358,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 91,
       "noTiket": "SVC-2606-0001",
@@ -8186,6 +8249,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1019,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0002",
+      "deskripsi": "Tiket manual dibuat untuk unit 2601271041 (RI-202 S, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2606-0002 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T00:33:03.933Z"
+    },
     {
       "id": 1018,
       "aksi": "FINISH_SERVICE",
