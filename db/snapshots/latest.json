@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:43:14.066Z",
+  "generatedAt": "2026-10-28T00:43:34.935Z",
   "masterToko": [
     {
       "id": 216,
@@ -4462,27 +4462,27 @@
       "id": 94,
       "noTiket": "SVC-2607-0007",
       "unitAssetId": 254,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2607-0007",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-22T00:43:00.000Z",
       "deskripsiKerusakan": "THERMOSTAT RUSAK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2607-0007.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-22T00:43:00.000Z",
       "tglTiket": "2026-07-24T00:00:00.000Z",
       "createdAt": "2026-10-28T00:42:47.797Z",
-      "updatedAt": "2026-10-28T00:43:14.027Z",
+      "updatedAt": "2026-10-28T00:43:34.919Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4500,8 +4500,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "EXXX-AX506-TP-KGX",
+          "namaPartCache": "THERMOSTAT ASSY 83'N",
           "editedAt": null,
           "editedBy": null
         }
@@ -8344,6 +8344,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1030,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0007",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2607-0007.jpg) — tglFinish diatur manual: 22/8/2026, 08.43.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:43:34.923Z"
+    },
+    {
+      "id": 1029,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0007",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2607-0007 diterbitkan untuk penarikan unit 4403003618 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:43:15.847Z"
+    },
     {
       "id": 1028,
       "aksi": "TERIMA_PART_PRODUSEN",
