@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:47:24.344Z",
+  "generatedAt": "2026-10-28T00:48:06.690Z",
   "masterToko": [
     {
       "id": 216,
@@ -7788,27 +7788,27 @@
       "id": 11,
       "noTiket": "SVC-2610-0009",
       "unitAssetId": 131,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0009",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-22T00:47:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0009.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-22T00:47:00.000Z",
       "tglTiket": "2026-10-14T05:09:01.176Z",
       "createdAt": "2026-10-14T05:09:01.193Z",
-      "updatedAt": "2026-10-19T00:02:55.832Z",
+      "updatedAt": "2026-10-28T00:48:06.671Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8344,6 +8344,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1036,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0009",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0009.jpg) — tglFinish diatur manual: 22/8/2026, 08.47.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:48:06.676Z"
+    },
     {
       "id": 1035,
       "aksi": "FINISH_SERVICE",
