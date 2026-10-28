@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:33:25.748Z",
+  "generatedAt": "2026-10-28T00:33:50.734Z",
   "masterToko": [
     {
       "id": 216,
@@ -4449,27 +4449,27 @@
       "id": 92,
       "noTiket": "SVC-2606-0002",
       "unitAssetId": 152,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2606-0002",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-28T00:33:00.000Z",
       "deskripsiKerusakan": "LEPAS PEMUTAR DALAMNYA",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2606-0002.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-28T00:33:00.000Z",
       "tglTiket": "2026-06-22T00:00:00.000Z",
       "createdAt": "2026-10-28T00:33:03.926Z",
-      "updatedAt": "2026-10-28T00:33:25.710Z",
+      "updatedAt": "2026-10-28T00:33:50.719Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4487,8 +4487,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "C0050-07000-2X02-TA-0.70",
+          "namaPartCache": "Gas Single Total Dia 0,70",
           "editedAt": null,
           "editedBy": null
         }
@@ -8249,6 +8249,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1022,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0002",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2606-0002.jpg) — tglFinish diatur manual: 28/8/2026, 08.33.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:33:50.723Z"
+    },
+    {
+      "id": 1021,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0002",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2606-0002 diterbitkan untuk penarikan unit 2601271041 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:33:27.930Z"
+    },
     {
       "id": 1020,
       "aksi": "TERIMA_PART_PRODUSEN",
