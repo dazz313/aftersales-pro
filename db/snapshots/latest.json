@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-27T23:31:23.429Z",
+  "generatedAt": "2026-10-28T00:27:24.628Z",
   "masterToko": [
     {
       "id": 216,
@@ -4432,6 +4432,55 @@
   ],
   "serviceRequest": [
     {
+      "id": 91,
+      "noTiket": "SVC-2606-0001",
+      "unitAssetId": 162,
+      "status": "REQUEST",
+      "noSttb": "STTB-2606-0001",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-06-24T00:00:00.000Z",
+      "createdAt": "2026-10-28T00:27:24.598Z",
+      "updatedAt": "2026-10-28T00:27:24.598Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 99,
+          "serviceRequestId": 91,
+          "sparepartId": 312,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 90,
       "noTiket": "SVC-2610-0046",
       "unitAssetId": 253,
@@ -8137,6 +8186,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1015,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0001",
+      "deskripsi": "Tiket manual dibuat untuk unit 2602344144 (RI-522C, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2606-0001 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T00:27:24.606Z"
+    },
+    {
+      "id": 1014,
+      "aksi": "CATATAN_PIN",
+      "entitas": "catatan",
+      "entitasId": "6",
+      "deskripsi": "Catatan disematkan — ANTAR UNIT",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-28T00:21:46.562Z"
+    },
+    {
+      "id": 1013,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "6",
+      "deskripsi": "Catatan \"ANTAR UNIT\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-28T00:21:41.415Z"
+    },
+    {
+      "id": 1012,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 138 katalog + 67 balasan produsen + 0 order (total bank: 148)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T00:20:07.657Z"
+    },
     {
       "id": 1011,
       "aksi": "GEOCODE_MASTER_TOKO",
