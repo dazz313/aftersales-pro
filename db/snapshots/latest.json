@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T02:14:11.218Z",
+  "generatedAt": "2026-10-28T12:13:56.279Z",
   "masterToko": [
     {
       "id": 216,
@@ -7374,12 +7374,12 @@
       "id": 21,
       "noTiket": "SVC-2610-0019",
       "unitAssetId": 175,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2610-0019",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -7387,14 +7387,14 @@
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
       "tglFinish": null,
       "tglTiket": "2026-10-15T04:51:23.765Z",
       "createdAt": "2026-10-15T04:51:23.800Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
+      "updatedAt": "2026-10-28T12:13:56.196Z",
       "editedAt": "2026-10-17T23:18:16.325Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
@@ -8443,6 +8443,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1057,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0019",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0019 diterbitkan untuk penarikan unit AH331145 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T12:13:56.242Z"
+    },
+    {
+      "id": 1056,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0036",
+      "deskripsi": "Draf email order part 1 item dibuka (SMTP belum diset) — tiket SVC-2610-0036",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T02:14:11.243Z"
+    },
     {
       "id": 1055,
       "aksi": "ORDER_EMAIL_REORDER",
