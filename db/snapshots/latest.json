@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T01:03:11.203Z",
+  "generatedAt": "2026-10-28T01:36:01.379Z",
   "masterToko": [
     {
       "id": 216,
@@ -7361,27 +7361,27 @@
       "id": 20,
       "noTiket": "SVC-2610-0018",
       "unitAssetId": 141,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0018",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-28T01:35:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0018.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-28T01:35:00.000Z",
       "tglTiket": "2026-10-14T05:20:38.638Z",
       "createdAt": "2026-10-14T05:20:38.660Z",
-      "updatedAt": "2026-10-19T00:02:55.842Z",
+      "updatedAt": "2026-10-28T01:36:01.362Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8358,6 +8358,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1044,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0018",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0018.jpg) — tglFinish diatur manual: 28/8/2026, 09.35.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T01:36:01.366Z"
+    },
+    {
+      "id": 1043,
+      "aksi": "CATATAN_PIN",
+      "entitas": "catatan",
+      "entitasId": "5",
+      "deskripsi": "Catatan disematkan — toko sinar logam",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-28T01:31:57.783Z"
+    },
     {
       "id": 1042,
       "aksi": "FINISH_SERVICE",
