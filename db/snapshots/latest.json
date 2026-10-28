@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:45:03.354Z",
+  "generatedAt": "2026-10-28T00:45:38.602Z",
   "masterToko": [
     {
       "id": 216,
@@ -2203,7 +2203,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T05:14:59.002Z"
@@ -7690,12 +7690,12 @@
       "id": 13,
       "noTiket": "SVC-2610-0011",
       "unitAssetId": 133,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2610-0011",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -7703,18 +7703,18 @@
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:11:24.317Z",
       "createdAt": "2026-10-14T05:11:24.334Z",
-      "updatedAt": "2026-10-28T00:45:03.338Z",
+      "updatedAt": "2026-10-28T00:45:38.585Z",
       "editedAt": "2026-10-28T00:45:03.337Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
+      "tglPartDatang": "2026-10-28T00:45:22.424Z",
       "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
@@ -7723,7 +7723,7 @@
           "serviceRequestId": 13,
           "sparepartId": 293,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
@@ -8344,6 +8344,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1033,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0011",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0011 diterbitkan untuk penarikan unit 03050030726 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:45:38.590Z"
+    },
+    {
+      "id": 1032,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0011",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1) — tgl datang part tercatat",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:45:22.428Z"
+    },
     {
       "id": 1031,
       "aksi": "KOREKSI_PART_SERVICE",
