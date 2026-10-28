@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T02:06:45.564Z",
+  "generatedAt": "2026-10-28T02:14:11.218Z",
   "masterToko": [
     {
       "id": 216,
@@ -8191,6 +8191,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 25,
+      "kodePart": "MCMX-AX435-RH-KGX",
+      "namaPart": "Out Case Assy 528 red",
+      "brand": "MIYAKO",
+      "qty": 1,
+      "unitAssetId": 192,
+      "serialNumber": "03020055749",
+      "modelUnit": "MCM-528TS",
+      "tokoKode": "TOK-007",
+      "tokoNama": "Toko Semeru Sukawati",
+      "catatan": "Reorder part inden — tiket SVC-2610-0036",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-10-28T02:14:11.203Z",
+      "updatedAt": "2026-10-28T02:14:11.203Z",
+      "serviceRequestId": 38
+    },
+    {
       "id": 24,
       "kodePart": "1P90273A",
       "namaPart": "Casing PS 135 E",
@@ -8420,6 +8443,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1055,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0036",
+      "deskripsi": "Reorder 1 part inden via email: MCMX-AX435-RH-KGX ×1 — item menempel ke tiket SVC-2610-0036, siap dikirim ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T02:14:11.206Z"
+    },
     {
       "id": 1054,
       "aksi": "FINISH_SERVICE",
