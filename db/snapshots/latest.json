@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:38:14.160Z",
+  "generatedAt": "2026-10-28T00:41:39.851Z",
   "masterToko": [
     {
       "id": 216,
@@ -3573,6 +3573,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-23T16:00:00.000Z"
+    },
+    {
+      "id": 254,
+      "serialNumber": "4403003618",
+      "modelUnit": "MCM-559SBC",
+      "merk": "Miyako",
+      "nama": "MAGIC COM",
+      "kerusakanAwal": "NASI CEPAT BASI",
+      "tokoId": 232,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-07-24T00:00:00.000Z"
     },
     {
       "id": 191,
@@ -8282,6 +8295,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1026,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "4403003618",
+      "deskripsi": "Unit baru teregistrasi: MAGIC COM (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T00:41:39.835Z"
+    },
     {
       "id": 1025,
       "aksi": "FINISH_SERVICE",
