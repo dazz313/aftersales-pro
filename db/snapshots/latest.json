@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:33:03.949Z",
+  "generatedAt": "2026-10-28T00:33:25.748Z",
   "masterToko": [
     {
       "id": 216,
@@ -1293,7 +1293,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-28T00:33:03.917Z"
@@ -4469,11 +4469,11 @@
       "tglFinish": null,
       "tglTiket": "2026-06-22T00:00:00.000Z",
       "createdAt": "2026-10-28T00:33:03.926Z",
-      "updatedAt": "2026-10-28T00:33:03.926Z",
+      "updatedAt": "2026-10-28T00:33:25.710Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
+      "tglPartDatang": "2026-10-28T00:33:25.709Z",
       "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
@@ -4482,7 +4482,7 @@
           "serviceRequestId": 92,
           "sparepartId": 358,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
@@ -8249,6 +8249,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1020,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0002",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1) — tgl datang part tercatat",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:33:25.715Z"
+    },
     {
       "id": 1019,
       "aksi": "CREATE_SERVICE_REQUEST",
