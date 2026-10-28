@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T01:01:39.864Z",
+  "generatedAt": "2026-10-28T01:02:19.772Z",
   "masterToko": [
     {
       "id": 216,
@@ -1615,7 +1615,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 0,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T08:42:04.870Z"
@@ -1647,6 +1647,20 @@
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
+    },
+    {
+      "id": 359,
+      "kodePart": "MCMX-EA488-XX-KGX",
+      "namaPart": "TOTAL HEATING PLATE ASSY",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-28T01:02:19.735Z"
     },
     {
       "id": 286,
@@ -5366,9 +5380,9 @@
       "tglFinish": null,
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T08:42:04.882Z",
-      "updatedAt": "2026-10-28T01:01:39.824Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-28T01:02:19.758Z",
+      "editedAt": "2026-10-28T01:02:19.757Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": "2026-10-28T01:01:39.824Z",
       "tglRequestPart": "2026-10-20T06:16:00.998Z",
@@ -5377,7 +5391,7 @@
         {
           "id": 80,
           "serviceRequestId": 65,
-          "sparepartId": 344,
+          "sparepartId": 359,
           "qty": 1,
           "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
@@ -5386,8 +5400,8 @@
           "pasangOleh": null,
           "kodePartCache": "MCMX-E488-XX-KGX",
           "namaPartCache": "TOTAL HEATING PLATE ASSY",
-          "editedAt": null,
-          "editedBy": null
+          "editedAt": "2026-10-28T01:02:19.753Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -8344,6 +8358,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1039,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0010",
+      "deskripsi": "Koreksi part [edited]: kode MCMX-E488-XX-KGX → MCMX-EA488-XX-KGX — terpakai MCMX-E488-XX-KGX -1 → MCMX-EA488-XX-KGX +1",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T01:02:19.761Z"
+    },
+    {
+      "id": 1038,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "MCMX-EA488-XX-KGX",
+      "deskripsi": "Kode koreksi part otomatis masuk katalog: TOTAL HEATING PLATE ASSY (tiket SVC-2608-0010)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T01:02:19.744Z"
+    },
     {
       "id": 1037,
       "aksi": "TERIMA_PART_PRODUSEN",
