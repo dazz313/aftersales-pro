@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T01:41:16.079Z",
+  "generatedAt": "2026-10-28T01:54:22.362Z",
   "masterToko": [
     {
       "id": 216,
@@ -3145,6 +3145,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-22T16:00:00.000Z"
+    },
+    {
+      "id": 256,
+      "serialNumber": "2601514288",
+      "modelUnit": "RI-522E",
+      "merk": "Rinnai",
+      "nama": "KOMPOR",
+      "kerusakanAwal": "PENYOK",
+      "tokoId": 246,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-28T00:00:00.000Z"
     },
     {
       "id": 122,
@@ -8358,6 +8371,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1049,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2601514288",
+      "deskripsi": "Unit baru teregistrasi: KOMPOR (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T01:54:22.346Z"
+    },
     {
       "id": 1048,
       "aksi": "FINISH_SERVICE",
