@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T02:06:07.477Z",
+  "generatedAt": "2026-10-28T02:06:45.564Z",
   "masterToko": [
     {
       "id": 216,
@@ -4489,27 +4489,27 @@
       "id": 95,
       "noTiket": "SVC-2607-0008",
       "unitAssetId": 256,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2607-0008",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-03T02:06:00.000Z",
       "deskripsiKerusakan": "PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2607-0008.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-03T02:06:00.000Z",
       "tglTiket": "2026-07-17T00:00:00.000Z",
       "createdAt": "2026-10-28T01:55:54.823Z",
-      "updatedAt": "2026-10-28T02:06:07.457Z",
+      "updatedAt": "2026-10-28T02:06:45.547Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4527,8 +4527,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "RI-602-150-5X02",
+          "namaPartCache": "REAR PANEL",
           "editedAt": null,
           "editedBy": null
         }
@@ -8420,6 +8420,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1054,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0008",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2607-0008.jpg) — tglFinish diatur manual: 3/10/2026, 10.06.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T02:06:45.552Z"
+    },
     {
       "id": 1053,
       "aksi": "MULAI_PROSES_SERVICE",
