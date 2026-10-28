@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:37:46.186Z",
+  "generatedAt": "2026-10-28T00:38:14.160Z",
   "masterToko": [
     {
       "id": 216,
@@ -4449,27 +4449,27 @@
       "id": 93,
       "noTiket": "SVC-2608-0015",
       "unitAssetId": 135,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
       "penanganan": "DI_TOKO",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-22T00:38:00.000Z",
       "deskripsiKerusakan": "MOTOR GEAR LEPAS",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0015.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-22T00:38:00.000Z",
       "tglTiket": "2026-08-22T00:00:00.000Z",
       "createdAt": "2026-10-28T00:37:46.164Z",
-      "updatedAt": "2026-10-28T00:37:46.164Z",
+      "updatedAt": "2026-10-28T00:38:14.144Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8282,6 +8282,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1025,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0015",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0015.jpg) — tglFinish diatur manual: 22/8/2026, 08.38.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:38:14.148Z"
+    },
     {
       "id": 1024,
       "aksi": "CREATE_SERVICE_REQUEST",
