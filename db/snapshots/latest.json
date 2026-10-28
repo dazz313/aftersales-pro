@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T01:02:19.772Z",
+  "generatedAt": "2026-10-28T01:02:45.302Z",
   "masterToko": [
     {
       "id": 216,
@@ -5360,27 +5360,27 @@
       "id": 65,
       "noTiket": "SVC-2608-0010",
       "unitAssetId": 142,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0010",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-28T01:02:00.000Z",
       "deskripsiKerusakan": "TIDAK PANAS",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0010.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-28T01:02:00.000Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T08:42:04.882Z",
-      "updatedAt": "2026-10-28T01:02:19.758Z",
+      "updatedAt": "2026-10-28T01:02:45.287Z",
       "editedAt": "2026-10-28T01:02:19.757Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
@@ -5398,7 +5398,7 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": "MCMX-E488-XX-KGX",
+          "kodePartCache": "MCMX-EA488-XX-KGX",
           "namaPartCache": "TOTAL HEATING PLATE ASSY",
           "editedAt": "2026-10-28T01:02:19.753Z",
           "editedBy": "dazz"
@@ -8358,6 +8358,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1041,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0010",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0010.jpg) — tglFinish diatur manual: 28/8/2026, 09.02.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T01:02:45.291Z"
+    },
+    {
+      "id": 1040,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0010",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0010 diterbitkan untuk penarikan unit 44010003998 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T01:02:29.303Z"
+    },
     {
       "id": 1039,
       "aksi": "KOREKSI_PART_SERVICE",
