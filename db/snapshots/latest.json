@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:43:34.935Z",
+  "generatedAt": "2026-10-28T00:45:03.354Z",
   "masterToko": [
     {
       "id": 216,
@@ -2197,7 +2197,7 @@
     {
       "id": 293,
       "kodePart": "SFMX-EA434-XX-KGX",
-      "namaPart": "MOTOR ASSY 1606\\1607",
+      "namaPart": "MOTOR KAS 1607 GB",
       "brandKompatibel": "Miyako",
       "supplier": "",
       "stokJual": 0,
@@ -7710,9 +7710,9 @@
       "tglFinish": null,
       "tglTiket": "2026-10-14T05:11:24.317Z",
       "createdAt": "2026-10-14T05:11:24.334Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-28T00:45:03.338Z",
+      "editedAt": "2026-10-28T00:45:03.337Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
       "tglRequestPart": "2026-10-20T06:16:00.998Z",
@@ -7721,7 +7721,7 @@
         {
           "id": 21,
           "serviceRequestId": 13,
-          "sparepartId": 290,
+          "sparepartId": 293,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
@@ -7730,8 +7730,8 @@
           "pasangOleh": null,
           "kodePartCache": "SFMX-EA434-XXKGX",
           "namaPartCache": "MOTOR KAS 1607 GB",
-          "editedAt": null,
-          "editedBy": null
+          "editedAt": "2026-10-28T00:45:03.333Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -8344,6 +8344,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1031,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0011",
+      "deskripsi": "Koreksi part [edited]: kode SFMX-EA434-XXKGX → SFMX-EA434-XX-KGX",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:45:03.342Z"
+    },
     {
       "id": 1030,
       "aksi": "FINISH_SERVICE",
