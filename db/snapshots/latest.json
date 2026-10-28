@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:41:39.851Z",
+  "generatedAt": "2026-10-28T00:42:47.820Z",
   "masterToko": [
     {
       "id": 216,
@@ -3583,7 +3583,7 @@
       "kerusakanAwal": "NASI CEPAT BASI",
       "tokoId": 232,
       "customerId": null,
-      "statusGaransi": "GARANSI",
+      "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-24T00:00:00.000Z"
     },
@@ -4458,6 +4458,55 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 94,
+      "noTiket": "SVC-2607-0007",
+      "unitAssetId": 254,
+      "status": "REQUEST",
+      "noSttb": "STTB-2607-0007",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "THERMOSTAT RUSAK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-07-24T00:00:00.000Z",
+      "createdAt": "2026-10-28T00:42:47.797Z",
+      "updatedAt": "2026-10-28T00:42:47.797Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 101,
+          "serviceRequestId": 94,
+          "sparepartId": 291,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 93,
       "noTiket": "SVC-2608-0015",
@@ -8295,6 +8344,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1027,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0007",
+      "deskripsi": "Tiket manual dibuat untuk unit 4403003618 (MCM-559SBC, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2607-0007 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-28T00:42:47.804Z"
+    },
     {
       "id": 1026,
       "aksi": "CREATE_UNIT_ASSET",
