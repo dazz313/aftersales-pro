@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T00:27:46.090Z",
+  "generatedAt": "2026-10-28T00:28:38.257Z",
   "masterToko": [
     {
       "id": 216,
@@ -4435,27 +4435,27 @@
       "id": 91,
       "noTiket": "SVC-2606-0001",
       "unitAssetId": 162,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2606-0001",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-22T00:28:00.000Z",
       "deskripsiKerusakan": "PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2606-0001.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-22T00:28:00.000Z",
       "tglTiket": "2026-06-24T00:00:00.000Z",
       "createdAt": "2026-10-28T00:27:24.598Z",
-      "updatedAt": "2026-10-28T00:27:46.047Z",
+      "updatedAt": "2026-10-28T00:28:38.238Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4473,8 +4473,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "RI52-201-2-4-3X01-PR",
+          "namaPartCache": "Top Plate 522 C",
           "editedAt": null,
           "editedBy": null
         }
@@ -8186,6 +8186,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1018,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0001",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2606-0001.jpg) — tglFinish diatur manual: 22/8/2026, 08.28.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:28:38.246Z"
+    },
+    {
+      "id": 1017,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2606-0001",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2606-0001 diterbitkan untuk penarikan unit 2602344144 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-28T00:27:55.297Z"
+    },
     {
       "id": 1016,
       "aksi": "TERIMA_PART_PRODUSEN",
