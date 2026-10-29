@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:54:58.432Z",
+  "generatedAt": "2026-10-29T21:56:43.474Z",
   "masterToko": [
     {
       "id": 216,
@@ -766,6 +766,22 @@
       "barcodeToko": "BC-TOK-048",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
+      "latitude": null,
+      "longitude": null
+    },
+    {
+      "id": 267,
+      "kodeToko": "TOK-10",
+      "namaToko": "Toko Sumber Electronic",
+      "alamat": "Jl. Besse kajuara Watampone",
+      "kontak": "",
+      "frekuensiVisit": 10,
+      "aktif": true,
+      "modeSiklus": "REGULER",
+      "tglVisitTerakhir": null,
+      "barcodeToko": "BC-TOK-10",
+      "jarakKm": 2,
+      "createdAt": "2026-10-29T21:56:43.457Z",
       "latitude": null,
       "longitude": null
     }
@@ -8542,6 +8558,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1080,
+      "aksi": "CREATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-10",
+      "deskripsi": "Toko baru ditambahkan: Toko Sumber Electronic — barcode kunjungan BC-TOK-10",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T21:56:43.462Z"
+    },
     {
       "id": 1079,
       "aksi": "CREATE_KUNJUNGAN",
