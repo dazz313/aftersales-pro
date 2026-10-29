@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:16:44.634Z",
+  "generatedAt": "2026-10-29T21:51:09.828Z",
   "masterToko": [
     {
       "id": 216,
@@ -410,7 +410,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-12T11:05:00.000Z",
+      "tglVisitTerakhir": "2026-10-28T21:51:00.000Z",
       "barcodeToko": "BC-TOK-026",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4162,6 +4162,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 73,
+      "tokoId": 241,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-28T21:51:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 72,
       "tokoId": 242,
@@ -8482,6 +8492,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1073,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "73",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Varia Makmur (TOK-026) · tgl 29/10/2026, 05.51.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-29T21:51:09.813Z"
+    },
+    {
+      "id": 1072,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP) dari IP 127.0.0.1",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-29T21:50:08.274Z"
+    },
     {
       "id": 1071,
       "aksi": "BACKUP_DATA",
