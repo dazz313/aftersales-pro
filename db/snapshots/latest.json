@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:53:17.028Z",
+  "generatedAt": "2026-10-29T21:53:49.700Z",
   "masterToko": [
     {
       "id": 216,
@@ -729,7 +729,7 @@
       "kontak": null,
       "frekuensiVisit": 14,
       "aktif": true,
-      "modeSiklus": "REGULER",
+      "modeSiklus": "BY_REQUEST",
       "tglVisitTerakhir": null,
       "barcodeToko": "BC-TOK-046",
       "jarakKm": null,
@@ -8532,6 +8532,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1078,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-046",
+      "deskripsi": "Data toko diperbarui: modeSiklus",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-29T21:53:49.686Z"
+    },
     {
       "id": 1077,
       "aksi": "CREATE_KUNJUNGAN",
