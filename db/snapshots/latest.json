@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T05:00:07.303Z",
+  "generatedAt": "2026-10-29T21:16:44.634Z",
   "masterToko": [
     {
       "id": 216,
@@ -8383,7 +8383,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-10-29"
+      "nilai": "2026-10-30"
     },
     {
       "id": 199,
@@ -8423,7 +8423,7 @@
     {
       "id": 266,
       "kunci": "gs_jadwal_terakhir",
-      "nilai": "2026-10-29 05:38"
+      "nilai": "2026-10-30 05:16"
     },
     {
       "id": 245,
@@ -8433,7 +8433,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-10-29 01:54"
+      "nilai": "2026-10-30 00:29"
     },
     {
       "id": 54,
@@ -8482,6 +8482,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1071,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-29T21-16-44.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-29T21:16:44.501Z"
+    },
     {
       "id": 1070,
       "aksi": "CREATE_NOTA",
@@ -15945,6 +15954,16 @@
     }
   ],
   "backupLog": [
+    {
+      "id": 37,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 418,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-29T21-16-44.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-29T21:16:44.439Z"
+    },
     {
       "id": 36,
       "status": "LOCAL",
