@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:53:49.700Z",
+  "generatedAt": "2026-10-29T21:54:58.432Z",
   "masterToko": [
     {
       "id": 216,
@@ -26,7 +26,7 @@
       "frekuensiVisit": 7,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-15T10:39:00.000Z",
+      "tglVisitTerakhir": "2026-10-28T21:54:00.000Z",
       "barcodeToko": "BC-TOK-002",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4162,6 +4162,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 78,
+      "tokoId": 217,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-28T21:54:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 76,
       "tokoId": 237,
@@ -8532,6 +8542,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1079,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "78",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Laris Jaya (TOK-002) · tgl 29/10/2026, 05.54.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-29T21:54:58.420Z"
+    },
     {
       "id": 1078,
       "aksi": "UPDATE_MASTER_TOKO",
