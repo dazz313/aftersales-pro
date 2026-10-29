@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T03:46:53.703Z",
+  "generatedAt": "2026-10-29T05:00:07.303Z",
   "masterToko": [
     {
       "id": 216,
@@ -8482,6 +8482,69 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1070,
+      "aksi": "CREATE_NOTA",
+      "entitas": "nota",
+      "entitasId": "10",
+      "deskripsi": "Nota BASS 260580 dibuat dari klaim tiket SVC-2610-0045 |T:SVC-2610-0045| — Toko Volta",
+      "aktor": "DAZZ",
+      "createdAt": "2026-10-29T05:00:07.288Z"
+    },
+    {
+      "id": 1069,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "syafril01@gmail.com",
+      "deskripsi": "Login berhasil: SYAFRIL AFFANDI (TEKNISI) dari IP 192.168.18.49",
+      "aktor": "syafril01@gmail.com",
+      "createdAt": "2026-10-29T04:16:40.008Z"
+    },
+    {
+      "id": 1068,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "syafril@gmail.com",
+      "deskripsi": "Percobaan login gagal untuk \"syafril@gmail.com\" (IP 192.168.18.49)",
+      "aktor": "syafril@gmail.com",
+      "createdAt": "2026-10-29T04:16:27.616Z"
+    },
+    {
+      "id": 1067,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "syafriI",
+      "deskripsi": "Percobaan login gagal untuk \"syafriI\" (IP 192.168.18.49)",
+      "aktor": "syafriI",
+      "createdAt": "2026-10-29T04:16:10.615Z"
+    },
+    {
+      "id": 1066,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "syafriI",
+      "deskripsi": "Percobaan login gagal untuk \"syafriI\" (IP 192.168.18.49)",
+      "aktor": "syafriI",
+      "createdAt": "2026-10-29T04:16:09.400Z"
+    },
+    {
+      "id": 1065,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "syafriI",
+      "deskripsi": "Percobaan login gagal untuk \"syafriI\" (IP 192.168.18.49)",
+      "aktor": "syafriI",
+      "createdAt": "2026-10-29T04:15:45.625Z"
+    },
+    {
+      "id": 1064,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "syafril@gmail.com",
+      "deskripsi": "Percobaan login gagal untuk \"syafril@gmail.com\" (IP 192.168.18.49)",
+      "aktor": "syafril@gmail.com",
+      "createdAt": "2026-10-29T04:15:36.153Z"
+    },
     {
       "id": 1063,
       "aksi": "UPDATE_UNIT_ASSET",
