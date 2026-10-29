@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T22:06:22.691Z",
+  "generatedAt": "2026-10-29T22:45:22.699Z",
   "masterToko": [
     {
       "id": 257,
@@ -4601,6 +4601,39 @@
   ],
   "serviceRequest": [
     {
+      "id": 96,
+      "noTiket": "SVC-2610-0047",
+      "unitAssetId": 232,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "DI_TOKO",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "stel impeller",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-22T00:00:00.000Z",
+      "createdAt": "2026-10-29T22:45:22.669Z",
+      "updatedAt": "2026-10-29T22:45:22.669Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
+    {
       "id": 95,
       "noTiket": "SVC-2607-0008",
       "unitAssetId": 256,
@@ -8558,6 +8591,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1083,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0047",
+      "deskripsi": "Tiket manual dibuat untuk unit ZL053522 (PS-135 E, stok toko → GARANSI otomatis) — part READY → otomatis PROSES — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T22:45:22.681Z"
+    },
     {
       "id": 1082,
       "aksi": "UPDATE_MASTER_TOKO",
