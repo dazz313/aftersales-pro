@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T22:45:22.699Z",
+  "generatedAt": "2026-10-29T22:45:53.113Z",
   "masterToko": [
     {
       "id": 257,
@@ -4042,7 +4042,7 @@
       "kerusakanAwal": "macet tidak berputar",
       "tokoId": 225,
       "customerId": null,
-      "statusGaransi": "GARANSI",
+      "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-22T00:00:00.000Z"
     },
@@ -4600,6 +4600,39 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 97,
+      "noTiket": "SVC-2610-0048",
+      "unitAssetId": 244,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "DI_TOKO",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "stel impeller",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-22T00:00:00.000Z",
+      "createdAt": "2026-10-29T22:45:53.087Z",
+      "updatedAt": "2026-10-29T22:45:53.087Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
     {
       "id": 96,
       "noTiket": "SVC-2610-0047",
@@ -8591,6 +8624,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1084,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0048",
+      "deskripsi": "Tiket manual dibuat untuk unit ZN294188 (PS-135 E, stok toko → GARANSI otomatis) — part READY → otomatis PROSES — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T22:45:53.093Z"
+    },
     {
       "id": 1083,
       "aksi": "CREATE_SERVICE_REQUEST",
