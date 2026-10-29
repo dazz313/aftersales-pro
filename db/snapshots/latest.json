@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:51:09.828Z",
+  "generatedAt": "2026-10-29T21:51:58.081Z",
   "masterToko": [
     {
       "id": 216,
@@ -154,7 +154,7 @@
       "frekuensiVisit": 10,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-09-29T04:49:00.000Z",
+      "tglVisitTerakhir": "2026-10-23T21:51:00.000Z",
       "barcodeToko": "BC-TOK-010",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4177,6 +4177,16 @@
       "tokoId": 242,
       "teknisiId": 27,
       "tglKunjungan": "2026-10-27T07:47:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 74,
+      "tokoId": 225,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-23T21:51:00.000Z",
       "metodeCheckin": "MANUAL",
       "barcodeTerscan": null,
       "fotoOnsite": null,
@@ -8492,6 +8502,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1074,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "74",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Varia Mulia (TOK-010) · tgl 24/10/2026, 05.51.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-29T21:51:58.067Z"
+    },
     {
       "id": 1073,
       "aksi": "CREATE_KUNJUNGAN",
