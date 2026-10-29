@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T03:45:11.990Z",
+  "generatedAt": "2026-10-29T03:46:53.703Z",
   "masterToko": [
     {
       "id": 216,
@@ -3695,7 +3695,7 @@
     {
       "id": 259,
       "serialNumber": "44060012991",
-      "modelUnit": "",
+      "modelUnit": "KG-502 C",
       "merk": "Miyako",
       "nama": "KOMPOR",
       "kerusakanAwal": "BODY ATAS DAN SAMPING PENYOK",
@@ -3703,7 +3703,7 @@
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
-      "createdAt": "2026-10-29T00:00:00.000Z"
+      "createdAt": "2026-09-25T00:00:00.000Z"
     },
     {
       "id": 199,
@@ -8482,6 +8482,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1063,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44060012991",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian, createdAt (44060012991)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T03:46:53.691Z"
+    },
     {
       "id": 1062,
       "aksi": "CREATE_UNIT_ASSET",
