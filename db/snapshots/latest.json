@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T02:14:41.236Z",
+  "generatedAt": "2026-10-29T03:36:05.303Z",
   "masterToko": [
     {
       "id": 216,
@@ -3340,6 +3340,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
+      "id": 257,
+      "serialNumber": "2604444478",
+      "modelUnit": "RI-602 BGX",
+      "merk": "Rinnai",
+      "nama": "RICE COOKER",
+      "kerusakanAwal": "BODY PENYOK",
+      "tokoId": 237,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-25T00:00:00.000Z"
     },
     {
       "id": 128,
@@ -8443,6 +8456,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1060,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2604444478",
+      "deskripsi": "Unit baru teregistrasi: RICE COOKER (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T03:36:05.284Z"
+    },
     {
       "id": 1059,
       "aksi": "FINISH_SERVICE",
