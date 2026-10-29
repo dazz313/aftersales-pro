@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T03:43:16.796Z",
+  "generatedAt": "2026-10-29T03:45:11.990Z",
   "masterToko": [
     {
       "id": 216,
@@ -3691,6 +3691,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
+      "id": 259,
+      "serialNumber": "44060012991",
+      "modelUnit": "",
+      "merk": "Miyako",
+      "nama": "KOMPOR",
+      "kerusakanAwal": "BODY ATAS DAN SAMPING PENYOK",
+      "tokoId": 237,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-29T00:00:00.000Z"
     },
     {
       "id": 199,
@@ -8469,6 +8482,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1062,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44060012991",
+      "deskripsi": "Unit baru teregistrasi: KOMPOR (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T03:45:11.971Z"
+    },
     {
       "id": 1061,
       "aksi": "CREATE_UNIT_ASSET",
