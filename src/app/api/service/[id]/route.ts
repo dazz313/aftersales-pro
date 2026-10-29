@@ -9,6 +9,7 @@ import { catatBankKode } from '@/lib/bank-kode'
 import { konfigurasiEmail, kirimSmtp, susunEmailOrder, susunPesanWaOrder } from '@/lib/order-email'
 import { sendGatewayMessage } from '@/lib/gateway'
 import { APP_ROOT } from '@/lib/paths'
+import { pesanAlurTglFinish, hariKe } from '@/lib/alur-tanggal'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -45,50 +46,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
  */
 function bolehKoreksiSelesai(flag: unknown, session: SessionPayload | null) {
   return Boolean(flag) && !!session && ['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)
-}
-
-/** Indeks hari kalender (waktu lokal diabaikan jam) — pembanding "minimal sama hari". */
-function hariKe(d: Date | string | number): number {
-  const x = new Date(d)
-  return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
-}
-
-/**
- * Validasi alur tanggal FINISH — pastikan urutan tanggal masuk akal:
- * part datang → part dipasang → unit kembali ke toko → FINISH.
- * FINISH makainya TIDAK BOLEH lebih awal daripada kedatangan part maupun
- * pemasangan part — minimal SAMA HARI dengan kedatangan/pemasangan
- * (jam diabaikan, soal jam urutan wajar tetap diterima).
- * Return string pesan error bila melanggar, null bila valid.
- */
-function pesanAlurTglFinish(
-  tglFinish: Date,
-  tiket: {
-    tglPartDatang?: Date | string | null
-    tglKembaliKeToko?: Date | string | null
-    parts?: { tglPasang?: Date | string | null; sparepart?: { kodePart?: string } | null; kodePartCache?: string | null }[]
-  }
-): string | null {
-  const hariFinish = hariKe(tglFinish)
-  // 1) Part datang dari produsen (Surat Jalan Masuk / tombol Part Datang)
-  if (tiket.tglPartDatang && hariFinish < hariKe(tiket.tglPartDatang as string)) {
-    const tgl = new Date(tiket.tglPartDatang as string).toLocaleDateString('id-ID')
-    return `Tanggal selesai tidak boleh lebih awal dari tanggal part datang (${tgl}) — minimal sama hari dengan kedatangan part.`
-  }
-  // 2) Pemasangan part (tglPasang per baris part) — part dipasang setelah datang
-  for (const p of tiket.parts ?? []) {
-    if (p.tglPasang && hariFinish < hariKe(p.tglPasang as string)) {
-      const kode = (p.sparepart?.kodePart ?? p.kodePartCache ?? 'part').trim() || 'part'
-      const tgl = new Date(p.tglPasang as string).toLocaleDateString('id-ID')
-      return `Tanggal selesai tidak boleh lebih awal dari tanggal pemasangan part ${kode} (${tgl}) — minimal sama hari part terpasang.`
-    }
-  }
-  // 3) Unit kembali ke toko dicatat (KEMBALI_KE_TOKO / FINISH) — nota distempel di toko
-  if (tiket.tglKembaliKeToko && hariFinish < hariKe(tiket.tglKembaliKeToko as string)) {
-    const tgl = new Date(tiket.tglKembaliKeToko as string).toLocaleDateString('id-ID')
-    return `Tanggal selesai tidak boleh lebih awal dari tanggal unit dikembalikan ke toko (${tgl}).`
-  }
-  return null
 }
 
 /** Normalisasi kode part untuk pencocokan item order-email — sama dgn matcher surat jalan masuk. */

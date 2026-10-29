@@ -22,7 +22,7 @@ import QRCode from 'qrcode'
  *
  * POST /api/sttb/kembali
  * Body: { noTiket: string[] }
- * → PDF A4 portrait (attachment). Menolak bila beda toko / kulang tanggal kembali.
+ * → PDF A4 portrait (attachment). Menolak bila beda toko / kurang tanggal kembali.
  */
 export async function POST(request: Request) {
   try {

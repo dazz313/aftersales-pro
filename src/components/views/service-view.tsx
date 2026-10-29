@@ -26,7 +26,7 @@ import { useBertahap } from '@/hooks/use-bertahap'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus, ChevronDown,
-  MessageCircle,
+  MessageCircle, PackageOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -519,6 +519,59 @@ export default function ServiceView() {
     }
   }
 
+  // ===== Surat Pengembalian Barang ke Toko =====
+  // Bukti unit selesai service kembali ke tokonya (kebalikan STTB pick up).
+  // 1 tiket tercentang → per toko (dokumen satu unit); beberapa tiket 1 toko
+  // yang sama → kolektif. Tanggal kembali (tglKembaliKeToko) tercetak per baris.
+  const [kembaliBusy, setKembaliBusy] = useState(false)
+  async function unduhSuratKembali(noTiket?: string[]) {
+    if (kembaliBusy) return
+    const list = (noTiket ?? sjTickets.map((t) => t.noTiket)).filter(Boolean)
+    if (list.length === 0) {
+      toast({ title: 'Pilih tiket dulu', description: 'Centang tiket FINISH/proses kembali yang unitnya sudah di toko.', variant: 'destructive' })
+      return
+    }
+    const dipilih = (tickets ?? []).filter((t) => list.includes(t.noTiket))
+    if (dipilih.length > 0 && dipilih.every((t) => !t.tglKembaliKeToko)) {
+      toast({ title: 'Tanggal kembali belum tercatat', description: 'Tekan "Kembalikan ke Toko" (atau FINISH) dulu — tanggal itulah yang tercetak di surat.', variant: 'destructive' })
+      return
+    }
+    const tokoSet = new Set(dipilih.map((t) => t.unitAsset.toko?.kodeToko ?? '-'))
+    if (tokoSet.size !== 1) {
+      toast({ title: 'Pilih 1 toko', description: 'Surat pengembalian merangkum 1 toko — centang tiket dari toko yang sama.', variant: 'destructive' })
+      return
+    }
+    setKembaliBusy(true)
+    try {
+      const res = await fetch('/api/sttb/kembali', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ noTiket: list }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal membuat surat pengembalian (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `Surat-Pengembalian-Barang-${new Date().toISOString().slice(0, 10)}.pdf`
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast({ title: 'Surat pengembalian terunduh', description: `${filename} · ${list.length} unit — tanggal kembali tercetak per tiket.` })
+    } catch (e) {
+      toast({ title: 'Gagal mencetak surat pengembalian', description: e instanceof Error ? e.message : 'Coba lagi', variant: 'destructive' })
+    } finally {
+      setKembaliBusy(false)
+    }
+  }
+
   const counts = useMemo(() => {
     const c = { SEMUA: 0, REQUEST: 0, REQUEST_EMAIL: 0, PROSES: 0, FINISH: 0 }
     for (const t of tickets ?? []) {
@@ -989,6 +1042,17 @@ export default function ServiceView() {
             >
               {sttbBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="mr-1 h-3.5 w-3.5" />}
               STTB Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-emerald-700 text-emerald-700 hover:bg-emerald-50"
+              onClick={() => void unduhSuratKembali()}
+              disabled={selectedIds.size === 0 || kembaliBusy}
+              title="Cetak Surat Pengembalian Barang ke Toko — 1 tiket tercentang = per toko, beberapa tiket 1 toko = kolektif. Tanggal kembalian tercetak per tiket."
+            >
+              {kembaliBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <PackageOpen className="mr-1 h-3.5 w-3.5" />}
+              Kembali Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
             </Button>
           </div>
           {hasDrilldown && (
@@ -1596,6 +1660,8 @@ export default function ServiceView() {
                       <div className="mt-2 space-y-1.5 rounded-md border border-amber-200 bg-amber-50 p-2">
                         <p className="text-[11px] font-semibold text-amber-800">
                           Koreksi tanggal selesai — tertanda (edited) di sistem &amp; Audit Log untuk pemeriksaan kelak
+                          <br />
+                          Tidak boleh lebih awal dari tanggal part datang / part terpasang (minimal sama hari).
                         </p>
                         <Input
                           type="datetime-local"
@@ -1625,6 +1691,24 @@ export default function ServiceView() {
                       </div>
                     )}
                   </div>
+                  {detail.tglKembaliKeToko && (
+                    <div className="rounded-md border border-emerald-200 bg-emerald-50/50 p-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-slate-500">Barang kembali ke toko</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-5 shrink-0 border-emerald-300 px-1.5 text-[10px] text-emerald-700 hover:bg-emerald-50"
+                          title="Cetak Surat Pengembalian Barang (per toko) — tanggal kembali tercetak di dokumen"
+                          onClick={() => void unduhSuratKembali([detail.noTiket])}
+                        >
+                          <PackageOpen className="mr-1 h-3 w-3" /> Cetak PDF
+                        </Button>
+                      </div>
+                      <p className="font-semibold text-slate-800">{formatTanggal(detail.tglKembaliKeToko)}</p>
+                      <p className="mt-0.5 text-[10px] text-slate-500">Tanggal kembali ikut tercetak di Surat Pengembalian Barang (per toko / kolektif).</p>
+                    </div>
+                  )}
                 </div>
                 {detail.noSttb && (
                   <p className="rounded-md bg-slate-50 p-2 text-[11px] text-slate-600">

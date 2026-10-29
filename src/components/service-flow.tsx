@@ -109,7 +109,9 @@ export function flowStages(t: ServiceTicket): Stage[] {
     {
       key: 'kembali',
       label: finishOk
-        ? 'Selesai — nota stempel + TTD'
+        ? t.tglKembaliKeToko
+          ? `Selesai — nota stempel + TTD · barang kembali ke toko ${new Date(t.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}`
+          : 'Selesai — nota stempel + TTD'
         : kembaliOk
           ? 'Unit kembali di toko — ajukan nota servis'
           : t.lokasiUnit === 'WORKSHOP'
@@ -590,7 +592,9 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
 
       {ticket.status === 'FINISH' && (
         <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">
-          <Flag className="mr-1 inline h-3 w-3" /> Selesai — nota stempel + TTD. Lanjut ke klaim produsen bila ada part garansi.
+          <Flag className="mr-1 inline h-3 w-3" /> Selesai — nota stempel + TTD.
+          {ticket.tglKembaliKeToko && <> Barang kembali ke toko {new Date(ticket.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} — cetak buktinya via tombol <b>Kembali Toko</b> (per toko / kolektif).</>}
+          {' '}Lanjut ke klaim produsen bila ada part garansi.
         </p>
       )}
 
