@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-28T21:38:06.693Z",
+  "generatedAt": "2026-10-29T02:14:41.236Z",
   "masterToko": [
     {
       "id": 216,
@@ -7374,27 +7374,27 @@
       "id": 21,
       "noTiket": "SVC-2610-0019",
       "unitAssetId": 175,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0019",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-29T02:14:00.000Z",
       "deskripsiKerusakan": "fan cover pecah",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0019.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-29T02:14:00.000Z",
       "tglTiket": "2026-10-15T04:51:23.765Z",
       "createdAt": "2026-10-15T04:51:23.800Z",
-      "updatedAt": "2026-10-28T12:13:56.196Z",
+      "updatedAt": "2026-10-29T02:14:41.206Z",
       "editedAt": "2026-10-17T23:18:16.325Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
@@ -8443,6 +8443,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1059,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0019",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0019.jpg) — tglFinish diatur manual: 29/10/2026, 10.14.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-29T02:14:41.221Z"
+    },
     {
       "id": 1058,
       "aksi": "BACKUP_DATA",
