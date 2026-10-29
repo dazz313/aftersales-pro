@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T03:36:05.303Z",
+  "generatedAt": "2026-10-29T03:43:16.796Z",
   "masterToko": [
     {
       "id": 216,
@@ -3340,6 +3340,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
+      "id": 258,
+      "serialNumber": "2604430243",
+      "modelUnit": "RI-602 BGX",
+      "merk": "Rinnai",
+      "nama": "KOMPOR",
+      "kerusakanAwal": "BODY BELAKANG PENYOK",
+      "tokoId": 237,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-25T00:00:00.000Z"
     },
     {
       "id": 257,
@@ -8456,6 +8469,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1061,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2604430243",
+      "deskripsi": "Unit baru teregistrasi: KOMPOR (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-29T03:43:16.781Z"
+    },
     {
       "id": 1060,
       "aksi": "CREATE_UNIT_ASSET",
