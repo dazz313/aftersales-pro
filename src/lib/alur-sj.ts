@@ -10,7 +10,10 @@
  *                     part pengganti datang dari produsen
  * - PART_DATANG     : part pengganti sudah datang (tglPartDatang — diisi scan
  *                     Surat Jalan Masuk ATAU tombol "Part Datang" manual)
- * - TAK_PERLU_SJ    : tanpa part inden (semua READY / tanpa part) — strip
+ * - TAK_PERLU_SJ    : tiket FINISH (alur part sudah tamat — tidak lagi ada
+ *                     "bekas terkirim"/"part datang" yang relevan; part
+ *                     terpasangnya tampil di kolom Tgl Finish) ATAU tanpa
+ *                     part inden (semua READY / tanpa part) — strip
  *                     tidak ditampilkan agar daftar tetap bersih
  *
  * Dipakai bersama oleh service-view (badge + filter) dan surat-jalan-dialog
@@ -31,6 +34,11 @@ export const ALUR_SJ_STYLES: Record<Exclude<AlurSj, 'TAK_PERLU_SJ'>, { label: st
 export const tglPendek = (s: string) => new Date(s).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })
 
 export function alurSjState(t: ServiceTicket): AlurSj {
+  // Tiket FINISH keluar dari alur surat jalan part datang sampai-benar:
+  // pengerjaan sudah tamat — tidak ada lagi "menunggu datang"/"bekas
+  // terkirim" yang relevan. Chip-nya tidak dirender, filter & hitungan alur
+  // SJ tidak menghitungnya, dialog surat jalan tidak menyertakannya.
+  if (t.status === 'FINISH') return 'TAK_PERLU_SJ'
   if (t.tglPartDatang) return 'PART_DATANG'
   if (t.noSuratJalan) return 'BEKAS_TERKIRIM'
   if (t.tglRequestPart) return 'SJR_TANPA_KIRIM'

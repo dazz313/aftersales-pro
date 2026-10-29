@@ -53,8 +53,14 @@ export default function SuratJalanDialog({
   // saran otomatis dari merk unit bila semua tiket terpilih merknya sama.
   const [kepada, setKepada] = useState('')
 
+  // Tiket FINISH tidak lagi mengikuti alur surat jalan — pengerjaan sudah
+  // tamat (part terpasang, unit menunggu/mas sudah dikembalikan), jadi
+  // dikeluarkan dari draft SJR dan hanya diberi keterangan di dialog.
+  const tiketAktif = tickets.filter((t) => t.status !== 'FINISH')
+  const tiketFinishDibuang = tickets.length - tiketAktif.length
+
   // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
-  const mentah = tickets.flatMap((t) =>
+  const mentah = tiketAktif.flatMap((t) =>
     t.parts.map((p) => ({
       noTiket: t.noTiket,
       kodePart: p.sparepart?.kodePart ?? '',
@@ -69,8 +75,8 @@ export default function SuratJalanDialog({
   const tanpaKode = mentah.length - items.length
   const totalQty = items.reduce((a, i) => a + i.qty, 0)
   const totalNilai =
-    tickets.reduce((a, t) => a + (t.nilaiKlaim ?? 0), 0)
-  const merkSet = [...new Set(tickets.map((t) => (t.unitAsset.merk || '').trim()).filter(Boolean))]
+    tiketAktif.reduce((a, t) => a + (t.nilaiKlaim ?? 0), 0)
+  const merkSet = [...new Set(tiketAktif.map((t) => (t.unitAsset.merk || '').trim()).filter(Boolean))]
   const merkUmum = merkSet.length === 1 ? merkSet[0] : ''
 
   // ===== GUARD — deteksi tiket yang SEBENARNYA sudah pernah masuk alur
@@ -80,7 +86,7 @@ export default function SuratJalanDialog({
   // Peringatan, BUKAN blokir: SJR ke-2 boleh jadi disengaja (part baru
   // ditambahkan ke tiket sama); server pun tidak menimpa tanggal request lama.
   interface GuardInfo { t: ServiceTicket; alasan: string; tingkat: 'merah' | 'biru' | 'kuning' }
-  const guard = tickets
+  const guard = tiketAktif
     .map((t): GuardInfo | null => {
       if (t.tglPartDatang) return { t, tingkat: 'merah', alasan: `Part sudah datang ${tglPendek(t.tglPartDatang)} — surat jalan umumnya tidak perlu lagi` }
       if (t.noSuratJalan) return { t, tingkat: 'biru', alasan: `Alat bekas sudah terkirim via SJ ${t.noSuratJalan} — jangan buat dokumen dobel` }
@@ -93,14 +99,14 @@ export default function SuratJalanDialog({
   const biru = guard.filter((g) => g.tingkat === 'biru').length
 
   async function download(format: 'pdf' | 'xlsx') {
-    if (tickets.length === 0 || busy) return
+    if (tiketAktif.length === 0 || busy) return
     setBusy(format)
     try {
       const res = await fetch('/api/surat-jalan-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
-          noTiket: tickets.map((t) => t.noTiket),
+          noTiket: tiketAktif.map((t) => t.noTiket),
           format,
           produsen: (kepada.trim() || merkUmum) || undefined,
         }),
@@ -153,7 +159,7 @@ export default function SuratJalanDialog({
         {/* Ringkasan */}
         <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4">
           {[
-            { label: 'Tiket', value: tickets.length },
+            { label: 'Tiket', value: tiketAktif.length },
             { label: 'Item Part', value: items.length },
             { label: 'Total Qty', value: `${totalQty} pcs` },
             { label: 'Nilai Klaim', value: formatRupiah(totalNilai) },
@@ -165,12 +171,19 @@ export default function SuratJalanDialog({
           ))}
         </div>
 
+        {/* Keterangan: tiket FINISH tidak ikut SJR — alurnya sudah tamat */}
+        {tiketFinishDibuang > 0 && (
+          <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+            {tiketFinishDibuang} tiket FINISH tidak ikut dalam surat jalan — pekerjaannya sudah tamat, partnya sudah terpasang (alur "bekas terkirim"/"part datang" tidak berlaku lagi).
+          </p>
+        )}
+
         {/* GUARD — tiket yang sudah pernah masuk alur surat jalan */}
         {guard.length > 0 && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5">
             <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-800">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-              {guard.length} dari {tickets.length} tiket sudah pernah masuk alur surat jalan
+              {guard.length} dari {tiketAktif.length} tiket sudah pernah masuk alur surat jalan
               {merah > 0 && <span className="text-rose-700">· {merah} partnya sudah datang</span>}
               {biru > 0 && <span className="text-sky-700">· {biru} bekasnya sudah terkirim</span>}
               — pastikan bukan dokumen dobel
@@ -241,7 +254,7 @@ export default function SuratJalanDialog({
 
         <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-slate-500">
           <Badge variant="outline" className="shrink-0 border-teal-300 text-[10px] text-teal-700">
-            {tickets.length} tiket terpilih
+            {tiketAktif.length} tiket terpilih
           </Badge>
           <Badge variant="outline" className="gap-1 shrink-0 border-teal-300 text-[10px] text-teal-700">
             <CalendarClock className="h-3 w-3" /> tgl request tercatat saat unduh
@@ -278,7 +291,7 @@ export default function SuratJalanDialog({
           <Button
             className="bg-emerald-700 hover:bg-emerald-800"
             onClick={() => download('xlsx')}
-            disabled={busy !== null || tickets.length === 0}
+            disabled={busy !== null || tiketAktif.length === 0}
           >
             {busy === 'xlsx' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4" />}
             Unduh Excel
@@ -286,7 +299,7 @@ export default function SuratJalanDialog({
           <Button
             className="bg-rose-700 hover:bg-rose-800"
             onClick={() => download('pdf')}
-            disabled={busy !== null || tickets.length === 0}
+            disabled={busy !== null || tiketAktif.length === 0}
           >
             {busy === 'pdf' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown className="mr-2 h-4 w-4" />}
             Unduh PDF

@@ -66,6 +66,50 @@ export function pesanAlurTglKembali(tglKembali: Date, tiket: TiketAlurKembali): 
   }
   return null
 }
+
+/**
+ * ===== Durasi unit di workshop =====
+ * Indikator "lama unit di workshop" (menggantikan posisi kolom Umur lama di
+ * UI — kini berdampingan dengan Tgl Finish & Part terpasang). Tidak ada kolom
+ * khusus "masuk workshop", jadi diambil tanggal PALING AWAL dari sinyal
+ * kerja unit di workshop: request part/SJ (tglRequestPart), part datang,
+ * pemasangan part (tglPasang per baris), dan FINISH. Bila tanggal kembali
+ * sudah terekam, hitungan dipotong sampai tanggal itu (durasi lampau).
+ *
+ * Approximasi diakui: tglPasang bisa tercatat saat unit masih di toko —
+ * hasil tetap "sejak sinyal kerja paling awal", cukup akurat utk sekilas.
+ */
+export type TiketDurasiWorkshop = {
+  tglRequestPart?: Date | string | null
+  tglPartDatang?: Date | string | null
+  tglKembaliKeToko?: Date | string | null
+  tglFinish?: Date | string | null
+  parts?: { tglPasang?: Date | string | null }[]
+}
+
+/** jam unit di workshop + tanggal acuan mulai (ISO). Null bila tak ada sinyal. */
+export function durasiUnitWorkshop(
+  t: TiketDurasiWorkshop,
+  now = Date.now()
+): { jam: number; mulai: string } | null {
+  const kandidat: number[] = []
+  for (const s of [t.tglRequestPart, t.tglPartDatang, t.tglFinish]) {
+    if (!s) continue
+    const ms = new Date(s as string | Date).getTime()
+    if (!Number.isNaN(ms)) kandidat.push(ms)
+  }
+  for (const p of t.parts ?? []) {
+    if (!p.tglPasang) continue
+    const ms = new Date(p.tglPasang as string | Date).getTime()
+    if (!Number.isNaN(ms)) kandidat.push(ms)
+  }
+  if (kandidat.length === 0) return null
+  const mulai = Math.min(...kandidat)
+  const akhir = t.tglKembaliKeToko ? new Date(t.tglKembaliKeToko as string).getTime() : now
+  const jam = Math.max(0, Math.floor((akhir - mulai) / 3600000))
+  return { jam, mulai: new Date(mulai).toISOString() }
+}
+
 export function pesanAlurTglFinish(tglFinish: Date, tiket: TiketTanggal): string | null {
   const hariFinish = hariKe(tglFinish)
   // 1) Part datang dari produsen (Surat Jalan Masuk / tombol Part Datang)

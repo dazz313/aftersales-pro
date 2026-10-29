@@ -31,6 +31,8 @@ import {
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { alurSjState, ALUR_SJ_STYLES, tglPendek, type AlurSj } from '@/lib/alur-sj'
+import { durasiUnitWorkshop } from '@/lib/alur-tanggal'
+import { formatUmur } from '@/lib/umur'
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
   REQUEST: { label: 'REQUEST', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
@@ -66,11 +68,21 @@ const dtLocalNow = () => dtLocalFrom(new Date())
 const tglFinishPendek = (tgl: string | null) =>
   tgl ? new Date(tgl).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : null
 
+/** Tanggal pemasangan part TERAKHIR (paling baru) dari baris part tiket —
+ *  baris "Part terpasang" di kolom Tgl Finish (menggantikan chip alur SJ). */
+function tglPasangTerakhir(t: ServiceTicket): string | null {
+  const ms = t.parts
+    .map((p) => (p.tglPasang ? new Date(p.tglPasang).getTime() : null))
+    .filter((x): x is number => x !== null)
+  return ms.length ? new Date(Math.max(...ms)).toISOString() : null
+}
+
 // ===== Alur Surat Jalan per tiket (DETETEKSI UNIT SUDAH/BELUM KE PRODUSEN) =====
 // Logika, warna & label chip dipusatkan di src/lib/alur-sj.ts supaya dialog
 // Surat Jalan (guard dokumen dobel) memakai definisi yang sama persis.
 
-/** Chip alur surat jalan pada baris tiket — sekilas tahu unit sudah/belum ke produsen. */
+/** Chip alur surat jalan pada baris tiket — sekilas tahu unit sudah/belum ke produsen.
+ *  Tiket FINISH otomatis tidak dirender (keluar alur SJ — lihat alurSjState). */
 function BadgeAlurSj({ t }: { t: ServiceTicket }) {
   const st = alurSjState(t)
   if (st === 'TAK_PERLU_SJ') return null
@@ -1081,7 +1093,7 @@ export default function ServiceView() {
               className="border-emerald-700 text-emerald-700 hover:bg-emerald-50"
               onClick={() => void unduhSuratKembali()}
               disabled={selectedIds.size === 0 || kembaliBusy}
-              title="Cetak Surat Pengembalian Barang ke Toko — 1 tiket tercentang = per toko, beberapa tiket 1 toko = kolektif. Tanggal kembalian tercetak per tiket."
+              title="Cetak Surat Pengembalian Barang (SKTB) — 1 tiket tercentang = per toko, beberapa tiket 1 toko = kolektif. Tiket FINISH boleh dicetak walau unit masih di workshop (baris tgl kembali mencetak —)."
             >
               {kembaliBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <PackageOpen className="mr-1 h-3.5 w-3.5" />}
               Kembali Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
@@ -1188,6 +1200,9 @@ export default function ServiceView() {
                     // Identifikasi Ready vs Inden per part + status item order-email
                     const readyCnt = partsTampil.filter((p) => p.statusPart === 'READY').length
                     const indenCnt = partsTampil.length - readyCnt
+                    // Kolom Tgl Finish: tgl pemasangan part terakhir + lama unit di workshop
+                    const pasangTerakhir = tglPasangTerakhir(t)
+                    const durasiWorkshop = durasiUnitWorkshop(t)
                     return (
                       <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60', selectedIds.has(t.id) && 'bg-teal-50/60')}>
                         <TableCell className="pr-0">
@@ -1293,19 +1308,33 @@ export default function ServiceView() {
                           )}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          {/* Kolom Tgl Finish: kapan dinyatakan selesai dikerjakan + status unitnya (masih di workshop / sudah kembali) */}
+                          {/* Kolom Tgl Finish: kapan selesai dikerjakan + part terpasang +
+                              status unit (lama di workshop / sudah kembali). Untuk tiket
+                              FINISH, chip alur SJ (bekas terkirim/part datang) tidak lagi
+                              ditampilkan — kejadiannya sudah lewat, part pasangnya kini
+                              ditulis di sini. */}
                           {t.status === 'FINISH' ? (
                             <>
                               <p className="text-xs font-medium text-slate-700">{tglFinishPendek(t.tglFinish) ?? <span className="text-slate-400">—</span>}</p>
+                              {pasangTerakhir && (
+                                <p className="text-[10px] text-teal-700" title={formatWaktu(pasangTerakhir)}>Part terpasang {tglPendek(pasangTerakhir)}</p>
+                              )}
                               {t.tglKembaliKeToko ? (
                                 <p className="text-[10px] text-emerald-600" title={formatWaktu(t.tglKembaliKeToko)}>Kembali {tglPendek(t.tglKembaliKeToko)}</p>
                               ) : t.lokasiUnit === 'WORKSHOP' ? (
-                                <p className="text-[10px] text-amber-600">Masih di workshop</p>
+                                <p className="text-[10px] text-amber-600" title={durasiWorkshop ? `Dihitung sejak ${tglPendek(durasiWorkshop.mulai)} — sinyal kerja unit di workshop paling awal` : undefined}>
+                                  Masih di workshop{durasiWorkshop ? ` · ${formatUmur(durasiWorkshop.jam)}` : ''}
+                                </p>
                               ) : null}
                             </>
                           ) : (
                             <>
                               <p className="text-xs text-slate-400">—</p>
+                              {t.lokasiUnit === 'WORKSHOP' && durasiWorkshop && (
+                                <p className="text-[10px] text-amber-600" title={durasiWorkshop ? `Dihitung sejak ${tglPendek(durasiWorkshop.mulai)} — sinyal kerja unit di workshop paling awal` : undefined}>
+                                  Unit di workshop · {formatUmur(durasiWorkshop.jam)}
+                                </p>
+                              )}
                               <p className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
                             </>
                           )}
@@ -1339,6 +1368,9 @@ export default function ServiceView() {
                   const readyCnt = partsTampil.filter((p) => p.statusPart === 'READY').length
                   const indenCnt = partsTampil.length - readyCnt
                   const kerusakan = t.unitAsset.kerusakanAwal?.trim() || t.deskripsiKerusakan?.trim()
+                  // Kolom Tgl Finish: tgl pemasangan part terakhir + lama unit di workshop
+                  const pasangTerakhir = tglPasangTerakhir(t)
+                  const durasiWorkshop = durasiUnitWorkshop(t)
                   return (
                     <div
                       key={t.id}
@@ -1399,13 +1431,25 @@ export default function ServiceView() {
                         <dt className="text-slate-500">Tgl Finish</dt>
                         <dd className="text-slate-600">
                           {t.status === 'FINISH' ? (
-                            <>
-                              {tglFinishPendek(t.tglFinish) ?? '—'}
-                              {t.tglKembaliKeToko && <span className="text-emerald-600"> · Kembali {tglPendek(t.tglKembaliKeToko)}</span>}
-                              {!t.tglKembaliKeToko && t.lokasiUnit === 'WORKSHOP' && <span className="text-amber-600"> · masih di workshop</span>}
-                            </>
+                            <div className="flex flex-col gap-0.5">
+                              <span>{tglFinishPendek(t.tglFinish) ?? '—'}</span>
+                              {pasangTerakhir && (
+                                <span className="text-[11px] text-teal-700" title={formatWaktu(pasangTerakhir)}>Part terpasang {tglPendek(pasangTerakhir)}</span>
+                              )}
+                              {t.tglKembaliKeToko ? (
+                                <span className="text-[11px] text-emerald-600" title={formatWaktu(t.tglKembaliKeToko)}>Kembali {tglPendek(t.tglKembaliKeToko)}</span>
+                              ) : t.lokasiUnit === 'WORKSHOP' ? (
+                                <span className="text-[11px] text-amber-600">Masih di workshop{durasiWorkshop ? ` · ${formatUmur(durasiWorkshop.jam)}` : ''}</span>
+                              ) : null}
+                            </div>
                           ) : (
-                            <span className="text-slate-400">— ({formatWaktu(t.tglTiket)})</span>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-slate-400">—</span>
+                              {t.lokasiUnit === 'WORKSHOP' && durasiWorkshop && (
+                                <span className="text-[11px] text-amber-600">Unit di workshop · {formatUmur(durasiWorkshop.jam)}</span>
+                              )}
+                              <span className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</span>
+                            </div>
                           )}
                         </dd>
                         {kerusakan && (

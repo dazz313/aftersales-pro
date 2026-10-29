@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hariKe, pesanAlurTglFinish, pesanAlurTglKembali } from '@/lib/alur-tanggal'
+import { hariKe, pesanAlurTglFinish, pesanAlurTglKembali, durasiUnitWorkshop } from '@/lib/alur-tanggal'
 
 // Uji "minimal sama hari": tanggal FINISH tidak boleh lebih awal dari
 // kedatangan part / pemasangan part / kembali ke toko — jam diabaikan.
@@ -140,5 +140,39 @@ describe('pesanAlurTglKembali — vs part datang & pemasangan', () => {
       tglFinish: pangkal(2026, 10, 25),
     })
     expect(pesan).toContain('part datang')
+  })
+})
+
+describe('durasiUnitWorkshop — lama unit di workshop', () => {
+  it('mulai dari sinyal kerja unit paling AWAL (request part dulu dari part datang)', () => {
+    const d = durasiUnitWorkshop(
+      {
+        tglRequestPart: pangkal(2026, 10, 20, 10),
+        tglPartDatang: pangkal(2026, 10, 23),
+        tglFinish: pangkal(2026, 10, 25),
+      },
+      pangkal(2026, 10, 29, 10).getTime()
+    )
+    expect(d).not.toBeNull()
+    // 20/10 10:00 → 29/10 10:00 = 9 hari penuh = 216 jam
+    expect(d!.jam).toBe(216)
+  })
+
+  it('dipotong tanggal kembali bila sudah terekam (durasi lampau)', () => {
+    const d = durasiUnitWorkshop(
+      { tglFinish: pangkal(2026, 10, 25), tglKembaliKeToko: pangkal(2026, 10, 27, 12) },
+      Date.now()
+    )
+    // 25/10 15:00 → 27/10 12:00 = 45 jam
+    expect(d!.jam).toBe(45)
+  })
+
+  it('tiket tanpa sinyal workshop sama sekali → null (tidak ditampilkan)', () => {
+    expect(durasiUnitWorkshop({}, Date.now())).toBeNull()
+  })
+
+  it('bila sinyal di masa depan (input salah) tidak menghasilkan durasi negatif', () => {
+    const d = durasiUnitWorkshop({ tglFinish: pangkal(2026, 11, 15) }, pangkal(2026, 10, 1).getTime())
+    expect(d!.jam).toBe(0)
   })
 })

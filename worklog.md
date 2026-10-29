@@ -1,6 +1,47 @@
 # Worklog
 
 ---
+Task ID: 53
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Lanjutan alur — chip "Bekas terkirim"/"Part datang" ganti "Part terpasang" di bawah finish + indikator lama unit di workshop tetap ada
+
+Work Log:
+- Tambahan dari user: di tab FINISH masih ada chip alur SJ "Bekas terkirim"/"Part datang" padahal part sudah terpasang; usul 2 hal: (1) indikator di posisi umur tetap menampilkan lama unit di workshop, (2) "Part terpasang" tampil di bawah tgl finish menggantikan chip-chip itu
+- Helper baru `durasiUnitWorkshop` (`src/lib/alur-tanggal.ts`): tidak ada kolom "masuk workshop" — diambil tanggal PALING AWAL dari sinyal kerja unit di workshop (tglRequestPart / tglPartDatang / tglPasang per baris part / tglFinish); dipotong tglKembaliKeToko saat terekam (durasi lampau); hasil { jam, mulai } — diakui approximasi (tglPasang bisa tercatat saat unit masih di toko)
+- `src/components/views/service-view.tsx`:
+  • `BadgeAlurSj` — tiket FINISH tidak lagi merender chip alur SJ (Bekas terkirim/Part datang dsb.) karena kejadiannya sudah lewat; filter alur SJ tetap berlaku (state dasar tidak diubah)
+  • Kolom/kartu "Tgl Finish" untuk tiket FINISH kini 3 baris bertumpuk: tgl finish → "Part terpasang {DD/MM}" (teal, tgl pemasangan part TERAKHIR, title full) → baris bawah: "Kembali {DD/MM}" emerald ATAU "Masih di workshop · {durasi}" amber
+  • Non-FINISH dgn unit di WORKSHOP juga menampilkan durasi amber "Unit di workshop · {durasi}" di posisi kolom yang sama (tanda unit lama tertahan; tiket di toko tetap "—")
+  • helper modul `tglPasangTerakhir(t)` pakai bersama tabel desktop & kartu HP; import `durasiUnitWorkshop` + `formatUmur` (dipakai kembali utk teks durasi)
+- Verifikasi: tsc 0; eslint 0 (file berubah); vitest 134 lulus (4 test baru durasiUnitWorkshop — sinyal paling awal, dipotong tgl kembali, tanpa sinyal → null, sinyal masa depan → 0); E2E 13/13 PASSED
+- Git: belum di-commit (menyatu dgn perubahan Task 52 yang juga masih uncommitted)
+
+Stage Summary:
+- Daftar tiket FINISH kini sepenuhnya "post-part": chip bekas terkirim/part datang hilang, digantikan baris "Part terpasang {tgl}" tepat di bawah Tgl Finish; lama unit di workshop kembali terbaca (huruf amber rincian di kolom/kartu) — dihitung sejak sinyal kerja workshop paling awal & berhenti (atau masih berjalan) pada tanggal kembali, sehingga unit yang lama menggantung di workshop mudah terlihat tanpa membuka detail.
+
+---
+Task ID: 52
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Alur tarik & pengembalian unit workshop — surat saat FINISH, indikator FINISH×lokasi, kolom Tgl Finish, tarik parsial STTB kolektif
+
+Work Log:
+- Motif user: (1) saat unit ditarik ada STTB — saat dikembalikan surat apa? dan tidak semua unit terdaftar di STTB nyata-nya bisa ditarik (parsial); (2) butuh indikator barang FINISH tapi masih di workshop vs FINISH sudah dikirim kembali; (3) kolom "Umur" diganti tgl finish + tgl unit dikembalikan; (4) FINISH tak harus berarti unit sudah di toko
+- Rancangan alur baru: FINISH = rekaman pekerjaan selesai (boleh saat unit masih di WORKSHOP — tidak lagi memaksa lokasiUnit TOKO/sttbDicabut/tglKembaliKeToko); foto nota stempel OPSIONAL saat FINISH (tetap WAJIB untuk SUBMIT_CLAIM); unit dikirim kembali via Surat Pengembalian Barang (SKTB, /api/sttb/kembali) yang kini boleh dicetak SAAT FINISH walau tgl kembali belum terekam (surat jalan workshop→toko, baris tgl cetak "—"); tgl kembali terekam lewat aksi KEMBALI_KE_TOKO saat unit sampai toko
+- Schema ServiceRequest + 2 kolom nullable: `noSttbKolektif` (nomor STTB kolektif yang membubuhkan tiket yang lalu benar-benar ditarik — kertas = realita untuk tarik parsial) dan `noSuratKembali` (nomor SKTB terbit); `npm run db:push` sukses + generate client
+- `src/lib/alur-tanggal.ts`: helper baru `pesanAlurTglKembali` (+type TiketAlurKembali) — tgl kembali tak boleh sebelum part datang / part terpasang / tglFinish (minimal sama hari, jam diabaikan); komentar header diperbarui (urutan baru: part datang → pasang → FINISH → kembali)
+- API `src/app/api/service/[id]/route.ts`: blok FINISH ditulis ulang (nota opsional `...(body.fotoNotaStempel ? {...} : {})`, tidak memaksa lokasiUnit, audit mencatat "UNIT MASIH DI WORKSHOP" bila sisa); blok KEMBALI_KE_TOKO diperluas — boleh tiket PROSES (alur lama) ATAU FINISH && !tglKembaliKeToko (alur baru), body opsional `tglKembali` (default now; tolak masa depan/di atas ±5 mnt, sebelum createdAt, sebelum part datang-terpasang-tglFinish via pesanAlurTglKembali), tolak saat tglKembali sudah terekam (409); komentar header PATCH mendokumentasikan dua ragam akhir tiket
+- API `src/app/api/sttb/kolektif/route.ts`: opsi body `tandaiDitarik: true` — tiket terpilih & lolos aturan TARIK_WORKSHOP (part semua READY, REQUEST/PROSES, di TOKO, ber-STTB) di-transaksi → status PROSES + penanganan TARIK_WORKSHOP + lokasiUnit WORKSHOP + noSttbKolektif = nomor dokumen; audit SAHKAN_TARIK_KOLEKTIF; header X-Sttb-Marked/X-Sttb-Skipped utk toast UI
+- API `src/app/api/sttb/kembali/route.ts`: syarat longgar — tiket FINISH boleh walau belum terekam kembali (tiket PROSES tetap wajib terekam); baris tgl cetak "—", baris total mencantumkan "N belum terekam kembali" + ket kaki; nomor SKTB ditulis ke tiket via updateMany (noSuratKembali) — tarik pengembalian parsial tetap terlacak
+- UI `src/components/views/service-view.tsx`: kolom "Umur" (/kartu HP dt Umur) diganti "Tgl Finish" — FINISH: tgl finish + "Kembali {tgl}" emerald / "Masih di workshop" amber; non-FINISH: — + tgl tiket; import formatUmur dihapus; badge indikator FINISH×lokasi di baris desktop & kartu HP (Clock "MASIH DI WORKSHOP" amber / Store "{tglPendek}" emerald); dialog FINISH diperbarui (deskripsi alur baru, nota opsional — body hanya membawa fotoNotaStempel bila diisi, prefill nota dikosongkan); item dropdown baru "Konfirmasi Kembali ke Toko" utk FINISH && !tglKembaliKeToko (window.confirm, aksi KEMBALI_KE_TOKO); toolbar STTB menjadi 2 tombol: "STTB Toko" (cetak saja) + "STTB + Sahkan Ditarik" (cetak + tandaiDitarik, confirm dengan jumlah unit tercentang, invalidateAll + toast X-Sttb-Marked/Skipped); pre-check "tgl kembali belum tercatat" di unduhSuratKembali dihapus; dialog detail: blok emerald kembali tetap + blok amber "Belum kembali ke toko — masih di workshop" dgn tombol Cetak SKTB, badges STTBK/SKTB dari noSttbKolektif/noSuratKembali
+- UI `src/components/service-flow.tsx`: stage "kembali" — FINISH tanpa tglKembali berlabel "Selesai dikerjakan — unit masih di workshop (belum dikirim kembali)"; tombol "Kembalikan ke Toko (Cabut STTB)" kini tampil juga utk tiket FINISH && !tglKembali di WORKSHOP; kotak info FINISH bercabang: emerald (sudah kembali, cetak bukti) / amber (masih di workshop — cetak SKTB + konfirmasi kembali); import Clock
+- `src/lib/types.ts`: ServiceTicket + `noSttbKolektif?` / `noSuratKembali?`
+- Verifikasi: tsc 0; eslint 0 utk semua file berubah (lint . masih 7 error pra-eksisting dari public/pdfjs/pdf.worker.min.mjs — vendor bundle, tak tersentuh git); vitest 130 lulus (8 test baru pesanAlurTglKembali — larang sebelum finish/part datang/pemasangan, sama-hari-boleh, PROSES tanpa finish, urutan pemeriksaan); E2E Playwright 13/13 PASSED (flow.spec alur penuh FINISH+Klaim tetap ok); e2e flow.spec memakai nota saat FINISH — tetap valid karena nota kini opsional
+- Git: belum di-commit (file berubah siap komit)
+
+Stage Summary:
+- Finishing kini jujur terhadap posisi unit: FINISH hanya berarti PEKERJAAN selesai — unit yang masih di workshop tertanda amber "MASIH DI WORKSHOP" dan tiket ber-FINISH yang belum kembali tetap punya jalur tindak lanjut: cetak Surat Pengembalian (SKTB) berfungsi sekaligus surat jalan pengiriman, lalu "Konfirmasi Kembali ke Toko" mencatat tanggal kembali (dengan validasi arah: tidak boleh sebelum FINISH/part) — setelah itu badge berganti tanggal kembali emerald. Kolom tabel/kartu kini "Tgl Finish" (+ status kembalinya) menggantikan "Umur"; nomor STTBK dgn "Sahkan Ditarik" menuntaskan tarik parsial: yang dicetak = yang benar-benar dipindahkan, tiket tak lolos aturan tetap tercetak di dokumen tanpa status berubah.
+
+---
 Task ID: 51
 Agent: GLM-5.3-Flash Free (opencode)
 Task: Atur ulang kode toko otomatis — traffic tertinggi dapat nomor awal
