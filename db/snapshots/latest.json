@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T22:46:22.613Z",
+  "generatedAt": "2026-10-29T22:47:00.410Z",
   "masterToko": [
     {
       "id": 257,
@@ -4604,27 +4604,27 @@
       "id": 99,
       "noTiket": "SVC-2610-0050",
       "unitAssetId": 246,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
       "penanganan": "DI_TOKO",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-21T22:46:00.000Z",
       "deskripsiKerusakan": "stel impeller dan dinamo",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0050.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-21T22:46:00.000Z",
       "tglTiket": "2026-10-30T00:00:00.000Z",
       "createdAt": "2026-10-29T22:46:22.588Z",
-      "updatedAt": "2026-10-29T22:46:22.588Z",
+      "updatedAt": "2026-10-29T22:47:00.393Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8690,6 +8690,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1087,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0050",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0050.jpg) — tglFinish diatur manual: 22/10/2026, 06.46.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-29T22:47:00.397Z"
+    },
     {
       "id": 1086,
       "aksi": "CREATE_SERVICE_REQUEST",
