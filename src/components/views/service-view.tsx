@@ -26,11 +26,10 @@ import { useBertahap } from '@/hooks/use-bertahap'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus, ChevronDown,
-  MessageCircle, PackageOpen,
+  MessageCircle, PackageOpen, Hand, Clock, Store,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { formatUmur } from '@/lib/umur'
 import { alurSjState, ALUR_SJ_STYLES, tglPendek, type AlurSj } from '@/lib/alur-sj'
 
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
@@ -62,6 +61,10 @@ const dtLocalFrom = (d: Date) => {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
 }
 const dtLocalNow = () => dtLocalFrom(new Date())
+
+/** Tanggal selesai dikerjakan (FINISH) — pendek utk kolom tabel & kartu HP. */
+const tglFinishPendek = (tgl: string | null) =>
+  tgl ? new Date(tgl).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : null
 
 // ===== Alur Surat Jalan per tiket (DETETEKSI UNIT SUDAH/BELUM KE PRODUSEN) =====
 // Logika, warna & label chip dipusatkan di src/lib/alur-sj.ts supaya dialog
@@ -480,7 +483,7 @@ export default function ServiceView() {
     }
   }
 
-  async function unduhSttbKolektif() {
+  async function unduhSttbKolektif(tandaiDitarik: boolean) {
     const list = sjTickets
     if (list.length === 0 || sttbBusy) return
     const tokoSet = new Set(list.map((t) => t.unitAsset.toko?.kodeToko ?? '-'))
@@ -488,17 +491,20 @@ export default function ServiceView() {
       toast({ title: 'Pilih 1 toko', description: 'STTB kolektif merangkum 1 toko — centang tiket dari toko yang sama.', variant: 'destructive' })
       return
     }
+    if (tandaiDitarik && !window.confirm(`Sahkan ${list.length} unit tercentang sebagai BENAR-BENAR DITARIK ke workshop? Yang dicetak = yang dipindahkan.`)) return
     setSttbBusy(true)
     try {
       const res = await fetch('/api/sttb/kolektif', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({ noTiket: list.map((t) => t.noTiket) }),
+        body: JSON.stringify({ noTiket: list.map((t) => t.noTiket), tandaiDitarik }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error((err as { error?: string }).error || `Gagal membuat STTB kolektif (${res.status})`)
       }
+      const marked = Number(res.headers.get('X-Sttb-Marked') ?? 0)
+      const skipped = Number(res.headers.get('X-Sttb-Skipped') ?? 0)
       const cd = res.headers.get('content-disposition') ?? ''
       const m = cd.match(/filename="([^"]+)"/)
       const filename = m?.[1] ?? `STTB-Kolektif-${new Date().toISOString().slice(0, 10)}.pdf`
@@ -511,7 +517,14 @@ export default function ServiceView() {
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
-      toast({ title: 'STTB kolektif terunduh', description: `${filename} · ${list.length} unit siap pick up.` })
+      if (tandaiDitarik) invalidateAll()
+      toast({
+        title: marked > 0 ? `${filename} terunduh — ${marked} tiket disahkan DITARIK` : `${filename} terunduh`,
+        description:
+          marked > 0
+            ? `${marked} unit diteruskan → WORKSHOP (alur STTBK-${marked}) · ${skipped} dilewati (part belum READY dsb. — tetap tercetak di daftar).`
+            : `${list.length} unit siap pick up${marked === 0 && skipped > 0 ? ' — semua dilewati sahkan (part belum READY dsb.)' : ''}.`,
+      })
     } catch (e) {
       toast({ title: 'Gagal mencetak STTB kolektif', description: e instanceof Error ? e.message : 'Coba lagi', variant: 'destructive' })
     } finally {
@@ -522,20 +535,17 @@ export default function ServiceView() {
   // ===== Surat Pengembalian Barang ke Toko =====
   // Bukti unit selesai service kembali ke tokonya (kebalikan STTB pick up).
   // 1 tiket tercentang → per toko (dokumen satu unit); beberapa tiket 1 toko
-  // yang sama → kolektif. Tanggal kembali (tglKembaliKeToko) tercetak per baris.
+  // yang sama → kolektif. Terbit SAAT FINISH walau unit masih di workshop —
+  // baris belaya kembali mencetak "—" (surat = surat jalan pengiriman).
   const [kembaliBusy, setKembaliBusy] = useState(false)
   async function unduhSuratKembali(noTiket?: string[]) {
     if (kembaliBusy) return
     const list = (noTiket ?? sjTickets.map((t) => t.noTiket)).filter(Boolean)
     if (list.length === 0) {
-      toast({ title: 'Pilih tiket dulu', description: 'Centang tiket FINISH/proses kembali yang unitnya sudah di toko.', variant: 'destructive' })
+      toast({ title: 'Pilih tiket dulu', description: 'Centang tiket FINISH (terbit walau unit masih di workshop) atau yang sudah terekam kembali.', variant: 'destructive' })
       return
     }
     const dipilih = (tickets ?? []).filter((t) => list.includes(t.noTiket))
-    if (dipilih.length > 0 && dipilih.every((t) => !t.tglKembaliKeToko)) {
-      toast({ title: 'Tanggal kembali belum tercatat', description: 'Tekan "Kembalikan ke Toko" (atau FINISH) dulu — tanggal itulah yang tercetak di surat.', variant: 'destructive' })
-      return
-    }
     const tokoSet = new Set(dipilih.map((t) => t.unitAsset.toko?.kodeToko ?? '-'))
     if (tokoSet.size !== 1) {
       toast({ title: 'Pilih 1 toko', description: 'Surat pengembalian merangkum 1 toko — centang tiket dari toko yang sama.', variant: 'destructive' })
@@ -640,7 +650,7 @@ export default function ServiceView() {
     const adaAksiLain =
       t.status === 'REQUEST' ||
       t.status === 'PROSES' ||
-      (t.status === 'FINISH' && (t.statusKlaimProdusen === 'DRAFT' || t.statusKlaimProdusen === 'SUBMITTED'))
+      (t.status === 'FINISH' && (t.statusKlaimProdusen === 'DRAFT' || t.statusKlaimProdusen === 'SUBMITTED' || !t.tglKembaliKeToko))
     return (
       <>
         {emailAktif && (
@@ -713,8 +723,19 @@ export default function ServiceView() {
               {t.status === 'PROSES' && (
                 <DropdownMenuItem
                   className="gap-1.5 text-[11px] text-emerald-700"
-                  onClick={() => { setFinishTarget(t); setNotaFile(`nota-stempel-${t.noTiket}.jpg`); setFinishTgl(dtLocalNow()) }}>
+                  onClick={() => { setFinishTarget(t); setNotaFile(''); setFinishTgl(dtLocalNow()) }}>
                   <Camera className="h-3 w-3" /> Selesaikan
+                </DropdownMenuItem>
+              )}
+              {t.status === 'FINISH' && !t.tglKembaliKeToko && (
+                <DropdownMenuItem
+                  className="gap-1.5 text-[11px] text-amber-700"
+                  title="Unit sudah sampai di toko — catat tanggal kembali & cabut STTB"
+                  onClick={() => {
+                    if (!window.confirm(`Konfirmasi unit ${t.unitAsset.modelUnit} sudah diterima kembali di ${t.unitAsset.toko?.namaToko ?? 'toko'}? Tanggal hari ini akan terekam sebagai tanggal kembali.`)) return
+                    aksiMutation.mutate({ id: t.id, body: { aksi: 'KEMBALI_KE_TOKO', aktor: role === 'TEKNISI' ? 'Teknisi Lapangan' : 'Admin Workshop' } })
+                  }}>
+                  <Store className="h-3 w-3" /> Konfirmasi Kembali ke Toko
                 </DropdownMenuItem>
               )}
               {t.status === 'FINISH' && t.statusKlaimProdusen === 'DRAFT' && (
@@ -1036,12 +1057,23 @@ export default function ServiceView() {
               variant="outline"
               size="sm"
               className="border-slate-700 text-slate-700 hover:bg-slate-50"
-              onClick={() => void unduhSttbKolektif()}
+              onClick={() => void unduhSttbKolektif(false)}
               disabled={selectedIds.size === 0 || sttbBusy}
               title="Cetak STTB kolektif — daftar unit siap pick up dari 1 toko (wajib centang 1 toko yang sama)"
             >
               {sttbBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="mr-1 h-3.5 w-3.5" />}
               STTB Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-violet-600 text-violet-700 hover:bg-violet-50"
+              onClick={() => void unduhSttbKolektif(true)}
+              disabled={selectedIds.size === 0 || sttbBusy}
+              title="Cetak STTB kolektif SEKALIGUS sahkan unit tercentang benar-benar DITARIK (tarik parsial — yang dicetak = yang dipindahkan ke workshop; part belum READY tidak ikut ditandai)"
+            >
+              {sttbBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Hand className="mr-1 h-3.5 w-3.5" />}
+              STTB + Sahkan Ditarik{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
             </Button>
             <Button
               variant="outline"
@@ -1141,7 +1173,7 @@ export default function ServiceView() {
                     <TableHead>Status</TableHead>
                     <TableHead>Kode Sparepart</TableHead>
                     <TableHead>Nama Sparepart</TableHead>
-                    <TableHead className="hidden sm:table-cell">Umur</TableHead>
+                    <TableHead className="hidden sm:table-cell">Tgl Finish</TableHead>
                     <TableHead className="max-w-44">Kerusakan</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
@@ -1204,6 +1236,18 @@ export default function ServiceView() {
                               </Badge>
                             )}
                             {t.slaFlag && <Badge variant="destructive" className="gap-0.5 text-[9px]"><AlertOctagon className="h-2.5 w-2.5" /> SLA</Badge>}
+                            {/* Indikator FINISH × lokasi: selesai dikerjakan tapi unit */}
+                            {/* masih di workshop (belum kembalikan) ATAU sudah kembali */}
+                            {t.status === 'FINISH' && !t.tglKembaliKeToko && (
+                              <Badge variant="outline" className="gap-0.5 border-amber-300 bg-amber-50 text-[10px] text-amber-800" title="Pengerjaan selesai, unit masih di workshop — isi Surat Pengembalian lalu Konfirmasi Kembali ke Toko saat unit sampai">
+                                <Clock className="h-2.5 w-2.5" /> MASIH DI WORKSHOP
+                              </Badge>
+                            )}
+                            {t.status === 'FINISH' && t.tglKembaliKeToko && t.lokasiUnit === 'TOKO' && (
+                              <Badge variant="outline" className="gap-0.5 border-emerald-300 bg-emerald-50 text-[10px] text-emerald-700" title={`Dikembalikan ke toko ${formatWaktu(t.tglKembaliKeToko)} — STTB dicabut`}>
+                                <Store className="h-2.5 w-2.5" /> {tglPendek(t.tglKembaliKeToko)}
+                              </Badge>
+                            )}
                             {t.status === 'FINISH' && t.statusKlaimProdusen !== 'DRAFT' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
                             {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
                           </div>
@@ -1249,16 +1293,19 @@ export default function ServiceView() {
                           )}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          {t.isDataLama ? (
+                          {/* Kolom Tgl Finish: kapan dinyatakan selesai dikerjakan + status unitnya (masih di workshop / sudah kembali) */}
+                          {t.status === 'FINISH' ? (
                             <>
-                              <Badge variant="outline" className="border-slate-400 text-[10px] text-slate-600" title={`Data lama: tgl kejadian ${formatWaktu(t.tglTiket)}, diupload ${formatWaktu(t.createdAt)} — umur dinonaktifkan`}>
-                                DATA LAMA
-                              </Badge>
-                              <p className="mt-0.5 text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
+                              <p className="text-xs font-medium text-slate-700">{tglFinishPendek(t.tglFinish) ?? <span className="text-slate-400">—</span>}</p>
+                              {t.tglKembaliKeToko ? (
+                                <p className="text-[10px] text-emerald-600" title={formatWaktu(t.tglKembaliKeToko)}>Kembali {tglPendek(t.tglKembaliKeToko)}</p>
+                              ) : t.lokasiUnit === 'WORKSHOP' ? (
+                                <p className="text-[10px] text-amber-600">Masih di workshop</p>
+                              ) : null}
                             </>
                           ) : (
                             <>
-                              <p className="text-xs text-slate-500">{formatUmur(t.umurTiketJam)}</p>
+                              <p className="text-xs text-slate-400">—</p>
                               <p className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
                             </>
                           )}
@@ -1309,6 +1356,18 @@ export default function ServiceView() {
                         <div className="flex flex-wrap items-center justify-end gap-1">
                           <Badge variant="outline" className={st.cls}>{st.label}</Badge>
                           {t.slaFlag && <Badge variant="destructive" className="gap-0.5 text-[9px]"><AlertOctagon className="h-2.5 w-2.5" /> SLA</Badge>}
+                          {/* Indikator FINISH × lokasi — selesai dikerjakan tapi masih
+                              di workshop ATAU sudah dikembalikan ke toko */}
+                          {t.status === 'FINISH' && !t.tglKembaliKeToko && (
+                            <Badge variant="outline" className="gap-0.5 border-amber-300 bg-amber-50 text-[9px] text-amber-800">
+                              <Clock className="h-2.5 w-2.5" /> di workshop
+                            </Badge>
+                          )}
+                          {t.status === 'FINISH' && t.tglKembaliKeToko && t.lokasiUnit === 'TOKO' && (
+                            <Badge variant="outline" className="gap-0.5 border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700">
+                              <Store className="h-2.5 w-2.5" /> {tglPendek(t.tglKembaliKeToko)}
+                            </Badge>
+                          )}
                           {t.status === 'FINISH' && t.statusKlaimProdusen !== 'DRAFT' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
                           {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
                         </div>
@@ -1337,9 +1396,17 @@ export default function ServiceView() {
                             </span>
                           )}
                         </dd>
-                        <dt className="text-slate-500">{t.isDataLama ? 'Tgl' : 'Umur'}</dt>
+                        <dt className="text-slate-500">Tgl Finish</dt>
                         <dd className="text-slate-600">
-                          {t.isDataLama ? formatWaktu(t.tglTiket) : `${formatUmur(t.umurTiketJam)} · ${formatWaktu(t.tglTiket)}`}
+                          {t.status === 'FINISH' ? (
+                            <>
+                              {tglFinishPendek(t.tglFinish) ?? '—'}
+                              {t.tglKembaliKeToko && <span className="text-emerald-600"> · Kembali {tglPendek(t.tglKembaliKeToko)}</span>}
+                              {!t.tglKembaliKeToko && t.lokasiUnit === 'WORKSHOP' && <span className="text-amber-600"> · masih di workshop</span>}
+                            </>
+                          ) : (
+                            <span className="text-slate-400">— ({formatWaktu(t.tglTiket)})</span>
+                          )}
                         </dd>
                         {kerusakan && (
                           <>
@@ -1691,7 +1758,7 @@ export default function ServiceView() {
                       </div>
                     )}
                   </div>
-                  {detail.tglKembaliKeToko && (
+                  {detail.tglKembaliKeToko ? (
                     <div className="rounded-md border border-emerald-200 bg-emerald-50/50 p-2.5">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-slate-500">Barang kembali ke toko</p>
@@ -1708,13 +1775,44 @@ export default function ServiceView() {
                       <p className="font-semibold text-slate-800">{formatTanggal(detail.tglKembaliKeToko)}</p>
                       <p className="mt-0.5 text-[10px] text-slate-500">Tanggal kembali ikut tercetak di Surat Pengembalian Barang (per toko / kolektif).</p>
                     </div>
-                  )}
+                  ) : detail.status === 'FINISH' ? (
+                    <div className="rounded-md border border-amber-200 bg-amber-50/50 p-2.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-amber-700">Belum kembali ke toko</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-5 shrink-0 border-amber-300 px-1.5 text-[10px] text-amber-700 hover:bg-amber-100"
+                          title="Cetak Surat Pengembalian Barang — boleh sekarang walau unit masih di workshop (baris tgl kembali mencetak —)"
+                          onClick={() => void unduhSuratKembali([detail.noTiket])}
+                        >
+                          <PackageOpen className="mr-1 h-3 w-3" /> Cetak SKTB
+                        </Button>
+                      </div>
+                      <p className="font-semibold text-amber-800">Masih di workshop</p>
+                      <p className="mt-0.5 text-[10px] text-amber-700">Kirim unit → suratnya tercetak via tombol ini; saat unit sampai toko tekan Aksi → "Konfirmasi Kembali ke Toko" agar tanggalnya terekam.</p>
+                    </div>
+                  ) : null}
                 </div>
                 {detail.noSttb && (
                   <p className="rounded-md bg-slate-50 p-2 text-[11px] text-slate-600">
                     No. STTB <span className="font-mono font-semibold text-slate-800">{detail.noSttb}</span>
                     {' '}— cetak via tombol <span className="font-semibold">STTB Toko</span> di daftar Service (centang tiket 1 toko yang sama).
                   </p>
+                )}
+                {(detail.noSttbKolektif || detail.noSuratKembali) && (
+                  <div className="flex flex-wrap gap-1.5 text-[10px]">
+                    {detail.noSttbKolektif && (
+                      <Badge variant="outline" className="font-mono text-slate-600" title="Unit ini dicakup STTB kolektif yang disahkan ditarik — unitnya sudah dipindahkan ke workshop">
+                        STTBK {detail.noSttbKolektif}
+                      </Badge>
+                    )}
+                    {detail.noSuratKembali && (
+                      <Badge variant="outline" className="font-mono text-emerald-700" title="Nomor Surat Pengembalian Barang yang mencakup unit ini">
+                        SKTB {detail.noSuratKembali}
+                      </Badge>
+                    )}
+                  </div>
                 )}
               </div>
             </>
@@ -1730,7 +1828,7 @@ export default function ServiceView() {
               <DialogHeader>
                 <DialogTitle>Selesaikan Tiket {finishTarget.noTiket}</DialogTitle>
                 <DialogDescription>
-                  Konfirmasi pengembalian unit ke toko. Unggah foto nota service berstempel toko sebagai bukti (Modul 2.3 PRD).
+                  Rekaman pengerjaan selesai. Unit boleh masih di workshop — saat unit dikirim kembali, cetak Surat Pengembalian lalu tekan "Konfirmasi Kembali ke Toko" saat sampai. Foto nota berstempel opsional sekarang (wajib saat ajukan klaim).
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-3">
@@ -1747,19 +1845,19 @@ export default function ServiceView() {
                 </div>
                 <div className="rounded-lg border border-dashed bg-slate-50 p-4 text-center">
                   <Camera className="mx-auto mb-2 h-8 w-8 text-slate-400" />
-                  <p className="text-xs text-slate-500">Simulasi kamera teknisi: foto nota berstempel</p>
-                  <Input value={notaFile} onChange={(e) => setNotaFile(e.target.value)} className="mt-2 font-mono text-xs" aria-label="Nama file foto nota" />
+                  <p className="text-xs text-slate-500">Simulasi kamera teknisi: foto nota berstempel (opsional — bisa menyusul)</p>
+                  <Input value={notaFile} onChange={(e) => setNotaFile(e.target.value)} className="mt-2 font-mono text-xs" aria-label="Nama file foto nota" placeholder="boleh kosong" />
                 </div>
                 <p className="text-xs text-slate-500">
-                  Unit akan dikembalikan ke <span className="font-medium">{finishTarget.unitAsset.toko?.namaToko}</span>. Setelah FINISH, tiket masuk kandidat klaim bulanan ke produsen.
+                  Setelah FINISH, tiket masuk kandidat klaim bulanan ke produsen. Unit milik <span className="font-medium">{finishTarget.unitAsset.toko?.namaToko}</span> — kembalikan via Surat Pengembalian (tombol "Kembali Toko" atau dari detail tiket).
                 </p>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setFinishTarget(null)}><Ban className="mr-1 h-4 w-4" /> Batal</Button>
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700"
-                  disabled={!notaFile.trim() || aksiMutation.isPending}
-                  onClick={() => aksiMutation.mutate({ id: finishTarget.id, body: { aksi: 'FINISH', fotoNotaStempel: notaFile.trim(), ...(finishTgl ? { tglFinish: new Date(finishTgl).toISOString() } : {}) } })}
+                  disabled={aksiMutation.isPending}
+                  onClick={() => aksiMutation.mutate({ id: finishTarget.id, body: { aksi: 'FINISH', ...(notaFile.trim() ? { fotoNotaStempel: notaFile.trim() } : {}), ...(finishTgl ? { tglFinish: new Date(finishTgl).toISOString() } : {}) } })}
                 >
                   <CheckCircle2 className="mr-1 h-4 w-4" /> Konfirmasi FINISH
                 </Button>

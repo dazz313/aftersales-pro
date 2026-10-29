@@ -1,6 +1,24 @@
 # Worklog
 
 ---
+Task ID: 51
+Agent: GLM-5.3-Flash Free (opencode)
+Task: Atur ulang kode toko otomatis — traffic tertinggi dapat nomor awal
+
+Work Log:
+- Motif user: kode toko berasal dari urutan masuk (CSV import) + "TOK-10" menyimpang dari pola TOK-### — minta kode toko diatur ulang otomatis, tanpa duplikat, toko traffic paling tinggi dapat nomor pertama
+- Konfirmasi user: traffic = jumlah kunjungan + jumlah unit terdaftar (pilihan "Kunjungan + unit terdaftar"); tie-break stabil: kunjungan besar dulu, lalu id kecil
+- Skrip migrasi sekali-jalan (dihapus setelah selesai): hitung traffic per toko → sort desc → assign TOK-001..TOK-049 → 2 fase update di 1 transaksi (kode sementara MIG-{id} → kode final) agar UNIQUE(kodeToko, barcodeToko) tidak pernah gagal saat bergeser; backup konsisten via PRAGMA wal_checkpoint + VACUUM INTO → db/backup-sebelum-renumber-toko-20261030.db; pemetaan lama→baru → db/pemetaan-toko-20261030.json (rincian: nama, lama/baru, barcode lama/baru, kunjungan, unit, traffic)
+- Referensi exact-match ditulis ulang agar tak "putus": AuditLog.entitasId (entitas master_toko), OrderEmailPart.tokoKode, (InboxItem hasilRef "TOKO:{kode}" dikontrol — saat ini 0 baris); UnitAsset.barcodeData tidak disimpan — selalu dibangun live dari relasi toko (api/unit/route.ts) sehingga otomatis ikut
+- Kontrol pasca: 49/49 kode unik TOK-001..TOK-049, barcode konsisten BC-{kode}, kunjungan per toko ikut migrasi (jumlah per toko tetap); audit master_toko tidak ada kode sobek kecuali null (import/bulk-delete) + TOK-UJI historis (toko uji yang sudah dihapus)
+- Hasil: Toko Semeru Ahmad Yani (3v+28u, traffic 31) → TOK-001; Varia Mulia → TOK-002; Smart Home → TOK-003; dst.; sampah format Toko Sumber Electronic (TOK-10) → TOK-049
+
+Stage Summary:
+- Kode toko sekarang serial, unik, dan berurutan sesuai traffic — toko tersibuk nomor paling awal; barcode toko BC-{kode} ikut berubah konsisten
+- CATATAN: stiker barcode toko yang sudah dicetak memuat kode lama → cetak ulang stiker (toko-barcode-sticker.tsx otomatis memakai kode baru); scan kode lama tidak lagi terbaca
+- File berubah: TIDAK ADA file kode aplikasi (murni data + artefak db/); audit MIGRASI_NOMOR_TOKO #1081
+
+---
 Task ID: 50
 Agent: GLM-5.3-Flash Free (opencode)
 Task: "Sudah pasang id spreadsheet di pengaturan, tapi belum ada data yang pindah ke spreadsheet"

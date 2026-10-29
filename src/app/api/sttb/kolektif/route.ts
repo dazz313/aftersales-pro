@@ -7,12 +7,21 @@ import QRCode from 'qrcode'
 
 /**
  * API STTB Kolektif per Toko (pick up unit).
- * Satu dokumen merangkum SEMUA tiket siap pick up dari 1 toko yang sama:
- * tiket REQUEST/PROSES + masih di toko + sudah ber-STTB
- * (STTB otomatis terbit sejak request part).
+ * Satu dokumen merangkum tiket siap pick up dari 1 toko yang sama:
+ * tiket REQUEST/PROSES + masih di toko + sudah ber-STTB.
+ *
+ * Mode tambahan (jawaban kebutuhan tarik PARSIAL):
+ *  `tandaiDitarik: true` → tiket yang di-CENTANG dan memenuhi aturan
+ *  TARIK_WORKSHOP langsung ditandai terealisasi (SELECT → TARIK_WORKSHOP,
+ *  lokasiUnit WORKSHOP) dan dibubuhkan nomor STTB-kolektif ini (noSttbKolektif)
+ *  — kertas STTBK pertama-tama memberi nomor dokumen sesuai unit yang
+ *  benar-benar ditarik, bukan seluruh daftar ready. Tiket yang tidak
+ *  memenuhi aturan (part belum READY dsb.) tetap tercetak sebagai
+ *  KEMBARAN list tanpa ditandai — jumlah diterapkan/dilewati dikirim via
+ *  header X-Sttb-Marked / X-Sttb-Skipped.
  *
  * POST /api/sttb/kolektif
- * Body: { noTiket: string[] }
+ * Body: { noTiket: string[], tandaiDitarik?: boolean }
  * → PDF A4 portrait (attachment). Menolak bila beda toko / belum siap pick up.
  */
 export async function POST(request: Request) {
@@ -23,7 +32,8 @@ export async function POST(request: Request) {
     }
     const aktor = session?.nama ?? 'SYSTEM'
 
-    const body = (await request.json().catch(() => null)) as { noTiket?: unknown[] } | null
+    const body = (await request.json().catch(() => null)) as { noTiket?: unknown[]; tandaiDitarik?: unknown } | null
+    const tandaiDitarik = body?.tandaiDitarik === true
     const noTiketList: string[] = Array.isArray(body?.noTiket)
       ? [...new Set(body.noTiket.map((s: unknown) => String(s).trim()).filter(Boolean))]
       : []
@@ -38,6 +48,7 @@ export async function POST(request: Request) {
       where: { noTiket: { in: noTiketList } },
       include: {
         unitAsset: { include: { toko: true } },
+        parts: { select: { statusPart: true } },
       },
       orderBy: { noTiket: 'asc' },
     })
@@ -288,14 +299,56 @@ export async function POST(request: Request) {
 
     const pdfBytes = doc.output('arraybuffer')
 
+    // ===== Opsional: sahkan yang ditarik — kertas = realita (tarik parsial) =====
+    // Hanya tiket yang memenuhi aturan TARIK_WORKSHOP (part semua READY, belum
+    // FINISH, penanganan belum saat PROSES) yang ditandai; sisanya cukup
+    // tercetak di dokumen tanpa perubahan status.
+    let diterapkan = 0
+    if (tandaiDitarik) {
+      const siap = tickets.filter(
+        (t) =>
+          (t.status === 'REQUEST' || t.status === 'PROSES') &&
+          t.lokasiUnit === 'TOKO' &&
+          !!t.noSttb &&
+          t.parts.length > 0 &&
+          t.parts.every((p) => p.statusPart === 'READY') &&
+          (t.status === 'REQUEST' ? true : t.penanganan === 'BELUM')
+      )
+      if (siap.length > 0) {
+        await db.$transaction(async (tx) => {
+          for (const t of siap) {
+            await tx.serviceRequest.update({
+              where: { id: t.id },
+              data: {
+                status: 'PROSES',
+                noSttb: t.noSttb,
+                penanganan: 'TARIK_WORKSHOP',
+                lokasiUnit: 'WORKSHOP',
+                slaFlag: false,
+                noSttbKolektif: noKolektif,
+              },
+            })
+          }
+        })
+        diterapkan = siap.length
+        await logAudit({
+          aksi: 'SAHKAN_TARIK_KOLEKTIF',
+          entitas: 'service_request',
+          entitasId: noKolektif,
+          deskripsi: `STTB kolektif ${noKolektif} disahkan ditarik: ${siap.length}/${tickets.length} unit (${siap.map((t) => t.noTiket).join(', ')}) — lokasi unit → WORKSHOP, Penanganan (STTB) ikut nomor dokumen`,
+          aktor,
+        })
+      }
+    }
+
     await logAudit({
       aksi: 'CETAK_STTB_KOLEKTIF',
       entitas: 'sttb_kolektif',
       entitasId: noKolektif,
-      deskripsi: `Cetak STTB kolektif ${noKolektif}: ${tickets.length} unit siap pick up dari ${toko.kodeToko} — ${toko.namaToko}`,
+      deskripsi: `Cetak STTB kolektif ${noKolektif}: ${tickets.length} unit siap pick up dari ${toko.kodeToko} — ${toko.namaToko}${tandaiDitarik ? ` · ${diterapkan} disahkan ditarik` : ''}`,
       aktor,
     })
-    await autoGitBackup('STTB_KOLEKTIF', 'service_request', noKolektif, aktor)
+    await autoGitBackup('STTB_KOLEKTIF' + (tandaiDitarik ? '_SAHKAN' : ''), 'service_request', noKolektif, aktor)
 
     return new NextResponse(pdfBytes as ArrayBuffer, {
       status: 200,
@@ -304,6 +357,8 @@ export async function POST(request: Request) {
         'Content-Disposition': `attachment; filename="Surat-Tanda-Terima-${noKolektif}.pdf"`,
         'Cache-Control': 'no-store',
         'X-Sttb-Kolektif-No': noKolektif,
+        'X-Sttb-Marked': String(diterapkan),
+        'X-Sttb-Skipped': String(tickets.length - diterapkan),
       },
     })
   } catch (error) {

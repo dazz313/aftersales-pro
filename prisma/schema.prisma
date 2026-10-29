@@ -161,6 +161,11 @@ model Kunjungan {
 //             | DI_TOKO (dikerjakan di toko) | TARIK_WORKSHOP (ditarik + STTB)
 // noSuratJalan: nomor SJ saat part rusak dikirim ke produsen
 // sttbDicabut: true saat unit kembali ke toko (STTB dicabut)
+// noSttbKolektif: nomor STTB-kolektif (STTBK) yang SAHITAN-nya ditarik —
+//   mencatat stikker kertas = realita: hanya tiket yg benar-benar ditarik
+//   ke workshop yang dibubuhkan nomor dokumen STTB-nya (penukaran ganda aman).
+// noSuratKembali: nomor Surat Pengembalian Barang (SKTB) terbit — ditulis saat
+//   surat pengembalian dicetak, sebelum maupun sesudah unit tertulis kembali.
 // ==========================================
 model ServiceRequest {
   id                  Int                  @id @default(autoincrement())
@@ -175,6 +180,8 @@ model ServiceRequest {
   noSuratJalan        String?
   sttbDicabut         Boolean              @default(false)
   tglKembaliKeToko    DateTime?
+  noSttbKolektif      String? // nomor STTB kolektif pengeluaran unit ditarik (STTBK-...)
+  noSuratKembali      String? // nomor Surat Pengembalian Barang (SKTB-...) yang mencakup unit
   deskripsiKerusakan  String?
   fotoKerusakanWa     String?
   fotoNotaStempel     String?

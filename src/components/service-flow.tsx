@@ -24,6 +24,7 @@ import {
   PackageCheck,
   Store,
   Flag,
+  Clock,
   Undo2,
   X,
 } from 'lucide-react'
@@ -110,14 +111,14 @@ export function flowStages(t: ServiceTicket): Stage[] {
       key: 'kembali',
       label: finishOk
         ? t.tglKembaliKeToko
-          ? `Selesai — nota stempel + TTD · barang kembali ke toko ${new Date(t.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}`
-          : 'Selesai — nota stempel + TTD'
+          ? `Selesai dikerjakan · barang kembali ke toko ${new Date(t.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}`
+          : 'Selesai dikerjakan — unit masih di workshop (belum dikirim kembali)'
         : kembaliOk
           ? 'Unit kembali di toko — ajukan nota servis'
           : t.lokasiUnit === 'WORKSHOP'
             ? 'Unit di workshop — kembalikan + cabut STTB'
             : 'Unit di toko',
-      desc: 'STTB dicabut → nota servis → stempel & tanda tangan',
+      desc: 'Surat pengembalian (SKTB) → unit sampai toko → tanggal kembali terekam, STTB dicabut',
       state: finishOk ? 'done' : t.status === 'PROSES' ? 'now' : 'todo',
     },
   ]
@@ -584,18 +585,27 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
         </div>
       )}
 
-      {ticket.status === 'PROSES' && ticket.lokasiUnit === 'WORKSHOP' && !ticket.sttbDicabut && (
+      {/* Tiket PROSES di workshop (alur lama) ATAU tiket FINISH yang unitnya
+          masih di workshop (alur baru: selesai dikerjakan dulu) → konfirmasi
+          kembali ke toko mencatat tanggal kembali & mencabut STTB. */}
+      {(ticket.status === 'PROSES' || (ticket.status === 'FINISH' && !ticket.tglKembaliKeToko)) && ticket.lokasiUnit === 'WORKSHOP' && !ticket.sttbDicabut && (
         <Button size="sm" variant="outline" className="h-7 w-full border-emerald-300 text-[11px] text-emerald-700" disabled={pending} onClick={() => onAction({ aksi: 'KEMBALI_KE_TOKO' })}>
           <Store className="mr-1 h-3 w-3" /> Kembalikan ke Toko (Cabut STTB)
         </Button>
       )}
 
       {ticket.status === 'FINISH' && (
-        <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">
-          <Flag className="mr-1 inline h-3 w-3" /> Selesai — nota stempel + TTD.
-          {ticket.tglKembaliKeToko && <> Barang kembali ke toko {new Date(ticket.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} — cetak buktinya via tombol <b>Kembali Toko</b> (per toko / kolektif).</>}
-          {' '}Lanjut ke klaim produsen bila ada part garansi.
-        </p>
+        ticket.tglKembaliKeToko ? (
+          <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">
+            <Flag className="mr-1 inline h-3 w-3" /> Selesai — nota stempel + TTD.
+            {' '}Barang kembali ke toko {new Date(ticket.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} — cetak buktinya via tombol <b>Kembali Toko</b> (per toko / kolektif).
+            {' '}Lanjut ke klaim produsen bila ada part garansi.
+          </p>
+        ) : (
+          <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+            <Clock className="mr-1 inline h-3 w-3" /> Selesai dikerjakan — <b>unit masih di workshop</b>. Cetak Surat Pengembalian (SKTB) untuk mengirim unit, lalu tekan <b>Kembalikan ke Toko</b> saat unit sampai agar tanggal kembali terekam. Foto nota menyusul sebelum ajukan klaim.
+          </p>
+        )
       )}
 
       {/* Buka ulang: temuan bagian lain rusak setelah part terpasang & tiket sudah FINISH.

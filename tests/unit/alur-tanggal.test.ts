@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hariKe, pesanAlurTglFinish } from '@/lib/alur-tanggal'
+import { hariKe, pesanAlurTglFinish, pesanAlurTglKembali } from '@/lib/alur-tanggal'
 
 // Uji "minimal sama hari": tanggal FINISH tidak boleh lebih awal dari
 // kedatangan part / pemasangan part / kembali ke toko — jam diabaikan.
@@ -97,5 +97,48 @@ describe('pesanAlurTglFinish — urutan pemeriksaan', () => {
 
   it('tiket tanpa semua tanggal → valid', () => {
     expect(pesanAlurTglFinish(pangkal(2026, 10, 1), {})).toBeNull()
+  })
+})
+
+describe('pesanAlurTglKembali — vs tglFinish (alur baru: kembali setelah FINISH)', () => {
+  it('melarang unit kembali sebelum pekerjaan dinyatakan selesai', () => {
+    const pesan = pesanAlurTglKembali(pangkal(2026, 10, 24), { tglFinish: pangkal(2026, 10, 25) })
+    expect(pesan).toContain('selesai dikerjakan')
+    expect(pesan).toContain('25/10/2026')
+  })
+
+  it('menerima kembali di hari FINISH walau beda jam', () => {
+    // FINISH pagi di workshop, unit sampai toko sore hari yang sama — sah.
+    expect(pesanAlurTglKembali(pangkal(2026, 10, 25, 17), { tglFinish: pangkal(2026, 10, 25, 9) })).toBeNull()
+  })
+
+  it('menerima kembali beberapa hari setelah FINISH (pengiriman dari workshop)', () => {
+    expect(pesanAlurTglKembali(pangkal(2026, 10, 28), { tglFinish: pangkal(2026, 10, 25) })).toBeNull()
+  })
+
+  it('tiket PROSES alur lama belum FINISH → tidak ada larangan dari tglFinish', () => {
+    expect(pesanAlurTglKembali(pangkal(2026, 10, 25), { tglFinish: null })).toBeNull()
+  })
+})
+
+describe('pesanAlurTglKembali — vs part datang & pemasangan', () => {
+  it('melarang kembali sebelum part datang', () => {
+    const pesan = pesanAlurTglKembali(pangkal(2026, 10, 24), { tglPartDatang: pangkal(2026, 10, 25) })
+    expect(pesan).toContain('part datang')
+  })
+
+  it('melarang kembali sebelum pemasangan part (pakai kode part di pesan)', () => {
+    const pesan = pesanAlurTglKembali(pangkal(2026, 10, 24), {
+      parts: [{ tglPasang: pangkal(2026, 10, 25), sparepart: { kodePart: 'ABC-001' } }],
+    })
+    expect(pesan).toContain('pemasangan part ABC-001')
+  })
+
+  it('urutan pemeriksaan: part datang didahulukan sebelum tglFinish', () => {
+    const pesan = pesanAlurTglKembali(pangkal(2026, 10, 23), {
+      tglPartDatang: pangkal(2026, 10, 24),
+      tglFinish: pangkal(2026, 10, 25),
+    })
+    expect(pesan).toContain('part datang')
   })
 })

@@ -358,6 +358,13 @@ export interface ServiceTicket {
   noSuratJalan: string | null
   sttbDicabut: boolean
   tglKembaliKeToko: string | null
+  // Nomor STTB kolektif (STTBK) yang mencakup unit ini — terisi saat tiket
+  // disahkan ditarik via "Cetak + Sahkan Ditarik" (tarik parsial: hanya yang
+  // benar-benar diambil yang dibubuhkan nomor dokumen).
+  noSttbKolektif?: string | null
+  // Nomor Surat Pengembalian Barang (SKTB) terbit — terisi sejak surat
+  // pengembalian pertama dicetak (bisa saat unit masih di workshop).
+  noSuratKembali?: string | null
   deskripsiKerusakan: string | null
   fotoKerusakanWa: string | null
   fotoNotaStempel: string | null

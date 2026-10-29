@@ -9,7 +9,7 @@ import { catatBankKode } from '@/lib/bank-kode'
 import { konfigurasiEmail, kirimSmtp, susunEmailOrder, susunPesanWaOrder } from '@/lib/order-email'
 import { sendGatewayMessage } from '@/lib/gateway'
 import { APP_ROOT } from '@/lib/paths'
-import { pesanAlurTglFinish, hariKe } from '@/lib/alur-tanggal'
+import { pesanAlurTglFinish, pesanAlurTglKembali, hariKe } from '@/lib/alur-tanggal'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -83,8 +83,13 @@ async function noWaProdusen(): Promise<string | null> {
  *
  * Alur lapangan: REQUEST (lapor) → konfirmasi produsen (READY/TIDAK_READY)
  * → TIDAK_READY: terdaftar & simpan di toko | READY: kerjakan di toko / tarik workshop+STTB
- * → PROSES: bongkar, part rusak → produsen (surat jalan), part baru datang & dipasang
- * → kembali ke toko (cabut STTB) → FINISH (nota stempel + TTD)
+ * → PROSES: bongkar, part rusak → produsen (surat jalan), part baru datang & dipasang.
+ *
+ * Dua ragam akhir tiket (alur baru — FINISH tidak lagi memaksa unit kembali):
+ *  · Unit di toko  : KEMBALI_KE_TOKO (cabut STTB tgl kembali terekam) → FINISH.
+ *  · Unit di workshop: FINISH (selesai dikerjakan, nota opsional menyusul) →
+ *    terbitkan Surat Pengembalian (SKTB) → KEMBALI_KE_TOKO saat unit sampai
+ *    toko (tgl kembali terekam; tiket tetap FINISH).
  */
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -512,21 +517,56 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json(updated)
     }
 
-    // 5) KEMBALI_KE_TOKO — part baru terpasang: unit kembali ke toko, STTB dicabut
+    // 5) KEMBALI_KE_TOKO — unit kembali ke toko, STTB dicabut.
+    //    Dua kondisi:
+    //    · tiket PROSES di workshop (alur lama: kembali dulu → nota → FINISH), atau
+    //    · tiket FINISH yang unitnya masih di workshop (alur baru: selesai
+    //      dikerjakan dulu — tanggal kembali tercatat saat unit sampai toko).
+    //    Tanggal kembali: default sekarang, boleh backdate (unit sampai
+    //     kemarin) — tidak boleh masa depan / sebelum part datang-terpasang
+    //     / sebelum tglFinish.
     if (aksi === 'KEMBALI_KE_TOKO') {
-      if (existing.status !== 'PROSES') {
-        return NextResponse.json({ error: 'Hanya tiket PROSES yang dapat dikembalikan ke toko' }, { status: 409 })
+      if (existing.status !== 'PROSES' && existing.status !== 'FINISH') {
+        return NextResponse.json({ error: 'Hanya tiket PROSES/FINISH yang dapat dikonfirmasi kembali ke toko' }, { status: 409 })
+      }
+      if (existing.tglKembaliKeToko) {
+        const tgl = new Date(existing.tglKembaliKeToko).toLocaleDateString('id-ID')
+        return NextResponse.json(
+          { error: `Tanggal kembali tiket ini sudah terekam (${tgl}) — tidak dapat dicatat dua kali.` },
+          { status: 409 }
+        )
+      }
+      let tglKembali = new Date()
+      if (body.tglKembali) {
+        tglKembali = new Date(body.tglKembali)
+        if (isNaN(tglKembali.getTime())) {
+          return NextResponse.json({ error: 'Tanggal kembali tidak valid' }, { status: 400 })
+        }
+        if (tglKembali.getTime() > Date.now() + 5 * 60_000) {
+          return NextResponse.json({ error: 'Tanggal kembali tidak boleh di masa depan' }, { status: 400 })
+        }
+        if (tglKembali.getTime() < new Date(existing.createdAt).getTime()) {
+          return NextResponse.json({ error: 'Tanggal kembali tidak boleh sebelum tiket dibuat' }, { status: 400 })
+        }
+      }
+      const pesanAlurKembali = pesanAlurTglKembali(tglKembali, {
+        tglFinish: existing.tglFinish,
+        tglPartDatang: existing.tglPartDatang,
+        parts: existing.parts,
+      })
+      if (pesanAlurKembali) {
+        return NextResponse.json({ error: pesanAlurKembali }, { status: 400 })
       }
       const updated = await db.serviceRequest.update({
         where: { id: ticketId },
-        data: { lokasiUnit: 'TOKO', sttbDicabut: true, tglKembaliKeToko: new Date() },
+        data: { lokasiUnit: 'TOKO', sttbDicabut: true, tglKembaliKeToko: tglKembali },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
       await logAudit({
         aksi: 'KEMBALI_KE_TOKO',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Unit kembali ke toko, STTB ${existing.noSttb ?? '-'} dicabut — siap pengajuan nota servis`,
+        deskripsi: `Unit ${existing.status === 'FINISH' ? '(tiket FINISH — masih di workshop saat selesai dikerjakan) ' : ''}dikonfirmasi kembali ke toko pada ${tglKembali.toLocaleString('id-ID')}, STTB ${existing.noSttb ?? '-'} dicabut${body.tglKembali ? ' — tanggal diinput manual' : ''}`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
@@ -537,12 +577,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (existing.status !== 'PROSES') {
         return NextResponse.json({ error: 'Hanya tiket PROSES yang dapat diselesaikan' }, { status: 409 })
       }
-      if (!body.fotoNotaStempel) {
-        return NextResponse.json(
-          { error: 'Wajib mengunggah foto nota service berstempel toko sebelum FINISH' },
-          { status: 400 }
-        )
-      }
+      // Foto nota berstempel kini OPSIONAL saat FINISH — alur baru memungkinkan
+      // selesai dikerjakan di workshop walau unit belum kembali ke toko; nota
+      // bisa menyusul. SUBMIT_CLAIM tetap menuntutnya sebagai bukti klaim.
       // Tanggal FINISH: default waktu sekarang; boleh diatur manual (data lama
       // diselesaikan belakangan — tanggal mencerminkan waktu selesai yg sebenarnya).
       // Ditolak bila format salah atau di masa depan.
@@ -625,21 +662,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         where: { id: ticketId },
         data: {
           status: 'FINISH',
-          fotoNotaStempel: body.fotoNotaStempel,
+          // Foto nota opsional: hanya disimpan bila diisi (nota bisa menyusul
+          // bila unit masih di workshop saat pengerjaan dinyatakan selesai).
+          ...(body.fotoNotaStempel ? { fotoNotaStempel: body.fotoNotaStempel } : {}),
           tandaTanganDigital: body.tandaTanganDigital ?? null,
           tglFinish: tglFinishManual,
-          // Nota berstempel + TTD = unit sudah kembali ke toko & STTB tercabut
-          lokasiUnit: 'TOKO',
-          sttbDicabut: true,
-          tglKembaliKeToko: existing.tglKembaliKeToko ?? tglFinishManual,
+          // LOKASI & STTB TIDAK dipaksa berubah — status FINISH tidak lagi
+          // berarti "unit telah kembali ke toko". Dua kemungkinan keadaan
+          // FINISH: masing-masing masih di workshop (menunggu dikirim kembali,
+          // tglKembaliKeToko null) ATAU sudah kembali (tglnya terekam). Setiap
+          // kembali via aksi KEMBALI_KE_TOKO yang mencatat tanggalnya secara
+          // eksplisit.
         },
         include: { unitAsset: true, parts: { include: { sparepart: true } } },
       })
+      const sisaDiWorkshop = !existing.tglKembaliKeToko && existing.lokasiUnit === 'WORKSHOP'
       await logAudit({
         aksi: 'FINISH_SERVICE',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (${body.fotoNotaStempel})${body.tglFinish ? ` — tglFinish diatur manual: ${tglFinishManual.toLocaleString('id-ID')}` : ''}`,
+        deskripsi: `Status PROSES → FINISH (selesai dikerjakan: ${tglFinishManual.toLocaleString('id-ID')})${body.fotoNotaStempel ? ` — nota berstempel diunggah (${body.fotoNotaStempel})` : ' — nota belum diunggah (bisa menyusul)'}${sisaDiWorkshop ? ' — UNIT MASIH DI WORKSHOP: terbitkan Surat Pengembalian, konfirmasi kembali saat unit sampai toko' : ` — unit sudah di toko (kembali ${existing.tglKembaliKeToko ? new Date(existing.tglKembaliKeToko).toLocaleDateString('id-ID') : '-'})`}${body.tglFinish ? ` — tglFinish diatur manual: ${tglFinishManual.toLocaleString('id-ID')}` : ''}`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)

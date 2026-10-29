@@ -12,17 +12,21 @@ import QRCode from 'qrcode'
  * (dipasang / selesai service) dari workshop kembali ke tokonya.
  *
  * Dua mode pemakaian (pilihan pengguna di UI):
- *  - PER TOKO   : 1 tiket → 1 dokumen (bukti pengembalian satu unit)
+ *  - PER TOKO   : 1 tiket → 1 dokumen (tarik pengembalian PARSIAL: centang
+ *                 yang benar-benar dikirim saja)
  *  - KOLEKTIF   : beberapa tiket 1 toko yang sama → 1 dokumen merangkum semua
  *
- * Syarat tiket: tanggal kembali ke toko sudah tercatat (tglKembaliKeToko —
- * diisi otomatis oleh aksi "Kembalikan ke Toko" (cabut STTB) atau FINISH).
- * Kolom "Tanggal Dikembalikan" per baris diambil dari tanggal itu, sehingga
- * kop dokumen selalu punya tanggal barang dikembalikan ke toko.
+ * Terbit SAAT FINISH (alur baru): tiket berstatus FINISH boleh dicetakkan
+ * suratnya walau tglKembaliKeToko masih kosong (unit masih di workshop /
+ * sedang di jalan) — surat berfungsi sebagai surat jalan pengiriman dari
+ * workshop ke toko; barisnya mencetak tanggal tercatat atau keterangan
+ * "belum dikembalikan". Saat unit sampai, user menekan "Konfirmasi Kembali
+ * ke Toko" → tanggal terekam & surat berikutnya mencetak tanggal itu.
+ * Tiket PROSES tetap harus sudah terekam tanggal kembali (alur lama).
  *
  * POST /api/sttb/kembali
  * Body: { noTiket: string[] }
- * → PDF A4 portrait (attachment). Menolak bila beda toko / kurang tanggal kembali.
+ * → PDF A4 portrait (attachment). Menolak bila beda toko / tiket belum layak.
  */
 export async function POST(request: Request) {
   try {
@@ -66,16 +70,19 @@ export async function POST(request: Request) {
     }
     const toko = tickets[0].unitAsset.toko!
 
-    // Syarat inti: tanggal barang dikembalikan ke toko sudah tercatat —
-    // tanpa itu dokumen ini tidak ada isinya.
-    const belumKembali = tickets.filter((t) => !t.tglKembaliKeToko)
-    if (belumKembali.length > 0) {
-      const daftar = belumKembali.map((t) => `${t.noTiket} (${t.status}${t.status !== 'FINISH' ? ', belum cabut STTB' : ''})`).join(', ')
+    // Syarat inti: tiket FINISH boleh dikirimkan surat walau unit belum terekam
+    // kembali (unit masih di workshop / di jalan — surat = surat jalan
+    // pengiriman, tanggal kembali menyusul saat konfirmasi sampai). Tiket
+    // PROSES (alur lama) tetap harus sudah terekam tanggal kembali.
+    const belumLayak = tickets.filter((t) => t.status !== 'FINISH' && !t.tglKembaliKeToko)
+    if (belumLayak.length > 0) {
+      const daftar = belumLayak.map((t) => `${t.noTiket} (${t.status})`).join(', ')
       return NextResponse.json(
-        { error: `Tanggal kembali belum tercatat: ${daftar}. Tekan "Kembalikan ke Toko" (atau FINISH) dulu untuk tiketnya.` },
+        { error: `Tiket belum layak dikirimkan surat pengembalian: ${daftar}. Tekan "Konfirmasi Kembali ke Toko" dulu, atau selesaikan tiketnya (FINISH).` },
         { status: 409 }
       )
     }
+    const belumKembali = tickets.filter((t) => !t.tglKembaliKeToko)
 
     const settings = await db.pengaturan.findMany()
     const s: Record<string, string> = {}
@@ -169,9 +176,9 @@ export async function POST(request: Request) {
       return out
     }
 
-    // Satu baris per UNIT — tanggal kembali tercetak per baris (ambil dari
-    // tglKembaliKeToko tiket, jadi walau unit kembali beda hari, tiap baris
-    // tetap jelas tanggal barangnya dikembalikan ke toko).
+    // Satu baris per UNIT — tanggal kembali tercetak per baris (dari
+    // tglKembaliKeToko tiket; unit yang belum terekam kembali dicetak "—"
+    // karena surat ini sekaligus surat jalan pengiriman dari workshop).
     const cols: { title: string; x: number; w: number }[] = [
       { title: 'No', x: M, w: 8 },
       { title: 'No. Tiket', x: M + 8, w: 30 },
@@ -207,7 +214,9 @@ export async function POST(request: Request) {
     for (const t of tickets) {
       const cModel = wrap2(t.unitAsset.modelUnit, cols[3].w - 2)
       const cRusak = wrap2(t.deskripsiKerusakan?.trim() || '-', cols[5].w - 2)
-      const tglKembali = new Date(t.tglKembaliKeToko as Date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      const tglKembali = t.tglKembaliKeToko
+        ? new Date(t.tglKembaliKeToko as Date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : '—'
       const rowH = Math.max(cModel.length, cRusak.length) > 1 ? 11 : 6
       if (y + rowH > pageH - 60) {
         doc.addPage()
@@ -245,7 +254,26 @@ export async function POST(request: Request) {
     doc.rect(M, y - 4, tableRight - M, 7)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(8.5)
-    doc.text(`TOTAL — ${totalUnit} unit dikembalikan ke toko`, cols[1].x + 1.5, y)
+    doc.text(
+      belumKembali.length > 0
+        ? `TOTAL — ${totalUnit} unit dikembalikan ke toko · ${totalUnit - belumKembali.length} terekam kembali, ${belumKembali.length} belum`
+        : `TOTAL — ${totalUnit} unit dikembalikan ke toko`,
+      cols[1].x + 1.5,
+      y
+    )
+    if (belumKembali.length > 0) {
+      y += 6
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(100, 116, 139)
+      doc.text(
+        `Ket: baris "—" = tanggal kembali belum terekam saat surat ini dicetak (pengiriman dari workshop); tanggal diisi saat unit sampai di toko (Konfirmasi Kembali ke Toko).`,
+        M,
+        y,
+        { maxWidth: tableRight - M }
+      )
+      doc.setTextColor(30, 41, 59)
+    }
     y += 14
     doc.setFont('helvetica', 'normal')
 
@@ -285,11 +313,22 @@ export async function POST(request: Request) {
 
     const pdfBytes = doc.output('arraybuffer')
 
+    // Tuliskan nomor SKTB ke tiket yang belum membawanya — jejak dokumen
+    // pengembalian tersambung dari saat surat pertama kali dicetak (sebelum
+    // unit sampai) sehingga tarik pengembalian parsial tetap dapat dilacak.
+    const kosongKembali = tickets.filter((t) => !t.noSuratKembali)
+    if (kosongKembali.length > 0) {
+      await db.serviceRequest.updateMany({
+        where: { id: { in: kosongKembali.map((t) => t.id) } },
+        data: { noSuratKembali: noDokumen },
+      })
+    }
+
     await logAudit({
       aksi: 'CETAK_KEMBALI_TOKO',
       entitas: 'surat_kembali_toko',
       entitasId: noDokumen,
-      deskripsi: `Cetak surat pengembalian barang ${noDokumen}${totalUnit > 1 ? ' (kolektif)' : ' (per toko)'}: ${tickets.length} unit dikembalikan ke ${toko.kodeToko} — ${toko.namaToko}`,
+      deskripsi: `Cetak surat pengembalian barang ${noDokumen}${totalUnit > 1 ? ' (kolektif)' : ' (per toko)'}: ${tickets.length} unit ke ${toko.kodeToko} — ${toko.namaToko}${belumKembali.length > 0 ? ` · ${belumKembali.length} belum terekam kembali (tgl menyusul saat konfirmasi)` : ''}`,
       aktor,
     })
     await autoGitBackup('STTB_KEMBALI', 'service_request', noDokumen, aktor)
