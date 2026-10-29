@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:52:20.237Z",
+  "generatedAt": "2026-10-29T21:53:17.028Z",
   "masterToko": [
     {
       "id": 216,
@@ -346,7 +346,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-10T11:08:00.000Z",
+      "tglVisitTerakhir": "2026-10-28T21:52:00.000Z",
       "barcodeToko": "BC-TOK-022",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -426,7 +426,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-27T07:47:00.000Z",
+      "tglVisitTerakhir": "2026-10-27T21:53:00.000Z",
       "barcodeToko": "BC-TOK-027",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4163,6 +4163,16 @@
   ],
   "kunjungan": [
     {
+      "id": 76,
+      "tokoId": 237,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-28T21:52:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
       "id": 75,
       "tokoId": 236,
       "teknisiId": 27,
@@ -4177,6 +4187,16 @@
       "tokoId": 241,
       "teknisiId": 27,
       "tglKunjungan": "2026-10-28T21:51:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
+    {
+      "id": 77,
+      "tokoId": 242,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-27T21:53:00.000Z",
       "metodeCheckin": "MANUAL",
       "barcodeTerscan": null,
       "fotoOnsite": null,
@@ -8512,6 +8532,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1077,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "77",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Jaya Bessi (TOK-027) · tgl 28/10/2026, 05.53.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-29T21:53:17.015Z"
+    },
+    {
+      "id": 1076,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "76",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Surya Indah (TOK-022) · tgl 29/10/2026, 05.52.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-29T21:52:34.694Z"
+    },
     {
       "id": 1075,
       "aksi": "CREATE_KUNJUNGAN",
