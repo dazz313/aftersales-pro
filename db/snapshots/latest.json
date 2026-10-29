@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T21:51:58.081Z",
+  "generatedAt": "2026-10-29T21:52:20.237Z",
   "masterToko": [
     {
       "id": 216,
@@ -330,7 +330,7 @@
       "frekuensiVisit": 7,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": null,
+      "tglVisitTerakhir": "2026-10-28T21:52:00.000Z",
       "barcodeToko": "BC-TOK-021",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4162,6 +4162,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 75,
+      "tokoId": 236,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-28T21:52:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 73,
       "tokoId": 241,
@@ -8502,6 +8512,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1075,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "75",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Melati Bangunan (TOK-021) · tgl 29/10/2026, 05.52.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-10-29T21:52:20.224Z"
+    },
     {
       "id": 1074,
       "aksi": "CREATE_KUNJUNGAN",
