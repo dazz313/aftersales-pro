@@ -47,6 +47,50 @@ function bolehKoreksiSelesai(flag: unknown, session: SessionPayload | null) {
   return Boolean(flag) && !!session && ['ADMIN_WORKSHOP', 'MANAGER'].includes(session.role)
 }
 
+/** Indeks hari kalender (waktu lokal diabaikan jam) — pembanding "minimal sama hari". */
+function hariKe(d: Date | string | number): number {
+  const x = new Date(d)
+  return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
+}
+
+/**
+ * Validasi alur tanggal FINISH — pastikan urutan tanggal masuk akal:
+ * part datang → part dipasang → unit kembali ke toko → FINISH.
+ * FINISH makainya TIDAK BOLEH lebih awal daripada kedatangan part maupun
+ * pemasangan part — minimal SAMA HARI dengan kedatangan/pemasangan
+ * (jam diabaikan, soal jam urutan wajar tetap diterima).
+ * Return string pesan error bila melanggar, null bila valid.
+ */
+function pesanAlurTglFinish(
+  tglFinish: Date,
+  tiket: {
+    tglPartDatang?: Date | string | null
+    tglKembaliKeToko?: Date | string | null
+    parts?: { tglPasang?: Date | string | null; sparepart?: { kodePart?: string } | null; kodePartCache?: string | null }[]
+  }
+): string | null {
+  const hariFinish = hariKe(tglFinish)
+  // 1) Part datang dari produsen (Surat Jalan Masuk / tombol Part Datang)
+  if (tiket.tglPartDatang && hariFinish < hariKe(tiket.tglPartDatang as string)) {
+    const tgl = new Date(tiket.tglPartDatang as string).toLocaleDateString('id-ID')
+    return `Tanggal selesai tidak boleh lebih awal dari tanggal part datang (${tgl}) — minimal sama hari dengan kedatangan part.`
+  }
+  // 2) Pemasangan part (tglPasang per baris part) — part dipasang setelah datang
+  for (const p of tiket.parts ?? []) {
+    if (p.tglPasang && hariFinish < hariKe(p.tglPasang as string)) {
+      const kode = (p.sparepart?.kodePart ?? p.kodePartCache ?? 'part').trim() || 'part'
+      const tgl = new Date(p.tglPasang as string).toLocaleDateString('id-ID')
+      return `Tanggal selesai tidak boleh lebih awal dari tanggal pemasangan part ${kode} (${tgl}) — minimal sama hari part terpasang.`
+    }
+  }
+  // 3) Unit kembali ke toko dicatat (KEMBALI_KE_TOKO / FINISH) — nota distempel di toko
+  if (tiket.tglKembaliKeToko && hariFinish < hariKe(tiket.tglKembaliKeToko as string)) {
+    const tgl = new Date(tiket.tglKembaliKeToko as string).toLocaleDateString('id-ID')
+    return `Tanggal selesai tidak boleh lebih awal dari tanggal unit dikembalikan ke toko (${tgl}).`
+  }
+  return null
+}
+
 /** Normalisasi kode part untuk pencocokan item order-email — sama dgn matcher surat jalan masuk. */
 const NORM_KODE = (s: string | null | undefined) => (s || '').toString().toUpperCase().replace(/[^A-Z0-9#]/g, '')
 
@@ -552,6 +596,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (tglFinishManual.getTime() > Date.now() + 5 * 60_000) {
         return NextResponse.json({ error: 'Tanggal selesai tidak boleh di masa depan' }, { status: 400 })
       }
+      // Logika alur: FINISH tidak boleh lebih awal daripada part datang /
+      // part terpasang / unit kembali ke toko — minimal SAMA HARI.
+      const pesanAlur = pesanAlurTglFinish(tglFinishManual, existing)
+      if (pesanAlur) {
+        return NextResponse.json({ error: pesanAlur }, { status: 400 })
+      }
 
       // ===== Gabungkan part kembar + stempel cache kode/nama =====
       // Baris part dgn master/status/konfirmasi/sumber identik = kembar (salah
@@ -710,10 +760,32 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (tanggalBaru.getTime() < new Date(existing.createdAt).getTime()) {
         return NextResponse.json({ error: 'Tanggal selesai tidak boleh sebelum tiket dibuat' }, { status: 400 })
       }
+      // Logika alur: tanggal selesai koreksian tetap tidak boleh lebih awal
+      // daripada part datang / part terpasang — minimal SAMA HARI.
+      const pesanAlur = pesanAlurTglFinish(tanggalBaru, { tglPartDatang: existing.tglPartDatang, parts: existing.parts })
+      if (pesanAlur) {
+        return NextResponse.json({ error: pesanAlur }, { status: 400 })
+      }
+      // Tanggal kembali ke toko: ikut digeser mengikuti koreksi bila semula
+      // otomatis = tglFinish lama (diset bersama saat FINISH). Bila terekam
+      // terpisah (klik Kembalikan ke Toko), kembali adalah batas — selesai
+      // tidak boleh sebelum unit sampai di toko.
+      const kembaliIkut =
+        !!existing.tglKembaliKeToko &&
+        !!existing.tglFinish &&
+        new Date(existing.tglKembaliKeToko).getTime() === new Date(existing.tglFinish).getTime()
+      if (existing.tglKembaliKeToko && !kembaliIkut && hariKe(tanggalBaru) < hariKe(existing.tglKembaliKeToko)) {
+        const tgl = new Date(existing.tglKembaliKeToko).toLocaleDateString('id-ID')
+        return NextResponse.json(
+          { error: `Tanggal selesai tidak boleh lebih awal dari tanggal unit dikembalikan ke toko (${tgl}).` },
+          { status: 400 }
+        )
+      }
       const updated = await db.serviceRequest.update({
         where: { id: ticketId },
         data: {
           tglFinish: tanggalBaru,
+          ...(kembaliIkut ? { tglKembaliKeToko: tanggalBaru } : {}),
           ...(session
             ? { editedAt: new Date(), editedBy: session.username ?? session.nama }
             : {}),
@@ -724,7 +796,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         aksi: 'KOREKSI_TGL_FINISH',
         entitas: 'service_request',
         entitasId: existing.noTiket,
-        deskripsi: `Koreksi tanggal FINISH — tglFinish diganti dari ${existing.tglFinish ? new Date(existing.tglFinish).toLocaleString('id-ID') : '-'} menjadi ${tanggalBaru.toLocaleString('id-ID')} [TIKET FINISH — koreksi Admin/Manager]`,
+        deskripsi: `Koreksi tanggal FINISH — tglFinish diganti dari ${existing.tglFinish ? new Date(existing.tglFinish).toLocaleString('id-ID') : '-'} menjadi ${tanggalBaru.toLocaleString('id-ID')}${kembaliIkut ? ' — tgl kembali ke toko ikut digeser (semula otomatis = tglFinish lama)' : ''} [TIKET FINISH — koreksi Admin/Manager]`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
