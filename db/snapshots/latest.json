@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:14:19.440Z",
+  "generatedAt": "2026-10-30T23:15:35.471Z",
   "masterToko": [
     {
       "id": 257,
@@ -6214,7 +6214,7 @@
       "tglKembaliKeToko": null,
       "noSttbKolektif": null,
       "noSuratKembali": null,
-      "deskripsiKerusakan": "TIDAK NYALA",
+      "deskripsiKerusakan": "PENGUNCI TIANG LOS",
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
@@ -6225,7 +6225,7 @@
       "tglFinish": null,
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T06:56:44.935Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
+      "updatedAt": "2026-10-30T23:15:35.452Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9074,6 +9074,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1139,
+      "aksi": "UPDATE_BIAYA_JASA",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0005",
+      "deskripsi": "Deskripsi & biaya jasa tiket diperbarui (jasa Rp 0)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:15:35.457Z"
+    },
     {
       "id": 1138,
       "aksi": "UPDATE_UNIT_ASSET",
