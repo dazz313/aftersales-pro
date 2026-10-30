@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:19:47.360Z",
+  "generatedAt": "2026-10-30T23:39:16.392Z",
   "masterToko": [
     {
       "id": 257,
@@ -1579,6 +1579,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T11:55:18.365Z"
+    },
+    {
+      "id": 361,
+      "kodePart": "MCMX-AX373-WH-KGX",
+      "namaPart": "Total Top Cover Assy 609",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-30T23:39:16.360Z"
     },
     {
       "id": 355,
@@ -4640,6 +4654,57 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 104,
+      "noTiket": "SVC-2607-0010",
+      "unitAssetId": 147,
+      "status": "REQUEST",
+      "noSttb": "STTB-2607-0010",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "PENUITUP PECAH",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-07-17T00:00:00.000Z",
+      "createdAt": "2026-10-30T23:39:16.368Z",
+      "updatedAt": "2026-10-30T23:39:16.368Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 107,
+          "serviceRequestId": 104,
+          "sparepartId": 361,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 103,
       "noTiket": "SVC-2607-0009",
@@ -9139,6 +9204,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1149,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0010",
+      "deskripsi": "Tiket manual dibuat untuk unit 43070098367 (MCM-609, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2607-0010 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T23:39:16.375Z"
+    },
     {
       "id": 1148,
       "aksi": "KEMBALI_KE_TOKO",
