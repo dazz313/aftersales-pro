@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:37:18.985Z",
+  "generatedAt": "2026-10-30T22:38:07.930Z",
   "masterToko": [
     {
       "id": 257,
@@ -4630,12 +4630,12 @@
       "id": 102,
       "noTiket": "SVC-2609-0006",
       "unitAssetId": 261,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2609-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -4649,10 +4649,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-30T22:38:00.000Z",
       "tglTiket": "2026-09-01T00:00:00.000Z",
       "createdAt": "2026-10-30T22:36:56.346Z",
-      "updatedAt": "2026-10-30T22:37:18.943Z",
+      "updatedAt": "2026-10-30T22:38:07.915Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4670,8 +4670,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "3P90145B",
+          "namaPartCache": "Press Switch Cover",
           "editedAt": null,
           "editedBy": null
         }
@@ -9074,6 +9074,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1136,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0006",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 31/10/2026, 06.38.00) — nota belum diunggah (bisa menyusul) — UNIT MASIH DI WORKSHOP: terbitkan Surat Pengembalian, konfirmasi kembali saat unit sampai toko — tglFinish diatur manual: 31/10/2026, 06.38.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:38:07.919Z"
+    },
+    {
+      "id": 1135,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0006",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2609-0006 diterbitkan untuk penarikan unit AL008063 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:37:21.574Z"
+    },
     {
       "id": 1134,
       "aksi": "TERIMA_PART_PRODUSEN",
