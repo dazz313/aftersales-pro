@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:35:42.610Z",
+  "generatedAt": "2026-10-30T22:36:56.368Z",
   "masterToko": [
     {
       "id": 257,
@@ -4627,6 +4627,57 @@
   ],
   "serviceRequest": [
     {
+      "id": 102,
+      "noTiket": "SVC-2609-0006",
+      "unitAssetId": 261,
+      "status": "REQUEST",
+      "noSttb": "STTB-2609-0006",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "PENUTUP OTOMATIS PECAH",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-01T00:00:00.000Z",
+      "createdAt": "2026-10-30T22:36:56.346Z",
+      "updatedAt": "2026-10-30T22:36:56.346Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 105,
+          "serviceRequestId": 102,
+          "sparepartId": 319,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 101,
       "noTiket": "SVC-2608-0016",
       "unitAssetId": 260,
@@ -9023,6 +9074,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1133,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0006",
+      "deskripsi": "Tiket manual dibuat untuk unit AL008063 (PS-130 BIT, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2609-0006 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T22:36:56.352Z"
+    },
     {
       "id": 1132,
       "aksi": "CREATE_UNIT_ASSET",
