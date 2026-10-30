@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:27:06.569Z",
+  "generatedAt": "2026-10-30T22:27:45.886Z",
   "masterToko": [
     {
       "id": 257,
@@ -8476,7 +8476,7 @@
       "id": 8,
       "noTiket": "SVC-2610-0006",
       "unitAssetId": 125,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
@@ -8495,10 +8495,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-05T22:27:00.000Z",
       "tglTiket": "2026-10-14T04:29:50.983Z",
       "createdAt": "2026-10-14T04:29:51.001Z",
-      "updatedAt": "2026-10-30T22:27:06.549Z",
+      "updatedAt": "2026-10-30T22:27:45.869Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8962,6 +8962,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1128,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0006",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 6/8/2026, 06.27.00) — nota belum diunggah (bisa menyusul) — unit sudah di toko (kembali -) — tglFinish diatur manual: 6/8/2026, 06.27.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:27:45.873Z"
+    },
     {
       "id": 1127,
       "aksi": "KERJAKAN_DI_TOKO",
