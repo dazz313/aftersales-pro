@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:19:14.649Z",
+  "generatedAt": "2026-10-30T23:19:42.580Z",
   "masterToko": [
     {
       "id": 257,
@@ -4644,12 +4644,12 @@
       "id": 103,
       "noTiket": "SVC-2607-0009",
       "unitAssetId": 146,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2607-0009",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -4663,10 +4663,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-30T23:19:00.000Z",
       "tglTiket": "2026-07-17T00:00:00.000Z",
       "createdAt": "2026-10-30T23:18:50.545Z",
-      "updatedAt": "2026-10-30T23:19:14.601Z",
+      "updatedAt": "2026-10-30T23:19:42.564Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4684,8 +4684,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "MCMX-PX542-PK-KGX",
+          "namaPartCache": "Top Cover 509 New (Pink)",
           "editedAt": null,
           "editedBy": null
         }
@@ -9139,6 +9139,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1147,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0009",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 31/10/2026, 07.19.00) — nota belum diunggah (bisa menyusul) — UNIT MASIH DI WORKSHOP: terbitkan Surat Pengembalian, konfirmasi kembali saat unit sampai toko — tglFinish diatur manual: 31/10/2026, 07.19.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:19:42.568Z"
+    },
+    {
+      "id": 1146,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0009",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2607-0009 diterbitkan untuk penarikan unit 03020073129 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:19:17.296Z"
+    },
     {
       "id": 1145,
       "aksi": "TERIMA_PART_PRODUSEN",
