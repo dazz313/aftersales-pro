@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T02:33:36.886Z",
+  "generatedAt": "2026-10-30T02:33:56.403Z",
   "masterToko": [
     {
       "id": 257,
@@ -6856,27 +6856,27 @@
       "id": 36,
       "noTiket": "SVC-2610-0034",
       "unitAssetId": 189,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0034",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-01T02:33:00.000Z",
       "deskripsiKerusakan": "matol",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0034.jpg",
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-01T02:33:00.000Z",
       "tglTiket": "2026-10-15T05:55:55.873Z",
       "createdAt": "2026-10-15T05:55:55.879Z",
-      "updatedAt": "2026-10-30T02:33:36.837Z",
+      "updatedAt": "2026-10-30T02:33:56.380Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -6895,7 +6895,7 @@
           "tglPasang": null,
           "pasangOleh": null,
           "kodePartCache": "SFMX-EA434-XX-KGX",
-          "namaPartCache": "MOTOR ASSY 1606\\1607",
+          "namaPartCache": "MOTOR KAS 1607 GB",
           "editedAt": null,
           "editedBy": null
         }
@@ -8690,6 +8690,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1106,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0034",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0034.jpg) — tglFinish diatur manual: 1/10/2026, 10.33.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:33:56.387Z"
+    },
+    {
+      "id": 1105,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0034",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2610-0034 diterbitkan untuk penarikan unit 3020006746 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:33:38.228Z"
+    },
     {
       "id": 1104,
       "aksi": "TERIMA_PART_PRODUSEN",
