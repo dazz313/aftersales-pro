@@ -134,6 +134,8 @@ export default function SettingsView() {
   const [gsForm, setGsForm] = useState<Record<string, string>>({})
   const [aiForm, setAiForm] = useState<Record<string, string>>({})
   const [aiTest, setAiTest] = useState<{ ok: boolean; info: string } | null>(null)
+  // Daftar model dari GET /api/ai/models (null = belum pernah dimuat)
+  const [aiModels, setAiModels] = useState<{ items: string[]; error: string | null } | null>(null)
   // Daftar merk & masa garansi (null = ikut data server, belum diedit user)
   const [brandRows, setBrandRows] = useState<BrandRule[] | null>(null)
   const [brandBaru, setBrandBaru] = useState({ nama: '', garansiBulan: '12' })
@@ -233,6 +235,26 @@ export default function SettingsView() {
     },
     onError: (e: Error) => setAiTest({ ok: false, info: e.message }),
   })
+
+  const loadAiModels = useMutation({
+    mutationFn: () => fetcher<{ ok: boolean; models: string[]; error?: string }>('/api/ai/models'),
+    onSuccess: (res) => {
+      setAiModels(
+        res.ok
+          ? { items: res.models, error: null }
+          : { items: [], error: res.error ?? 'Gagal memuat daftar model.' }
+      )
+      if (res.ok) toast({ title: `${res.models.length} model tersedia dari 9router` })
+    },
+    onError: (e: Error) => setAiModels({ items: [], error: e.message }),
+  })
+
+  // Pilihan dropdown: model aktif (agar tetap tampil/tak hilang) diikuti daftar 9router.
+  const daftarModel = useMemo(() => {
+    if (!aiModels || aiModels.items.length === 0) return []
+    const cur = (ai('ai_model') || 'kr/claude-haiku-4.5').trim()
+    return Array.from(new Set([cur, ...aiModels.items]))
+  }, [aiModels, aiForm.ai_model, settings?.map.ai_model])
 
   const testMutation = useMutation({
     mutationFn: (channel: 'WHATSAPP' | 'TELEGRAM') => testGateway(channel),
@@ -833,8 +855,28 @@ export default function SettingsView() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ai-model" className="text-xs">Model</Label>
-              <Input id="ai-model" value={ai('ai_model') || 'kr/claude-haiku-4.5'} onChange={(e) => setAiForm({ ...aiForm, ai_model: e.target.value })} placeholder="kr/claude-haiku-4.5" className="font-mono text-xs" />
-              <p className="text-[11px] text-slate-500">Format <span className="font-mono">provider/model</span> sesuai 9router — cth: <span className="font-mono">kr/claude-haiku-4.5</span>. Lihat daftar di dashboard 9router (http://localhost:20128).</p>
+              <div className="flex gap-1.5">
+                <Input id="ai-model" value={ai('ai_model') || 'kr/claude-haiku-4.5'} onChange={(e) => setAiForm({ ...aiForm, ai_model: e.target.value })} placeholder="kr/claude-haiku-4.5" className="font-mono text-xs" />
+                <Button variant="outline" size="sm" className="shrink-0" disabled={loadAiModels.isPending} onClick={() => loadAiModels.mutate()} title="Ambil daftar model tersedia dari 9router">
+                  <RefreshCw className={cn('mr-1 h-3 w-3', loadAiModels.isPending && 'animate-spin')} />
+                  {loadAiModels.isPending ? 'Memuat…' : 'Daftar'}
+                </Button>
+              </div>
+              {/* Pilih langsung dari daftar model yang dilaporkan 9router */}
+              {daftarModel.length > 0 && (
+                <Select value={ai('ai_model') || 'kr/claude-haiku-4.5'} onValueChange={(v) => setAiForm({ ...aiForm, ai_model: v })}>
+                  <SelectTrigger className="font-mono text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {daftarModel.map((m) => (
+                      <SelectItem key={m} value={m} className="font-mono text-xs">{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {aiModels?.error && (
+                <p className="rounded-md bg-amber-50 p-1.5 text-[11px] text-amber-800">{aiModels.error} — ketik nama model manual di atas.</p>
+              )}
+              <p className="text-[11px] text-slate-500">Klik <span className="font-medium">Daftar</span> untuk tarik pilihan model langsung dari 9router, atau ketik manual format <span className="font-mono">provider/model</span> sesuai 9router — cth: <span className="font-mono">kr/claude-haiku-4.5</span>.</p>
             </div>
             {aiTest && (
               <p className={cn('rounded-md p-2 text-[11px]', aiTest.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-700')}>
