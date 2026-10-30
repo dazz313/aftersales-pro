@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:26:02.809Z",
+  "generatedAt": "2026-10-30T22:27:06.569Z",
   "masterToko": [
     {
       "id": 257,
@@ -8476,12 +8476,12 @@
       "id": 8,
       "noTiket": "SVC-2610-0006",
       "unitAssetId": 125,
-      "status": "REQUEST",
-      "noSttb": null,
+      "status": "PROSES",
+      "noSttb": "STTB-2610-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "DI_TOKO",
       "noSuratJalan": "SJ-20261018-0001",
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -8491,14 +8491,14 @@
       "fotoKerusakanWa": null,
       "fotoNotaStempel": null,
       "tandaTanganDigital": null,
-      "slaFlag": true,
+      "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
       "tglFinish": null,
       "tglTiket": "2026-10-14T04:29:50.983Z",
       "createdAt": "2026-10-14T04:29:51.001Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
+      "updatedAt": "2026-10-30T22:27:06.549Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8962,6 +8962,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1127,
+      "aksi": "KERJAKAN_DI_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0006",
+      "deskripsi": "Status REQUEST → PROSES. Unit dikerjakan di toko (tanpa penarikan unit ke workshop)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:27:06.555Z"
+    },
     {
       "id": 1126,
       "aksi": "UPDATE_UNIT_ASSET",
