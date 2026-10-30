@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T05:40:54.410Z",
+  "generatedAt": "2026-10-30T05:52:18.659Z",
   "masterToko": [
     {
       "id": 257,
@@ -3714,7 +3714,7 @@
       "modelUnit": "KG-502 C",
       "merk": "Miyako",
       "nama": "KOMPOR",
-      "kerusakanAwal": "BODY ATAS DAN SAMPING PENYOK",
+      "kerusakanAwal": "BODY ATAS, SAMPING, BELAKANG PENYOK",
       "tokoId": 237,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -8800,6 +8800,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1112,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44060012991",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (44060012991)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-30T05:52:18.646Z"
+    },
+    {
+      "id": 1111,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0005",
+      "deskripsi": "Teks order WA part 2 item disalin manual (nomor produsen belum diisi) — tiket SVC-2609-0005",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T05:40:58.017Z"
+    },
+    {
+      "id": 1110,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0005",
+      "deskripsi": "Semua part inden sudah terdaftar di order email — tidak ada order ganda dibuat (tiket SVC-2609-0005)",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T05:40:57.989Z"
+    },
+    {
+      "id": 1109,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0005",
+      "deskripsi": "Teks order WA part 2 item disalin manual (nomor produsen belum diisi) — tiket SVC-2609-0005",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T05:40:54.446Z"
+    },
     {
       "id": 1108,
       "aksi": "ORDER_EMAIL_REORDER",
