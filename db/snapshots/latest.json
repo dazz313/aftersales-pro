@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:19:42.580Z",
+  "generatedAt": "2026-10-30T23:19:47.360Z",
   "masterToko": [
     {
       "id": 257,
@@ -4648,11 +4648,11 @@
       "noSttb": "STTB-2607-0009",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-30T23:19:47.337Z",
       "noSttbKolektif": null,
       "noSuratKembali": null,
       "deskripsiKerusakan": "PENUITUP PECAH",
@@ -4666,7 +4666,7 @@
       "tglFinish": "2026-10-30T23:19:00.000Z",
       "tglTiket": "2026-07-17T00:00:00.000Z",
       "createdAt": "2026-10-30T23:18:50.545Z",
-      "updatedAt": "2026-10-30T23:19:42.564Z",
+      "updatedAt": "2026-10-30T23:19:47.338Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9139,6 +9139,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1148,
+      "aksi": "KEMBALI_KE_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0009",
+      "deskripsi": "Unit (tiket FINISH — masih di workshop saat selesai dikerjakan) dikonfirmasi kembali ke toko pada 31/10/2026, 07.19.47, STTB STTB-2607-0009 dicabut",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:19:47.343Z"
+    },
     {
       "id": 1147,
       "aksi": "FINISH_SERVICE",
