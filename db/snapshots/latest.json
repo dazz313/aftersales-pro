@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:30:52.889Z",
+  "generatedAt": "2026-10-30T22:32:11.502Z",
   "masterToko": [
     {
       "id": 257,
@@ -3990,7 +3990,7 @@
       "kerusakanAwal": "SUARA BERISIK",
       "tokoId": 225,
       "customerId": null,
-      "statusGaransi": "GARANSI",
+      "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-06T00:00:00.000Z"
     },
@@ -4613,6 +4613,41 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 101,
+      "noTiket": "SVC-2608-0016",
+      "unitAssetId": 260,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "DI_TOKO",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "IMPELLER KANDAS",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-08-07T00:00:00.000Z",
+      "createdAt": "2026-10-30T22:32:11.477Z",
+      "updatedAt": "2026-10-30T22:32:11.477Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
     {
       "id": 100,
       "noTiket": "SVC-2609-0005",
@@ -8975,6 +9010,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1131,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0016",
+      "deskripsi": "Tiket manual dibuat untuk unit ZL009632 (PS-135 E, stok toko → GARANSI otomatis) — part READY → otomatis PROSES — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T22:32:11.482Z"
+    },
     {
       "id": 1130,
       "aksi": "CREATE_UNIT_ASSET",
