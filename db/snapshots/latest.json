@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:32:11.502Z",
+  "generatedAt": "2026-10-30T22:35:42.610Z",
   "masterToko": [
     {
       "id": 257,
@@ -3837,6 +3837,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-06T16:00:00.000Z"
+    },
+    {
+      "id": 261,
+      "serialNumber": "AL008063",
+      "modelUnit": "PS-130 BIT",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "PENUTUP OTOMATIS PECAH",
+      "tokoId": 245,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-09-03T00:00:00.000Z"
     },
     {
       "id": 198,
@@ -9010,6 +9023,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1132,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AL008063",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T22:35:42.590Z"
+    },
     {
       "id": 1131,
       "aksi": "CREATE_SERVICE_REQUEST",
