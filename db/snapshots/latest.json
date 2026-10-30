@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-29T22:47:30.075Z",
+  "generatedAt": "2026-10-30T00:38:27.716Z",
   "masterToko": [
     {
       "id": 257,
@@ -7964,27 +7964,27 @@
       "id": 14,
       "noTiket": "SVC-2610-0012",
       "unitAssetId": 134,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0012",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-22T00:38:00.000Z",
       "deskripsiKerusakan": "nasi basi",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2610-0012.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-22T00:38:00.000Z",
       "tglTiket": "2026-10-14T05:12:35.093Z",
       "createdAt": "2026-10-14T05:12:35.109Z",
-      "updatedAt": "2026-10-19T00:02:55.835Z",
+      "updatedAt": "2026-10-30T00:38:27.618Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8690,6 +8690,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1092,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0012",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2610-0012.jpg) — tglFinish diatur manual: 22/8/2026, 08.38.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T00:38:27.673Z"
+    },
+    {
+      "id": 1091,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP) dari IP 127.0.0.1",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-29T23:57:20.983Z"
+    },
     {
       "id": 1090,
       "aksi": "FINISH_SERVICE",
