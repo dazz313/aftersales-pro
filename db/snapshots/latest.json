@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:27:45.886Z",
+  "generatedAt": "2026-10-30T22:30:52.889Z",
   "masterToko": [
     {
       "id": 257,
@@ -3980,6 +3980,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-05T16:00:00.000Z"
+    },
+    {
+      "id": 260,
+      "serialNumber": "ZL009632",
+      "modelUnit": "PS-135 E",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "SUARA BERISIK",
+      "tokoId": 225,
+      "customerId": null,
+      "statusGaransi": "GARANSI",
+      "tglPembelian": null,
+      "createdAt": "2026-08-06T00:00:00.000Z"
     },
     {
       "id": 232,
@@ -8483,8 +8496,8 @@
       "lokasiUnit": "TOKO",
       "penanganan": "DI_TOKO",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-30T22:28:02.704Z",
       "noSttbKolektif": null,
       "noSuratKembali": null,
       "deskripsiKerusakan": "SUARA KASAR",
@@ -8498,7 +8511,7 @@
       "tglFinish": "2026-08-05T22:27:00.000Z",
       "tglTiket": "2026-10-14T04:29:50.983Z",
       "createdAt": "2026-10-14T04:29:51.001Z",
-      "updatedAt": "2026-10-30T22:27:45.869Z",
+      "updatedAt": "2026-10-30T22:28:02.705Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8962,6 +8975,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1130,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZL009632",
+      "deskripsi": "Unit baru teregistrasi: pompa air (GARANSI) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T22:30:52.872Z"
+    },
+    {
+      "id": 1129,
+      "aksi": "KEMBALI_KE_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0006",
+      "deskripsi": "Unit (tiket FINISH — masih di workshop saat selesai dikerjakan) dikonfirmasi kembali ke toko pada 31/10/2026, 06.28.02, STTB STTB-2610-0006 dicabut",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:28:02.710Z"
+    },
     {
       "id": 1128,
       "aksi": "FINISH_SERVICE",
