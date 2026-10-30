@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:53:09.077Z",
+  "generatedAt": "2026-10-30T23:58:57.388Z",
   "masterToko": [
     {
       "id": 257,
@@ -3620,6 +3620,19 @@
       "createdAt": "2026-09-28T00:00:00.000Z"
     },
     {
+      "id": 262,
+      "serialNumber": "4400001050",
+      "modelUnit": "MCG-171",
+      "merk": "Miyako",
+      "nama": "RICE COOKER",
+      "kerusakanAwal": "PENYOK BODY",
+      "tokoId": 263,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-08-04T00:00:00.000Z"
+    },
+    {
       "id": 167,
       "serialNumber": "44010001050",
       "modelUnit": "MCG-171",
@@ -4662,11 +4675,11 @@
       "noSttb": "STTB-2607-0010",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-30T23:53:15.616Z",
       "noSttbKolektif": null,
       "noSuratKembali": null,
       "deskripsiKerusakan": "PENUITUP PECAH",
@@ -4680,7 +4693,7 @@
       "tglFinish": "2026-10-30T23:53:00.000Z",
       "tglTiket": "2026-07-17T00:00:00.000Z",
       "createdAt": "2026-10-30T23:39:16.368Z",
-      "updatedAt": "2026-10-30T23:53:09.030Z",
+      "updatedAt": "2026-10-30T23:53:15.618Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9204,6 +9217,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1154,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "4400001050",
+      "deskripsi": "Unit baru teregistrasi: RICE COOKER (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T23:58:57.372Z"
+    },
+    {
+      "id": 1153,
+      "aksi": "KEMBALI_KE_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0010",
+      "deskripsi": "Unit (tiket FINISH — masih di workshop saat selesai dikerjakan) dikonfirmasi kembali ke toko pada 31/10/2026, 07.53.15, STTB STTB-2607-0010 dicabut",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:53:15.622Z"
+    },
     {
       "id": 1152,
       "aksi": "FINISH_SERVICE",
