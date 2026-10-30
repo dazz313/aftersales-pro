@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T02:33:56.403Z",
+  "generatedAt": "2026-10-30T04:49:14.237Z",
   "masterToko": [
     {
       "id": 257,
@@ -4601,6 +4601,70 @@
   ],
   "serviceRequest": [
     {
+      "id": 100,
+      "noTiket": "SVC-2609-0005",
+      "unitAssetId": 259,
+      "status": "REQUEST",
+      "noSttb": "STTB-2609-0005",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "deskripsiKerusakan": "bodi penyok",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-25T00:00:00.000Z",
+      "createdAt": "2026-10-30T04:49:14.207Z",
+      "updatedAt": "2026-10-30T04:49:14.207Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 103,
+          "serviceRequestId": 100,
+          "sparepartId": 309,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        },
+        {
+          "id": 104,
+          "serviceRequestId": 100,
+          "sparepartId": 310,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 99,
       "noTiket": "SVC-2610-0050",
       "unitAssetId": 246,
@@ -8690,6 +8754,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1107,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0005",
+      "deskripsi": "Tiket manual dibuat untuk unit 44060012991 (KG-502 C, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2609-0005 terbit sejak request part",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-30T04:49:14.220Z"
+    },
     {
       "id": 1106,
       "aksi": "FINISH_SERVICE",
