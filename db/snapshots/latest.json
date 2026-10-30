@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T02:29:30.385Z",
+  "generatedAt": "2026-10-30T02:30:06.965Z",
   "masterToko": [
     {
       "id": 257,
@@ -5472,27 +5472,27 @@
       "id": 75,
       "noTiket": "SVC-2607-0001",
       "unitAssetId": 154,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2607-0001",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-28T02:29:00.000Z",
       "deskripsiKerusakan": "TOP COVER PECAH",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2607-0001.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-28T02:29:00.000Z",
       "tglTiket": "2026-07-16T00:00:00.000Z",
       "createdAt": "2026-10-18T11:55:18.409Z",
-      "updatedAt": "2026-10-30T02:29:30.368Z",
+      "updatedAt": "2026-10-30T02:30:06.943Z",
       "editedAt": "2026-10-30T02:29:30.368Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
@@ -5510,8 +5510,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": "MCMX-AX364-WH-KGX",
-          "namaPartCache": "TOTAL TOP COVER 508",
+          "kodePartCache": "MJXX-AX017-XX-KGX",
+          "namaPartCache": "Out Case Assy 709",
           "editedAt": "2026-10-30T02:29:30.364Z",
           "editedBy": "dazz"
         }
@@ -8690,6 +8690,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1103,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0001",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2607-0001.jpg) — tglFinish diatur manual: 28/8/2026, 10.29.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:30:06.950Z"
+    },
     {
       "id": 1102,
       "aksi": "KOREKSI_PART_SERVICE",
