@@ -51,8 +51,28 @@ interface Stage {
   state: 'done' | 'now' | 'todo' | 'skip'
 }
 
-/** Hitung 7 tahap alur service lapangan dari kondisi tiket. */
+/**
+ * Hitung tahap alur service lapangan dari kondisi tiket.
+ * Tiket FINISH dipangkas menjadi SATU indikator: tanggal selesai — tahap
+ * part (konfirmasi produsen/SJ/part datang/ready) kejadiannya sudah lewat
+ * dan tidak relevan lagi, jadi tidak ditampilkan di stepper.
+ */
 export function flowStages(t: ServiceTicket): Stage[] {
+  if (t.status === 'FINISH') {
+    const tgl = t.tglFinish
+      ? new Date(t.tglFinish).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+      : null
+    return [
+      {
+        key: 'selesai',
+        label: tgl ? `Selesai dikerjakan — ${tgl}` : 'Selesai dikerjakan — tanggal selesai belum terekam',
+        desc: t.tglKembaliKeToko
+          ? `Unit kembali ke toko ${new Date(t.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} — lanjut klaim produsen bila ada part garansi`
+          : 'Unit masih di workshop — cetak Surat Pengembalian (SKTB) lalu kembalikan ke toko',
+        state: 'done',
+      },
+    ]
+  }
   const butuhPart = t.parts.length > 0
   const konfirmasiSelesai = !butuhPart || t.parts.every((p) => p.statusKonfirmasi !== 'MENUNGGU')
   const adaTidakReady = t.parts.some((p) => p.statusKonfirmasi === 'TIDAK_READY')
@@ -60,7 +80,7 @@ export function flowStages(t: ServiceTicket): Stage[] {
   const penangananOk = t.penanganan !== 'BELUM'
   const sjOk = !butuhPart || !!t.noSuratJalan
   const kembaliOk = t.lokasiUnit === 'TOKO' && (t.sttbDicabut || !t.noSttb)
-  const finishOk = t.status === 'FINISH'
+  // Cabang FINISH sudah ditangani early-return di atas — di sini selalu false.
 
   const stages: Stage[] = [
     {
@@ -109,17 +129,13 @@ export function flowStages(t: ServiceTicket): Stage[] {
     },
     {
       key: 'kembali',
-      label: finishOk
-        ? t.tglKembaliKeToko
-          ? `Selesai dikerjakan · barang kembali ke toko ${new Date(t.tglKembaliKeToko).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}`
-          : 'Selesai dikerjakan — unit masih di workshop (belum dikirim kembali)'
-        : kembaliOk
-          ? 'Unit kembali di toko — ajukan nota servis'
-          : t.lokasiUnit === 'WORKSHOP'
-            ? 'Unit di workshop — kembalikan + cabut STTB'
-            : 'Unit di toko',
+      label: kembaliOk
+        ? 'Unit kembali di toko — ajukan nota servis'
+        : t.lokasiUnit === 'WORKSHOP'
+          ? 'Unit di workshop — kembalikan + cabut STTB'
+          : 'Unit di toko',
       desc: 'Surat pengembalian (SKTB) → unit sampai toko → tanggal kembali terekam, STTB dicabut',
-      state: finishOk ? 'done' : t.status === 'PROSES' ? 'now' : 'todo',
+      state: t.status === 'PROSES' ? 'now' : 'todo',
     },
   ]
   return stages

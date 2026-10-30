@@ -1237,8 +1237,9 @@ export default function ServiceView() {
                               {/* teks "Req:" lama (tanggal kini ada di chip + hover). */}
                               <BadgeAlurSj t={t} />
                             </div>
-                            {/* Ringkasan part: ✔ READY vs ● INDEN — identifikasi sekilas tanpa buka detail */}
-                            {partsTampil.length > 0 && (
+                            {/* Ringkasan part: ✔ READY vs ● INDEN — identifikasi sekilas tanpa buka detail.
+                                Tiket FINISH tidak pakai — alur part sudah tamat, yang tampil hanya tgl finish. */}
+                            {t.status !== 'FINISH' && partsTampil.length > 0 && (
                               <Badge
                                 variant="outline"
                                 className={cn(
@@ -1273,12 +1274,14 @@ export default function ServiceView() {
                           ) : (
                             <div className="flex flex-col gap-1">
                               {partsTampil.map((p) => (
+                                /* Tiket FINISH: alur ready/order sudah tamat — part
+                                   ditulis polos, statusnya digantikan tgl di kolom Tgl Finish. */
                                 <span key={p.id} className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
                                   <KodeSparepart
                                     kode={p.sparepart?.kodePart ?? ''}
                                     nama={p.sparepart?.namaPart}
                                     cek
-                                    className={p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
+                                    className={t.status === 'FINISH' ? 'text-[10px] text-slate-600' : p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
                                   />
                                   <span className="font-mono text-[10px] font-normal text-slate-400">×{p.qty}</span>
                                 </span>
@@ -1294,14 +1297,18 @@ export default function ServiceView() {
                               {partsTampil.map((p) => (
                                 <span
                                   key={p.id}
-                                  title={`${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`}
+                                  title={
+                                    t.status === 'FINISH'
+                                      ? p.sparepart?.kodePart ?? ''
+                                      : `${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`
+                                  }
                                   className={cn(
                                     'truncate text-[11px]',
-                                    p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
+                                    t.status === 'FINISH' ? 'text-slate-500' : p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
                                   )}
                                 >
                                   {p.sparepart?.namaPart ?? '?'}
-                                  {p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
+                                  {t.status !== 'FINISH' && p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
                                 </span>
                               ))}
                             </div>
@@ -1422,9 +1429,12 @@ export default function ServiceView() {
                               <span className="truncate font-mono text-[11px] text-slate-700">
                                 {partsTampil.map((p) => p.sparepart?.kodePart).filter(Boolean).join(', ')}
                               </span>
-                              <span className={cn('rounded px-1 py-0.5 text-[10px] font-semibold', indenCnt > 0 ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700')}>
-                                {readyCnt} ready · {indenCnt} inden
-                              </span>
+                              {/* Chip ready/inden tidak untuk tiket FINISH — alur part tamat, cukup tgl finish */}
+                              {t.status !== 'FINISH' && (
+                                <span className={cn('rounded px-1 py-0.5 text-[10px] font-semibold', indenCnt > 0 ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700')}>
+                                  {readyCnt} ready · {indenCnt} inden
+                                </span>
+                              )}
                             </span>
                           )}
                         </dd>
@@ -1487,7 +1497,8 @@ export default function ServiceView() {
                 <DialogTitle className="flex flex-wrap items-center gap-2 font-mono text-base">
                   {detail.noTiket}
                   <Badge variant="outline" className={STATUS_STYLES[detail.status].cls}>{STATUS_STYLES[detail.status].label}</Badge>
-                  {detail.parts.length > 0 && (() => {
+                  {/* Chip ready/inden tidak untuk tiket FINISH — alur part tamat, cukup tgl selesai */}
+                  {detail.status !== 'FINISH' && detail.parts.length > 0 && (() => {
                     const tampil = detail.parts.filter((p) => p.qty > 0)
                     const r = tampil.filter((p) => p.statusPart === 'READY').length
                     const o = tampil.length - r
@@ -1506,6 +1517,7 @@ export default function ServiceView() {
                 </DialogTitle>
                 <DialogDescription>
                   Tgl kejadian {formatWaktu(detail.tglTiket)} · Diupload {formatWaktu(detail.createdAt)}
+                  {detail.status === 'FINISH' && <> · <span className="font-medium text-emerald-800">Selesai {tglFinishPendek(detail.tglFinish) ?? '(belum terekam)'}</span></>}
                   {detail.statusKlaimProdusen !== 'DRAFT' && <> · Klaim {detail.statusKlaimProdusen}</>}
                   {detail.isDataLama && ' · DATA LAMA (umur nonaktif)'}
                 </DialogDescription>
