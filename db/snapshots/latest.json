@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T21:24:21.185Z",
+  "generatedAt": "2026-10-30T21:25:12.566Z",
   "masterToko": [
     {
       "id": 257,
@@ -8903,7 +8903,7 @@
     {
       "id": 266,
       "kunci": "gs_jadwal_terakhir",
-      "nilai": "2026-10-30 05:16"
+      "nilai": "2026-10-31 05:25"
     },
     {
       "id": 245,
@@ -8962,6 +8962,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1117,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-30T21-25-12.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-30T21:25:12.539Z"
+    },
+    {
+      "id": 1116,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-30T21-24-21.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-10-30T21:24:21.142Z"
+    },
     {
       "id": 1115,
       "aksi": "BACKUP_DATA",
@@ -16831,6 +16849,26 @@
   ],
   "backupLog": [
     {
+      "id": 40,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 430,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-30T21-25-12.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-30T21:25:12.523Z"
+    },
+    {
+      "id": 39,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 430,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-10-30T21-24-21.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-10-30T21:24:21.124Z"
+    },
+    {
       "id": 38,
       "status": "LOCAL",
       "trigger": "AUTO",
@@ -17118,30 +17156,6 @@
       "rowsTotal": 302,
       "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
       "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-16T01-22-22.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
-      "createdAt": "2026-10-16T01:22:22.909Z"
-    },
-    {
-      "id": 9,
-      "status": "LOCAL",
-      "trigger": "AUTO",
-      "sheetsWritten": 0,
-      "rowsTotal": 226,
-      "tabel": "toko, customer, sparepart, unit, kunjungan, tiket",
-      "message": "Snapshot lokal via MCP AI: backup-mcp-2026-10-14T15-29-48-726Z.json",
-      "createdAt": "2026-10-14T15:29:48.729Z"
-    },
-    {
-      "id": 8,
-      "status": "LOCAL",
-      "trigger": "AUTO",
-      "sheetsWritten": 0,
-      "rowsTotal": 6,
-      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service",
-      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\.next\\standalone\\db\\backups\\backup-2026-10-13T16-51-31.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
-      "createdAt": "2026-10-13T16:51:31.936Z"
-    }
-  ]
-}-16T01-22-22.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
       "createdAt": "2026-10-16T01:22:22.909Z"
     },
     {
