@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T04:49:14.237Z",
+  "generatedAt": "2026-10-30T05:40:54.410Z",
   "masterToko": [
     {
       "id": 257,
@@ -8502,6 +8502,52 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 27,
+      "kodePart": "GCXX-MX216-PN-KGX",
+      "namaPart": "Right Cover",
+      "brand": "Miyako",
+      "qty": 1,
+      "unitAssetId": 259,
+      "serialNumber": "44060012991",
+      "modelUnit": "KG-502 C",
+      "tokoKode": "TOK-004",
+      "tokoNama": "Toko Surya Indah",
+      "catatan": "Reorder part inden — tiket SVC-2609-0005",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-10-30T05:40:54.389Z",
+      "updatedAt": "2026-10-30T05:40:54.389Z",
+      "serviceRequestId": 100
+    },
+    {
+      "id": 26,
+      "kodePart": "GCXX-MX218-CW-KGX",
+      "namaPart": "Top Body 502 C printing Wayang. Wyg",
+      "brand": "Miyako",
+      "qty": 1,
+      "unitAssetId": 259,
+      "serialNumber": "44060012991",
+      "modelUnit": "KG-502 C",
+      "tokoKode": "TOK-004",
+      "tokoNama": "Toko Surya Indah",
+      "catatan": "Reorder part inden — tiket SVC-2609-0005",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-10-30T05:40:54.383Z",
+      "updatedAt": "2026-10-30T05:40:54.383Z",
+      "serviceRequestId": 100
+    },
+    {
       "id": 25,
       "kodePart": "MCMX-AX435-RH-KGX",
       "namaPart": "Out Case Assy 528 red",
@@ -8754,6 +8800,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1108,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0005",
+      "deskripsi": "Reorder 2 part inden via email: GCXX-MX218-CW-KGX ×1, GCXX-MX216-PN-KGX ×1 — item menempel ke tiket SVC-2609-0005, siap dikirim ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T05:40:54.392Z"
+    },
     {
       "id": 1107,
       "aksi": "CREATE_SERVICE_REQUEST",
