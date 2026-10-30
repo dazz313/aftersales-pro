@@ -204,7 +204,7 @@ export function cocokkan(rows: BarisSuratJalan[], kandidat: Kandidat[]): HasilBa
 }
 
 // ===== Parser Excel/CSV (SheetJS) — kolom via alias fleksibel =====
-// Kepala tabel dicari di ±30 baris pertama sehingga file surat jalan produsen
+// Kepala tabel dicari di ±50 baris pertama sehingga file surat jalan produsen
 // dengan judul/logo di atas tabel tetap terbaca. Nama kolom di-NORM-kan
 // (huruf besar, tanpa spasi/tanda baca) lalu dicocokkan ke alias berikut.
 // DAFTAR_ALIAS & cariBarisHeader diekspor — dipakai ulang parser teks (PDF/OCR)
@@ -220,20 +220,65 @@ export const DAFTAR_ALIAS = {
 }
 
 /**
- * Cari baris kepala tabel (header) di matriks sheet (array-of-array): baris
- * pertama yang salah satu selnya = alias kolom kode part. Kembalikan index
- * baris + pemetaan KOLOM INDEKS → FIELD untuk semua alias di baris itu.
+ * Cari baris kepala tabel (header) di ±50 baris pertama matriks (array-of-array):
+ * baris pertama yang salah satu selnya mengandung judul kolom kode part.
+ * Toleran terhadap variasi file produsen:
+ * - judul yang hampir sama ("PART NO." → alias partno, "KODE BARANG", dst.)
+ * - judul digabung di SATU sel dengan pemisah ("KODE PART / NAMA PART / QTY /
+ *   SN UNIT" atau "KODE PART | NAMA | QTY") — sel dipecah per pemisah lalu
+ *   tiap serpihan dipetakan ke kolom berurutan pertama yang masih kosong
+ *   (kolom aslinya kosong karena sel header tadi di-merge Excel)
+ * Kembalikan index baris + pemetaan KOLOM INDEKS → FIELD untuk semua alias
+ * di baris itu.
  */
 export function cariBarisHeader(matriks: unknown[][]): { idx: number; map: Map<number, string> } | null {
-  for (let i = 0; i < Math.min(matriks.length, 30); i++) {
+  // Alias sudah di-NORM-kan sekali di luar loop baris.
+  const aliasN: Record<string, string[]> = {}
+  for (const [field, alias] of Object.entries(DAFTAR_ALIAS)) {
+    aliasN[field] = (alias as string[]).map((a) => NORM(a))
+  }
+  /** Pilih field untuk satu judul kolom: persis dulu, lalu mirip kandungan. */
+  const pilihField = (fn: string): string | null => {
+    for (const [field, alias] of Object.entries(aliasN)) if (alias.includes(fn)) return field
+    for (const [field, alias] of Object.entries(aliasN)) {
+      if (fn.length >= 3 && alias.some((a) => a.length >= 3 && (fn.includes(a) || a.includes(fn)))) return field
+    }
+    return null
+  }
+  for (let i = 0; i < Math.min(matriks.length, 50); i++) {
     const baris = matriks[i] ?? []
+    const teksKol = baris.map((s) => String(s ?? ''))
+    const polos = teksKol.map((s) => NORM(s))
     const map = new Map<number, string>()
-    baris.forEach((sel, kol) => {
-      const kn = NORM(String(sel))
-      if (!kn) return
-      for (const [field, alias] of Object.entries(DAFTAR_ALIAS)) {
-        if ((alias as string[]).map(NORM).includes(kn)) { map.set(kol, map.get(kol) ?? field); break }
-      }
+    const terklaim = new Set<string>()
+    teksKol.forEach((teks, kol) => {
+      // Pecah sel per pemisah umum — sertakan jarak ≥2 spasi (hasil OCR)
+      // agar kepala "KODE PART    NAMA PART" tetap terbaca.
+      const serpihan = teks
+        .split(/\/|\||•|;|,|\t|  +/)
+        .map((f) => NORM(f))
+        .filter(Boolean)
+      if (!serpihan.length) return
+      serpihan.forEach((fn, fi) => {
+        const field = pilihField(fn)
+        if (!field || terklaim.has(field)) return
+        if (fi === 0) {
+          if (map.has(kol)) return
+          map.set(kol, field)
+          terklaim.add(field)
+          return
+        }
+        // Serpihan ke-2 dst. dari sel gabungan (di-merge) → kolom berikutnya
+        // yang sel header-nya KOSONG (judul menempati sel pertama padahal
+        // kolom aslinya masing-masing). Mulai dari kol+fi (urutan aslinya).
+        for (let target = kol + fi; target < teksKol.length; target++) {
+          if (!map.has(target) && !polos[target]) {
+            map.set(target, field)
+            terklaim.add(field)
+            break
+          }
+        }
+      })
     })
     if (Array.from(map.values()).includes('kodePart')) return { idx: i, map }
   }
@@ -262,7 +307,7 @@ export function parseTabsheet(buffer: Buffer): HasilTabsheet {
     if (kepala) { matriks = raw; kepalaIdx = kepala.idx; map = kepala.map; break }
   }
   if (!matriks.length) {
-    throw new Error('Kolom kode part tidak terbaca — pastikan ada baris berisi judul kolom (cth "KODE PART / NAMA PART / QTY / SN UNIT") di ±30 baris pertama, atau unduh Templat Excel di dialog dan isi menurut formatnya')
+    throw new Error('Kolom kode part tidak terbaca — pastikan ada baris berisi judul kolom (cth "KODE PART / NAMA PART / QTY / SN UNIT", boleh gabung satu sel) di ±50 baris pertama, atau unduh Templat Excel di dialog dan isi menurut formatnya')
   }
 
   const rows: BarisSuratJalan[] = []
