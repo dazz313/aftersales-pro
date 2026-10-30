@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:16:24.140Z",
+  "generatedAt": "2026-10-30T23:18:50.568Z",
   "masterToko": [
     {
       "id": 257,
@@ -1677,6 +1677,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-28T01:02:19.735Z"
+    },
+    {
+      "id": 360,
+      "kodePart": "MCMX-PX542-PK-KGX",
+      "namaPart": "Top Cover 509 New (Pink)",
+      "brandKompatibel": "Miyako",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-10-30T23:18:50.538Z"
     },
     {
       "id": 286,
@@ -4627,6 +4641,57 @@
   ],
   "serviceRequest": [
     {
+      "id": 103,
+      "noTiket": "SVC-2607-0009",
+      "unitAssetId": 146,
+      "status": "REQUEST",
+      "noSttb": "STTB-2607-0009",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "PENUITUP PECAH",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-07-17T00:00:00.000Z",
+      "createdAt": "2026-10-30T23:18:50.545Z",
+      "updatedAt": "2026-10-30T23:18:50.545Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 106,
+          "serviceRequestId": 103,
+          "sparepartId": 360,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 102,
       "noTiket": "SVC-2609-0006",
       "unitAssetId": 261,
@@ -6207,11 +6272,11 @@
       "noSttb": "STTB-2608-0005",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-30T23:16:29.887Z",
       "noSttbKolektif": null,
       "noSuratKembali": null,
       "deskripsiKerusakan": "PENGUNCI TIANG LOS",
@@ -6225,7 +6290,7 @@
       "tglFinish": "2026-10-30T23:16:00.000Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T06:56:44.935Z",
-      "updatedAt": "2026-10-30T23:16:24.123Z",
+      "updatedAt": "2026-10-30T23:16:29.888Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9074,6 +9139,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1144,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0009",
+      "deskripsi": "Tiket manual dibuat untuk unit 03020073129 (MCM-509, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2607-0009 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T23:18:50.551Z"
+    },
+    {
+      "id": 1143,
+      "aksi": "KEMBALI_KE_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0005",
+      "deskripsi": "Unit (tiket FINISH — masih di workshop saat selesai dikerjakan) dikonfirmasi kembali ke toko pada 31/10/2026, 07.16.29, STTB STTB-2608-0005 dicabut",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:16:29.892Z"
+    },
     {
       "id": 1142,
       "aksi": "FINISH_SERVICE",
