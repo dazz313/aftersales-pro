@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:15:35.471Z",
+  "generatedAt": "2026-10-30T23:15:57.254Z",
   "masterToko": [
     {
       "id": 257,
@@ -2443,7 +2443,7 @@
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 1,
+      "totalTerpakai": 2,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-18T06:56:44.923Z"
@@ -6203,12 +6203,12 @@
       "id": 58,
       "noTiket": "SVC-2608-0005",
       "unitAssetId": 144,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2608-0005",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -6225,11 +6225,11 @@
       "tglFinish": null,
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T06:56:44.935Z",
-      "updatedAt": "2026-10-30T23:15:35.452Z",
+      "updatedAt": "2026-10-30T23:15:57.237Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
+      "tglPartDatang": "2026-10-30T23:15:51.474Z",
       "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
@@ -6238,7 +6238,7 @@
           "serviceRequestId": 58,
           "sparepartId": 337,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
@@ -9074,6 +9074,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1141,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0005",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0005 diterbitkan untuk penarikan unit 02060012333 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:15:57.241Z"
+    },
+    {
+      "id": 1140,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0005",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1) — tgl datang part tercatat",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:15:51.478Z"
+    },
     {
       "id": 1139,
       "aksi": "UPDATE_BIAYA_JASA",
