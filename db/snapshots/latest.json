@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:18:39.314Z",
+  "generatedAt": "2026-10-30T22:25:34.140Z",
   "masterToko": [
     {
       "id": 257,
@@ -4143,7 +4143,7 @@
       "modelUnit": "PS-130 BIT",
       "merk": "Shimizu",
       "nama": "",
-      "kerusakanAwal": null,
+      "kerusakanAwal": "BUNYI KASAR",
       "tokoId": 225,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -5221,12 +5221,12 @@
       "id": 85,
       "noTiket": "SVC-2607-0006",
       "unitAssetId": 222,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2607-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -5243,7 +5243,7 @@
       "tglFinish": null,
       "tglTiket": "2026-07-16T00:00:00.000Z",
       "createdAt": "2026-10-21T01:05:04.566Z",
-      "updatedAt": "2026-10-30T22:18:39.268Z",
+      "updatedAt": "2026-10-30T22:18:42.314Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8962,6 +8962,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1125,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZX386683",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (ZX386683)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T22:25:34.120Z"
+    },
+    {
+      "id": 1124,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0006",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2607-0006 diterbitkan untuk penarikan unit 3050090799 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:18:42.321Z"
+    },
     {
       "id": 1123,
       "aksi": "TERIMA_PART_PRODUSEN",
