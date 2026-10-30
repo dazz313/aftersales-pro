@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T02:05:26.529Z",
+  "generatedAt": "2026-10-30T02:27:26.588Z",
   "masterToko": [
     {
       "id": 257,
@@ -1709,7 +1709,7 @@
     {
       "id": 300,
       "kodePart": "MJXX-AX017-XX-KGX",
-      "namaPart": "Out Case 709",
+      "namaPart": "TOTAL TOP COVER 508",
       "brandKompatibel": "MIYAKO",
       "supplier": "",
       "stokJual": 0,
@@ -5492,9 +5492,9 @@
       "tglFinish": null,
       "tglTiket": "2026-07-16T00:00:00.000Z",
       "createdAt": "2026-10-18T11:55:18.409Z",
-      "updatedAt": "2026-10-20T06:16:01.026Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-30T02:27:26.572Z",
+      "editedAt": "2026-10-30T02:27:26.571Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": null,
       "tglRequestPart": "2026-10-20T06:16:00.998Z",
@@ -5503,7 +5503,7 @@
         {
           "id": 84,
           "serviceRequestId": 75,
-          "sparepartId": 348,
+          "sparepartId": 300,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
           "statusKonfirmasi": "MENUNGGU",
@@ -5512,8 +5512,8 @@
           "pasangOleh": null,
           "kodePartCache": "MCMX-AX364-WH-KGX",
           "namaPartCache": "TOTAL TOP COVER 508",
-          "editedAt": null,
-          "editedBy": null
+          "editedAt": "2026-10-30T02:27:26.567Z",
+          "editedBy": "dazz"
         }
       ]
     },
@@ -5816,27 +5816,27 @@
       "id": 62,
       "noTiket": "SVC-2608-0008",
       "unitAssetId": 149,
-      "status": "REQUEST",
+      "status": "FINISH",
       "noSttb": "STTB-2608-0008",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
       "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-08-26T02:05:00.000Z",
       "deskripsiKerusakan": "BODY PENYOK",
       "fotoKerusakanWa": null,
-      "fotoNotaStempel": null,
+      "fotoNotaStempel": "nota-stempel-SVC-2608-0008.jpg",
       "tandaTanganDigital": null,
       "slaFlag": false,
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-08-26T02:05:00.000Z",
       "tglTiket": "2026-08-04T00:00:00.000Z",
       "createdAt": "2026-10-18T08:18:57.829Z",
-      "updatedAt": "2026-10-30T02:05:26.478Z",
+      "updatedAt": "2026-10-30T02:05:45.338Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -8690,6 +8690,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1098,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0001",
+      "deskripsi": "Koreksi part [edited]: kode MCMX-AX364-WH-KGX → MJXX-AX017-XX-KGX",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:27:26.576Z"
+    },
+    {
+      "id": 1097,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 1 kode baru, 0 dilengkapi dari 140 katalog + 71 balasan produsen + 0 order (total bank: 150)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T02:25:45.541Z"
+    },
+    {
+      "id": 1096,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0008",
+      "deskripsi": "Status PROSES → FINISH. Unit dikembalikan ke toko, nota berstempel diunggah (nota-stempel-SVC-2608-0008.jpg) — tglFinish diatur manual: 26/8/2026, 10.05.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:05:45.359Z"
+    },
+    {
+      "id": 1095,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2608-0008",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2608-0008 diterbitkan untuk penarikan unit AH336947 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:05:31.330Z"
+    },
     {
       "id": 1094,
       "aksi": "TERIMA_PART_PRODUSEN",
