@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T22:38:07.930Z",
+  "generatedAt": "2026-10-30T23:14:19.440Z",
   "masterToko": [
     {
       "id": 257,
@@ -2778,7 +2778,7 @@
       "modelUnit": "KAS-1607 PL",
       "merk": "Miyako",
       "nama": "",
-      "kerusakanAwal": "TIDAK NYALA",
+      "kerusakanAwal": "TIANG BERMASALAH",
       "tokoId": 257,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -4634,11 +4634,11 @@
       "noSttb": "STTB-2609-0006",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-10-30T22:38:15.328Z",
       "noSttbKolektif": null,
       "noSuratKembali": null,
       "deskripsiKerusakan": "PENUTUP OTOMATIS PECAH",
@@ -4652,7 +4652,7 @@
       "tglFinish": "2026-10-30T22:38:00.000Z",
       "tglTiket": "2026-09-01T00:00:00.000Z",
       "createdAt": "2026-10-30T22:36:56.346Z",
-      "updatedAt": "2026-10-30T22:38:07.915Z",
+      "updatedAt": "2026-10-30T22:38:15.330Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9074,6 +9074,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1138,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "02060012333",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (02060012333)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T23:14:19.427Z"
+    },
+    {
+      "id": 1137,
+      "aksi": "KEMBALI_KE_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0006",
+      "deskripsi": "Unit (tiket FINISH — masih di workshop saat selesai dikerjakan) dikonfirmasi kembali ke toko pada 31/10/2026, 06.38.15, STTB STTB-2609-0006 dicabut",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T22:38:15.335Z"
+    },
     {
       "id": 1136,
       "aksi": "FINISH_SERVICE",
