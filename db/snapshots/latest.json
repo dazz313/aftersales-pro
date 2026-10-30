@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T02:28:25.122Z",
+  "generatedAt": "2026-10-30T02:29:30.385Z",
   "masterToko": [
     {
       "id": 257,
@@ -1709,7 +1709,7 @@
     {
       "id": 300,
       "kodePart": "MJXX-AX017-XX-KGX",
-      "namaPart": "TOTAL OUT CASE BODY",
+      "namaPart": "Out Case Assy 709",
       "brandKompatibel": "MIYAKO",
       "supplier": "",
       "stokJual": 0,
@@ -5492,8 +5492,8 @@
       "tglFinish": null,
       "tglTiket": "2026-07-16T00:00:00.000Z",
       "createdAt": "2026-10-18T11:55:18.409Z",
-      "updatedAt": "2026-10-30T02:28:25.105Z",
-      "editedAt": "2026-10-30T02:28:25.104Z",
+      "updatedAt": "2026-10-30T02:29:30.368Z",
+      "editedAt": "2026-10-30T02:29:30.368Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
       "tglPartDatang": "2026-10-30T02:27:38.763Z",
@@ -5512,7 +5512,7 @@
           "pasangOleh": null,
           "kodePartCache": "MCMX-AX364-WH-KGX",
           "namaPartCache": "TOTAL TOP COVER 508",
-          "editedAt": "2026-10-30T02:28:25.101Z",
+          "editedAt": "2026-10-30T02:29:30.364Z",
           "editedBy": "dazz"
         }
       ]
@@ -8690,6 +8690,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1102,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0001",
+      "deskripsi": "Koreksi part [edited]: kode MJXX-AX017-XX-KGX, nama \"TOTAL OUT CASE BODY\" → \"Out Case Assy 709\"",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:29:30.372Z"
+    },
     {
       "id": 1101,
       "aksi": "KOREKSI_PART_SERVICE",
