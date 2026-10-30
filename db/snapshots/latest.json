@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T02:27:26.588Z",
+  "generatedAt": "2026-10-30T02:28:25.122Z",
   "masterToko": [
     {
       "id": 257,
@@ -1709,13 +1709,13 @@
     {
       "id": 300,
       "kodePart": "MJXX-AX017-XX-KGX",
-      "namaPart": "TOTAL TOP COVER 508",
+      "namaPart": "TOTAL OUT CASE BODY",
       "brandKompatibel": "MIYAKO",
       "supplier": "",
       "stokJual": 0,
       "stokGaransi": 0,
       "stokInventory": 0,
-      "totalTerpakai": 2,
+      "totalTerpakai": 3,
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-15T05:27:46.948Z"
@@ -5472,12 +5472,12 @@
       "id": 75,
       "noTiket": "SVC-2607-0001",
       "unitAssetId": 154,
-      "status": "REQUEST",
+      "status": "PROSES",
       "noSttb": "STTB-2607-0001",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "TOKO",
-      "penanganan": "BELUM",
+      "lokasiUnit": "WORKSHOP",
+      "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": null,
       "sttbDicabut": false,
       "tglKembaliKeToko": null,
@@ -5492,11 +5492,11 @@
       "tglFinish": null,
       "tglTiket": "2026-07-16T00:00:00.000Z",
       "createdAt": "2026-10-18T11:55:18.409Z",
-      "updatedAt": "2026-10-30T02:27:26.572Z",
-      "editedAt": "2026-10-30T02:27:26.571Z",
+      "updatedAt": "2026-10-30T02:28:25.105Z",
+      "editedAt": "2026-10-30T02:28:25.104Z",
       "editedBy": "dazz",
       "noSuratJalanProdusen": null,
-      "tglPartDatang": null,
+      "tglPartDatang": "2026-10-30T02:27:38.763Z",
       "tglRequestPart": "2026-10-20T06:16:00.998Z",
       "lampiranEmail": null,
       "parts": [
@@ -5505,14 +5505,14 @@
           "serviceRequestId": 75,
           "sparepartId": 300,
           "qty": 1,
-          "statusPart": "ORDER_PRODUSEN",
+          "statusPart": "READY",
           "statusKonfirmasi": "MENUNGGU",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
           "kodePartCache": "MCMX-AX364-WH-KGX",
           "namaPartCache": "TOTAL TOP COVER 508",
-          "editedAt": "2026-10-30T02:27:26.567Z",
+          "editedAt": "2026-10-30T02:28:25.101Z",
           "editedBy": "dazz"
         }
       ]
@@ -8690,6 +8690,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1101,
+      "aksi": "KOREKSI_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0001",
+      "deskripsi": "Koreksi part [edited]: kode MJXX-AX017-XX-KGX, nama \"TOTAL TOP COVER 508\" → \"TOTAL OUT CASE BODY\"",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:28:25.109Z"
+    },
+    {
+      "id": 1100,
+      "aksi": "MULAI_PROSES_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0001",
+      "deskripsi": "Status REQUEST → PROSES. STTB STTB-2607-0001 diterbitkan untuk penarikan unit 42090016750 ke workshop",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:27:42.544Z"
+    },
+    {
+      "id": 1099,
+      "aksi": "TERIMA_PART_PRODUSEN",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0001",
+      "deskripsi": "1 part diterima dari produsen dan dialokasikan ke tiket (order per-unit: stok brand tidak berubah, terpakai +1) — tgl datang part tercatat",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T02:27:38.767Z"
+    },
     {
       "id": 1098,
       "aksi": "KOREKSI_PART_SERVICE",
