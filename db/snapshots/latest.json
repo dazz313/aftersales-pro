@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:58:57.388Z",
+  "generatedAt": "2026-10-30T23:59:40.439Z",
   "masterToko": [
     {
       "id": 257,
@@ -4668,6 +4668,57 @@
   ],
   "serviceRequest": [
     {
+      "id": 105,
+      "noTiket": "SVC-2610-0051",
+      "unitAssetId": 262,
+      "status": "REQUEST",
+      "noSttb": "STTB-2610-0051",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "BODY PENYOK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-31T00:00:00.000Z",
+      "createdAt": "2026-10-30T23:59:40.010Z",
+      "updatedAt": "2026-10-30T23:59:40.010Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 108,
+          "serviceRequestId": 105,
+          "sparepartId": 342,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 104,
       "noTiket": "SVC-2607-0010",
       "unitAssetId": 147,
@@ -9217,6 +9268,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1155,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0051",
+      "deskripsi": "Tiket manual dibuat untuk unit 4400001050 (MCG-171, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2610-0051 terbit sejak request part",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-30T23:59:40.421Z"
+    },
     {
       "id": 1154,
       "aksi": "CREATE_UNIT_ASSET",
