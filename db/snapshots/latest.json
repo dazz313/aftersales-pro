@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T23:39:38.129Z",
+  "generatedAt": "2026-10-30T23:53:09.077Z",
   "masterToko": [
     {
       "id": 257,
@@ -4658,7 +4658,7 @@
       "id": 104,
       "noTiket": "SVC-2607-0010",
       "unitAssetId": 147,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2607-0010",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
@@ -4677,10 +4677,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-30T23:53:00.000Z",
       "tglTiket": "2026-07-17T00:00:00.000Z",
       "createdAt": "2026-10-30T23:39:16.368Z",
-      "updatedAt": "2026-10-30T23:39:38.111Z",
+      "updatedAt": "2026-10-30T23:53:09.030Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -4698,8 +4698,8 @@
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
-          "kodePartCache": null,
-          "namaPartCache": null,
+          "kodePartCache": "MCMX-AX373-WH-KGX",
+          "namaPartCache": "Total Top Cover Assy 609",
           "editedAt": null,
           "editedBy": null
         }
@@ -9204,6 +9204,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1152,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0010",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 31/10/2026, 07.53.00) — nota belum diunggah (bisa menyusul) — UNIT MASIH DI WORKSHOP: terbitkan Surat Pengembalian, konfirmasi kembali saat unit sampai toko — tglFinish diatur manual: 31/10/2026, 07.53.00",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-10-30T23:53:09.054Z"
+    },
     {
       "id": 1151,
       "aksi": "MULAI_PROSES_SERVICE",
