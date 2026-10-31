@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T03:30:17.970Z",
+  "generatedAt": "2026-10-31T03:36:09.644Z",
   "masterToko": [
     {
       "id": 257,
@@ -4682,6 +4682,57 @@
   ],
   "serviceRequest": [
     {
+      "id": 107,
+      "noTiket": "SV-EM-20261031-0002",
+      "unitAssetId": 199,
+      "status": "REQUEST_EMAIL",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "Kekurangan part: GCXX-MX151-XX-KGX",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-31T03:36:09.412Z",
+      "createdAt": "2026-10-31T03:36:09.412Z",
+      "updatedAt": "2026-10-31T03:36:09.412Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 110,
+          "serviceRequestId": 107,
+          "sparepartId": 362,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
+    {
       "id": 106,
       "noTiket": "SV-EM-20261031-0001",
       "unitAssetId": 259,
@@ -9035,6 +9086,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 29,
+      "kodePart": "GCXX-MX151-XX-KGX",
+      "namaPart": "COVER 502 (RI)",
+      "brand": null,
+      "qty": 1,
+      "unitAssetId": 199,
+      "serialNumber": "44060074241",
+      "modelUnit": "KG-502C",
+      "tokoKode": "TOK-004",
+      "tokoNama": "Toko Surya Indah",
+      "catatan": null,
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "TEKNISI",
+      "createdAt": "2026-10-31T03:36:09.413Z",
+      "updatedAt": "2026-10-31T03:36:09.413Z",
+      "serviceRequestId": 107
+    },
+    {
       "id": 28,
       "kodePart": "GCXX-MX151-XX-KGX",
       "namaPart": "BACK COVER 502",
@@ -9356,6 +9430,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1166,
+      "aksi": "SUBMIT",
+      "entitas": "order-email-part",
+      "entitasId": "SV-EM-20261031-0002",
+      "deskripsi": "Input part kurang unit 44060074241: GCXX-MX151-XX-KGX ×1 — tiket SV-EM-20261031-0002 (REQUEST EMAIL) terbit otomatis",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-31T03:36:09.629Z"
+    },
     {
       "id": 1165,
       "aksi": "SUBMIT",
