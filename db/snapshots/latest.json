@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T20:58:57.008Z",
+  "generatedAt": "2026-10-31T22:07:46.280Z",
   "masterToko": [
     {
       "id": 257,
@@ -4809,11 +4809,11 @@
       "tglFinish": "2026-10-31T00:00:00.000Z",
       "tglTiket": "2026-10-31T00:00:00.000Z",
       "createdAt": "2026-10-30T23:59:40.010Z",
-      "updatedAt": "2026-10-31T00:00:44.391Z",
-      "editedAt": null,
-      "editedBy": null,
+      "updatedAt": "2026-10-31T22:07:45.970Z",
+      "editedAt": "2026-10-31T22:07:45.968Z",
+      "editedBy": "dazz",
       "noSuratJalanProdusen": null,
-      "tglPartDatang": "2026-10-31T00:00:18.333Z",
+      "tglPartDatang": "2026-09-30T23:59:40.010Z",
       "tglRequestPart": null,
       "lampiranEmail": null,
       "parts": [
@@ -9430,6 +9430,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1168,
+      "aksi": "KOREKSI_TGL_PART_DATANG",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0051",
+      "deskripsi": "Koreksi tanggal PART DATANG — diganti dari 31/10/2026, 08.00.18 menjadi 1/10/2026, 07.59.40 [KOREKSI DATA LAMA — Admin/Manager]",
+      "aktor": "ADMIN",
+      "createdAt": "2026-10-31T22:07:46.247Z"
+    },
     {
       "id": 1167,
       "aksi": "BACKUP_DATA",
