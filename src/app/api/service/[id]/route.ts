@@ -76,6 +76,7 @@ async function noWaProdusen(): Promise<string | null> {
  *   | KONFIRMASI_PRODUSEN | DAFTAR_TUNGGU_TOKO | KERJAKAN_DI_TOKO
  *   | TARIK_WORKSHOP | KIRIM_PART_RUSAK | KEMBALI_KE_TOKO | TERIMA_PART_PRODUSEN
  *   | TAMBAH_PART | HAPUS_PART | UBAH_QTY_PART | KOREKSI_PART | KOREKSI_TGL_FINISH
+ *   | KOREKSI_TGL_PART_DATANG (koreksi data lama — Admin/Manager + flag koreksiSelesai)
  *   | BUKA_ULANG_PROSES (FINISH → PROSES — Admin/Manager + flag koreksiSelesai)
  *   | KIRIM_PRODUSEN_WA | INPUT_PART_PRODUSEN
  *   | ORDER_EMAIL_REORDER (daftarkan baris inden ORDER_PRODUSEN sebagai item email)
@@ -796,6 +797,59 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         entitas: 'service_request',
         entitasId: existing.noTiket,
         deskripsi: `Koreksi tanggal FINISH — tglFinish diganti dari ${existing.tglFinish ? new Date(existing.tglFinish).toLocaleString('id-ID') : '-'} menjadi ${tanggalBaru.toLocaleString('id-ID')}${kembaliIkut ? ' — tgl kembali ke toko ikut digeser (semula otomatis = tglFinish lama)' : ''} [TIKET FINISH — koreksi Admin/Manager]`,
+        aktor,
+      })
+      await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)
+      return NextResponse.json(updated)
+    }
+
+    // Aksi koreksi data lama: ubah / kosongkan tanggal PART DATANG tiket (mis.
+    // hasil terapkan Surat Jalan Masuk lama keliru, atau tiket lama yang
+    // tanggalnya tidak terekam). Berlaku untuk tiket PROSES maupun FINISH.
+    // Hanya Admin Workshop/Manager + flag koreksiSelesai (sama seperti koreksi
+    // tgl finish) — tiket diberi tanda "(edited)" & tercatat di Audit Log.
+    if (aksi === 'KOREKSI_TGL_PART_DATANG') {
+      if (!bolehKoreksiSelesai(body.koreksiSelesai, session)) {
+        return NextResponse.json(
+          { error: 'Tanggal part datang hanya dapat dikoreksi oleh Admin Workshop/Manager melalui tombol koreksi dengan konfirmasi' },
+          { status: 409 }
+        )
+      }
+      // Nilai kosong/tidak diisi = hapus tanda part datang.
+      let tanggalBaru: Date | null = null
+      if (body.tglPartDatang) {
+        tanggalBaru = new Date(body.tglPartDatang)
+        if (Number.isNaN(tanggalBaru.getTime())) {
+          return NextResponse.json({ error: 'Tanggal part datang tidak valid' }, { status: 400 })
+        }
+        if (tanggalBaru.getTime() > Date.now() + 5 * 60_000) {
+          return NextResponse.json({ error: 'Tanggal part datang tidak boleh di masa depan' }, { status: 400 })
+        }
+        // DIBIASAKAN UNTUK DATA LAMA: tanggal boleh lebih awal dari createdAt
+        // (tiket lama kerap dikunci belakangan dengan tgl kejadian asli).
+        // Alur: part datang → part terpasang → FINISH. Pada tiket FINISH,
+        // kedatangan part minimal SAMA HARI dengan / sebelum tgl selesai.
+        if (existing.status === 'FINISH' && existing.tglFinish && hariKe(tanggalBaru) > hariKe(existing.tglFinish)) {
+          const tgl = new Date(existing.tglFinish).toLocaleDateString('id-ID')
+          return NextResponse.json(
+            { error: `Tanggal part datang tidak boleh lebih lambat dari tanggal selesai dikerjakan (${tgl}).` },
+            { status: 400 }
+          )
+        }
+      }
+      const updated = await db.serviceRequest.update({
+        where: { id: ticketId },
+        data: {
+          tglPartDatang: tanggalBaru,
+          ...(session ? { editedAt: new Date(), editedBy: session.username ?? session.nama } : {}),
+        },
+        include: { unitAsset: true, parts: { include: { sparepart: true } } },
+      })
+      await logAudit({
+        aksi: 'KOREKSI_TGL_PART_DATANG',
+        entitas: 'service_request',
+        entitasId: existing.noTiket,
+        deskripsi: `Koreksi tanggal PART DATANG — diganti dari ${existing.tglPartDatang ? new Date(existing.tglPartDatang).toLocaleString('id-ID') : '-'} menjadi ${tanggalBaru ? tanggalBaru.toLocaleString('id-ID') : '(dihapus)'} [KOREKSI DATA LAMA — Admin/Manager]`,
         aktor,
       })
       await autoGitBackup(aksi, 'service_request', existing.noTiket, aktor)

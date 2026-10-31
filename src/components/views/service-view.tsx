@@ -150,6 +150,8 @@ export default function ServiceView() {
   // Koreksi tanggal FINISH tiket yang sudah selesai (Admin Workshop/Manager) —
   // inline di detail tiket, tersimpan dengan tanda "(edited)" di sistem & Audit Log.
   const [tglFinishEdit, setTglFinishEdit] = useState<string | null>(null)
+  // Koreksi tanggal PART DATANG (data lama) — null = mode koreksi tutup
+  const [tglPartEdit, setTglPartEdit] = useState<string | null>(null)
 
   // Konsumsi navIntent dari Dashboard → terapkan filter lalu bersihkan
   // (dijalankan di callback async agar tidak setState sinkron di effect body)
@@ -171,6 +173,7 @@ export default function ServiceView() {
     setTiketEdit(false)
     setPartEdit(null)
     setTglFinishEdit(null)
+    setTglPartEdit(null)
     setDetail(t)
   }
 
@@ -1807,6 +1810,72 @@ export default function ServiceView() {
                                 body: { aksi: 'KOREKSI_TGL_FINISH', tglFinish: new Date(tglFinishEdit).toISOString(), koreksiSelesai: true },
                               })
                             }
+                          >
+                            <CheckCircle2 className="mr-1 h-3 w-3" /> Simpan Koreksi
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Koreksi data lama: tanggal part datang bisa diubah/kosongkan (Admin/Manager) */}
+                  <div className="rounded-md border p-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-slate-500">Part datang dari produsen</p>
+                      {bisaKoreksiPart && (detail.status === 'FINISH' || detail.status === 'PROSES') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-5 w-5 shrink-0 p-0 text-amber-600 hover:bg-amber-50"
+                          title="Koreksi tanggal part datang (data lama) — tersimpan dengan tanda (edited) di sistem"
+                          onClick={() => setTglPartEdit(detail.tglPartDatang ? dtLocalFrom(new Date(detail.tglPartDatang)) : dtLocalNow())}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="font-semibold text-slate-800">{formatTanggal(detail.tglPartDatang)}</p>
+                    {tglPartEdit && (
+                      <div className="mt-2 space-y-1.5 rounded-md border border-amber-200 bg-amber-50 p-2">
+                        <p className="text-[11px] font-semibold text-amber-800">
+                          Koreksi tanggal part datang (data lama) — tertanda (edited) di sistem &amp; Audit Log.
+                          <br />
+                          Bila tiket sudah FINISH, tidak boleh lebih lambat dari tanggal selesai dikerjakan.
+                        </p>
+                        <Input
+                          type="datetime-local"
+                          value={tglPartEdit}
+                          onChange={(e) => setTglPartEdit(e.target.value)}
+                          className="h-7 text-[11px]"
+                          aria-label="Tanggal part datang koreksi"
+                        />
+                        <div className="flex flex-wrap items-center justify-end gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 text-[11px]"
+                            title="Hapus tanggal part datang (kosongkan)"
+                            disabled={flowMutation.isPending}
+                            onClick={() => {
+                              flowMutation.mutate({ id: detail.id, body: { aksi: 'KOREKSI_TGL_PART_DATANG', koreksiSelesai: true } })
+                              setTglPartEdit(null)
+                            }}
+                          >
+                            Kosongkan
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-6 text-[11px]" onClick={() => setTglPartEdit(null)}>
+                            <X className="mr-1 h-3 w-3" /> Batal
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-6 text-[11px]"
+                            disabled={!tglPartEdit || flowMutation.isPending}
+                            onClick={() => {
+                              flowMutation.mutate({
+                                id: detail.id,
+                                body: { aksi: 'KOREKSI_TGL_PART_DATANG', tglPartDatang: new Date(tglPartEdit).toISOString(), koreksiSelesai: true },
+                              })
+                              setTglPartEdit(null)
+                            }}
                           >
                             <CheckCircle2 className="mr-1 h-3 w-3" /> Simpan Koreksi
                           </Button>
