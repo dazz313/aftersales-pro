@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T00:37:37.086Z",
+  "generatedAt": "2026-10-31T03:26:29.328Z",
   "masterToko": [
     {
       "id": 257,
@@ -3767,8 +3767,8 @@
       "serialNumber": "44060074241",
       "modelUnit": "KG-502C",
       "merk": "Miyako",
-      "nama": "",
-      "kerusakanAwal": null,
+      "nama": "KOMPOR",
+      "kerusakanAwal": "PENYOK BAGIAN ATAS DAN BELAKANG",
       "tokoId": 237,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -9268,6 +9268,42 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1164,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "44060074241",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (44060074241)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-10-31T03:26:29.297Z"
+    },
+    {
+      "id": 1163,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 142 katalog + 77 balasan produsen + 0 order (total bank: 268)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-31T03:12:30.851Z"
+    },
+    {
+      "id": 1162,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 2 dilengkapi dari 142 katalog + 77 balasan produsen + 0 order (total bank: 268)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-31T03:12:29.923Z"
+    },
+    {
+      "id": 1161,
+      "aksi": "IMPORT_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Import CSV kode produsen: 118 ditambahkan, 0 diperbarui, 52 dilewati, 0 gagal (mode: lewati)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-31T03:12:18.779Z"
+    },
     {
       "id": 1160,
       "aksi": "UPDATE_UNIT_ASSET",
