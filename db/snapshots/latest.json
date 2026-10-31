@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T00:17:59.131Z",
+  "generatedAt": "2026-10-31T00:37:37.086Z",
   "masterToko": [
     {
       "id": 257,
@@ -3898,12 +3898,12 @@
       "modelUnit": "PS-135 E",
       "merk": "SHIMIZU",
       "nama": "",
-      "kerusakanAwal": "body pecah",
+      "kerusakanAwal": "COVER OTOMATIS PECAH",
       "tokoId": 245,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
-      "createdAt": "2026-10-15T04:41:23.577Z"
+      "createdAt": "2026-09-22T00:00:00.000Z"
     },
     {
       "id": 219,
@@ -9268,6 +9268,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1160,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AS171344",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian, createdAt (AS171344)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-10-31T00:37:37.072Z"
+    },
     {
       "id": 1159,
       "aksi": "KOREKSI_PART_SERVICE",
