@@ -28,6 +28,7 @@ import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
 import UnitBarcodeSticker from '@/components/unit-barcode-sticker'
+import { TokoBarcodeKolektif, UnitBarcodeKolektif } from '@/components/stiker-kolektif'
 import { GARANSI_LABEL } from '@/lib/types'
 import { Store, Users, QrCode, UserCog, Plus, MapPinOff, MapPinCheck, Barcode, Upload, KeyRound, Power, Pencil, PackagePlus, PackageOpen, FileDown, ChevronDown, X, Trash2, AlertTriangle, Wrench } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -95,6 +96,9 @@ export default function MasterDataView() {
   const [tokoOpen, setTokoOpen] = useState(false)
   const [custOpen, setCustOpen] = useState(false)
   const [stickerToko, setStickerToko] = useState<Toko | null>(null)
+  // Cetak kolektif: dialog banyak stiker dalam 1 lembar (ikuti centang checkbox)
+  const [kolektifTokoOpen, setKolektifTokoOpen] = useState(false)
+  const [kolektifUnitOpen, setKolektifUnitOpen] = useState(false)
   const [unitOpen, setUnitOpen] = useState(false)
   const [newUnit, setNewUnit] = useState({ serialNumber: '', modelUnit: '', merk: '', nama: '', kerusakanAwal: '', tokoId: '', customerId: '', statusGaransi: 'GARANSI', tglPembelian: '', tglInput: '' })
   // Buka dialog registrasi — default tanggal input = hari ini (bisa dimundurkan untuk susulan)
@@ -516,6 +520,10 @@ export default function MasterDataView() {
     () => (unitList ?? []).filter((u) => matchQuery([u.serialNumber, u.modelUnit, u.merk, u.nama, u.toko?.kodeToko, u.toko?.namaToko, u.customer?.nama, u.statusGaransi, ...(partInfoByUnit.get(u.id)?.codes ?? [])], cariUnit)),
     [unitList, cariUnit, partInfoByUnit]
   )
+
+  // Stiker kolektif: seluruh toko/unit terpilih (urutan mengikuti daftar master)
+  const tokoKolektif = useMemo(() => (tokoList ?? []).filter((t) => tokoDipilih.has(t.id)), [tokoList, tokoDipilih])
+  const unitKolektif = useMemo(() => (unitList ?? []).filter((u) => unitDipilih.has(u.id)), [unitList, unitDipilih])
   // Deteksi nomor seri ganda secara live saat mengetik — instant dari daftar unit yang
   // sudah termuat (kunci normalisasi sama dengan server: trim + uppercase), jadi faktanya
   // tampak jauh sebelum request dikirim & tombol Registrasi tidak bisa dipaksa berulang.
@@ -800,6 +808,9 @@ export default function MasterDataView() {
               {bisaHapusToko && tokoDipilih.size > 0 && (
                 <>
                   <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{tokoDipilih.size} dipilih</Badge>
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-emerald-700 hover:bg-emerald-50" onClick={() => setKolektifTokoOpen(true)}>
+                    <Barcode className="mr-1 h-3 w-3" /> Cetak Kolektif ({tokoDipilih.size})
+                  </Button>
                   <Button size="sm" variant="destructive" className="h-7 px-2 text-[11px]" onClick={() => setHapusTokoOpen(true)}>
                     <Trash2 className="mr-1 h-3 w-3" /> Hapus ({tokoDipilih.size})
                   </Button>
@@ -975,6 +986,9 @@ export default function MasterDataView() {
               {unitDipilih.size > 0 && (
                 <>
                   <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{unitDipilih.size} dipilih</Badge>
+                  <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-emerald-700 hover:bg-emerald-50" onClick={() => setKolektifUnitOpen(true)}>
+                    <Barcode className="mr-1 h-3 w-3" /> Cetak Kolektif ({unitDipilih.size})
+                  </Button>
                   <Button size="sm" variant="destructive" className="h-7 px-2 text-[11px]" onClick={() => setHapusUnitOpen(true)}>
                     <Trash2 className="mr-1 h-3 w-3" /> Hapus ({unitDipilih.size})
                   </Button>
@@ -1842,6 +1856,10 @@ export default function MasterDataView() {
 
       {/* Dialog stiker barcode unit — layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
       <UnitBarcodeSticker unit={qrUnit} onOpenChange={(o) => !o && setQrUnit(null)} />
+
+      {/* Cetak stiker KOLEKTIF — banyak stiker mini dalam 1 lembar (ikuti centang) */}
+      <TokoBarcodeKolektif open={kolektifTokoOpen} list={tokoKolektif} onOpenChange={setKolektifTokoOpen} />
+      <UnitBarcodeKolektif open={kolektifUnitOpen} list={unitKolektif} onOpenChange={setKolektifUnitOpen} />
     </Tabs>
   )
 }

@@ -156,13 +156,14 @@
 }
 
 @media print {
-  body[data-print-mode='stiker'] .stiker-printroot,
-  body[data-print-mode='stiker'] .stiker-printroot * {
+  /* Terapkan untuk kedua mode: 'stiker' (tunggal) & 'stiker-kolektif' (1 lembar banyak) */
+  body[data-print-mode^='stiker'] .stiker-printroot,
+  body[data-print-mode^='stiker'] .stiker-printroot * {
     visibility: visible !important;
   }
 
   /* Kotak dialog: lepas centering transform/padding/border agar stiker pas di kertas */
-  body[data-print-mode='stiker'] [data-slot='dialog-content'].stiker-dialog {
+  body[data-print-mode^='stiker'] [data-slot='dialog-content'].stiker-dialog {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -176,8 +177,51 @@
     box-shadow: none !important;
   }
 
-  /* Chrome dialog (judul, deskripsi, tombol, close) tidak ikut tercetak */
-  body[data-print-mode='stiker'] [data-slot='dialog-content'].stiker-dialog > *:not(.stiker-printroot) {
+  /* Chrome dialog (judul, deskripsi, tombol, close) tidak ikut tercetak —
+     stiker/kolom stiker punya class .stiker-printroot sehingga ikut tampil */
+  body[data-print-mode^='stiker'] [data-slot='dialog-content'].stiker-dialog > *:not(.stiker-printroot) {
     display: none !important;
+  }
+
+  /* KOLEKTIF: lembar penuh — kolom stiker berjejer memakai seluruh lebar kertas */
+  body[data-print-mode='stiker-kolektif'] [data-slot='dialog-content'].stiker-dialog {
+    width: 100% !important;
+  }
+  body[data-print-mode='stiker-kolektif'] .stiker-kolektif-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-content: flex-start !important;
+    gap: 3mm !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: #fff !important;
+  }
+
+  /* Mini cetak — pas printer label thermal portable 58 mm (dan tetap pojok kiri
+     atas A4): lebar cetak dikunci 42 mm + @page margin 5 mm (total ≤ 52 mm) sehingga
+     tidak ada sisi yang terpotong. Grid kolektif dikecualikan (stikernya sendiri
+     yang mini). Barcode berbentuk SVG vektor → tetap tajam walau disusutkan mini. */
+  body[data-print-mode^='stiker'] .stiker-printroot:not(.stiker-kolektif-grid) {
+    width: 42mm !important;
+    max-width: 42mm !important;
+    min-width: 0 !important;
+    padding: 1.5mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    break-inside: avoid;
+  }
+
+  /* Barcode (SVG/canvas) menyusut ikut lebar stiker tanpa terpotong */
+  body[data-print-mode^='stiker'] .stiker-printroot svg,
+  body[data-print-mode^='stiker'] .stiker-printroot canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Font kecil biar muat di lebar 42 mm */
+  body[data-print-mode^='stiker'] .stiker-printroot:not(.stiker-kolektif-grid) * {
+    line-height: 1.15 !important;
   }
 }

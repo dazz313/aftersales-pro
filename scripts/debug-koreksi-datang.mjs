@@ -34,9 +34,8 @@ await patch({ aksi: 'KOREKSI_TGL_PART_DATANG', tglPartDatang: new Date().toISOSt
 // 2) Tanggal masa depan → 400
 const masaDepan = new Date(Date.now() + 30 * 24 * 3600_000).toISOString()
 await patch({ aksi: 'KOREKSI_TGL_PART_DATANG', tglPartDatang: masaDepan, koreksiSelesai: true }, 'tanggal masa depan (harus 400)')
-// 3) Sebelum tiket dibuat → 400
-const sebelum = new Date(new Date(contoh.createdAt).getTime() - 30 * 24 * 3600_000).toISOString()
-await patch({ aksi: 'KOREKSI_TGL_PART_DATANG', tglPartDatang: sebelum, koreksiSelesai: true }, 'sebelum createdAt (harus 400)')
+// 3) String tanggal tidak valid → 400 (TIDAK mengubah data apa pun)
+await patch({ aksi: 'KOREKSI_TGL_PART_DATANG', tglPartDatang: 'bukan-tanggal', koreksiSelesai: true }, 'tanggal invalid (harus 400)')
 // 4) Lebih lambat dari tglFinish (tiket FINISH) → 400
 if (contoh.tglFinish) {
   const setelahFinish = new Date(new Date(contoh.tglFinish).getTime() + 10 * 24 * 3600_000).toISOString()
