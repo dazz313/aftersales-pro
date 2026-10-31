@@ -162,15 +162,18 @@
     visibility: visible !important;
   }
 
-  /* Kotak dialog: lepas centering transform/padding/border agar stiker pas di kertas */
+  /* Kotak dialog: lepas centering transform milik Radix, lalu dipusatkan
+     KEMBALI horizontal di tengah kertas — stiker/kolom stiker tidak menempel
+     ke sisi kiri dan ruang kosong sisi kanan (di thermal: simetris kiri+kanan). */
   body[data-print-mode^='stiker'] [data-slot='dialog-content'].stiker-dialog {
     position: fixed !important;
     top: 0 !important;
-    left: 0 !important;
+    left: 50% !important;
     translate: none !important;
-    transform: none !important;
+    transform: translateX(-50%) !important;
     width: auto !important;
     max-width: none !important;
+    margin: 0 !important;
     border: 0 !important;
     padding: 0 !important;
     background: transparent !important;
@@ -183,13 +186,21 @@
     display: none !important;
   }
 
-  /* KOLEKTIF: lembar penuh — kolom stiker berjejer memakai seluruh lebar kertas */
+  /* KOLEKTIF: lembar penuh dipusatkan — di cetak pakai GRID sungguhan:
+     kolom = lebar stiker (44/36 mm sesuai kertas), sisa lebar dibagi simetris
+     kiri–kanan, baris tak terpotong antar halaman. */
   body[data-print-mode='stiker-kolektif'] [data-slot='dialog-content'].stiker-dialog {
     width: 100% !important;
   }
   body[data-print-mode='stiker-kolektif'] .stiker-kolektif-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, 44mm) !important;
+    /* Slot diregangkan merata: seluruh TINGGI lembar terisi simetris saat
+       jumlah stiker tidak memenuhi lembar (ala lembar label siap potong) */
+    grid-auto-rows: 1fr !important;
+    align-items: center !important;
+    min-height: calc(100vh - 1mm) !important;
+    justify-content: center !important;
     align-content: flex-start !important;
     gap: 3mm !important;
     max-height: none !important;
@@ -198,16 +209,19 @@
     border: 0 !important;
     background: #fff !important;
   }
+  body[data-print-mode='stiker-kolektif'][data-kertas='THERMAL'] .stiker-kolektif-grid {
+    grid-template-columns: repeat(auto-fill, 36mm) !important;
+  }
 
   /* Mini cetak — pas printer label thermal portable 58 mm (dan tetap pojok kiri
-     atas A4): lebar cetak dikunci 42 mm + @page margin 5 mm (total ≤ 52 mm) sehingga
+     atas A4): lebar cetak dikunci 36 mm + @page margin 5 mm (total ≤ 46 mm) sehingga
      tidak ada sisi yang terpotong. Grid kolektif dikecualikan (stikernya sendiri
      yang mini). Barcode berbentuk SVG vektor → tetap tajam walau disusutkan mini. */
   body[data-print-mode^='stiker'] .stiker-printroot:not(.stiker-kolektif-grid) {
-    width: 42mm !important;
-    max-width: 42mm !important;
+    width: 36mm !important;
+    max-width: 36mm !important;
     min-width: 0 !important;
-    padding: 1.5mm !important;
+    padding: 1mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     break-inside: avoid;
@@ -220,8 +234,16 @@
     height: auto !important;
   }
 
-  /* Font kecil biar muat di lebar 42 mm */
+  /* Font kecil biar muat di lebar 36 mm */
   body[data-print-mode^='stiker'] .stiker-printroot:not(.stiker-kolektif-grid) * {
-    line-height: 1.15 !important;
+    line-height: 1.1 !important;
+  }
+
+  /* SETTING KERTAS = A4 (printer biasa): stiker bisa agak LEGA (44 mm) supaya
+     gampang discan di kertas biasa; @page A4 portrait margin 10 mm dari lib
+     sticker-print menjaga pinggiran A4 aman dari batas printer. */
+  body[data-print-mode^='stiker'][data-kertas='A4'] .stiker-printroot:not(.stiker-kolektif-grid) {
+    width: 44mm !important;
+    max-width: 44mm !important;
   }
 }

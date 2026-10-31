@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Printer } from 'lucide-react'
 import type { Toko } from '@/lib/api'
-import { cetakStiker, useStickerPrint } from '@/lib/sticker-print'
+import { cetakStikerTunggal, simpanKertasStiker, useKertasStiker, useStickerPrint } from '@/lib/sticker-print'
+import { PilihKertas } from '@/components/stiker-kertas'
 
 /**
  * Stiker Barcode TOKO — satu barcode per toko (bukan per unit).
@@ -17,7 +18,7 @@ import { cetakStiker, useStickerPrint } from '@/lib/sticker-print'
  *
  * Cetak: tombol "Cetak Stiker" memakai mode khusus (lib/sticker-print) — CSS
  * global menyembunyikan halaman lain sehingga hanya stiker .stiker-printroot
- * yang tercetak: mini 42 mm (pas label thermal 58 mm portable) & pojok kiri
+ * yang tercetak: mini 36 mm (pas label thermal 58 mm portable) & pojok kiri
  * atas untuk A4/Letter. Barcode SVG vektor — tetap tajam saat disusutkan.
  */
 
@@ -29,7 +30,7 @@ export function StikerTokoBody({ toko }: { toko: Toko }) {
     let cancelled = false
     // Import dinamis: aman untuk SSR & menangani bentuk ekspor CJS/ESM jsbarcode.
     // Digambar ke SVG (bukan canvas) — vektor sehingga tetap tajam saat dicetak
-    // mini (42 mm) di printer label portable.
+    // mini (36 mm) di printer label portable.
     import('jsbarcode')
       .then((mod) => {
         const JsBarcode = ((mod as { default?: unknown }).default ?? mod) as (
@@ -39,13 +40,13 @@ export function StikerTokoBody({ toko }: { toko: Toko }) {
         try {
           JsBarcode(svgRef.current as unknown as HTMLElement, toko.barcodeToko, {
             format: 'CODE128',
-            width: 1.6,
-            height: 50,
+            width: 1.4,
+            height: 38,
             displayValue: true,
-            fontSize: 13,
+            fontSize: 10,
             fontOptions: 'bold',
-            textMargin: 2,
-            margin: 5,
+            textMargin: 1,
+            margin: 4,
             lineColor: '#0f172a',
             background: '#ffffff',
           })
@@ -60,39 +61,41 @@ export function StikerTokoBody({ toko }: { toko: Toko }) {
   }, [toko])
 
   return (
-    <div className="stiker-printroot mx-auto w-full max-w-[232px] overflow-hidden rounded-lg border-2 border-slate-900 bg-white">
+    <div className="stiker-printroot mx-auto w-full max-w-[196px] overflow-hidden rounded-lg border-2 border-slate-900 bg-white">
       {/* Strip kepala — identitas stiker + frekuensi kunjungan */}
-      <div className="flex items-center justify-between bg-emerald-600 px-2.5 py-1">
-        <p className="text-[8px] font-bold tracking-[0.15em] text-white">BARCODE KUNJUNGAN</p>
-        <p className="rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-bold text-white">Visit {toko.frekuensiVisit}h</p>
+      <div className="flex items-center justify-between bg-emerald-600 px-1.5 py-0.5">
+        <p className="text-[7px] font-bold tracking-widest text-white">BARCODE KUNJUNGAN</p>
+        <p className="rounded-full bg-white/20 px-1 py-0 text-[7px] font-bold text-white">Visit {toko.frekuensiVisit}h</p>
       </div>
 
       {/* Identitas toko */}
-      <div className="px-2.5 py-1.5 text-center">
-        <p className="text-[13px] font-extrabold leading-snug text-slate-900">{toko.namaToko}</p>
-        <p className="font-mono text-[9px] font-medium text-slate-500">{toko.kodeToko}</p>
+      <div className="px-1.5 py-1 text-center">
+        <p className="text-[11px] font-extrabold leading-tight text-slate-900">{toko.namaToko}</p>
+        <p className="font-mono text-[8px] font-medium leading-none text-slate-500">{toko.kodeToko}</p>
         {toko.alamat && (
-          <p className="mt-0.5 truncate text-[9px] text-slate-500" title={toko.alamat}>{toko.alamat}</p>
+          <p className="mt-0.5 truncate text-[8px] leading-tight text-slate-500" title={toko.alamat}>{toko.alamat}</p>
         )}
       </div>
 
       {/* Barcode CODE128 — digambar jsbarcode ke SVG (ikut tercetak, tetap tajam saat mini) */}
-      <div className="flex justify-center border-t border-slate-900/10 px-2 pb-0.5 pt-1.5">
+      <div className="flex justify-center border-t border-slate-900/10 px-1 pb-0 pt-1">
         <svg ref={svgRef} aria-label={`Barcode ${toko.barcodeToko}`} className="block max-w-full" />
       </div>
 
       {/* Strip kaki — nilai barcode (cadangan bila barcode rusak/terkelupas) */}
-      <div className="flex items-center justify-between border-t border-slate-900/10 bg-slate-50 px-2.5 py-1">
-        <p className="font-mono text-[9px] font-bold text-slate-900">{toko.barcodeToko}</p>
-        <p className="text-[8px] text-slate-500">Scan → check-in otomatis</p>
+      <div className="flex items-center justify-between border-t border-slate-900/10 bg-slate-50 px-1.5 py-0.5">
+        <p className="font-mono text-[8px] font-bold text-slate-900">{toko.barcodeToko}</p>
+        <p className="text-[7px] text-slate-500">Scan → check-in</p>
       </div>
     </div>
   )
 }
 
 export default function TokoBarcodeSticker({ toko, onOpenChange }: { toko: Toko | null; onOpenChange: (o: boolean) => void }) {
+  // SETTING KERTAS per perangkat (A4 printer biasa / label thermal) — live via store
+  const kertas = useKertasStiker()
   // Mode cetak stiker aktif selama dialog terbuka (ukuran kertas + Ctrl+P manual)
-  useStickerPrint(!!toko)
+  useStickerPrint(!!toko, 'stiker', kertas)
 
   return (
     <Dialog open={!!toko} onOpenChange={onOpenChange}>
@@ -103,19 +106,26 @@ export default function TokoBarcodeSticker({ toko, onOpenChange }: { toko: Toko 
               <DialogTitle>Stiker Barcode Toko</DialogTitle>
               <DialogDescription>
                 Tempel di lokasi kasir/pintu toko — teknisi scan stiker ini saat kunjungan,
-                sistem otomatis mencatat check-in. Mini 42 mm — pas label thermal 58 mm (portable)
-                maupun pojok kiri atas kertas A4. Centang beberapa toko di daftar untuk cetak kolektif.
+                sistem otomatis mencatat check-in. Pilih kertas di bawah: A4 (printer biasa,
+                stiker 44 mm) atau label thermal 58 mm (mini 36 mm). Centang beberapa toko
+                di daftar untuk cetak kolektif.
               </DialogDescription>
             </DialogHeader>
 
             {/* ==== Stiker (inilah yang tercetak) ==== */}
             <StikerTokoBody toko={toko} />
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>Tutup</Button>
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => cetakStiker()}>
-                <Printer className="mr-1 h-4 w-4" /> Cetak Stiker
-              </Button>
+            <DialogFooter className="sm:justify-between">
+              <PilihKertas
+                value={kertas}
+                onChange={(k) => simpanKertasStiker(k)}
+              />
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>Tutup</Button>
+                <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => cetakStikerTunggal(kertas)}>
+                  <Printer className="mr-1 h-4 w-4" /> Cetak Stiker
+                </Button>
+              </div>
             </DialogFooter>
           </>
         )}
