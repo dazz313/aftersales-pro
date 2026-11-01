@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T22:08:05.167Z",
+  "generatedAt": "2026-11-01T00:54:37.448Z",
   "masterToko": [
     {
       "id": 257,
@@ -14,8 +14,8 @@
       "barcodeToko": "BC-TOK-001",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.2,
+      "longitude": 106.8
     },
     {
       "id": 225,
@@ -4810,8 +4810,8 @@
       "tglTiket": "2026-10-31T00:00:00.000Z",
       "createdAt": "2026-10-30T23:59:40.010Z",
       "updatedAt": "2026-10-31T22:08:05.148Z",
-      "editedAt": "2026-10-31T22:08:05.146Z",
-      "editedBy": "dazz",
+      "editedAt": null,
+      "editedBy": null,
       "noSuratJalanProdusen": null,
       "tglPartDatang": "2026-10-31T00:00:18.333Z",
       "tglRequestPart": null,
@@ -9430,6 +9430,51 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1174,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-001",
+      "deskripsi": "Koordinat toko diperbarui: -6.2, 106.8",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.417Z"
+    },
+    {
+      "id": 1173,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP) dari IP 127.0.0.1",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-10-31T23:38:27.562Z"
+    },
+    {
+      "id": 1172,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "dazz",
+      "deskripsi": "Percobaan login gagal untuk \"dazz\" (IP 127.0.0.1)",
+      "aktor": "dazz",
+      "createdAt": "2026-10-31T23:37:50.770Z"
+    },
+    {
+      "id": 1171,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "dazz",
+      "deskripsi": "Percobaan login gagal untuk \"dazz\" (IP 127.0.0.1)",
+      "aktor": "dazz",
+      "createdAt": "2026-10-31T23:22:31.571Z"
+    },
+    {
+      "id": 1170,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "admin@aftersales.local",
+      "deskripsi": "Percobaan login gagal untuk \"admin@aftersales.local\" (IP 127.0.0.1)",
+      "aktor": "admin@aftersales.local",
+      "createdAt": "2026-10-31T23:21:49.840Z"
+    },
     {
       "id": 1169,
       "aksi": "KOREKSI_TGL_PART_DATANG",
