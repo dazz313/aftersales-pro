@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T00:54:37.448Z",
+  "generatedAt": "2026-11-01T01:03:31.831Z",
   "masterToko": [
     {
       "id": 257,
@@ -11,7 +11,7 @@
       "aktif": true,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": "2026-10-21T06:38:00.000Z",
-      "barcodeToko": "BC-TOK-001",
+      "barcodeToko": "Toko Semeru Ahmad Yani",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
       "latitude": -6.2,
@@ -27,7 +27,7 @@
       "aktif": true,
       "modeSiklus": "REGULER",
       "tglVisitTerakhir": "2026-10-23T21:51:00.000Z",
-      "barcodeToko": "BC-TOK-002",
+      "barcodeToko": "Toko Varia Mulia",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
       "latitude": -4.5421295,
@@ -46,8 +46,8 @@
       "barcodeToko": "BC-TOK-003",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.188000000000001,
+      "longitude": 106.815
     },
     {
       "id": 237,
@@ -78,8 +78,8 @@
       "barcodeToko": "BC-TOK-005",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.176,
+      "longitude": 106.83
     },
     {
       "id": 242,
@@ -94,8 +94,8 @@
       "barcodeToko": "BC-TOK-006",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.164000000000001,
+      "longitude": 106.845
     },
     {
       "id": 222,
@@ -110,8 +110,8 @@
       "barcodeToko": "BC-TOK-007",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.152,
+      "longitude": 106.86
     },
     {
       "id": 230,
@@ -126,8 +126,8 @@
       "barcodeToko": "BC-TOK-008",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.194,
+      "longitude": 106.808
     },
     {
       "id": 223,
@@ -142,8 +142,8 @@
       "barcodeToko": "BC-TOK-009",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.182,
+      "longitude": 106.823
     },
     {
       "id": 235,
@@ -158,8 +158,8 @@
       "barcodeToko": "BC-TOK-010",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.17,
+      "longitude": 106.838
     },
     {
       "id": 245,
@@ -174,8 +174,8 @@
       "barcodeToko": "BC-TOK-011",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.158,
+      "longitude": 106.853
     },
     {
       "id": 250,
@@ -190,8 +190,8 @@
       "barcodeToko": "BC-TOK-012",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.146,
+      "longitude": 106.868
     },
     {
       "id": 217,
@@ -222,8 +222,8 @@
       "barcodeToko": "BC-TOK-014",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.188000000000001,
+      "longitude": 106.816
     },
     {
       "id": 243,
@@ -238,8 +238,8 @@
       "barcodeToko": "BC-TOK-015",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.176000000000001,
+      "longitude": 106.831
     },
     {
       "id": 216,
@@ -270,8 +270,8 @@
       "barcodeToko": "BC-TOK-017",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.164000000000001,
+      "longitude": 106.846
     },
     {
       "id": 251,
@@ -286,8 +286,8 @@
       "barcodeToko": "BC-TOK-018",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.152000000000001,
+      "longitude": 106.861
     },
     {
       "id": 262,
@@ -302,8 +302,8 @@
       "barcodeToko": "BC-TOK-019",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.140000000000001,
+      "longitude": 106.876
     },
     {
       "id": 263,
@@ -318,8 +318,8 @@
       "barcodeToko": "BC-TOK-020",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.182,
+      "longitude": 106.824
     },
     {
       "id": 220,
@@ -334,8 +334,8 @@
       "barcodeToko": "BC-TOK-021",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.170000000000001,
+      "longitude": 106.839
     },
     {
       "id": 224,
@@ -366,8 +366,8 @@
       "barcodeToko": "BC-TOK-023",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.158,
+      "longitude": 106.854
     },
     {
       "id": 229,
@@ -414,8 +414,8 @@
       "barcodeToko": "BC-TOK-026",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.146000000000001,
+      "longitude": 106.869
     },
     {
       "id": 239,
@@ -430,8 +430,8 @@
       "barcodeToko": "BC-TOK-027",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.134,
+      "longitude": 106.884
     },
     {
       "id": 240,
@@ -446,8 +446,8 @@
       "barcodeToko": "BC-TOK-028",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.176,
+      "longitude": 106.832
     },
     {
       "id": 253,
@@ -462,8 +462,8 @@
       "barcodeToko": "BC-TOK-029",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.164000000000001,
+      "longitude": 106.847
     },
     {
       "id": 256,
@@ -478,8 +478,8 @@
       "barcodeToko": "BC-TOK-030",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.152,
+      "longitude": 106.862
     },
     {
       "id": 258,
@@ -494,8 +494,8 @@
       "barcodeToko": "BC-TOK-031",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.140000000000001,
+      "longitude": 106.877
     },
     {
       "id": 259,
@@ -510,8 +510,8 @@
       "barcodeToko": "BC-TOK-032",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.128,
+      "longitude": 106.892
     },
     {
       "id": 218,
@@ -526,8 +526,8 @@
       "barcodeToko": "BC-TOK-033",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.17,
+      "longitude": 106.84
     },
     {
       "id": 219,
@@ -542,8 +542,8 @@
       "barcodeToko": "BC-TOK-034",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.158,
+      "longitude": 106.855
     },
     {
       "id": 221,
@@ -558,8 +558,8 @@
       "barcodeToko": "BC-TOK-035",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.146,
+      "longitude": 106.87
     },
     {
       "id": 226,
@@ -574,8 +574,8 @@
       "barcodeToko": "BC-TOK-036",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.134,
+      "longitude": 106.885
     },
     {
       "id": 228,
@@ -590,8 +590,8 @@
       "barcodeToko": "BC-TOK-037",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.122,
+      "longitude": 106.9
     },
     {
       "id": 231,
@@ -606,8 +606,8 @@
       "barcodeToko": "BC-TOK-038",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.164000000000001,
+      "longitude": 106.848
     },
     {
       "id": 233,
@@ -622,8 +622,8 @@
       "barcodeToko": "BC-TOK-039",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.152000000000001,
+      "longitude": 106.863
     },
     {
       "id": 234,
@@ -638,8 +638,8 @@
       "barcodeToko": "BC-TOK-040",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.140000000000001,
+      "longitude": 106.878
     },
     {
       "id": 244,
@@ -654,8 +654,8 @@
       "barcodeToko": "BC-TOK-041",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.128000000000001,
+      "longitude": 106.893
     },
     {
       "id": 248,
@@ -670,8 +670,8 @@
       "barcodeToko": "BC-TOK-042",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.116000000000001,
+      "longitude": 106.908
     },
     {
       "id": 249,
@@ -686,8 +686,8 @@
       "barcodeToko": "BC-TOK-043",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.158,
+      "longitude": 106.856
     },
     {
       "id": 252,
@@ -702,8 +702,8 @@
       "barcodeToko": "BC-TOK-044",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.146000000000001,
+      "longitude": 106.871
     },
     {
       "id": 254,
@@ -718,8 +718,8 @@
       "barcodeToko": "BC-TOK-045",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.134,
+      "longitude": 106.886
     },
     {
       "id": 255,
@@ -734,8 +734,8 @@
       "barcodeToko": "BC-TOK-046",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.122000000000001,
+      "longitude": 106.901
     },
     {
       "id": 260,
@@ -750,8 +750,8 @@
       "barcodeToko": "BC-TOK-047",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.11,
+      "longitude": 106.916
     },
     {
       "id": 261,
@@ -766,8 +766,8 @@
       "barcodeToko": "BC-TOK-048",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.152,
+      "longitude": 106.864
     },
     {
       "id": 267,
@@ -782,8 +782,8 @@
       "barcodeToko": "BC-TOK-049",
       "jarakKm": 2,
       "createdAt": "2026-10-29T21:56:43.457Z",
-      "latitude": null,
-      "longitude": null
+      "latitude": -6.140000000000001,
+      "longitude": 106.879
     }
   ],
   "masterCustomer": [
@@ -9430,6 +9430,393 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1217,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-002",
+      "deskripsi": "Data toko diperbarui: barcodeToko",
+      "aktor": "migrasi-nama",
+      "createdAt": "2026-11-01T01:03:31.808Z"
+    },
+    {
+      "id": 1216,
+      "aksi": "UPDATE_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-001",
+      "deskripsi": "Data toko diperbarui: barcodeToko",
+      "aktor": "migrasi-nama",
+      "createdAt": "2026-11-01T01:03:31.738Z"
+    },
+    {
+      "id": 1215,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-049",
+      "deskripsi": "Koordinat toko diperbarui: -6.140000000000001, 106.879",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:39.164Z"
+    },
+    {
+      "id": 1214,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-048",
+      "deskripsi": "Koordinat toko diperbarui: -6.152, 106.864",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:39.138Z"
+    },
+    {
+      "id": 1213,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-047",
+      "deskripsi": "Koordinat toko diperbarui: -6.11, 106.916",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:39.106Z"
+    },
+    {
+      "id": 1212,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-046",
+      "deskripsi": "Koordinat toko diperbarui: -6.122000000000001, 106.901",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:39.079Z"
+    },
+    {
+      "id": 1211,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-045",
+      "deskripsi": "Koordinat toko diperbarui: -6.134, 106.886",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:39.051Z"
+    },
+    {
+      "id": 1210,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-044",
+      "deskripsi": "Koordinat toko diperbarui: -6.146000000000001, 106.871",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:39.002Z"
+    },
+    {
+      "id": 1209,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-043",
+      "deskripsi": "Koordinat toko diperbarui: -6.158, 106.856",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.907Z"
+    },
+    {
+      "id": 1208,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-042",
+      "deskripsi": "Koordinat toko diperbarui: -6.116000000000001, 106.908",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.875Z"
+    },
+    {
+      "id": 1207,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-041",
+      "deskripsi": "Koordinat toko diperbarui: -6.128000000000001, 106.893",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.843Z"
+    },
+    {
+      "id": 1206,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-040",
+      "deskripsi": "Koordinat toko diperbarui: -6.140000000000001, 106.878",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.810Z"
+    },
+    {
+      "id": 1205,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-039",
+      "deskripsi": "Koordinat toko diperbarui: -6.152000000000001, 106.863",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.778Z"
+    },
+    {
+      "id": 1204,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-038",
+      "deskripsi": "Koordinat toko diperbarui: -6.164000000000001, 106.848",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.744Z"
+    },
+    {
+      "id": 1203,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-037",
+      "deskripsi": "Koordinat toko diperbarui: -6.122, 106.9",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.713Z"
+    },
+    {
+      "id": 1202,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-036",
+      "deskripsi": "Koordinat toko diperbarui: -6.134, 106.885",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.684Z"
+    },
+    {
+      "id": 1201,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-035",
+      "deskripsi": "Koordinat toko diperbarui: -6.146, 106.87",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.654Z"
+    },
+    {
+      "id": 1200,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-034",
+      "deskripsi": "Koordinat toko diperbarui: -6.158, 106.855",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.626Z"
+    },
+    {
+      "id": 1199,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-033",
+      "deskripsi": "Koordinat toko diperbarui: -6.17, 106.84",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.598Z"
+    },
+    {
+      "id": 1198,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-032",
+      "deskripsi": "Koordinat toko diperbarui: -6.128, 106.892",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.568Z"
+    },
+    {
+      "id": 1197,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-031",
+      "deskripsi": "Koordinat toko diperbarui: -6.140000000000001, 106.877",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.540Z"
+    },
+    {
+      "id": 1196,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-030",
+      "deskripsi": "Koordinat toko diperbarui: -6.152, 106.862",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.512Z"
+    },
+    {
+      "id": 1195,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-029",
+      "deskripsi": "Koordinat toko diperbarui: -6.164000000000001, 106.847",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.482Z"
+    },
+    {
+      "id": 1194,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-028",
+      "deskripsi": "Koordinat toko diperbarui: -6.176, 106.832",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.455Z"
+    },
+    {
+      "id": 1193,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-027",
+      "deskripsi": "Koordinat toko diperbarui: -6.134, 106.884",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.427Z"
+    },
+    {
+      "id": 1192,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-026",
+      "deskripsi": "Koordinat toko diperbarui: -6.146000000000001, 106.869",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.399Z"
+    },
+    {
+      "id": 1191,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-023",
+      "deskripsi": "Koordinat toko diperbarui: -6.158, 106.854",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.312Z"
+    },
+    {
+      "id": 1190,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-021",
+      "deskripsi": "Koordinat toko diperbarui: -6.170000000000001, 106.839",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.284Z"
+    },
+    {
+      "id": 1189,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-020",
+      "deskripsi": "Koordinat toko diperbarui: -6.182, 106.824",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.255Z"
+    },
+    {
+      "id": 1188,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-019",
+      "deskripsi": "Koordinat toko diperbarui: -6.140000000000001, 106.876",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.227Z"
+    },
+    {
+      "id": 1187,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-018",
+      "deskripsi": "Koordinat toko diperbarui: -6.152000000000001, 106.861",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.136Z"
+    },
+    {
+      "id": 1186,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-017",
+      "deskripsi": "Koordinat toko diperbarui: -6.164000000000001, 106.846",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.097Z"
+    },
+    {
+      "id": 1185,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-015",
+      "deskripsi": "Koordinat toko diperbarui: -6.176000000000001, 106.831",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.058Z"
+    },
+    {
+      "id": 1184,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-014",
+      "deskripsi": "Koordinat toko diperbarui: -6.188000000000001, 106.816",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:38.014Z"
+    },
+    {
+      "id": 1183,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-012",
+      "deskripsi": "Koordinat toko diperbarui: -6.146, 106.868",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.977Z"
+    },
+    {
+      "id": 1182,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-011",
+      "deskripsi": "Koordinat toko diperbarui: -6.158, 106.853",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.936Z"
+    },
+    {
+      "id": 1181,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-010",
+      "deskripsi": "Koordinat toko diperbarui: -6.17, 106.838",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.891Z"
+    },
+    {
+      "id": 1180,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-009",
+      "deskripsi": "Koordinat toko diperbarui: -6.182, 106.823",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.836Z"
+    },
+    {
+      "id": 1179,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-008",
+      "deskripsi": "Koordinat toko diperbarui: -6.194, 106.808",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.800Z"
+    },
+    {
+      "id": 1178,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-007",
+      "deskripsi": "Koordinat toko diperbarui: -6.152, 106.86",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.751Z"
+    },
+    {
+      "id": 1177,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-006",
+      "deskripsi": "Koordinat toko diperbarui: -6.164000000000001, 106.845",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.671Z"
+    },
+    {
+      "id": 1176,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-005",
+      "deskripsi": "Koordinat toko diperbarui: -6.176, 106.83",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.571Z"
+    },
+    {
+      "id": 1175,
+      "aksi": "SETPIN_MASTER_TOKO",
+      "entitas": "master_toko",
+      "entitasId": "TOK-003",
+      "deskripsi": "Koordinat toko diperbarui: -6.188000000000001, 106.815",
+      "aktor": "seed-fake",
+      "createdAt": "2026-11-01T00:54:37.508Z"
+    },
     {
       "id": 1174,
       "aksi": "SETPIN_MASTER_TOKO",
