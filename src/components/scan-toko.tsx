@@ -82,7 +82,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
       setScanResult({ ok: true, barcode, toko: saved.toko as unknown as Toko, lookup })
       toast({
         title: 'Kunjungan tercatat otomatis',
-        description: `${lookup.toko.namaToko} (${lookup.toko.kodeToko}) — check-in via scan barcode toko.`,
+        description: `${lookup.toko.namaToko} — check-in via scan barcode toko.`,
       })
     } catch (e) {
       setScanResult({ ok: false, barcode, error: (e as Error).message })
@@ -165,7 +165,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
             <ScanLine className="h-3.5 w-3.5 text-emerald-600" /> Scan Kunjungan — Barcode Toko
           </CardTitle>
           <CardDescription className="text-[11px]">
-            Scan stiker <span className="font-mono">BC-[KODETOKO]</span> — check-in tercatat otomatis.
+            Scan stiker barcode toko (isi barcode = nama toko) — check-in tercatat otomatis.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 px-3 pb-3">
@@ -205,7 +205,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
               value={manualBarcode}
               onChange={(e) => setManualBarcode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === 'Enter' && prosesBarcode(manualBarcode)}
-              placeholder="BC-TOK-001 / TOK-001"
+              placeholder="nama toko (atau kode toko)"
               className="h-7 bg-white font-mono text-[11px]"
               aria-label="Input barcode toko manual"
             />
@@ -227,8 +227,17 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
                   <p className="truncate text-xs font-bold text-slate-900">{scanResult.lookup.toko.namaToko}</p>
                   <Badge className="shrink-0 gap-1 bg-emerald-600 text-[10px] text-white"><CheckCircle2 className="h-3 w-3" /> TERCATAT</Badge>
                 </div>
+                {scanResult.lookup.toko.alamat && (
+                  <p className="truncate text-[11px] text-slate-600">📍 {scanResult.lookup.toko.alamat}</p>
+                )}
+                <p className="text-[11px] text-slate-600">
+                  🗺️ Koordinat:{' '}
+                  {scanResult.lookup.toko.latitude != null && scanResult.lookup.toko.longitude != null
+                    ? `${scanResult.lookup.toko.latitude.toFixed(6)}, ${scanResult.lookup.toko.longitude.toFixed(6)}`
+                    : 'belum diisi'}
+                </p>
                 <p className="truncate font-mono text-[10px] text-slate-500">
-                  {scanResult.lookup.toko.kodeToko} · {scanResult.lookup.jumlahUnit}u · sejak {scanResult.lookup.hariSejakVisit ?? '∞'}h · {scanResult.lookup.totalKunjungan} visit
+                  {scanResult.lookup.jumlahUnit}u · sejak {scanResult.lookup.hariSejakVisit ?? '∞'}h · {scanResult.lookup.totalKunjungan} visit
                 </p>
                 <p className="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
                   <Zap className="h-3 w-3 shrink-0" /> Tercatat {formatWaktu(new Date().toISOString())}

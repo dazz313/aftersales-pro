@@ -52,11 +52,17 @@ export async function POST(request: Request) {
       // (SQLite tidak mendukung mode insensitive — normalisasi di sisi aplikasi)
       const norm = barcodeTerscan.toUpperCase().replace(/^BC-/, '')
       toko = await db.masterToko.findFirst({
-        where: { OR: [{ barcodeToko: `BC-${norm}` }, { barcodeToko: barcodeTerscan }, { kodeToko: norm }] },
+        where: { OR: [{ barcodeToko: barcodeTerscan }, { barcodeToko: `BC-${norm}` }, { kodeToko: norm }] },
       })
       if (!toko) {
         const all = await db.masterToko.findMany()
-        toko = all.find((t) => (t.barcodeToko ?? '').toUpperCase().replace(/^BC-/, '') === norm || t.kodeToko.toUpperCase() === norm) ?? null
+        const bLower = barcodeTerscan.trim().toLowerCase()
+        toko = all.find((t) =>
+          (t.barcodeToko ?? '').trim().toLowerCase() === bLower ||
+          (t.namaToko ?? '').trim().toLowerCase() === bLower ||
+          (t.barcodeToko ?? '').toUpperCase().replace(/^BC-/, '') === norm ||
+          (t.kodeToko ?? '').toUpperCase() === norm
+        ) ?? null
       }
       if (!toko) {
         return NextResponse.json(

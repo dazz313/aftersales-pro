@@ -47,6 +47,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       data.longitude = lng
     }
 
+    // Barcode toko (yang terbaca saat scan) — boleh diubah; harus unik.
+    if (body.barcodeToko !== undefined) {
+      const bc = String(body.barcodeToko ?? '').trim()
+      if (!bc) {
+        return NextResponse.json({ error: 'Barcode toko tidak boleh kosong' }, { status: 400 })
+      }
+      const exists = await db.masterToko.findFirst({ where: { barcodeToko: bc, NOT: { id: Number(id) } } })
+      if (exists) {
+        return NextResponse.json({ error: `Barcode "${bc}" sudah dipakai toko lain` }, { status: 409 })
+      }
+      data.barcodeToko = bc
+    }
+
     const toko = await db.masterToko.update({ where: { id: Number(id) }, data })
     await logAudit({
       aksi: data.latitude !== undefined && data.longitude !== undefined ? 'SETPIN_MASTER_TOKO' : 'UPDATE_MASTER_TOKO',

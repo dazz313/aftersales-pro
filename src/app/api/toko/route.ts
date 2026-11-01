@@ -49,8 +49,9 @@ export async function POST(request: Request) {
     if (exists) {
       return NextResponse.json({ error: `Kode toko ${body.kodeToko} sudah terdaftar` }, { status: 409 })
     }
-    // Barcode per-TOKO untuk identifikasi kunjungan otomatis via scan
-    const barcodeToko = (body.barcodeToko || `BC-${String(body.kodeToko).toUpperCase()}`).trim()
+    // Barcode per-TOKO untuk identifikasi kunjungan otomatis via scan.
+    // Default = nama toko (agar yang terbaca saat scan adalah nama toko, bukan kode).
+    const barcodeToko = (body.barcodeToko || body.namaToko || `BC-${String(body.kodeToko).toUpperCase()}`).trim()
     const barcodeExists = await db.masterToko.findUnique({ where: { barcodeToko } })
     if (barcodeExists) {
       return NextResponse.json({ error: `Barcode ${barcodeToko} sudah dipakai toko lain` }, { status: 409 })
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
         tglVisitTerakhir: body.tglVisitTerakhir ? new Date(body.tglVisitTerakhir) : null,
         barcodeToko,
         jarakKm: body.jarakKm === undefined || body.jarakKm === null || body.jarakKm === '' ? null : Math.max(0, Number(body.jarakKm) || 0),
+        latitude: body.latitude === undefined || body.latitude === null || body.latitude === '' ? null : Number(body.latitude),
+        longitude: body.longitude === undefined || body.longitude === null || body.longitude === '' ? null : Number(body.longitude),
       },
     })
     await logAudit({

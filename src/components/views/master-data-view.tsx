@@ -117,7 +117,7 @@ export default function MasterDataView() {
   const [resetPwValue, setResetPwValue] = useState('')
   // Edit toko & customer
   const [editToko, setEditToko] = useState<Toko | null>(null)
-  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '', aktif: true, modeSiklus: 'REGULER' as 'REGULER' | 'BY_REQUEST' })
+  const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '', aktif: true, modeSiklus: 'REGULER' as 'REGULER' | 'BY_REQUEST', latitude: '', longitude: '' })
   // Hapus massal toko (khusus Admin/Manager — centang baris lalu hapus sekaligus)
   const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(new Set())
   const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
@@ -890,7 +890,7 @@ export default function MasterDataView() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit), jarakKm: t.jarakKm !== null && t.jarakKm !== undefined ? String(t.jarakKm) : '', aktif: t.aktif, modeSiklus: t.modeSiklus }) }} aria-label={`Edit ${t.namaToko}`}>
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit), jarakKm: t.jarakKm !== null && t.jarakKm !== undefined ? String(t.jarakKm) : '', aktif: t.aktif, modeSiklus: t.modeSiklus, latitude: t.latitude !== null && t.latitude !== undefined ? String(t.latitude) : '', longitude: t.longitude !== null && t.longitude !== undefined ? String(t.longitude) : '' }) }} aria-label={`Edit ${t.namaToko}`}>
                               <Pencil className="mr-1 h-3 w-3" /> Edit
                             </Button>
                             <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
@@ -1312,6 +1312,8 @@ export default function MasterDataView() {
             </div>
             <div className="space-y-1.5"><Label>Siklus Visit (hari)</Label><Input type="number" min="1" value={editTokoForm.frekuensiVisit} onChange={(e) => setEditTokoForm({ ...editTokoForm, frekuensiVisit: e.target.value })} disabled={editTokoForm.modeSiklus === 'BY_REQUEST'} title={editTokoForm.modeSiklus === 'BY_REQUEST' ? 'Mode BY REQUEST aktif — siklus otomatis tidak dipakai' : undefined} /></div>
             <div className="space-y-1.5"><Label>Jarak Workshop (km)</Label><Input type="number" min="0" step="0.1" value={editTokoForm.jarakKm} onChange={(e) => setEditTokoForm({ ...editTokoForm, jarakKm: e.target.value })} placeholder="kosong = belum tahu" /></div>
+            <div className="space-y-1.5"><Label>Latitude</Label><Input type="number" step="0.000001" value={editTokoForm.latitude} onChange={(e) => setEditTokoForm({ ...editTokoForm, latitude: e.target.value })} placeholder="-6.200000" /></div>
+            <div className="space-y-1.5"><Label>Longitude</Label><Input type="number" step="0.000001" value={editTokoForm.longitude} onChange={(e) => setEditTokoForm({ ...editTokoForm, longitude: e.target.value })} placeholder="106.816666" /></div>
             {/* Centang "tidak aktif": toko berhenti operasional → keluar dari siklus, alert, dan jadwal otomatis */}
             <div className="flex items-center gap-2 rounded-md border border-dashed border-slate-300 p-2 sm:col-span-2">
               <Checkbox
@@ -1330,7 +1332,7 @@ export default function MasterDataView() {
             <Button
               className="bg-emerald-600 hover:bg-emerald-700"
               disabled={!editToko || !editTokoForm.namaToko.trim() || Number(editTokoForm.frekuensiVisit) < 1 || updateToko.isPending}
-              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit), jarakKm: editTokoForm.jarakKm.trim() === '' ? null : Math.max(0, Number(editTokoForm.jarakKm) || 0), aktif: editTokoForm.aktif, modeSiklus: editTokoForm.modeSiklus } })}
+              onClick={() => editToko && updateToko.mutate({ id: editToko.id, data: { namaToko: editTokoForm.namaToko.trim(), alamat: editTokoForm.alamat.trim() || null, kontak: editTokoForm.kontak.trim() || null, frekuensiVisit: Number(editTokoForm.frekuensiVisit), jarakKm: editTokoForm.jarakKm.trim() === '' ? null : Math.max(0, Number(editTokoForm.jarakKm) || 0), aktif: editTokoForm.aktif, modeSiklus: editTokoForm.modeSiklus, latitude: editTokoForm.latitude.trim() === '' ? null : Number(editTokoForm.latitude), longitude: editTokoForm.longitude.trim() === '' ? null : Number(editTokoForm.longitude) } })}
             >
               <Pencil className="mr-1 h-4 w-4" /> Simpan Perubahan
             </Button>

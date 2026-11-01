@@ -133,7 +133,7 @@ describe('mapHeaders', () => {
 })
 
 describe('validateTokoRows', () => {
-  it('menandai baris valid sebagai pending dan barcode default BC-[KODE]', () => {
+  it('menandai baris valid sebagai pending dan barcode default nama toko', () => {
     const { acc, headerError } = validateTokoRows(
       ['kode_toko', 'nama_toko'],
       [['TOK1', 'Toko Satu']]
@@ -141,7 +141,7 @@ describe('validateTokoRows', () => {
     expect(headerError).toBeUndefined()
     expect(acc).toHaveLength(1)
     expect(acc[0].status).toBe('pending')
-    expect(acc[0].data?.insert.barcodeToko).toBe('BC-TOK1')
+    expect(acc[0].data?.insert.barcodeToko).toBe('Toko Satu')
   })
 
   it('menolak kode kosong dan kode ganda di dalam file', () => {

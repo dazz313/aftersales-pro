@@ -39,11 +39,11 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
         try {
           JsBarcode(svgRef.current as unknown as HTMLElement, unit.serialNumber, {
             format: 'CODE128',
-            width: 1.4,
-            height: 34,
+            width: 1.2,
+            height: 28,
             displayValue: true,
-            fontSize: 9,
-            margin: 4,
+            fontSize: 8,
+            margin: 2,
             background: '#ffffff',
           })
         } catch (e) {
@@ -62,11 +62,11 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
   const tglGaransi = unit?.tglPembelian ? formatTanggal(unit.tglPembelian) : null
 
   return (
-    <div className="stiker-printroot mx-auto w-full max-w-[214px] rounded-xl border-2 border-slate-200 bg-white p-2 text-center shadow-sm">
+    <div className="stiker-printroot mx-auto w-full max-w-[214px] rounded-xl border-2 border-slate-200 bg-white p-1.5 text-center shadow-sm">
       <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-slate-400">Unit Asset Sticker</p>
 
       {/* Barcode visual CODE128 asli — hanya bila nomor seri sudah terisi */}
-      <div className="mt-1 flex justify-center">
+      <div className="mt-0.5 flex justify-center">
         {unit.serialNumber ? (
           <svg ref={svgRef} aria-label={`Barcode ${unit.serialNumber}`} className="block max-w-full" />
         ) : (
@@ -77,7 +77,7 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
       </div>
 
       {/* Layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
-      <dl className="mt-1 space-y-0.5 border-t border-dashed border-slate-200 pt-1 text-left">
+      <dl className="mt-0.5 space-y-0.5 border-t border-dashed border-slate-200 pt-0.5 text-left">
         <div className="flex justify-between gap-2 text-[9px] leading-tight">
           <dt className="shrink-0 text-slate-400">Tanggal Input</dt>
           <dd className="font-medium text-slate-800">{tanggalInput}</dd>

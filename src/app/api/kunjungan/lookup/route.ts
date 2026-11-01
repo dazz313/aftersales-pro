@@ -16,9 +16,9 @@ export async function GET(request: Request) {
 
     const norm = barcode.toUpperCase().replace(/^BC-/, '')
     // SQLite tidak mendukung mode insensitive — normalisasi di sisi aplikasi.
-    // Coba cocokkan langsung (BC-[KODE] atau kode toko), lalu fallback scan kecil (dataset master toko kecil).
+    // Cocokkan barcode (BC-... / nama toko / kode toko), case-insensitive.
     let toko = await db.masterToko.findFirst({
-      where: { OR: [{ barcodeToko: `BC-${norm}` }, { barcodeToko: barcode }, { kodeToko: norm }] },
+      where: { OR: [{ barcodeToko: barcode }, { barcodeToko: `BC-${norm}` }, { kodeToko: norm }] },
       include: {
         _count: { select: { unitAssets: true, kunjungan: true } },
         kunjungan: { orderBy: { tglKunjungan: 'desc' }, take: 1, include: { teknisi: { select: { nama: true } } } },
@@ -31,7 +31,13 @@ export async function GET(request: Request) {
           kunjungan: { orderBy: { tglKunjungan: 'desc' }, take: 1, include: { teknisi: { select: { nama: true } } } },
         },
       })
-      toko = all.find((t) => (t.barcodeToko ?? '').toUpperCase().replace(/^BC-/, '') === norm || t.kodeToko.toUpperCase() === norm) ?? null
+      const bLower = barcode.trim().toLowerCase()
+      toko = all.find((t) =>
+        (t.barcodeToko ?? '').trim().toLowerCase() === bLower ||
+        (t.namaToko ?? '').trim().toLowerCase() === bLower ||
+        (t.barcodeToko ?? '').toUpperCase().replace(/^BC-/, '') === norm ||
+        (t.kodeToko ?? '').toUpperCase() === norm
+      ) ?? null
     }
 
     if (!toko) {
@@ -52,6 +58,8 @@ export async function GET(request: Request) {
         namaToko: toko.namaToko,
         alamat: toko.alamat,
         kontak: toko.kontak,
+        latitude: toko.latitude,
+        longitude: toko.longitude,
         frekuensiVisit: toko.frekuensiVisit,
         tglVisitTerakhir: toko.tglVisitTerakhir,
         barcodeToko: toko.barcodeToko,

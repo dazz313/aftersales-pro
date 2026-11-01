@@ -53,13 +53,19 @@ async function balasTG(token: string, chatId: number | string, text: string, thr
 /** Cari barcode toko di DB (normalisasi sama seperti lookup kunjungan existing). */
 async function cariTokoDariBarcode(barcode: string) {
   const norm = barcode.trim().toUpperCase().replace(/^BC-/, '')
+  const bLower = barcode.trim().toLowerCase()
   const direct = await db.masterToko.findFirst({
-    where: { OR: [{ barcodeToko: `BC-${norm}` }, { barcodeToko: barcode.trim() }, { kodeToko: norm }] },
-    select: { id: true, kodeToko: true, namaToko: true },
+    where: { OR: [{ barcodeToko: barcode.trim() }, { barcodeToko: `BC-${norm}` }, { kodeToko: norm }] },
+    select: { id: true, kodeToko: true, namaToko: true, barcodeToko: true },
   }).catch(() => null)
   if (direct) return direct
   const semua = await db.masterToko.findMany({ select: { id: true, kodeToko: true, namaToko: true, barcodeToko: true } })
-  return (semua.find((t) => (t.barcodeToko ?? '').toUpperCase().replace(/^BC-/, '') === norm) as { id: number; kodeToko: string; namaToko: string } | undefined) ?? null
+  return (semua.find((t) =>
+    (t.barcodeToko ?? '').trim().toLowerCase() === bLower ||
+    (t.namaToko ?? '').trim().toLowerCase() === bLower ||
+    (t.barcodeToko ?? '').toUpperCase().replace(/^BC-/, '') === norm ||
+    (t.kodeToko ?? '').toUpperCase() === norm
+  ) as { id: number; kodeToko: string; namaToko: string } | undefined) ?? null
 }
 
 function cariTeksLaporan(caption: string, barcode: string | null, ocr: string): string {

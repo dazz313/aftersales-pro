@@ -265,8 +265,8 @@ export function validateTokoRows(headers: string[], rows: string[][]): {
     }
     seen.add(kode)
 
-    // Barcode per toko: default BC-[KODETOKO] jika kolom kosong
-    const barcodeToko = (barcode || `BC-${kode.toUpperCase()}`).trim()
+    // Barcode per toko: default = nama toko (agar yang terbaca saat scan adalah nama toko); kalau kolom barcode diisi, pakai nilainya.
+    const barcodeToko = (get('barcodeToko') || nama).trim()
     if (seenBarcode.has(barcodeToko)) {
       acc.push({ row: rowNum, kode, nama, status: 'error', message: `Barcode "${barcodeToko}" muncul lebih dari satu kali di dalam file` })
       return
