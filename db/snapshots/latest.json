@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T22:13:58.176Z",
+  "generatedAt": "2026-11-01T23:37:28.381Z",
   "masterToko": [
     {
       "id": 257,
@@ -10,7 +10,7 @@
       "frekuensiVisit": 5,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-21T06:38:00.000Z",
+      "tglVisitTerakhir": "2026-10-31T23:37:00.000Z",
       "barcodeToko": "Toko Semeru Ahmad Yani",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4259,6 +4259,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 79,
+      "tokoId": 257,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-10-31T23:37:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 78,
       "tokoId": 217,
@@ -9331,7 +9341,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-11-01"
+      "nilai": "2026-11-02"
     },
     {
       "id": 199,
@@ -9430,6 +9440,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1266,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "79",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Semeru Ahmad Yani (TOK-001) · tgl 1/11/2026, 07.37.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-11-01T23:37:28.366Z"
+    },
     {
       "id": 1265,
       "aksi": "BACKUP_DATA",
@@ -18420,15 +18439,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2511700906 — RI-522 A",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:10:24.759Z"
-    },
-    {
-      "id": 229,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2602651578",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602651578 — RI-522 E",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:22.806Z"
     }
   ],
   "backupLog": [
