@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T03:37:37.226Z",
+  "generatedAt": "2026-11-02T05:01:35.828Z",
   "masterToko": [
     {
       "id": 257,
@@ -7243,7 +7243,7 @@
       "id": 41,
       "noTiket": "SVC-2610-0039",
       "unitAssetId": 195,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2610-0039",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
@@ -7262,10 +7262,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T05:01:00.000Z",
       "tglTiket": "2026-10-15T06:02:15.181Z",
       "createdAt": "2026-10-15T06:02:15.197Z",
-      "updatedAt": "2026-10-19T00:02:55.863Z",
+      "updatedAt": "2026-11-02T05:01:35.808Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9511,6 +9511,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1281,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0039",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 20/10/2026, 13.01.00) — nota belum diunggah (bisa menyusul) — UNIT MASIH DI WORKSHOP: terbitkan Surat Pengembalian, konfirmasi kembali saat unit sampai toko — tglFinish diatur manual: 20/10/2026, 13.01.00",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-02T05:01:35.813Z"
+    },
     {
       "id": 1280,
       "aksi": "FINISH_SERVICE",
@@ -18501,15 +18510,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2505248042 — RI-522 CE",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:00.862Z"
-    },
-    {
-      "id": 244,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03010006502",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03010006502 — MCM-507",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:58.993Z"
     }
   ],
   "backupLog": [
