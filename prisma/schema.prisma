@@ -103,7 +103,7 @@ model MasterSparepart {
 
 // ==========================================
 // 4. Unit Asset / Barcode Table (unit_asset)
-// Format barcode: SN:[serial_number]|MOD:[model_unit]|TOK:[kode_toko]
+// Format isi QR stiker: SN:[nomor seri]|MOD:[model]|TOK:[toko/customer]|NAMA:[nama produk]
 // ==========================================
 model UnitAsset {
   id              Int              @id @default(autoincrement())

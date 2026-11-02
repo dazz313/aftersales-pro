@@ -100,6 +100,31 @@ Tidak ada refresh token. Saat `401`, login ulang (token baru otomatis berlaku).
 - Master data, hapus unit, koreksi part, klaim: `ADMIN_WORKSHOP`/`MANAGER`.
 - Mobile sebaiknya menyembunyikan menu master untuk role `TEKNISI`.
 
+### 2.5 Tidak ada "API secret" — yang dipakai adalah token login
+
+Aplikasi mobile **tidak** memakai API key statis. Satu-satunya kredensial adalah
+JWT dari `POST /api/auth/login` (masa berlaku 7 hari). `AUTH_SECRET` di `.env`
+hanya kunci penanda tangan JWT di server dan **tidak boleh** ditanam di APK.
+
+Akun untuk mobile dibuat dari web: **Pengguna → Tambah**. Password default
+`aftersales123` (minimal 6 karakter) — minta user menggantinya. Role `TEKNISI`
+sudah cukup untuk scan kunjungan dan memindahkan tahap tiket.
+
+Untuk uji cepat di PC (tanpa membuka aplikasi):
+
+```bash
+node scripts/mobile-token.mjs dazz RAHASIA
+node scripts/mobile-token.mjs dazz RAHASIA 2603128725B
+```
+
+Script mencetak token, masa berlaku, base URL per skenario (USB/emulator/Wi-Fi),
+dan opsional langsung menguji satu kode lewat `/api/mobile/scan`.
+Agar password tidak tersimpan di riwayat shell:
+
+```powershell
+$env:MOBILE_EMAIL="dazz"; $env:MOBILE_PASS="RAHASIA"; node scripts/mobile-token.mjs
+```
+
 ---
 
 ## 3. Konvensi umum
@@ -227,9 +252,29 @@ Server **tidak** menolak check-in ganda. Aturan di mobile:
 
 ### 5.1 Kode pada stiker unit
 
-QR unit berisi **nomor seri** (`serialNumber`), mis. `SN-KPAS-2026-0001`.
-Format lama `SN:xxx|MOD:yyy|TOK:zzz` juga masih dikenali (diambil bagian `SN:`).
-Nomor tiket (`SVC-2611-0001`) juga bisa discan.
+QR unit berisi **4 identifikasi** dalam satu baris (pemisah `|`):
+
+```
+SN:<nomor seri>|MOD:<model>|TOK:<toko/customer>|NAMA:<nama produk>
+```
+
+Contoh nyata:
+
+```
+SN:2603128725B|MOD:RI-712GA(B)|TOK:Toko Semeru Ahmad Yani|NAMA:Kulkas 2 Pintu
+```
+
+Aturan penting:
+
+- **Tag ID = nilai `SN:`** (nomor seri), **bukan** seluruh teks QR. Aplikasi
+  mobile harus mengambil bagian setelah `SN:`.
+- `SN:` selalu di depan → aplikasi/pembaca lama yang hanya mencari `SN:` tetap jalan.
+- QR lama yang **hanya berisi nomor seri** dan format lama
+  `SN:xxx|MOD:yyy|TOK:zzz` tetap dikenali (tanpa `NAMA:`).
+- Nomor tiket (`SVC-2611-0001`) juga bisa discan.
+- Nilai dibatasi panjangnya (SN 32, model 24, nama 36, toko 30 karakter) agar QR
+  tetap renggang dan mudah dipindai saat dicetak mini 28 mm. Data **lengkap**
+  tetap dikirim server di `identifikasi`.
 
 ### 5.2 Identifikasi produk (4 komponen)
 
@@ -237,18 +282,19 @@ Stiker unit memuat **4 identifikasi utama**:
 
 | Komponen | Sumber | Keterangan |
 |---|---|---|
-| Nama produk | `unit.nama` (fallback `modelUnit`) | nama panggilan unit |
-| Model | `unit.modelUnit` | tipe/model unit |
-| Nomor seri | `unit.serialNumber` | isi QR — kunci unik |
-| Toko | `unit.toko.namaToko` | **otomatis** dari data unit / scan toko pertama |
+| Nama produk | `unit.nama` (fallback `modelUnit`) | nama panggilan unit — `NAMA:` |
+| Model | `unit.modelUnit` | tipe/model unit — `MOD:` |
+| Nomor seri | `unit.serialNumber` | **Tag ID** & kunci unik — `SN:` |
+| Toko | `unit.toko.namaToko` (fallback `customer.nama`) | **otomatis** dari data unit / scan toko pertama — `TOK:` |
 
 `waktuScan` **tidak dicetak** di stiker (tidak mungkin diketahui sebelum discan).
 Waktu scan dihasilkan saat pemindaian: server mengembalikannya di
 `identifikasi.waktuScan`, dan aplikasi mobile boleh memakai waktu lokal perangkat.
 
-QR hanya berisi **nomor seri** agar tetap pendek dan mudah dibaca saat stiker
-dicetak mini. Ketiga data lain dikirim otomatis oleh `GET /api/mobile/scan`
-sehingga aplikasi tidak perlu mengetik apa pun.
+Aplikasi mobile boleh memakai isi QR langsung (tanpa jaringan), lalu
+menyegarkan dengan `GET /api/mobile/scan` saat online. Server selalu memakai
+**database** sebagai sumber `identifikasi`, sehingga koreksi data di web ikut
+terbaca walau stiker lama sudah terlanjur dicetak.
 
 Stiker bisa dicetak dalam 3 ukuran (dropdown **Kertas**):
 
@@ -476,12 +522,46 @@ data class ScanResponse(
 )
 
 data class IdentifikasiDto(
+    val tagId: String,             // = nomorSeri (Tag ID pada layar scan)
     val namaProduk: String,
     val model: String,
     val nomorSeri: String,
     val namaToko: String?,
     val waktuScan: String,         // ISO-8601 dari server
 )
+
+/**
+ * Urai isi QR stiker unit:
+ *   SN:<nomor seri>|MOD:<model>|TOK:<toko>|NAMA:<nama produk>
+ * Stiker lama hanya berisi nomor seri → tetap terbaca (SN = seluruh teks).
+ */
+object KodeUnit {
+    data class Identitas(
+        val tagId: String,
+        val model: String,
+        val toko: String,
+        val namaProduk: String,
+    )
+
+    fun urai(kode: String): Identitas? {
+        val teks = kode.trim()
+        if (teks.isEmpty()) return null
+        val peta = teks.split('|')
+            .mapNotNull { bagian ->
+                val i = bagian.indexOf(':')
+                if (i <= 0) null
+                else bagian.substring(0, i).trim().uppercase() to bagian.substring(i + 1).trim()
+            }
+            .toMap()
+        val sn = peta["SN"] ?: teks   // stiker lama: seluruh isi QR = nomor seri
+        return Identitas(
+            tagId = sn,
+            model = peta["MOD"].orEmpty(),
+            toko = peta["TOK"].orEmpty(),
+            namaProduk = peta["NAMA"].orEmpty(),
+        )
+    }
+}
 
 data class AksiDto(val aksi: String, val label: String, val endpoint: String? = null)
 
@@ -531,7 +611,17 @@ class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
 Contoh pemakaian:
 
 ```kotlin
-val hasil = api.scan(kodeDariKamera) // "Toko Andika" atau "SN-KPAS-2026-0001"
+val kodeDariKamera = "SN:2603128725B|MOD:RI-712GA(B)|TOK:Toko Semeru|NAMA:Kulkas 2 Pintu"
+
+// 1) Tampilkan 4 identifikasi langsung dari QR (tanpa jaringan, tanpa menebak)
+val stiker = KodeUnit.urai(kodeDariKamera)
+// stiker.tagId      = "2603128725B"  ← Tag ID
+// stiker.namaProduk = "Kulkas 2 Pintu"
+// stiker.model      = "RI-712GA(B)"
+// stiker.toko       = "Toko Semeru"
+
+// 2) Segarkan dari server (data database + tahap + aksi)
+val hasil = api.scan(kodeDariKamera)
 
 when (hasil.tipe) {
     "TOKO" -> {
@@ -545,6 +635,7 @@ when (hasil.tipe) {
         // tampilkan nama toko + alamat + koordinat
     }
     "UNIT", "TIKET" -> {
+        val info = hasil.identifikasi            // sumber: database
         val tiket = hasil.tiket ?: return
         val aksi = pilihAksi(hasil.aksiTersedia) // mis. TARIK_WORKSHOP
         api.aksiTiket(tiket.id, AksiTiketRequest(aksi = aksi.aksi, aktor = "mobile:${sesi.user.nama}"))
@@ -569,8 +660,12 @@ curl -s -X POST http://localhost:3000/api/auth/login \
 curl -s "http://localhost:3000/api/mobile/scan?kode=Toko%20Andika" \
   -H "Authorization: Bearer TOKEN"
 
-# 3) scan unit
-curl -s "http://localhost:3000/api/mobile/scan?kode=SN-KPAS-2026-0001" \
+# 3) scan unit — isi QR stiker (URL-encode karakter | dan spasi)
+curl -s "http://localhost:3000/api/mobile/scan?kode=SN%3A2603128725B%7CMOD%3ARI-712GA(B)%7CTOK%3AToko%20Semeru%7CNAMA%3AKulkas%202%20Pintu" \
+  -H "Authorization: Bearer TOKEN"
+
+# 3b) stiker lama / nomor seri saja — tetap didukung
+curl -s "http://localhost:3000/api/mobile/scan?kode=2603128725B" \
   -H "Authorization: Bearer TOKEN"
 
 # 4) check-in
@@ -595,8 +690,103 @@ curl -s -X PATCH http://localhost:3000/api/service/123 \
 | `aksiTersedia` dikirim server | Tombol di HP selalu sesuai state & guard server |
 | `409` = aturan bisnis | Mobile tidak retry, cukup tampilkan pesan |
 | QR toko berisi nama toko | Hasil scan langsung terbaca manusia; kode lama tetap didukung |
-| QR unit berisi nomor seri | Unik per unit, ringkas, tahan lama |
+| QR unit berisi 4 identifikasi (`SN:\|MOD:\|TOK:\|NAMA:`) | HP bisa menampilkan nama/model/toko tanpa jaringan; `SN:` = Tag ID dan tetap kompatibel dengan stiker lama |
 
 ---
 
-_Versi dokumen: 1.0 — 2 November 2026._
+## 12. Uji di HP lewat USB (adb reverse)
+
+HP yang dihubungkan USB **bisa** dipakai menguji aplikasi terhadap server PC —
+tidak perlu Wi-Fi sama sekali.
+
+### 12.1 Prasyarat di HP
+
+1. Aktifkan **Opsi Pengembang** (ketuk *Nomor build* 7×).
+2. Aktifkan **USB debugging**.
+3. Sambungkan kabel data (bukan kabel charge-only), lalu **izinkan** dialog
+   *"Allow USB debugging?"* di layar HP.
+
+`adb devices` harus menampilkan status **`device`**. Bila masih
+`unauthorized`, dialog izin di HP belum ditekan (atau cabut–pasang ulang kabel).
+
+### 12.2 Prasyarat di PC
+
+Android SDK platform-tools sudah terpasang di mesin ini:
+
+```
+C:\Users\eraco\AppData\Local\Android\Sdk\platform-tools\adb.exe
+```
+
+`adb` belum masuk `PATH`, jadi panggil dengan path lengkap atau tambahkan folder
+tersebut ke `PATH`:
+
+```powershell
+$env:PATH += ";$env:LOCALAPPDATA\Android\Sdk\platform-tools"
+adb devices
+```
+
+### 12.3 Teruskan port 3000 ke HP
+
+```powershell
+adb reverse tcp:3000 tcp:3000
+```
+
+Setelah itu `127.0.0.1:3000` **di dalam HP** = `localhost:3000` di PC.
+Base URL aplikasi:
+
+```kotlin
+const val BASE_URL = "http://127.0.0.1:3000/"   // HP via USB (adb reverse)
+// const val BASE_URL = "http://10.0.2.2:3000/" // emulator Android Studio
+// const val BASE_URL = "http://192.168.x.x:3000/" // HP & PC satu Wi-Fi
+```
+
+`adb reverse` hilang setiap HP dicabut/reconnect — jalankan ulang per sesi.
+Cek koneksi dari HP: `adb shell curl -s http://127.0.0.1:3000/api/health`
+(bila `curl` tidak ada di HP, cukup buka browser HP ke alamat yang sama).
+
+### 12.4 Izinkan HTTP lokal (cleartext)
+
+Android 9+ memblokir HTTP biasa. Untuk build **debug** saja, tambahkan
+`res/xml/network_security_config.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">192.168.0.0</domain>
+    </domain-config>
+</network-security-config>
+```
+
+Lalu di `AndroidManifest.xml` (application):
+
+```xml
+android:networkSecurityConfig="@xml/network_security_config"
+```
+
+Build release/produksi tetap wajib HTTPS — jangan aktifkan cleartext di sana.
+
+### 12.5 Alur uji yang disarankan
+
+1. `adb reverse tcp:3000 tcp:3000`
+2. Login di aplikasi dengan akun `TEKNISI` → simpan token.
+3. Scan QR toko (mis. `Toko Andika`) → cek kunjungan muncul di web **Field Ops**.
+4. Scan QR unit (mis. `2603128725B`) → tampilkan 4 identifikasi + tombol aksi
+   sesuai `tahap`.
+5. Tekan aksi (mis. `TARIK_WORKSHOP`) → status tiket di web berubah.
+
+### 12.6 Bila gagal
+
+| Gejala | Penyebab umum |
+|---|---|
+| `adb devices` kosong | driver USB / kabel charge-only / USB debugging mati |
+| `unauthorized` | dialog izin di HP belum ditekan |
+| `Connection refused` di HP | `adb reverse` belum jalan atau server PM2 mati |
+| `CLEARTEXT communication not permitted` | `network_security_config` belum dipasang |
+| `401 Tidak terautentikasi` | token belum dikirim / kedaluwarsa → login ulang |
+
+---
+
+_Versi dokumen: 1.2 — 2 November 2026._

@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { requireActiveSession } from '@/lib/auth-server'
 import { aksiTersedia, hitungTahap, labelTahap } from '@/lib/mobile-tahap'
+import { adalahKodeUnit, nomorSeriDariKode, uraiKodeUnit, type IdentitasUnit } from '@/lib/kode-unit'
 
 /**
  * GET /api/mobile/scan?kode=...
@@ -10,9 +11,14 @@ import { aksiTersedia, hitungTahap, labelTahap } from '@/lib/mobile-tahap'
  * SATU pintu masuk untuk aplikasi mobile (Kotlin) saat memindai stiker:
  * - QR/barcode TOKO (berisi NAMA TOKO, kompatibel kode lama BC-TOK-xxx) →
  *   `tipe: "TOKO"` + ringkasan kunjungan + aksi CHECKIN.
- * - QR/barcode UNIT (nomor seri) → `tipe: "UNIT"` + tiket aktif + tahap +
- *   aksi lanjutan (KERJAKAN_DI_TOKO / TARIK_WORKSHOP / FINISH / KEMBALI_KE_TOKO).
+ * - QR/barcode UNIT (isi QR: `SN:..|MOD:..|TOK:..|NAMA:..`) →
+ *   `tipe: "UNIT"` + 4 identifikasi + tiket aktif + tahap + aksi lanjutan
+ *   (KERJAKAN_DI_TOKO / TARIK_WORKSHOP / FINISH / KEMBALI_KE_TOKO).
  * - Nomor tiket (SV-... / SVC-...) → `tipe: "TIKET"`.
+ *
+ * Stiker unit lama yang hanya berisi nomor seri tetap dikenali (dicari apa
+ * adanya), dan `identifikasiStiker` berisi hasil urai QR bila ada — jadi HP
+ * tetap bisa menampilkan nama/model/toko walau unit belum ada di database.
  *
  * Endpoint ini READ-ONLY (tidak mencatat apa pun). Penulisan tetap memakai
  * endpoint yang sudah ada:
@@ -69,10 +75,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Parameter kode wajib diisi' }, { status: 400 })
     }
 
-    // QR lama unit bisa berbentuk "SN:xxx|MOD:yyy|TOK:zzz" — ambil bagian SN.
-    const kodeNormal = /^SN:/i.test(kode)
-      ? (kode.split('|').find((b) => /^SN:/i.test(b)) ?? '').slice(3).trim()
-      : kode
+    // Isi QR unit: `SN:..|MOD:..|TOK:..|NAMA:..` (baru) atau nomor seri saja (lama).
+    // Pencarian ke database selalu memakai NOMOR SERI — bukan seluruh teks QR.
+    const kodeNormal = nomorSeriDariKode(kode)
+    const identifikasiStiker = adalahKodeUnit(kode) ? uraiKodeUnit(kode) : null
 
     // ===== 1. Coba sebagai TOKO =====
     const toko = await cariToko(kodeNormal)
@@ -144,7 +150,7 @@ export async function GET(request: Request) {
       })
     }
     if (unitList.length === 1) {
-      return NextResponse.json(bangunHasilUnit(unitList[0], kode))
+      return NextResponse.json(bangunHasilUnit(unitList[0], kode, identifikasiStiker))
     }
 
     // ===== 3. Coba sebagai NOMOR TIKET =====
@@ -153,7 +159,7 @@ export async function GET(request: Request) {
       include: INCLUDE_TIKET,
     })
     if (tiket) {
-      return NextResponse.json(bangunHasilTiket(tiket, kode))
+      return NextResponse.json(bangunHasilTiket(tiket, kode, identifikasiStiker))
     }
 
     return NextResponse.json(
@@ -161,7 +167,12 @@ export async function GET(request: Request) {
         ok: false,
         tipe: 'TIDAK_DIKENAL',
         kode,
-        error: `Kode "${kode}" tidak dikenali sebagai QR toko, nomor seri unit, atau nomor tiket.`,
+        // Stiker valid tetapi nomor serinya belum terdaftar — HP tetap bisa
+        // menampilkan 4 identifikasi hasil urai QR + pesan tindakan.
+        identifikasiStiker: identifikasiStiker ?? undefined,
+        error: identifikasiStiker
+          ? `Unit dengan nomor seri "${identifikasiStiker.serialNumber}" belum terdaftar di database. Daftarkan unitnya dulu di Master Data.`
+          : `Kode "${kode}" tidak dikenali sebagai QR toko, nomor seri unit, atau nomor tiket.`,
       },
       { status: 404 }
     )
@@ -260,7 +271,7 @@ function ringkasUnit(unit: UnitRingkasSumber) {
   }
 }
 
-function bangunHasilUnit(unit: UnitLengkap, kode: string) {
+function bangunHasilUnit(unit: UnitLengkap, kode: string, stiker: IdentitasUnit | null) {
   const tiket = pilihTiket(unit.serviceRequests ?? [])
   const tahap = hitungTahap(tiket)
   const ringkas = ringkasUnit(unit)
@@ -270,13 +281,18 @@ function bangunHasilUnit(unit: UnitLengkap, kode: string) {
     kode,
     unit: ringkas,
     // 4 identifikasi utama yang dipakai aplikasi mobile saat scan produk.
+    // Sumber: DATABASE (paling akurat) — bukan tebakan dari teks QR.
     identifikasi: {
+      tagId: ringkas.serialNumber,
       namaProduk: ringkas.nama?.trim() || ringkas.modelUnit,
       model: ringkas.modelUnit,
       nomorSeri: ringkas.serialNumber,
       namaToko: ringkas.toko?.namaToko ?? ringkas.customer?.nama ?? null,
       waktuScan: new Date().toISOString(),
     },
+    // Hasil urai isi QR (bila stiker memakai format baru) — berguna untuk
+    // membandingkan stiker lama vs data terbaru di database.
+    identifikasiStiker: stiker ?? undefined,
     tiket: tiket ? ringkasTiket(tiket) : null,
     tahap,
     tahapLabel: labelTahap(tahap),
@@ -286,7 +302,7 @@ function bangunHasilUnit(unit: UnitLengkap, kode: string) {
   }
 }
 
-function bangunHasilTiket(tiket: TiketLengkap, kode: string) {
+function bangunHasilTiket(tiket: TiketLengkap, kode: string, stiker: IdentitasUnit | null) {
   const tahap = hitungTahap(tiket)
   const ringkas = ringkasUnit(tiket.unitAsset)
   return {
@@ -295,12 +311,14 @@ function bangunHasilTiket(tiket: TiketLengkap, kode: string) {
     kode,
     unit: ringkas,
     identifikasi: {
+      tagId: ringkas.serialNumber,
       namaProduk: ringkas.nama?.trim() || ringkas.modelUnit,
       model: ringkas.modelUnit,
       nomorSeri: ringkas.serialNumber,
       namaToko: ringkas.toko?.namaToko ?? ringkas.customer?.nama ?? null,
       waktuScan: new Date().toISOString(),
     },
+    identifikasiStiker: stiker ?? undefined,
     tiket: ringkasTiket(tiket),
     tahap,
     tahapLabel: labelTahap(tahap),

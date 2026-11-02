@@ -8,18 +8,21 @@ import type { UnitAsset } from '@/lib/api'
 import { GARANSI_LABEL } from '@/lib/types'
 import { cetakStikerTunggal, simpanKertasStiker, useKertasStiker, useStickerPrint } from '@/lib/sticker-print'
 import { PilihKertas } from '@/components/stiker-kertas'
+import { bangunKodeUnit } from '@/lib/kode-unit'
 
 /**
  * Stiker QR UNIT ASSET — versi MINI (4 identifikasi utama):
  *   1. Nama produk (nama unit; fallback model)
  *   2. Model / tipe
- *   3. Nomor seri
+ *   3. Nomor seri — sekaligus "Tag ID" di aplikasi mobile
  *   4. Toko / customer — otomatis tersinkron dari data unit (hasil scan toko
  *      saat kunjungan pertama), jadi tidak perlu diketik ulang.
  *
- * QR code vektor (SVG) berisi NOMOR SERI sebagai kunci unik. Data lain
- * dikembalikan otomatis oleh `GET /api/mobile/scan` sehingga aplikasi mobile
- * menerima keempat identifikasi + waktu scan tanpa perlu mengetik apa pun.
+ * ISI QR (lihat src/lib/kode-unit.ts):
+ *   SN:<nomor seri>|MOD:<model>|TOK:<toko>|NAMA:<nama produk>
+ * Jadi HP bisa menampilkan keempat identifikasi langsung dari hasil pindai,
+ * tanpa menebak, dan tanpa menunggu server. `SN:` selalu di depan agar
+ * "Tag ID" = nomor seri (bukan seluruh teks QR).
  *
  * Tata letak sengaja dipadatkan (vertikal) agar muat dicetak mini 28 mm /
  * label thermal 36 mm dan tetap tajam karena QR berupa vektor.
@@ -30,9 +33,17 @@ import { PilihKertas } from '@/components/stiker-kertas'
 
 export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
   const qrRef = useRef<HTMLDivElement>(null)
+  const pemilik = unit?.toko?.namaToko ?? unit?.customer?.nama ?? '-'
+  const namaProduk = unit?.nama?.trim() || unit?.modelUnit || '-'
+  const kodeQr = unit ? bangunKodeUnit({
+    serialNumber: unit.serialNumber,
+    modelUnit: unit.modelUnit,
+    nama: unit.nama,
+    pemilik,
+  }) : ''
 
   useEffect(() => {
-    if (!unit?.serialNumber) return
+    if (!kodeQr) return
     let cancelled = false
     // QR SVG vektor (bukan canvas) — tetap tajam saat dicetak mini.
     import('qrcode')
@@ -41,7 +52,7 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
           toString: (text: string, opts: Record<string, unknown>, cb: (err: Error | null, str: string) => void) => void
         }
         if (cancelled || !qrRef.current || typeof QRCode?.toString !== 'function') return
-        QRCode.toString(unit.serialNumber, { type: 'svg', width: 72, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } }, (err, svg) => {
+        QRCode.toString(kodeQr, { type: 'svg', width: 96, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } }, (err, svg) => {
           if (cancelled || !qrRef.current) return
           if (err || !svg) { console.error('Render QR unit gagal:', err); return }
           qrRef.current.innerHTML = svg
@@ -51,11 +62,9 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
       })
       .catch((e) => console.error('Render QR unit gagal:', e))
     return () => { cancelled = true }
-  }, [unit])
+  }, [kodeQr, unit?.serialNumber])
 
   const statusLabel = unit ? (GARANSI_LABEL[unit.statusGaransi] ?? unit.statusGaransi.replace('_', '-')) : ''
-  const namaProduk = unit?.nama?.trim() || unit?.modelUnit || '-'
-  const pemilik = unit?.toko?.namaToko ?? unit?.customer?.nama ?? '-'
 
   return (
     <div className="stiker-printroot mx-auto w-full max-w-[150px] overflow-hidden rounded-md border border-slate-900 bg-white text-center">
@@ -66,8 +75,8 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
       </div>
 
       {/* QR code vektor — hanya bila nomor seri sudah terisi */}
-      {unit.serialNumber ? (
-        <div ref={qrRef} className="mx-auto mt-0.5 h-16 w-16" />
+      {kodeQr ? (
+        <div ref={qrRef} className="mx-auto mt-0.5 h-20 w-20" />
       ) : (
         <p className="m-1 rounded bg-amber-50 px-1 py-1 text-[7px] font-medium leading-tight text-amber-700">
           Nomor seri belum diisi — isi lewat Edit Unit, lalu buka kembali stiker ini.
@@ -83,7 +92,7 @@ export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
           Model <span className="font-semibold text-slate-800">{unit.modelUnit || '-'}</span>
         </p>
         <p className="truncate font-mono text-[6.5px] text-slate-500" title={unit.serialNumber}>
-          SN <span className="font-bold text-slate-900">{unit.serialNumber || '-'}</span>
+          Tag ID <span className="font-bold text-slate-900">{unit.serialNumber || '-'}</span>
         </p>
         <p className="line-clamp-2 text-[6.5px] leading-[1.1] text-slate-500" title={pemilik}>
           Pemilik <span className="font-semibold text-slate-800">{pemilik}</span>
@@ -107,9 +116,9 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
             <DialogHeader>
               <DialogTitle>Stiker QR Unit — Mini</DialogTitle>
               <DialogDescription>
-                Berisi 4 identifikasi: nama produk, model, nomor seri, dan toko (otomatis dari data
-                kunjungan/scan toko). Tempel di unit — teknisi scan untuk identifikasi &amp; pindah tahap.
-                Pilih kertas <b>Mini 28 mm</b> untuk label kecil.
+                QR berisi 4 identifikasi: <b>nama produk</b>, <b>model</b>, <b>nomor seri</b> (Tag ID),
+                dan <b>toko</b> (otomatis dari data kunjungan/scan toko). Tempel di unit — teknisi
+                scan untuk identifikasi &amp; pindah tahap. Pilih kertas <b>Mini 28 mm</b> untuk label kecil.
               </DialogDescription>
             </DialogHeader>
             <StikerUnitBody unit={unit} />

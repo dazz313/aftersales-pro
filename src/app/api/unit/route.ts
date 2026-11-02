@@ -4,6 +4,7 @@ import { logAudit } from '@/lib/audit'
 import { autoGitBackup } from '@/lib/git-backup'
 import { requireActiveSession } from '@/lib/auth-server'
 import { buatNotifikasi, susunPesanRegistrasi, ROLE_NOTIFIKASI, kirimNotifikasiGateway } from '@/lib/notifikasi'
+import { bangunKodeUnit } from '@/lib/kode-unit'
 
 // GET /api/unit - list unit asset + data barcode
 export async function GET() {
@@ -28,8 +29,14 @@ export async function GET() {
     })
     const result = units.map((u) => ({
       ...u,
-      // Format barcode sesuai PRD: SN:[serial_number]|MOD:[model_unit]|TOK:[kode_toko]
-      barcodeData: `SN:${u.serialNumber}|MOD:${u.modelUnit}|TOK:${u.toko?.kodeToko ?? '-'}`,
+      // Isi QR stiker unit (4 identifikasi):
+      // SN:[nomor seri]|MOD:[model]|TOK:[toko/customer]|NAMA:[nama produk]
+      barcodeData: bangunKodeUnit({
+        serialNumber: u.serialNumber,
+        modelUnit: u.modelUnit,
+        nama: u.nama,
+        pemilik: u.toko?.namaToko ?? u.customer?.nama ?? null,
+      }),
     }))
     return NextResponse.json(result)
   } catch (error) {

@@ -1,6 +1,25 @@
 # Worklog
 
 ---
+Task ID: 54
+Agent: DeepSeek V4.1 Flash Free (opencode)
+Task: Isi QR stiker unit memuat 4 identifikasi (nama produk, model, nomor seri, toko) + Tag ID = nomor seri
+
+Work Log:
+- Motif user: hasil pindai di aplikasi Kotlin menampilkan nama produk/model/nomor seri yang salah (data tebakan), karena QR hanya berisi nomor seri
+- Modul baru `src/lib/kode-unit.ts`: format `SN:<nomor seri>|MOD:<model>|TOK:<toko/customer>|NAMA:<nama produk>`; `bangunKodeUnit` (pembersih `|`/baris baru + batas panjang SN 32/model 24/nama 36/toko 30), `uraiKodeUnit` (format baru, format lama tanpa NAMA, stiker lama berisi nomor seri saja), `adalahKodeUnit`, `nomorSeriDariKode` — `SN:` selalu di depan agar Tag ID = nomor seri
+- `unit-barcode-sticker.tsx`: QR memakai `bangunKodeUnit`, QR diperbesar 64→80 px (≈21 mm saat 28 mm) supaya modul tetap ≥0,47 mm; label "SN" → "Tag ID"; deskripsi dialog menyebut 4 identifikasi
+- `GET /api/mobile/scan`: pencarian DB selalu memakai nomor seri hasil `nomorSeriDariKode`; respons `identifikasi` menambah `tagId` (= nomorSeri, sumber DATABASE) + `identifikasiStiker` (hasil urai QR); stiker valid tapi unit belum terdaftar → 404 dengan `identifikasiStiker` + pesan "daftarkan unit dulu"
+- `GET /api/unit`: `barcodeData` ikut format baru (TOK = nama toko/customer, bukan kode toko) + `prisma/schema.prisma` komentar format
+- Docs `skema-komunikasi-mobile.md` v1.2: bagian 5.1/5.2 ditulis ulang (format QR, aturan Tag ID, batas panjang, kompatibilitas), `IdentifikasiDto.tagId` + objek `KodeUnit.urai()` Kotlin, contoh pemakaian QR-first lalu refresh API, contoh curl payload ter-encode
+- Skrip uji: `scripts/debug-cek-kode-unit.mjs` (4 kasus live), `scripts/debug-preview-stiker-mini.mjs` diperbarui (QR 77 karakter/39 modul, cetak 28 mm)
+- Verifikasi: tsc 0; eslint 0 (file berubah); vitest 170 lulus (13 test baru kode-unit); live: payload baru → UNIT + identifikasiStiker, format lama & nomor seri saja tetap 200, serial tak terdaftar → 404 + identifikasiStiker; pratinjau 28 mm: QR 39 modul (±0,54 mm/modul), 4 baris terbaca penuh; build + PM2 + health 200
+- Git: belum di-commit
+
+Stage Summary:
+- Stiker unit kini membawa keempat identifikasi di dalam QR, jadi aplikasi mobile bisa menampilkan nama produk/model/toko langsung dari hasil pindai tanpa menebak; Tag ID diambil dari bagian `SN:` (nomor seri), dan server tetap memakai database sebagai sumber `identifikasi` sehingga koreksi data di web menang atas stiker lama.
+
+---
 Task ID: 53
 Agent: GLM-5.3-Flash Free (opencode)
 Task: Lanjutan alur — chip "Bekas terkirim"/"Part datang" ganti "Part terpasang" di bawah finish + indikator lama unit di workshop tetap ada
