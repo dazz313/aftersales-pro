@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T05:23:11.619Z",
+  "generatedAt": "2026-11-02T05:27:43.369Z",
   "masterToko": [
     {
       "id": 257,
@@ -7247,11 +7247,11 @@
       "noSttb": "STTB-2610-0039",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
-      "lokasiUnit": "WORKSHOP",
+      "lokasiUnit": "TOKO",
       "penanganan": "TARIK_WORKSHOP",
       "noSuratJalan": "SJ-20261018-0001",
-      "sttbDicabut": false,
-      "tglKembaliKeToko": null,
+      "sttbDicabut": true,
+      "tglKembaliKeToko": "2026-11-02T05:27:43.351Z",
       "noSttbKolektif": null,
       "noSuratKembali": null,
       "deskripsiKerusakan": "BODY PENYOK",
@@ -7265,7 +7265,7 @@
       "tglFinish": "2026-10-20T05:01:00.000Z",
       "tglTiket": "2026-10-15T06:02:15.181Z",
       "createdAt": "2026-10-15T06:02:15.197Z",
-      "updatedAt": "2026-11-02T05:01:35.808Z",
+      "updatedAt": "2026-11-02T05:27:43.351Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9511,6 +9511,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1285,
+      "aksi": "KEMBALI_KE_TOKO",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0039",
+      "deskripsi": "Unit (tiket FINISH — masih di workshop saat selesai dikerjakan) dikonfirmasi kembali ke toko pada 2/11/2026, 13.27.43, STTB STTB-2610-0039 dicabut",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-02T05:27:43.356Z"
+    },
     {
       "id": 1284,
       "aksi": "KEMBALI_KE_TOKO",
@@ -18501,15 +18510,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 40090574358 — MCM-508 SBC DG",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:11.416Z"
-    },
-    {
-      "id": 248,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2511015067",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2511015067 — RI-712 GA",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:09.248Z"
     }
   ],
   "backupLog": [
