@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T03:37:01.763Z",
+  "generatedAt": "2026-11-02T03:37:37.226Z",
   "masterToko": [
     {
       "id": 257,
@@ -4708,7 +4708,7 @@
       "id": 108,
       "noTiket": "SVC-2610-0052",
       "unitAssetId": 263,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": null,
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
@@ -4727,10 +4727,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-31T03:37:00.000Z",
       "tglTiket": "2026-10-30T00:00:00.000Z",
       "createdAt": "2026-11-02T03:37:01.738Z",
-      "updatedAt": "2026-11-02T03:37:01.738Z",
+      "updatedAt": "2026-11-02T03:37:37.210Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9511,6 +9511,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1280,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0052",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 31/10/2026, 11.37.00) — nota belum diunggah (bisa menyusul) — unit sudah di toko (kembali -) — tglFinish diatur manual: 31/10/2026, 11.37.00",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-02T03:37:37.214Z"
+    },
     {
       "id": 1279,
       "aksi": "CREATE_SERVICE_REQUEST",
@@ -18501,15 +18510,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03010006502 — MCM-507",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:10:58.993Z"
-    },
-    {
-      "id": 243,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2602344144",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602344144 — RI-522C",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:56.501Z"
     }
   ],
   "backupLog": [
