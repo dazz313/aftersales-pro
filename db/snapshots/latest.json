@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T03:35:47.086Z",
+  "generatedAt": "2026-11-02T03:37:01.763Z",
   "masterToko": [
     {
       "id": 257,
@@ -3088,6 +3088,19 @@
       "createdAt": "2026-08-04T00:00:00.000Z"
     },
     {
+      "id": 181,
+      "serialNumber": "2505241168",
+      "modelUnit": "RI522CE",
+      "merk": "RINNAI",
+      "nama": "",
+      "kerusakanAwal": "BODY PENYOK",
+      "tokoId": 257,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-15T04:41:23.577Z"
+    },
+    {
       "id": 161,
       "serialNumber": "2505248042",
       "modelUnit": "RI-522 CE",
@@ -3822,19 +3835,6 @@
       "merk": "MIYAKO",
       "nama": "",
       "kerusakanAwal": null,
-      "tokoId": 257,
-      "customerId": null,
-      "statusGaransi": "STOK_TOKO",
-      "tglPembelian": null,
-      "createdAt": "2026-10-15T04:41:23.577Z"
-    },
-    {
-      "id": 181,
-      "serialNumber": "5205241168",
-      "modelUnit": "RI522CE",
-      "merk": "RINNAI",
-      "nama": "",
-      "kerusakanAwal": "BODY PENYOK",
       "tokoId": 257,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -4704,6 +4704,41 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 108,
+      "noTiket": "SVC-2610-0052",
+      "unitAssetId": 263,
+      "status": "PROSES",
+      "noSttb": null,
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "DI_TOKO",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "bodi penyok",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-30T00:00:00.000Z",
+      "createdAt": "2026-11-02T03:37:01.738Z",
+      "updatedAt": "2026-11-02T03:37:01.738Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": []
+    },
     {
       "id": 107,
       "noTiket": "SV-EM-20261031-0002",
@@ -9476,6 +9511,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1279,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0052",
+      "deskripsi": "Tiket manual dibuat untuk unit 03070301239 (MCM-528, stok toko → GARANSI otomatis) — part READY → otomatis PROSES — perbaikan tanpa part langsung PROSES/DI_TOKO (penyelesaian aktif)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-02T03:37:01.746Z"
+    },
+    {
+      "id": 1278,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2505241168",
+      "deskripsi": "Data unit diperbarui: serialNumber, modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (5205241168 → 2505241168) [KOREKSI nomor seri unit bertiket oleh Admin/Manager]",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-11-02T03:35:50.345Z"
+    },
     {
       "id": 1277,
       "aksi": "CREATE_UNIT_ASSET",
@@ -18457,24 +18510,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602344144 — RI-522C",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:10:56.501Z"
-    },
-    {
-      "id": 242,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZN394656",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZN394656 — PS-130 BIT",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:53.905Z"
-    },
-    {
-      "id": 241,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZX357360",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZX357360 — PS-135 E",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:51.748Z"
     }
   ],
   "backupLog": [
