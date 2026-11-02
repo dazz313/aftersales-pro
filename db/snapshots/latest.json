@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T23:37:28.381Z",
+  "generatedAt": "2026-11-02T02:34:12.427Z",
   "masterToko": [
     {
       "id": 257,
@@ -9096,6 +9096,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 30,
+      "kodePart": "B74-TF23-153-BB",
+      "namaPart": "Body Grit black RH 127B",
+      "brand": "RINNAI",
+      "qty": 1,
+      "unitAssetId": 194,
+      "serialNumber": "2507036246",
+      "modelUnit": "RH-127B",
+      "tokoKode": "TOK-001",
+      "tokoNama": "Toko Semeru Ahmad Yani",
+      "catatan": "Reorder part inden — tiket SVC-2610-0038",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-11-02T02:34:12.394Z",
+      "updatedAt": "2026-11-02T02:34:12.394Z",
+      "serviceRequestId": 40
+    },
+    {
       "id": 29,
       "kodePart": "GCXX-MX151-XX-KGX",
       "namaPart": "COVER 502 (RI)",
@@ -9440,6 +9463,69 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1273,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0038",
+      "deskripsi": "Reorder 1 part inden via email: B74-TF23-153-BB ×1 — item menempel ke tiket SVC-2610-0038, siap dikirim ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-02T02:34:12.400Z"
+    },
+    {
+      "id": 1272,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP) dari IP 127.0.0.1",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-11-02T02:27:20.596Z"
+    },
+    {
+      "id": 1271,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "8",
+      "deskripsi": "Catatan \"requeast kunjungan\" dibuat",
+      "aktor": "DAZZ",
+      "createdAt": "2026-11-01T23:39:54.145Z"
+    },
+    {
+      "id": 1270,
+      "aksi": "CATATAN_BARU",
+      "entitas": "catatan",
+      "entitasId": "7",
+      "deskripsi": "Catatan \"kunjungan request\" dibuat — untuk role TEKNISI",
+      "aktor": "DAZZ",
+      "createdAt": "2026-11-01T23:39:07.279Z"
+    },
+    {
+      "id": 1269,
+      "aksi": "CATATAN_HAPUS",
+      "entitas": "catatan",
+      "entitasId": "3",
+      "deskripsi": "Catatan dihapus — varia makmur",
+      "aktor": "DAZZ",
+      "createdAt": "2026-11-01T23:38:13.360Z"
+    },
+    {
+      "id": 1268,
+      "aksi": "CATATAN_HAPUS",
+      "entitas": "catatan",
+      "entitasId": "4",
+      "deskripsi": "Catatan dihapus — pompa air rusak",
+      "aktor": "DAZZ",
+      "createdAt": "2026-11-01T23:38:10.161Z"
+    },
+    {
+      "id": 1267,
+      "aksi": "CATATAN_HAPUS",
+      "entitas": "catatan",
+      "entitasId": "6",
+      "deskripsi": "Catatan dihapus — ANTAR UNIT",
+      "aktor": "DAZZ",
+      "createdAt": "2026-11-01T23:37:58.787Z"
+    },
     {
       "id": 1266,
       "aksi": "CREATE_KUNJUNGAN",
@@ -18376,69 +18462,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2601407532 — RI-602-BGX",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:10:39.524Z"
-    },
-    {
-      "id": 236,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03050071936",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03050071936 — KAS-1607 PL",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:37.334Z"
-    },
-    {
-      "id": 235,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03030022250",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03030022250 — KAS-1607 GB",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:35.245Z"
-    },
-    {
-      "id": 234,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "02100010647",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 02100010647 — MCM-606-A",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:33.122Z"
-    },
-    {
-      "id": 233,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "02070304887",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 02070304887 — HM-620",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:31.078Z"
-    },
-    {
-      "id": 232,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44030035188",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44030035188 — MCM-559 SBC",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:29.137Z"
-    },
-    {
-      "id": 231,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03050030726",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03050030726 — KAS-1607 GB",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:27.324Z"
-    },
-    {
-      "id": 230,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2511700906",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2511700906 — RI-522 A",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:24.759Z"
     }
   ],
   "backupLog": [
