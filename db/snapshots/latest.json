@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T05:37:41.509Z",
+  "generatedAt": "2026-11-02T22:43:29.314Z",
   "masterToko": [
     {
       "id": 257,
@@ -9412,7 +9412,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-11-02"
+      "nilai": "2026-11-03"
     },
     {
       "id": 199,
@@ -9452,7 +9452,7 @@
     {
       "id": 266,
       "kunci": "gs_jadwal_terakhir",
-      "nilai": "2026-11-02 06:13"
+      "nilai": "2026-11-03 06:43"
     },
     {
       "id": 245,
@@ -9462,7 +9462,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-11-02 06:13"
+      "nilai": "2026-11-03 00:01"
     },
     {
       "id": 54,
@@ -9511,6 +9511,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1287,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-11-02T22-43-29.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-11-02T22:43:29.281Z"
+    },
     {
       "id": 1286,
       "aksi": "FINISH_SERVICE",
@@ -18501,18 +18510,19 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 42110363216 — MCM-528",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:16.684Z"
-    },
-    {
-      "id": 250,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZL108269",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZL108269 — PS-135 E",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:13.404Z"
     }
   ],
   "backupLog": [
+    {
+      "id": 43,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 446,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-11-02T22-43-29.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-11-02T22:43:29.274Z"
+    },
     {
       "id": 42,
       "status": "LOCAL",
