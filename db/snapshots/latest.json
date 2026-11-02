@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T02:34:12.427Z",
+  "generatedAt": "2026-11-02T03:14:53.982Z",
   "masterToko": [
     {
       "id": 257,
@@ -5908,7 +5908,7 @@
       "id": 80,
       "noTiket": "SVC-2609-0002",
       "unitAssetId": 183,
-      "status": "PROSES",
+      "status": "FINISH",
       "noSttb": "STTB-2609-0002",
       "sumberLaporan": "MANUAL",
       "tipeCustomer": "TOKO",
@@ -5927,10 +5927,10 @@
       "statusKlaimProdusen": "DRAFT",
       "tglKlaim": null,
       "biayaJasa": 0,
-      "tglFinish": null,
+      "tglFinish": "2026-10-20T07:36:00.000Z",
       "tglTiket": "2026-09-24T00:00:00.000Z",
       "createdAt": "2026-10-19T00:59:48.355Z",
-      "updatedAt": "2026-10-20T11:57:23.531Z",
+      "updatedAt": "2026-11-02T03:14:53.939Z",
       "editedAt": null,
       "editedBy": null,
       "noSuratJalanProdusen": null,
@@ -9463,6 +9463,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1276,
+      "aksi": "FINISH_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0002",
+      "deskripsi": "Status PROSES → FINISH (selesai dikerjakan: 20/10/2026, 15.36.00) — nota belum diunggah (bisa menyusul) — UNIT MASIH DI WORKSHOP: terbitkan Surat Pengembalian, konfirmasi kembali saat unit sampai toko — tglFinish diatur manual: 20/10/2026, 15.36.00",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-02T03:14:53.967Z"
+    },
+    {
+      "id": 1275,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0038",
+      "deskripsi": "Draf email order part 1 item dibuka (SMTP belum diset) — tiket SVC-2610-0038",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-02T02:34:14.333Z"
+    },
+    {
+      "id": 1274,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0038",
+      "deskripsi": "Teks order WA part 1 item disalin manual (nomor produsen belum diisi) — tiket SVC-2610-0038",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-02T02:34:12.474Z"
+    },
     {
       "id": 1273,
       "aksi": "ORDER_EMAIL_REORDER",
@@ -18435,33 +18462,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): AZ023236 — PS-135 E",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:10:49.452Z"
-    },
-    {
-      "id": 239,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "43050018006",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43050018006 — WDP-300",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:43.332Z"
-    },
-    {
-      "id": 238,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "908029173",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 908029173 — SM-625",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:41.502Z"
-    },
-    {
-      "id": 237,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2601407532",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2601407532 — RI-602-BGX",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:10:39.524Z"
     }
   ],
   "backupLog": [
