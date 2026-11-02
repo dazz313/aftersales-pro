@@ -82,7 +82,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
       setScanResult({ ok: true, barcode, toko: saved.toko as unknown as Toko, lookup })
       toast({
         title: 'Kunjungan tercatat otomatis',
-        description: `${lookup.toko.namaToko} — check-in via scan barcode toko.`,
+        description: `${lookup.toko.namaToko} — check-in via scan QR toko.`,
       })
     } catch (e) {
       setScanResult({ ok: false, barcode, error: (e as Error).message })
@@ -162,10 +162,10 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
       <Card className="h-full border-emerald-200">
         <CardHeader className="px-3 pb-2 pt-3">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <ScanLine className="h-3.5 w-3.5 text-emerald-600" /> Scan Kunjungan — Barcode Toko
+            <ScanLine className="h-3.5 w-3.5 text-emerald-600" /> Scan Kunjungan — QR Toko
           </CardTitle>
           <CardDescription className="text-[11px]">
-            Scan stiker barcode toko (isi barcode = nama toko) — check-in tercatat otomatis.
+            Scan stiker QR toko (isi QR = nama toko) — check-in tercatat otomatis.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 px-3 pb-3">
@@ -183,7 +183,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
             {!cameraActive && (
               <div className="flex items-center justify-center gap-2 p-3 text-center">
                 <Camera className="h-4 w-4 shrink-0 text-emerald-400" />
-                <p className="text-[11px] text-slate-500">Arahkan ke stiker barcode toko</p>
+                <p className="text-[11px] text-slate-500">Arahkan ke stiker QR toko</p>
               </div>
             )}
             <div className="flex gap-2 border-t bg-white p-1.5">
@@ -207,7 +207,7 @@ export default function ScanToko({ teknisiOnly, onChanged }: ScanTokoProps) {
               onKeyDown={(e) => e.key === 'Enter' && prosesBarcode(manualBarcode)}
               placeholder="nama toko (atau kode toko)"
               className="h-7 bg-white font-mono text-[11px]"
-              aria-label="Input barcode toko manual"
+              aria-label="Input nama atau kode toko manual"
             />
             <Button size="sm" variant="outline" className="h-7 shrink-0 text-[11px]" disabled={!manualBarcode.trim()} onClick={() => prosesBarcode(manualBarcode)}>
               <Barcode className="mr-1 h-3 w-3" /> Proses

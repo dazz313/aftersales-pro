@@ -39,6 +39,15 @@ describe('bangunHtmlCetak / aturanCetakStiker', () => {
     expect(aturan.match(/44mm/g)).toBeNull()
   })
 
+  it('MINI: margin 3mm, slot stiker 28 mm (label kecil)', async () => {
+    const m = await modul()
+    const aturan = m.aturanCetakStiker('MINI')
+    expect(aturan).toContain('@page { margin: 3mm; }')
+    expect(aturan).toContain('width: 28mm !important')
+    expect(aturan.match(/44mm/g)).toBeNull()
+    expect(aturan.match(/36mm/g)).toBeNull()
+  })
+
   it('Kolektif: markup stiker diteruskan apa adanya (tanpa pembungkus pusat)', async () => {
     const m = await modul()
     const inner = '<div class="stiker-kolektif-grid stiker-printroot"><div class="stiker-printroot">s1</div></div>'

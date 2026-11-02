@@ -212,6 +212,9 @@
   body[data-print-mode='stiker-kolektif'][data-kertas='THERMAL'] .stiker-kolektif-grid {
     grid-template-columns: repeat(auto-fill, 36mm) !important;
   }
+  body[data-print-mode='stiker-kolektif'][data-kertas='MINI'] .stiker-kolektif-grid {
+    grid-template-columns: repeat(auto-fill, 28mm) !important;
+  }
 
   /* Mini cetak — pas printer label thermal portable 58 mm (dan tetap pojok kiri
      atas A4): lebar cetak dikunci 36 mm + @page margin 5 mm (total ≤ 46 mm) sehingga
@@ -245,5 +248,13 @@
   body[data-print-mode^='stiker'][data-kertas='A4'] .stiker-printroot:not(.stiker-kolektif-grid) {
     width: 44mm !important;
     max-width: 44mm !important;
+  }
+
+  /* MINI (label kecil 28 mm): paling hemat tempat — padding dirapatkan agar
+     QR + 4 identifikasi tetap muat dan tidak terpotong. */
+  body[data-print-mode^='stiker'][data-kertas='MINI'] .stiker-printroot:not(.stiker-kolektif-grid) {
+    width: 28mm !important;
+    max-width: 28mm !important;
+    padding: 0.6mm !important;
   }
 }

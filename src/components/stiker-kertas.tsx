@@ -18,6 +18,7 @@ export function PilihKertas({ value, onChange }: { value: KertasStiker; onChange
         <SelectContent>
           <SelectItem value="A4" className="text-[11px]">A4 — printer biasa (stiker 44 mm)</SelectItem>
           <SelectItem value="THERMAL" className="text-[11px]">Label Thermal 58 mm — portable (36 mm)</SelectItem>
+          <SelectItem value="MINI" className="text-[11px]">Mini 28 mm — label kecil (hemat tempat)</SelectItem>
         </SelectContent>
       </Select>
     </div>

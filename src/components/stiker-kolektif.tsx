@@ -29,7 +29,7 @@ export function TokoBarcodeKolektif({ open, list, onOpenChange }: { open: boolea
           <DialogTitle>Cetak Stiker Kolektif — Toko ({list.length})</DialogTitle>
           <DialogDescription>
             Semua stiker yang dicentang dicetak berjejer dalam 1 lembar, dipusatkan dan
-            terpotong rapi ({kertas === 'THERMAL' ? 'mini 36 mm untuk label thermal' : '44 mm untuk kertas A4'}).
+            terpotong rapi ({kertas === 'MINI' ? 'mini 28 mm untuk label kecil' : kertas === 'THERMAL' ? 'mini 36 mm untuk label thermal' : '44 mm untuk kertas A4'}).
           </DialogDescription>
         </DialogHeader>
         <div className="stiker-kolektif-grid stiker-printroot flex max-h-[60vh] flex-wrap gap-2 overflow-auto rounded-md border border-slate-100 bg-slate-50 p-2">
@@ -65,7 +65,7 @@ export function UnitBarcodeKolektif({ open, list, onOpenChange }: { open: boolea
           <DialogTitle>Cetak Stiker Kolektif — Unit ({list.length})</DialogTitle>
           <DialogDescription>
             Semua stiker unit yang dicentang dicetak berjejer dalam 1 lembar.
-            {tanpaSeri > 0 && ` Perhatian: ${tanpaSeri} unit belum punya nomor seri — stikernya tanpa barcode.`}
+            {tanpaSeri > 0 && ` Perhatian: ${tanpaSeri} unit belum punya nomor seri — stikernya tanpa QR.`}
           </DialogDescription>
         </DialogHeader>
         <div className="stiker-kolektif-grid stiker-printroot flex max-h-[60vh] flex-wrap gap-2 overflow-auto rounded-md border border-slate-100 bg-slate-50 p-2">

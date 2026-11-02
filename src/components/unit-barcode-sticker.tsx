@@ -2,156 +2,99 @@
 
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Barcode } from 'lucide-react'
-import { formatTanggal, type UnitAsset } from '@/lib/api'
+import type { UnitAsset } from '@/lib/api'
 import { GARANSI_LABEL } from '@/lib/types'
-import { cn } from '@/lib/utils'
 import { cetakStikerTunggal, simpanKertasStiker, useKertasStiker, useStickerPrint } from '@/lib/sticker-print'
 import { PilihKertas } from '@/components/stiker-kertas'
 
 /**
- * Stiker Barcode UNIT ASSET — layout:
- * tgl input, toko/customer (toko atau perorangan sesuai input), merk,
- * model/tipe, nomor seri, status (STOK-TOKO/GARANSI/NON-GARANSI) + tgl garansi.
- * Barcode CODE128 asli (jsbarcode→SVG vektor) dari serial number agar bisa
- * dipindai, tetap tajam saat dicetak mini/ketut kolektif.
+ * Stiker QR UNIT ASSET — versi MINI (4 identifikasi utama):
+ *   1. Nama produk (nama unit; fallback model)
+ *   2. Model / tipe
+ *   3. Nomor seri
+ *   4. Toko / customer — otomatis tersinkron dari data unit (hasil scan toko
+ *      saat kunjungan pertama), jadi tidak perlu diketik ulang.
+ *
+ * QR code vektor (SVG) berisi NOMOR SERI sebagai kunci unik. Data lain
+ * dikembalikan otomatis oleh `GET /api/mobile/scan` sehingga aplikasi mobile
+ * menerima keempat identifikasi + waktu scan tanpa perlu mengetik apa pun.
+ *
+ * Tata letak sengaja dipadatkan (vertikal) agar muat dicetak mini 28 mm /
+ * label thermal 36 mm dan tetap tajam karena QR berupa vektor.
  *
  * Bodi stiker diekspor (StikerUnitBody) agar dipakai ulang dialog tunggal dan
  * dialog cetak KOLEKTIF (banyak stiker dalam 1 lembar).
  */
 
 export function StikerUnitBody({ unit }: { unit: UnitAsset }) {
-  const svgRef = useRef<SVGSVGElement>(null)
+  const qrRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!unit?.serialNumber) return
     let cancelled = false
-    // Digambar ke SVG (bukan canvas) — vektor sehingga tetap tajam saat dicetak
-    // mini (36 mm) di printer label portable.
-    import('jsbarcode')
+    // QR SVG vektor (bukan canvas) — tetap tajam saat dicetak mini.
+    import('qrcode')
       .then((mod) => {
-        const JsBarcode = ((mod as { default?: unknown }).default ?? mod) as (
-          el: HTMLElement, value: string, options?: Record<string, unknown>
-        ) => void
-        if (cancelled || !svgRef.current || typeof JsBarcode !== 'function') return
-        try {
-          JsBarcode(svgRef.current as unknown as HTMLElement, unit.serialNumber, {
-            format: 'CODE128',
-            width: 1.2,
-            height: 28,
-            displayValue: true,
-            fontSize: 8,
-            margin: 2,
-            background: '#ffffff',
-          })
-        } catch (e) {
-          console.error('Render barcode unit gagal:', e)
+        const QRCode = ((mod as { default?: unknown }).default ?? mod) as {
+          toString: (text: string, opts: Record<string, unknown>, cb: (err: Error | null, str: string) => void) => void
         }
+        if (cancelled || !qrRef.current || typeof QRCode?.toString !== 'function') return
+        QRCode.toString(unit.serialNumber, { type: 'svg', width: 72, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } }, (err, svg) => {
+          if (cancelled || !qrRef.current) return
+          if (err || !svg) { console.error('Render QR unit gagal:', err); return }
+          qrRef.current.innerHTML = svg
+          const el = qrRef.current.querySelector('svg')
+          if (el) { el.setAttribute('class', 'block h-full w-full'); el.setAttribute('aria-label', `QR ${unit.serialNumber}`) }
+        })
       })
-      .catch((e) => console.error('Render barcode unit gagal:', e))
-    return () => {
-      cancelled = true
-    }
+      .catch((e) => console.error('Render QR unit gagal:', e))
+    return () => { cancelled = true }
   }, [unit])
 
   const statusLabel = unit ? (GARANSI_LABEL[unit.statusGaransi] ?? unit.statusGaransi.replace('_', '-')) : ''
-  // Tanggal awal = tanggal input registrasi; tgl garansi (tgl beli) tampil di field Status
-  const tanggalInput = unit ? formatTanggal(unit.createdAt) : '-'
-  const tglGaransi = unit?.tglPembelian ? formatTanggal(unit.tglPembelian) : null
+  const namaProduk = unit?.nama?.trim() || unit?.modelUnit || '-'
+  const pemilik = unit?.toko?.namaToko ?? unit?.customer?.nama ?? '-'
 
   return (
-    <div className="stiker-printroot mx-auto w-full max-w-[214px] rounded-xl border-2 border-slate-200 bg-white p-1.5 text-center shadow-sm">
-      <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-slate-400">Unit Asset Sticker</p>
-
-      {/* Barcode visual CODE128 asli — hanya bila nomor seri sudah terisi */}
-      <div className="mt-0.5 flex justify-center">
-        {unit.serialNumber ? (
-          <svg ref={svgRef} aria-label={`Barcode ${unit.serialNumber}`} className="block max-w-full" />
-        ) : (
-          <p className="rounded-md bg-amber-50 px-2 py-1.5 text-[9px] font-medium text-amber-700">
-            Nomor seri belum diisi — isi lewat Edit Unit, lalu buka kembali stiker ini.
-          </p>
-        )}
+    <div className="stiker-printroot mx-auto w-full max-w-[150px] overflow-hidden rounded-md border border-slate-900 bg-white text-center">
+      {/* Strip kepala — jenis stiker + status garansi */}
+      <div className="flex items-center justify-between bg-slate-900 px-1 py-px">
+        <span className="text-[5.5px] font-bold uppercase tracking-widest text-white">Unit Asset</span>
+        <span className="text-[5.5px] font-bold uppercase text-emerald-300">{statusLabel}</span>
       </div>
 
-      {/* Layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
-      <dl className="mt-0.5 space-y-0.5 border-t border-dashed border-slate-200 pt-0.5 text-left">
-        <div className="flex justify-between gap-2 text-[9px] leading-tight">
-          <dt className="shrink-0 text-slate-400">Tanggal Input</dt>
-          <dd className="font-medium text-slate-800">{tanggalInput}</dd>
-        </div>
-        <div className="flex justify-between gap-2 text-[9px] leading-tight">
-          <dt className="shrink-0 text-slate-400">Toko / Customer</dt>
-          <dd className="text-right font-semibold text-slate-900">
-            {unit.toko ? (
-              <>
-                {unit.toko.namaToko}
-                <span className="ml-1 font-mono text-[8px] font-normal text-slate-400">{unit.toko.kodeToko}</span>
-              </>
-            ) : unit.customer ? (
-              <>
-                {unit.customer.nama}
-                <span className="ml-1 text-[8px] font-normal text-slate-400">Perorangan</span>
-              </>
-            ) : (
-              '-'
-            )}
-          </dd>
-        </div>
-        <div className="flex justify-between gap-2 text-[9px] leading-tight">
-          <dt className="shrink-0 text-slate-400">Merk</dt>
-          <dd className="font-medium text-slate-800">{unit.merk?.trim() || '-'}</dd>
-        </div>
-        <div className="flex justify-between gap-2 text-[9px] leading-tight">
-          <dt className="shrink-0 text-slate-400">Model / Tipe</dt>
-          <dd className="text-right font-medium text-slate-800">{unit.modelUnit}</dd>
-        </div>
-        <div className="flex justify-between gap-2 text-[9px] leading-tight">
-          <dt className="shrink-0 text-slate-400">Nomor Seri</dt>
-          <dd className="break-all font-mono text-[9px] font-bold text-slate-900">{unit.serialNumber || '-'}</dd>
-        </div>
-        <div className="flex items-center justify-between gap-2 text-[9px] leading-tight">
-          <dt className="shrink-0 text-slate-400">Status</dt>
-          <dd className="text-right">
-            <Badge
-              variant="outline"
-              className={cn(
-                'h-4 px-1 text-[8px]',
-                unit.statusGaransi === 'NON_GARANSI'
-                  ? 'border-amber-300 text-amber-700'
-                  : unit.statusGaransi === 'STOK_TOKO'
-                    ? 'border-teal-300 text-teal-700'
-                    : 'border-emerald-300 text-emerald-700'
-              )}
-            >
-              {statusLabel}
-            </Badge>
-            {tglGaransi && (
-              <p className="mt-0.5 text-[8px] font-normal leading-tight text-slate-500" title="Tgl pembelian — awal masa garansi">
-                {tglGaransi}
-              </p>
-            )}
-          </dd>
-        </div>
-        {unit.nama?.trim() && (
-          <div className="flex justify-between gap-2 text-[9px] leading-tight">
-            <dt className="shrink-0 text-slate-400">Nama Unit</dt>
-            <dd className="text-right text-slate-500">{unit.nama.trim()}</dd>
-          </div>
-        )}
-      </dl>
+      {/* QR code vektor — hanya bila nomor seri sudah terisi */}
+      {unit.serialNumber ? (
+        <div ref={qrRef} className="mx-auto mt-0.5 h-16 w-16" />
+      ) : (
+        <p className="m-1 rounded bg-amber-50 px-1 py-1 text-[7px] font-medium leading-tight text-amber-700">
+          Nomor seri belum diisi — isi lewat Edit Unit, lalu buka kembali stiker ini.
+        </p>
+      )}
 
-      <p className="mt-1 break-all font-mono text-[7px] leading-tight text-slate-400">
-        SN:{unit.serialNumber}|MOD:{unit.modelUnit}|TOK:{unit.toko?.kodeToko ?? '-'}
-      </p>
+      {/* 4 identifikasi utama — dipadatkan agar muat mini */}
+      <div className="space-y-px px-1 pb-1 pt-0.5 text-left leading-tight">
+        <p className="line-clamp-2 text-[8px] font-extrabold leading-[1.1] text-slate-900" title={namaProduk}>
+          {namaProduk}
+        </p>
+        <p className="truncate text-[6.5px] text-slate-500" title={unit.modelUnit}>
+          Model <span className="font-semibold text-slate-800">{unit.modelUnit || '-'}</span>
+        </p>
+        <p className="truncate font-mono text-[6.5px] text-slate-500" title={unit.serialNumber}>
+          SN <span className="font-bold text-slate-900">{unit.serialNumber || '-'}</span>
+        </p>
+        <p className="line-clamp-2 text-[6.5px] leading-[1.1] text-slate-500" title={pemilik}>
+          Pemilik <span className="font-semibold text-slate-800">{pemilik}</span>
+        </p>
+      </div>
     </div>
   )
 }
 
 export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitAsset | null; onOpenChange: (o: boolean) => void }) {
-  // SETTING KERTAS per perangkat (A4 printer biasa / label thermal) — live via store
+  // SETTING KERTAS per perangkat (A4 / thermal / mini) — live via store
   const kertas = useKertasStiker()
   // Mode cetak stiker aktif selama dialog terbuka (ukuran kertas + Ctrl+P manual)
   useStickerPrint(!!unit, 'stiker', kertas)
@@ -162,8 +105,12 @@ export default function UnitBarcodeSticker({ unit, onOpenChange }: { unit: UnitA
         {unit && (
           <>
             <DialogHeader>
-              <DialogTitle>Stiker Barcode Unit</DialogTitle>
-              <DialogDescription>Tempel di unit — teknisi scan untuk identifikasi garansi &amp; asal toko/customer.</DialogDescription>
+              <DialogTitle>Stiker QR Unit — Mini</DialogTitle>
+              <DialogDescription>
+                Berisi 4 identifikasi: nama produk, model, nomor seri, dan toko (otomatis dari data
+                kunjungan/scan toko). Tempel di unit — teknisi scan untuk identifikasi &amp; pindah tahap.
+                Pilih kertas <b>Mini 28 mm</b> untuk label kecil.
+              </DialogDescription>
             </DialogHeader>
             <StikerUnitBody unit={unit} />
             <DialogFooter className="sm:justify-between">

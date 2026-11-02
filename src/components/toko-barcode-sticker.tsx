@@ -1,4 +1,4 @@
-</rfl:parameter> 'use client'
+'use client'
 
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { cetakStikerTunggal, simpanKertasStiker, useKertasStiker, useStickerPrin
 import { PilihKertas } from '@/components/stiker-kertas'
 
 /**
- * Stiker Barcode TOKO — satu QR code per toko (bukan per unit).
+ * Stiker QR TOKO — satu QR code per toko (bukan per unit).
  * Teknisi memindai QR ini saat kunjungan; sistem otomatis
  * mengenali toko & mencatat kunjungan (check-in otomatis).
  *
@@ -89,7 +89,7 @@ export default function TokoBarcodeSticker({ toko, onOpenChange }: { toko: Toko 
         {toko && (
           <>
             <DialogHeader>
-              <DialogTitle>Stiker Barcode Toko</DialogTitle>
+              <DialogTitle>Stiker QR Toko</DialogTitle>
               <DialogDescription>
                 Tempel di lokasi kasir/pintu toko — teknisi scan stiker ini saat kunjungan,
                 sistem otomatis mencatat check-in. Pilih kertas di bawah: A4 (printer biasa,

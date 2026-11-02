@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 
 /**
- * Cetak stiker barcode (toko, unit & kolektif) + SETTING KERTAS per perangkat.
+ * Cetak stiker QR (toko, unit & kolektif) + SETTING KERTAS per perangkat.
  *
  * ===== ARSITEKTUR CETAK (iframe terisolasi, deterministik) =====================
  * Sebelumnya cetak mengandalkan atribut body[data-print-mode] + CSS @media print
@@ -21,10 +21,11 @@ import { useEffect, useSyncExternalStore } from 'react'
  * SETTING KERTAS (localStorage per perangkat, pilihan di dialog):
  * - 'A4'      : printer biasa — @page A4 portrait margin 10 mm, stiker 44 mm.
  * - 'THERMAL' : printer label portable 58 mm — margin 5 mm, stiker 36 mm.
+ * - 'MINI'    : label kecil — margin 3 mm, stiker 28 mm (paling hemat tempat).
  */
 
 export type StikerMode = 'stiker' | 'stiker-kolektif'
-export type KertasStiker = 'A4' | 'THERMAL'
+export type KertasStiker = 'A4' | 'THERMAL' | 'MINI'
 
 const KERTAS_KEY = 'stiker_kertas'
 
@@ -34,7 +35,8 @@ const KERTAS_KEY = 'stiker_kertas'
 export function bacaKertasStiker(): KertasStiker {
   if (typeof window === 'undefined') return 'A4'
   try {
-    return localStorage.getItem(KERTAS_KEY) === 'THERMAL' ? 'THERMAL' : 'A4'
+    const v = localStorage.getItem(KERTAS_KEY)
+    return v === 'THERMAL' || v === 'MINI' ? v : 'A4'
   } catch {
     return 'A4'
   }
@@ -99,8 +101,13 @@ export function kumpulkanCssHalaman(): string {
  * setiap baris rata tengah — sisa 1–3 stiker pun tetap simetris di tengah.
  */
 export function aturanCetakStiker(kertas: KertasStiker): string {
-  const lebar = kertas === 'THERMAL' ? '36mm' : '44mm'
-  const halaman = kertas === 'THERMAL' ? '@page { margin: 5mm; }' : '@page { size: A4 portrait; margin: 10mm; }'
+  const lebar = kertas === 'MINI' ? '28mm' : kertas === 'THERMAL' ? '36mm' : '44mm'
+  const halaman =
+    kertas === 'MINI'
+      ? '@page { margin: 3mm; }'
+      : kertas === 'THERMAL'
+        ? '@page { margin: 5mm; }'
+        : '@page { size: A4 portrait; margin: 10mm; }'
   return `
 ${halaman}
 body, body * { visibility: visible !important; } /* sifat utama iframe: isi = hanya stiker */
@@ -228,9 +235,11 @@ export function useStickerPrint(active: boolean, mode: StikerMode = 'stiker', ke
     const style = document.createElement('style')
     style.dataset.stikerPrint = 'page'
     style.textContent =
-      kertas === 'THERMAL'
-        ? '@media print { @page { size: auto; margin: 5mm; } }'
-        : '@media print { @page { size: A4 portrait; margin: 10mm; } }'
+      kertas === 'MINI'
+        ? '@media print { @page { size: auto; margin: 3mm; } }'
+        : kertas === 'THERMAL'
+          ? '@media print { @page { size: auto; margin: 5mm; } }'
+          : '@media print { @page { size: A4 portrait; margin: 10mm; } }'
     document.head.appendChild(style)
 
     const before = () => setStikerMode(true)

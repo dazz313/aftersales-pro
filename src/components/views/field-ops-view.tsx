@@ -828,8 +828,8 @@ export default function FieldOpsView() {
               <QrCode className="h-5 w-5 text-emerald-600" /> Check-in Manual
             </DialogTitle>
             <DialogDescription>
-              {selectedToko ? `${selectedToko.namaToko} (${selectedToko.kodeToko}) — barcode toko: ${selectedToko.barcodeToko}` : ''} ·
-              Untuk otomatis, gunakan Scan Kunjungan dengan barcode toko.
+              {selectedToko ? `${selectedToko.namaToko} (${selectedToko.kodeToko}) — QR toko: ${selectedToko.barcodeToko}` : ''} ·
+              Untuk otomatis, gunakan Scan Kunjungan dengan QR toko.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">

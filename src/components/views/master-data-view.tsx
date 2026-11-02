@@ -606,7 +606,7 @@ export default function MasterDataView() {
             <TableHead>Kode Part</TableHead>
             {showStatus && <TableHead>Part</TableHead>}
             <TableHead>Kerusakan</TableHead>
-            <TableHead className="text-right">Barcode</TableHead>
+            <TableHead className="text-right">Stiker</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -893,8 +893,8 @@ export default function MasterDataView() {
                             <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]" onClick={() => { setEditToko(t); setEditTokoForm({ namaToko: t.namaToko, alamat: t.alamat ?? '', kontak: t.kontak ?? '', frekuensiVisit: String(t.frekuensiVisit), jarakKm: t.jarakKm !== null && t.jarakKm !== undefined ? String(t.jarakKm) : '', aktif: t.aktif, modeSiklus: t.modeSiklus, latitude: t.latitude !== null && t.latitude !== undefined ? String(t.latitude) : '', longitude: t.longitude !== null && t.longitude !== undefined ? String(t.longitude) : '' }) }} aria-label={`Edit ${t.namaToko}`}>
                               <Pencil className="mr-1 h-3 w-3" /> Edit
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 px-2 font-mono text-[11px]" onClick={() => setStickerToko(t)}>
-                              <Barcode className="mr-1 h-3 w-3" /> {t.barcodeToko}
+                            <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => setStickerToko(t)} aria-label={`Stiker QR ${t.namaToko}`} title={`Cetak stiker QR — ${t.namaToko}`}>
+                              <Barcode className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                         </TableCell>
@@ -1853,10 +1853,10 @@ export default function MasterDataView() {
         }}
       />
 
-      {/* Dialog stiker barcode toko (Code-128 asli — dipindai saat kunjungan) */}
+      {/* Dialog stiker QR toko (QR berisi nama toko — dipindai saat kunjungan) */}
       <TokoBarcodeSticker toko={stickerToko} onOpenChange={(o) => !o && setStickerToko(null)} />
 
-      {/* Dialog stiker barcode unit — layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
+      {/* Dialog stiker QR unit — layout: tgl input, toko/customer, merk, model/tipe, nomor seri, status + tgl garansi */}
       <UnitBarcodeSticker unit={qrUnit} onOpenChange={(o) => !o && setQrUnit(null)} />
 
       {/* Cetak stiker KOLEKTIF — banyak stiker mini dalam 1 lembar (ikuti centang) */}
