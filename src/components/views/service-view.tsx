@@ -19,6 +19,7 @@ import KodeSparepart from '@/components/kode-sparepart'
 import { useToast } from '@/hooks/use-toast'
 import { useAppStore } from '@/lib/store'
 import { ServiceFlowStepper, ServiceFlowActions, SUMBER_LABEL } from '@/components/service-flow'
+import { daftarPartBelumDatang, labelPartTunggu } from '@/lib/part-tunggu'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import HistoryInput from '@/components/history-input'
 import LoadMore from '@/components/load-more'
@@ -654,6 +655,8 @@ export default function ServiceView() {
   const renderAksiTiket = (t: ServiceTicket) => {
     const partsAksi = t.parts.filter((p) => p.qty > 0)
     const hasOrderPart = partsAksi.some((p) => p.statusPart === 'ORDER_PRODUSEN')
+    // Part yang masih ditunggu (belum datang) — FINISH ditahan sampai semua READY.
+    const partTunggu = daftarPartBelumDatang(partsAksi)
     // Part inden belum dipesan via email → perlu aksi "Email Order"
     const butuhOrderEmail =
       hasOrderPart &&
@@ -738,6 +741,10 @@ export default function ServiceView() {
               {t.status === 'PROSES' && (
                 <DropdownMenuItem
                   className="gap-1.5 text-[11px] text-emerald-700"
+                  disabled={partTunggu.length > 0}
+                  title={partTunggu.length > 0
+                    ? `Masih menunggu ${partTunggu.length} part (${partTunggu.map(labelPartTunggu).join(', ')}) — tambah part bila ada temuan baru; Selesaikan setelah semua part datang & dipasang.`
+                    : 'Selesaikan pekerjaan (nota stempel + TTD)'}
                   onClick={() => { setFinishTarget(t); setNotaFile(''); setFinishTgl(dtLocalNow()) }}>
                   <Camera className="h-3 w-3" /> Selesaikan
                 </DropdownMenuItem>

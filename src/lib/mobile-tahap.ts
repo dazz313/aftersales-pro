@@ -24,6 +24,7 @@ export type TahapMobile =
   | 'SELESAI_DI_TOKO'
 
 export interface PartRingkas {
+  qty?: number | null
   statusPart?: string | null
   sparepart?: { kodePart?: string | null } | null
 }
@@ -97,7 +98,9 @@ export function hitungTahap(tiket: TiketTahap | null): TahapMobile {
  * - REQUEST + semua part READY  → KERJAKAN_DI_TOKO / TARIK_WORKSHOP
  * - REQUEST + ada part belum READY → DAFTAR_TUNGGU_TOKO (unit tetap di toko)
  * - PROSES (penanganan BELUM)  → KERJAKAN_DI_TOKO / TARIK_WORKSHOP
- * - PROSES                     → FINISH
+ * - PROSES + semua part READY  → FINISH
+ * - PROSES + ada part belum datang → TIDAK ada FINISH (server menolak 409);
+ *   pakai TAMBAH_PART untuk part susulan di tiket yang sama
  * - PROSES / FINISH            → KEMBALI_KE_TOKO (sekali saja; tglKembaliKeToko null)
  */
 export function aksiTersedia(tiket: TiketTahap | null): AksiMobile[] {
@@ -107,6 +110,12 @@ export function aksiTersedia(tiket: TiketTahap | null): AksiMobile[] {
   const sudahKembali = Boolean(tiket.tglKembaliKeToko)
   const parts = tiket.parts ?? []
   const belumReady = parts.filter((p) => String(p.statusPart ?? '').toUpperCase() !== 'READY')
+  // Part yang masih ditunggu (qty > 0 & belum READY) menahan FINISH — satu unit
+  // bisa rusak di beberapa bagian, jadi part dipesan bergelombang pada tiket
+  // yang sama. Sama dengan guard FINISH di /api/service/[id].
+  const belumDatang = parts.filter(
+    (p) => (p.qty ?? 1) > 0 && String(p.statusPart ?? '').toUpperCase() !== 'READY',
+  )
 
   const daftar: AksiMobile[] = []
 
@@ -138,7 +147,7 @@ export function aksiTersedia(tiket: TiketTahap | null): AksiMobile[] {
     }
   }
 
-  if (status === 'PROSES') {
+  if (status === 'PROSES' && belumDatang.length === 0) {
     daftar.push({
       aksi: 'FINISH',
       label: 'Selesaikan (Finish)',

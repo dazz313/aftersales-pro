@@ -1,6 +1,27 @@
 # Worklog
 
 ---
+Task ID: 55
+Agent: DeepSeek V4.1 Flash Free (opencode)
+Task: Alur part bergelombang — satu unit beberapa bagian rusak, order part susulan TANPA tiket baru
+
+Work Log:
+- Pertanyaan user: satu unit rusak di beberapa bagian (top plate, side, rear). Part gelombang 1 datang, lalu ketahuan bagian lain rusak. Dulu kebiasaan langsung FINISH karena part sudah datang → padahal masih perlu order lagi. Perlu solusi tanpa tiket baru.
+- Keputusan: TIDAK perlu tiket baru. Satu unit = satu tiket untuk seluruh siklus servis; part tambahan dipesan lewat `TAMBAH_PART` di tiket yang sama (stok kurang otomatis `ORDER_PRODUSEN`). Klaim produsen tetap satu kali per tiket (semua part + jasa), jadi tidak ada tiket/STTB/statistik ganda.
+- `src/lib/part-tunggu.ts` (baru, murni): `daftarPartBelumDatang` (qty > 0 & statusPart != READY), `labelPartTunggu` (kode + nama + qty, fallback cache), `pesanPartBelumDatang` (pesan 409 berisi daftar part + pilihan tindakan).
+- Guard `FINISH` di `src/app/api/service/[id]/route.ts`: selama masih ada part belum datang → `409` (status tetap PROSES, `tglFinish` tidak terisi). Bukan memaksa user menunggu part pertama lalu "terpaksa selesai".
+- `src/lib/alur-sj.ts`: `alurSjState` mendahulukan part outstanding — pesanan susulan mengembalikan chip ke `BELUM_SJ`/`SJR_TANPA_KIRIM`/`BEKAS_TERKIRIM`, bukan tetap `PART_DATANG` yang menyesatkan.
+- UI web: `service-flow.tsx` menambah kotak kuning "Masih menunggu N part — jangan Selesaikan dulu" + daftar part; menu "Selesaikan" di `service-view.tsx` dinonaktifkan dengan tooltip berisi daftar part selama masih menunggu.
+- Mobile: `src/lib/mobile-tahap.ts` — `PartRingkas.qty`, `aksiTersedia` hanya menawarkan `FINISH` bila `belumDatang.length === 0` (baris qty 0/batal tidak menahan); `KEMBALI_KE_TOKO` tetap ditawarkan. Server tetap sumber kebenaran (409).
+- Dokumen: `docs/alur-part-bergelombang.md` (baru — SOP lengkap: aturan inti, langkah kerja, buka ulang FINISH, penjagaan sistem, ringkas teknisi); `docs/skema-komunikasi-mobile.md` v1.3 (tabel aksi FINISH + catatan part bergelombang & `BUKA_ULANG_PROSES`).
+- Skrip uji live: `scripts/debug-cek-finish-part.mjs` — bila tak ada tiket asli, membuat tiket sementara `DEBUG-PART-*`, memanggil FINISH, memastikan 409 + status PROSES + tglFinish null, lalu menghapusnya (sisa tiket uji: 0).
+- Uji: `tests/unit/part-tunggu.test.ts` (8 kasus: filter part, label, pesan, 4 transisi alur SJ) + 2 kasus baru `mobile-tahap.test.ts` (FINISH ditahan saat part belum datang; qty 0 tidak menahan). Hasil: tsc 0; eslint 0 (file berubah); vitest 180 lulus; live FINISH → 409 dengan daftar part; build + PM2 + health 200.
+- Git: belum di-commit (menyatu dengan perubahan Task 54 yang juga uncommitted).
+
+Stage Summary:
+- Teknisi tidak lagi terjebak "part datang = harus FINISH". Selama ada part yang masih dipesan, tombol Selesaikan ditahan (web + mobile) dan server menolak FINISH; part susulan ditambahkan di tiket yang sama. Tiket yang sudah terlanjur FINISH bisa dibuka ulang lewat `BUKA_ULANG_PROSES` (Admin/Manager), jadi tidak ada tiket baru untuk unit yang sama.
+
+---
 Task ID: 54
 Agent: DeepSeek V4.1 Flash Free (opencode)
 Task: Isi QR stiker unit memuat 4 identifikasi (nama produk, model, nomor seri, toko) + Tag ID = nomor seri

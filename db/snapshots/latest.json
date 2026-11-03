@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T00:47:51.076Z",
+  "generatedAt": "2026-11-03T00:48:07.625Z",
   "masterToko": [
     {
       "id": 257,
@@ -378,7 +378,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-06T11:07:00.000Z",
+      "tglVisitTerakhir": "2026-11-02T00:48:00.000Z",
       "barcodeToko": "Toko Delta Elektronik",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4272,6 +4272,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 81,
+      "tokoId": 229,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-11-02T00:48:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 80,
       "tokoId": 263,
@@ -9521,6 +9531,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1290,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "81",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Delta Elektronik (TOK-024) · tgl 2/11/2026, 08.48.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-11-03T00:48:07.608Z"
+    },
     {
       "id": 1289,
       "aksi": "CREATE_KUNJUNGAN",
@@ -18511,15 +18530,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44070013614 — KG-202 CE",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:23.079Z"
-    },
-    {
-      "id": 253,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "42090016750",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 42090016750 — MJ-709EP",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:21.168Z"
     }
   ],
   "backupLog": [

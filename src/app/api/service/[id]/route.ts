@@ -10,6 +10,7 @@ import { konfigurasiEmail, kirimSmtp, susunEmailOrder, susunPesanWaOrder } from 
 import { sendGatewayMessage } from '@/lib/gateway'
 import { APP_ROOT } from '@/lib/paths'
 import { pesanAlurTglFinish, pesanAlurTglKembali, hariKe } from '@/lib/alur-tanggal'
+import { pesanPartBelumDatang } from '@/lib/part-tunggu'
 
 // GET /api/service/[id] - detail satu tiket
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {

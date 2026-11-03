@@ -9,6 +9,7 @@ import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
 import { authHeaders, type ServiceTicket, type Sparepart } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { labelPartTunggu } from '@/lib/part-tunggu'
 import {
   CheckCircle2,
   Circle,
@@ -465,6 +466,27 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
         <Button size="sm" variant="outline" className="h-7 w-full border-teal-300 text-[11px] text-teal-700" disabled={pending} onClick={() => onAction({ aksi: 'TERIMA_PART_PRODUSEN' })}>
           <PackageCheck className="mr-1 h-3 w-3" /> Part Baru Diterima ({orderParts.length})
         </Button>
+      )}
+
+      {/* Satu unit bisa rusak di beberapa bagian: part dipesan bergelombang.
+          Selama masih ada part yang belum datang, tiket TIDAK boleh FINISH —
+          tambah part susulan di tiket yang sama (tanpa bikin tiket baru). */}
+      {ticket.status === 'PROSES' && orderParts.length > 0 && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-2">
+          <p className="text-[11px] font-semibold text-amber-900">
+            <Clock className="mr-1 inline h-3 w-3" /> Masih menunggu {orderParts.length} part — jangan Selesaikan dulu
+          </p>
+          <ul className="mt-0.5 space-y-0.5 text-[10px] text-amber-800">
+            {orderParts.map((p) => (
+              <li key={p.id}>• {labelPartTunggu(p)}</li>
+            ))}
+          </ul>
+          <p className="mt-1 text-[10px] text-amber-700">
+            Ada temuan bagian lain yang rusak? Tambah part di bawah — stok kurang otomatis order produsen,
+            <b> tiket tetap sama</b>. Saat part tiba tekan <b>Part Baru Diterima</b>, pasang, lalu Selesaikan
+            setelah semua part READY.
+          </p>
+        </div>
       )}
 
       {(ticket.status === 'PROSES' || ticket.status === 'REQUEST') && (

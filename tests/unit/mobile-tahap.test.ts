@@ -55,6 +55,27 @@ describe('aksiTersedia', () => {
     expect(aksi).toContain('KEMBALI_KE_TOKO')
   })
 
+  it('PROSES dengan part belum datang TIDAK menawarkan FINISH', () => {
+    // Part gelombang 1 sudah READY, gelombang 2 (temuan baru) masih dipesan.
+    const aksi = aksiTersedia({
+      status: 'PROSES',
+      penanganan: 'TARIK_WORKSHOP',
+      lokasiUnit: 'WORKSHOP',
+      parts: [{ ...part('READY'), qty: 1 }, { ...part('ORDER_PRODUSEN'), qty: 1 }],
+    }).map((a) => a.aksi)
+    expect(aksi).not.toContain('FINISH')
+    // Unit tetap bisa dikonfirmasi kembali ke toko bila memang sudah di toko.
+    expect(aksi).toContain('KEMBALI_KE_TOKO')
+  })
+
+  it('baris part qty 0 (batal) tidak menahan FINISH', () => {
+    const aksi = aksiTersedia({
+      status: 'PROSES',
+      parts: [{ ...part('ORDER_PRODUSEN'), qty: 0 }],
+    }).map((a) => a.aksi)
+    expect(aksi).toContain('FINISH')
+  })
+
   it('KEMBALI_KE_TOKO tidak ditawarkan dua kali setelah tanggal kembali terekam', () => {
     const aksi = aksiTersedia({
       status: 'FINISH',

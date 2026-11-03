@@ -39,9 +39,21 @@ export function alurSjState(t: ServiceTicket): AlurSj {
   // terkirim" yang relevan. Chip-nya tidak dirender, filter & hitungan alur
   // SJ tidak menghitungnya, dialog surat jalan tidak menyertakannya.
   if (t.status === 'FINISH') return 'TAK_PERLU_SJ'
+
+  // Pesanan susulan: satu unit bisa rusak di beberapa bagian. Setelah part
+  // gelombang pertama datang, temuan baru bisa membuat part dipesan LAGI di
+  // tiket yang sama. Selama masih ada part ORDER_PRODUSEN, status harus
+  // kembali "menunggu part" — bukan tetap "Part datang" (menyesatkan, seolah
+  // unit siap FINISH).
+  const adaInden = t.parts.some((p) => p.qty > 0 && p.statusPart !== 'READY')
+  if (adaInden) {
+    if (t.noSuratJalan) return 'BEKAS_TERKIRIM'
+    if (t.tglRequestPart) return 'SJR_TANPA_KIRIM'
+    return 'BELUM_SJ'
+  }
+
   if (t.tglPartDatang) return 'PART_DATANG'
   if (t.noSuratJalan) return 'BEKAS_TERKIRIM'
   if (t.tglRequestPart) return 'SJR_TANPA_KIRIM'
-  const adaInden = t.parts.some((p) => p.qty > 0 && p.statusPart !== 'READY')
-  return adaInden ? 'BELUM_SJ' : 'TAK_PERLU_SJ'
+  return 'TAK_PERLU_SJ'
 }

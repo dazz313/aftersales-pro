@@ -400,7 +400,7 @@ Body selalu `{ "aksi": "<NAMA>", "aktor": "mobile:<nama teknisi>", ...field }`.
 | `DAFTAR_TUNGGU_TOKO` | `REQUEST` | `penanganan=TUNGGU_PART_TOKO`, unit tetap di toko | – | `409` bukan REQUEST |
 | `KERJAKAN_DI_TOKO` | `REQUEST` / `PROSES`+`BELUM` | `PROSES`, `DI_TOKO`, `lokasi=TOKO`, STTB terbit | – | `409` ada part belum READY |
 | `TARIK_WORKSHOP` | `REQUEST` / `PROSES`+`BELUM` | `PROSES`, `TARIK_WORKSHOP`, `lokasi=WORKSHOP`, STTB terbit | – | `409` ada part belum READY |
-| `FINISH` | `PROSES` | `status=FINISH`, `tglFinish` | `tglFinish?`, `fotoNotaStempel?`, `tandaTanganDigital?` | `409` bukan PROSES; `400` tanggal tidak valid |
+| `FINISH` | `PROSES` **dan semua part READY** | `status=FINISH`, `tglFinish` | `tglFinish?`, `fotoNotaStempel?`, `tandaTanganDigital?` | `409` bukan PROSES; `409` masih ada part belum datang; `400` tanggal tidak valid |
 | `KEMBALI_KE_TOKO` | `PROSES` / `FINISH` | `lokasi=TOKO`, `sttbDicabut=true`, `tglKembaliKeToko` | `tglKembali?` | `409` sudah pernah; `400` tanggal di masa depan |
 | `MULAI_PROSES` | `REQUEST` | `PROSES` + STTB (langsung tarik workshop) | – | `409` belum ada part READY |
 | `KIRIM_PART_RUSAK` | `PROSES` | catat `noSuratJalan` | `noSuratJalan` (wajib) | `400` kosong |
@@ -427,6 +427,20 @@ Respons: objek `ServiceRequest` terbaru (termasuk `status`, `lokasiUnit`,
 > `FINISH`, panggil `KEMBALI_KE_TOKO` saat unit benar-benar sampai toko.
 > Jika unit dikerjakan di toko (`KERJAKAN_DI_TOKO`), `KEMBALI_KE_TOKO` tetap
 > boleh dipakai untuk mencatat unit selesai/serah terima.
+
+> **Part bergelombang (satu unit, satu tiket):** satu unit bisa rusak di
+> beberapa bagian (top plate, side, rear, …). Setelah part gelombang pertama
+> datang, temuan baru **tidak** memerlukan tiket baru — panggil `TAMBAH_PART`
+> di tiket yang sama (stok kurang otomatis menjadi `ORDER_PRODUSEN`).
+> Selama masih ada baris part `qty > 0` dengan `statusPart != "READY"`:
+> - `FINISH` **tidak ditawarkan** di `aksiTersedia`, dan bila tetap dipanggil
+>   server menjawab `409` dengan daftar part yang ditunggu;
+> - `KEMBALI_KE_TOKO` tetap boleh (unit bisa sudah berada di toko);
+> - setelah semua part `READY` dan dipasang, `FINISH` muncul kembali.
+>
+> Bila tiket sudah terlanjur `FINISH`, gunakan `BUKA_ULANG_PROSES`
+> (Admin Workshop/Manager + `koreksiSelesai: true`) — bukan membuat tiket baru.
+> SOP lengkap: `docs/alur-part-bergelombang.md`.
 
 ### 5.7 Aturan tanggal (ditegakkan server)
 
@@ -789,4 +803,4 @@ Build release/produksi tetap wajib HTTPS — jangan aktifkan cleartext di sana.
 
 ---
 
-_Versi dokumen: 1.2 — 2 November 2026._
+_Versi dokumen: 1.3 — 3 November 2026 (FINISH ditahan selama masih ada part belum datang; part susulan di tiket yang sama)._
