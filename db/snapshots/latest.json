@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T22:43:29.314Z",
+  "generatedAt": "2026-11-03T00:47:51.076Z",
   "masterToko": [
     {
       "id": 257,
@@ -314,7 +314,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-09-29T04:49:00.000Z",
+      "tglVisitTerakhir": "2026-11-02T00:47:00.000Z",
       "barcodeToko": "Toko Surya Plastik",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4272,6 +4272,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 80,
+      "tokoId": 263,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-11-02T00:47:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 79,
       "tokoId": 257,
@@ -9511,6 +9521,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1289,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "80",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Surya Plastik (TOK-020) · tgl 2/11/2026, 08.47.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-11-03T00:47:51.038Z"
+    },
+    {
+      "id": 1288,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 1 kode baru, 0 dilengkapi dari 143 katalog + 79 balasan produsen + 0 order (total bank: 269)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-11-03T00:22:02.558Z"
+    },
     {
       "id": 1287,
       "aksi": "BACKUP_DATA",
@@ -18492,24 +18520,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 42090016750 — MJ-709EP",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:21.168Z"
-    },
-    {
-      "id": 252,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44050011853",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44050011853 — MJ-709EP",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:18.944Z"
-    },
-    {
-      "id": 251,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "42110363216",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 42110363216 — MCM-528",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:16.684Z"
     }
   ],
   "backupLog": [
