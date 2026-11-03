@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T02:54:53.007Z",
+  "generatedAt": "2026-11-03T03:09:57.847Z",
   "masterToko": [
     {
       "id": 257,
@@ -3035,6 +3035,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-08-05T16:00:00.000Z"
+    },
+    {
+      "id": 264,
+      "serialNumber": "03060018309",
+      "modelUnit": "KSB-18",
+      "merk": "MIYAKO",
+      "nama": "KIPAS ANGIN",
+      "kerusakanAwal": "NECK 18 INCH (KSB)",
+      "tokoId": 229,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-11-02T00:00:00.000Z"
     },
     {
       "id": 253,
@@ -9560,6 +9573,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1293,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03060018309",
+      "deskripsi": "Unit baru teregistrasi: KIPAS ANGIN (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-03T03:09:57.824Z"
+    },
     {
       "id": 1292,
       "aksi": "TAMBAH_PART_SERVICE",
@@ -18550,15 +18572,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44010001050 — MCG-171",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:32.631Z"
-    },
-    {
-      "id": 256,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2601008866",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2601008866 — RH-127 SS",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:27.555Z"
     }
   ],
   "backupLog": [
