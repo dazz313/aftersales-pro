@@ -23,6 +23,7 @@ import LoadMore from '@/components/load-more'
 import { useBertahap } from '@/hooks/use-bertahap'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
+import ReferensiPart from '@/components/referensi-part'
 import { Package, PackagePlus, PackageX, TriangleAlert, ShoppingCart, Boxes, Plus, Send, Upload, X, ChevronDown, Pencil, Trash2, ClipboardList, Truck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -1134,6 +1135,30 @@ export default function InventoryView() {
             <div className="space-y-1.5">
               <Label>Nama Sparepart</Label>
               <HistoryInput historyKey="part-nama" value={newPart.namaPart} onChange={(e) => setNewPart({ ...newPart, namaPart: e.target.value })} placeholder="cth: Dinamo 16 inch" />
+            </div>
+            <div className="sm:col-span-2">
+              <ReferensiPart
+                kode={newPart.kodePart}
+                nama={newPart.namaPart}
+                onPilih={(it) =>
+                  setNewPart((f) => ({
+                    ...f,
+                    kodePart: it.kode,
+                    namaPart: it.namaPart,
+                    brandKompatibel: f.brandKompatibel.trim() ? f.brandKompatibel : it.brandKompatibel,
+                    supplier: f.supplier.trim() ? f.supplier : it.produsen,
+                  }))
+                }
+                onCocokPersis={(it) =>
+                  setNewPart((f) => ({
+                    ...f,
+                    kodePart: f.kodePart.trim() ? f.kodePart : it.kode,
+                    namaPart: f.namaPart.trim() ? f.namaPart : it.namaPart,
+                    brandKompatibel: f.brandKompatibel.trim() ? f.brandKompatibel : it.brandKompatibel,
+                    supplier: f.supplier.trim() ? f.supplier : it.produsen,
+                  }))
+                }
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Brand Kompatibel</Label>

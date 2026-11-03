@@ -1,6 +1,27 @@
 # Worklog
 
 ---
+Task ID: 56
+Agent: DeepSeek V4.1 Flash Free (opencode)
+Task: Bank Kode Produsen — rangkum semua kode yang pernah diinput & pencarian model toleran ("RI-202S" → Top Plate RI 202 S)
+
+Work Log:
+- Keluhan user: mencari kode untuk `RI-202S` tidak menemukan apa pun, padahal ada `RI202-001-2-1X02-PR | Top Plate RI 202 S | RINNAI`. Penyebab: (1) query memakai `contains` apa adanya sehingga `RI-202S` ≠ `RI 202 S`, (2) kolom `modelTipe` kosong di 291/299 baris.
+- Modul baru `src/lib/cocok-kode.ts` (murni): `normCari`/`rapatCari`/`tokenCari`/`varianDbCari` (toleran strip, spasi, batas huruf↔angka), `ekstrakModelDariNama` (model dari nama part + stopword part/satuan), `rapikanModel`, `skorCocokKode` (bobot kode/model 1.0, nama 0.95, brand 0.7, produsen 0.6, catatan 0.5; skor 0–100 + bidang `pada`), `ringkasBankKode`.
+- `src/lib/bank-kode.ts`: `catatBankKode` hanya menyimpan `modelTipe` eksplisit (keputusan: JANGAN menebak dari nama/unit — satu part bisa banyak model); `cariKodeDariNama` memakai varian token + skor ≥80 khusus nama/model.
+- `GET /api/bank-kode`: kandidat 800 baris via varian, dinilai `skorCocokKode`, saring ≥45 (kueri >2 huruf), urut relevansi; respons menambah `skor`, `cocokPada`, `modelTampil`, `totalCocok`, `ringkasan` (total, model unik, per sumber).
+- `POST /api/bank-kode/sinkron`: menarik SEMUA sumber — katalog, semua part tiket (termasuk cache), order customer, order-email produsen; tidak lagi menyalin model unit ke `modelTipe`.
+- UI `sparepart-finder-view.tsx`: badge total kode + jumlah model, sebaran sumber, keterangan "N kode cocok · diurutkan paling relevan", badge `cocok: … · skor`, model `modelTampil` bisa diklik untuk mencari model itu, placeholder & empty-state menjelaskan `RI202S`/`top plate`.
+- Insiden & pembersihan: percobaan awal sempat mengisi model otomatis → 138 baris terisi (gas valve & `FSDF` salah berlabel `RI 202 S`). Skrip baru `scripts/bersihkan-model-bank-kode.mjs` membandingkan backup `db/backups/custom-2026-11-03-171530.db` lalu mengosongkan 130 nilai hasil tebakan; `modelTipe` kembali **8 baris eksplisit**.
+- Dokumen `docs/bank-kode.md` (baru): sumber data, aturan normalisasi & bobot skor, aturan `modelTipe` vs `modelTampil`, ringkasan UI, perawatan data.
+- Uji: `tests/unit/cocok-kode.test.ts` (15 kasus: normalisasi, varian, ekstraksi model termasuk stopword `UF/VAC/BIT/EF/DIA/OHM`, skor, ringkasan). Hasil: tsc 0; eslint 0 (file berubah); vitest 194 lulus; build + PM2 + health 200.
+- Uji live `scripts/debug-cek-bank-kode.mjs`: sinkron idempoten `{baru:0,dilengkapi:0,total:299}`; `RI-202S` → Top Plate skor 100 (bidang kode+model+nama); `ri202s`, `top plate`, `rinnai`, `gas single total` wajar; tidak ada model salah tempel.
+- Git: belum di-commit.
+
+Stage Summary:
+- Bank Kode kini merangkum seluruh kode dari katalog, tiket (workshop/produsen), order customer, order-email, CSV, dan manual; pencarian tidak lagi gagal karena beda tanda hubung/spasi, dan model yang tidak tersimpan di kolom tetap terbaca dari nama part saat dicari. Data `modelTipe` bersih kembali (hanya 8 nilai eksplisit), jadi tidak ada lagi part yang salah label model.
+
+---
 Task ID: 55
 Agent: DeepSeek V4.1 Flash Free (opencode)
 Task: Alur part bergelombang — satu unit beberapa bagian rusak, order part susulan TANPA tiket baru

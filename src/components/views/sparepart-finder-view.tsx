@@ -40,6 +40,28 @@ interface CariResponse {
   hasil: HasilCari[]
 }
 
+/** Ringkasan isi Bank Kode (dihitung server): total, model unik, sebaran sumber. */
+interface BankRingkasan {
+  total: number
+  jumlahModel: number
+  perSumber: Record<string, number>
+}
+
+/** Baris Bank Kode + hasil penilaian pencocokan (skor & bidang yang cocok). */
+interface BankItem extends BankKode {
+  skor?: number
+  cocokPada?: string[]
+  modelTampil?: string
+}
+
+interface BankResponse {
+  total: number
+  totalBank: number
+  totalCocok?: number
+  items: BankItem[]
+  ringkasan?: BankRingkasan
+}
+
 /** Baris hasil pencarian "Part Datang" — Surat Jalan produsen + pemiliknya (tiket). */
 interface DatangRow {
   id: number
@@ -136,7 +158,7 @@ export default function SparepartFinderView() {
   // Terisi otomatis dari katalog, balasan produsen di tiket, order & CSV.
   const { role, navIntent, clearNavIntent } = useAppStore()
   const [bankQ, setBankQ] = useState('')
-  const [bankHasil, setBankHasil] = useState<{ total: number; totalBank: number; items: BankKode[] } | null>(null)
+  const [bankHasil, setBankHasil] = useState<BankResponse | null>(null)
   const [bankLoading, setBankLoading] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [bankCodes, setBankCodes] = useState<string[]>([])
@@ -145,7 +167,7 @@ export default function SparepartFinderView() {
   const muatBank = async (q: string) => {
     setBankLoading(true)
     try {
-      const res = await fetcher<{ total: number; totalBank: number; items: BankKode[] }>(
+      const res = await fetcher<BankResponse>(
         `/api/bank-kode?q=${encodeURIComponent(q.trim())}&take=50`
       )
       setBankHasil(res)
@@ -158,7 +180,10 @@ export default function SparepartFinderView() {
   const sinkronMut = useMutation({
     mutationFn: () => postJson<{ baru: number; dilengkapi: number; total: number }>('/api/bank-kode/sinkron', { aktor: role }),
     onSuccess: (r) => {
-      toast({ title: 'Bank Kode tersinkron', description: `${r.baru} kode baru, ${r.dilengkapi} dilengkapi (total ${r.total}).` })
+      toast({
+        title: 'Bank Kode tersinkron',
+        description: `${r.baru} kode baru, ${r.dilengkapi} dilengkapi (total ${r.total}).`,
+      })
       void muatBank(bankQ)
     },
     onError: (e: Error) => toast({ title: 'Sinkron gagal', description: e.message, variant: 'destructive' }),
@@ -518,9 +543,15 @@ export default function SparepartFinderView() {
                   {bankHasil.totalBank} kode terdaftar
                 </Badge>
               )}
+              {bankHasil?.ringkasan && bankHasil.ringkasan.jumlahModel > 0 && (
+                <Badge variant="outline" className="border-emerald-300 text-[10px] text-emerald-700">
+                  {bankHasil.ringkasan.jumlahModel} model
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription className="text-xs">
-              Semua kode yang pernah masuk aplikasi + kode baru rilis produsen via CSV — cari, tanya AI, salin, tempel ke tiket.
+              Semua kode yang pernah masuk aplikasi — katalog, part tiket, order customer, order-email produsen, CSV & input manual.
+              Pencarian toleran tanda hubung/spasi: <span className="font-mono">RI-202S</span> menemukan <span className="font-mono">Top Plate RI 202 S</span>.
             </CardDescription>
           </div>
           <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
@@ -563,7 +594,7 @@ export default function SparepartFinderView() {
                 value={bankQ}
                 onChange={(e) => setBankQ(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && void muatBank(bankQ)}
-                placeholder="Cari kode / nama / brand / model…"
+                placeholder="Cari kode / nama / model… cth: RI-202S"
                 className="h-8 text-xs"
                 aria-label="Cari bank kode"
               />
@@ -592,6 +623,24 @@ export default function SparepartFinderView() {
               </Button>
             </div>
           </div>
+
+          {bankHasil?.ringkasan && (
+            <div className="flex flex-wrap items-center gap-1 text-[10px] text-slate-500">
+              <span className="font-semibold text-slate-600">Sumber:</span>
+              {Object.entries(bankHasil.ringkasan.perSumber)
+                .sort((a, b) => b[1] - a[1])
+                .map(([sumber, jumlah]) => (
+                  <Badge key={sumber} variant="outline" className={cn('text-[9px]', SUMBER_CLS[sumber] ?? 'border-slate-300 bg-slate-50 text-slate-500')}>
+                    {sumber} {jumlah}
+                  </Badge>
+                ))}
+              {bankQ.trim() && bankHasil.totalCocok !== undefined && (
+                <span className="ml-auto">
+                  {bankHasil.totalCocok} kode cocok · diurutkan paling relevan
+                </span>
+              )}
+            </div>
+          )}
 
           {aiKode && (
             <div className="rounded-xl border border-violet-300 bg-violet-50/50 p-2.5">
@@ -632,7 +681,8 @@ export default function SparepartFinderView() {
           {bankHasil ? (
             bankHasil.items.length === 0 ? (
               <p className="rounded-lg border border-dashed p-4 text-center text-xs text-slate-500">
-                Tidak ada kode yang cocok — coba kata kunci lain, Sinkronkan, atau Import CSV kode baru produsen.
+                Tidak ada kode yang cocok — coba tulis model tanpa tanda hubung (mis. <span className="font-mono">RI202S</span>),
+                nama part (mis. <span className="font-mono">top plate</span>), atau tekan <span className="font-semibold">Sinkronkan</span> untuk menarik kode lama.
               </p>
             ) : (
               <div className="max-h-72 overflow-auto rounded-md border">
@@ -646,35 +696,52 @@ export default function SparepartFinderView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bankHasil.items.map((b) => (
-                      <TableRow key={b.id}>
-                        <TableCell>
-                          <KodeSparepart kode={b.kode} nama={b.namaPart} className="text-[11px] text-slate-800" />
-                        </TableCell>
-                        <TableCell>
-                          <p className="max-w-48 truncate text-xs text-slate-700" title={b.namaPart || undefined}>{b.namaPart || '—'}</p>
-                        </TableCell>
-                        <TableCell className="hidden max-w-44 sm:table-cell">
-                          {b.modelTipe?.trim() ? (
-                            <span className="inline-block max-w-full truncate rounded bg-emerald-100 px-1.5 py-px font-mono text-[10px] font-semibold text-emerald-700" title={`Model/tipe: ${b.modelTipe}${b.brandKompatibel?.trim() ? ` · ${b.brandKompatibel}` : ''}`}>
-                              {b.modelTipe}
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-slate-300">—</span>
-                          )}
-                          {(b.brandKompatibel?.trim() || b.produsen?.trim()) && (
-                            <p className="mt-0.5 max-w-44 truncate text-[10px] text-slate-400" title={[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ')}>
-                              {[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ')}
-                            </p>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={cn('text-[9px]', SUMBER_CLS[b.sumber] ?? 'border-slate-300 bg-slate-50 text-slate-500')}>
-                            {b.sumber}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {bankHasil.items.map((b) => {
+                      const model = (b.modelTampil ?? b.modelTipe ?? '').trim()
+                      return (
+                        <TableRow key={b.id}>
+                          <TableCell>
+                            <KodeSparepart kode={b.kode} nama={b.namaPart} className="text-[11px] text-slate-800" />
+                          </TableCell>
+                          <TableCell>
+                            <p className="max-w-48 truncate text-xs text-slate-700" title={b.namaPart || undefined}>{b.namaPart || '—'}</p>
+                            {b.cocokPada && b.cocokPada.length > 0 && (
+                              <p className="mt-0.5 text-[9px] text-violet-600" title={`Skor kecocokan ${b.skor ?? 0}/100`}>
+                                cocok: {b.cocokPada.join(', ')}
+                                {typeof b.skor === 'number' && b.skor > 0 ? ` · ${b.skor}` : ''}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell className="hidden max-w-44 sm:table-cell">
+                            {model ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBankQ(model)
+                                  void muatBank(model)
+                                }}
+                                className="inline-block max-w-full truncate rounded bg-emerald-100 px-1.5 py-px font-mono text-[10px] font-semibold text-emerald-700 hover:bg-emerald-200"
+                                title={`Cari semua kode untuk model ${model}${b.brandKompatibel?.trim() ? ` · ${b.brandKompatibel}` : ''}`}
+                              >
+                                {model}
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-slate-300">—</span>
+                            )}
+                            {(b.brandKompatibel?.trim() || b.produsen?.trim()) && (
+                              <p className="mt-0.5 max-w-44 truncate text-[10px] text-slate-400" title={[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ')}>
+                                {[b.brandKompatibel?.trim(), b.produsen?.trim()].filter(Boolean).join(' · ')}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={cn('text-[9px]', SUMBER_CLS[b.sumber] ?? 'border-slate-300 bg-slate-50 text-slate-500')}>
+                              {b.sumber}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </div>

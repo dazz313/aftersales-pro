@@ -24,6 +24,7 @@ import LoadMore from '@/components/load-more'
 import { useBertahap, type HasilUseBertahap } from '@/hooks/use-bertahap'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
+import ReferensiPart from '@/components/referensi-part'
 import { parseBrandRules, detectGaransi, type BrandRule } from '@/lib/brand'
 import { AddTokoDialog, AddCustomerDialog } from '@/components/quick-entry'
 import TokoBarcodeSticker from '@/components/toko-barcode-sticker'
@@ -1613,6 +1614,17 @@ export default function MasterDataView() {
                       onChange={(e) => updatePartRow(row.key, { namaPart: e.target.value })}
                       placeholder="cth: Dinamo 16 inch"
                     />
+                    <ReferensiPart
+                      kode={row.kodePart}
+                      nama={row.namaPart}
+                      onPilih={(it) => updatePartRow(row.key, { kodePart: it.kode, namaPart: it.namaPart })}
+                      onCocokPersis={(it) =>
+                        updatePartRow(row.key, {
+                          ...(row.kodePart.trim() ? {} : { kodePart: it.kode }),
+                          ...(row.namaPart.trim() ? {} : { namaPart: it.namaPart }),
+                        })
+                      }
+                    />
                     {dup && (
                       <p className="text-[11px] font-medium text-red-600">
                         Kode {kodeRow} sudah terisi di baris lain — hapus salah satu (pengulangan tidak diizinkan).
@@ -1713,6 +1725,17 @@ export default function MasterDataView() {
                       onChange={(e) => updateKurangRow(row.key, { namaPart: e.target.value })}
                       placeholder="cth: Dinamo 16 inch"
                       aria-label={`Nama part kurang baris ${i + 1}`}
+                    />
+                    <ReferensiPart
+                      kode={row.kodePart}
+                      nama={row.namaPart}
+                      onPilih={(it) => updateKurangRow(row.key, { kodePart: it.kode, namaPart: it.namaPart })}
+                      onCocokPersis={(it) =>
+                        updateKurangRow(row.key, {
+                          ...(row.kodePart.trim() ? {} : { kodePart: it.kode }),
+                          ...(row.namaPart.trim() ? {} : { namaPart: it.namaPart }),
+                        })
+                      }
                     />
                     {dup && (
                       <p className="text-[11px] font-medium text-red-600">Kode {kodeRow} sudah terisi di baris lain — gabungkan jumlahnya jadi satu baris.</p>

@@ -3,9 +3,12 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { requireActiveSession } from '@/lib/auth-server'
 import { normalisasiKode } from '@/lib/bank-kode'
+import { ekstrakModelDariNama, normCari, ringkasBankKode, skorCocokKode, varianDbCari } from '@/lib/cocok-kode'
 
 // GET /api/bank-kode?q=&sumber=&take= — cari kode produsen (siap dipanggil kapan pun)
-// q dicocokkan ke kode / nama / brand / model / produsen (case-insensitive ganda).
+// q dicocokkan ke kode / nama / model / brand / produsen / catatan dengan
+// normalisasi tanda hubung & spasi ("RI-202S" menemukan "Top Plate RI 202 S").
+// Hasil diurutkan paling relevan + menyebut bidang yang cocok.
 export async function GET(request: Request) {
   try {
     const { denied } = await requireActiveSession(request)
@@ -17,20 +20,54 @@ export async function GET(request: Request) {
 
     const where: Record<string, unknown> = {}
     if (sumber) where.sumber = sumber
-    if (keyword) {
-      const variants = [...new Set([keyword, keyword.toUpperCase(), keyword.toLowerCase()])]
+    const kunci = normCari(keyword)
+    if (kunci) {
       const or: Record<string, unknown>[] = []
-      for (const v of variants) {
-        or.push({ kode: { contains: v } }, { namaPart: { contains: v } }, { brandKompatibel: { contains: v } }, { modelTipe: { contains: v } }, { produsen: { contains: v } })
+      for (const v of varianDbCari(kunci)) {
+        or.push(
+          { kode: { contains: v } },
+          { namaPart: { contains: v } },
+          { brandKompatibel: { contains: v } },
+          { modelTipe: { contains: v } },
+          { produsen: { contains: v } },
+          { catatan: { contains: v } },
+        )
       }
       where.OR = or
     }
 
-    const [items, totalBank] = await Promise.all([
-      db.bankKode.findMany({ where, orderBy: { kode: 'asc' }, take }),
+    const [kandidat, totalBank, semua] = await Promise.all([
+      db.bankKode.findMany({ where, orderBy: { kode: 'asc' }, take: 800 }),
       db.bankKode.count(),
+      db.bankKode.findMany({ select: { sumber: true, modelTipe: true, namaPart: true } }),
     ])
-    return NextResponse.json({ total: items.length, totalBank, items })
+
+    const dinilai = kandidat.map((b) => {
+      const { skor, pada } = skorCocokKode(kunci, b)
+      return {
+        ...b,
+        skor,
+        cocokPada: pada,
+        // Tampilkan model hasil ekstraksi nama walau kolom model belum diisi
+        // (baris lama / hasil CSV) — supaya model langsung terlihat & bisa diklik.
+        modelTampil: String(b.modelTipe ?? '').trim() || ekstrakModelDariNama(b.namaPart),
+      }
+    })
+    // Kueri sangat pendek (1–2 huruf) jangan disaring skor; kueri normal
+    // disaring ≥45 agar hasil tetap relevan, bukan sekadar "ada kata".
+    const minimal = kunci && kunci.length > 2 ? 45 : 0
+    const cocok = dinilai.filter((b) => b.skor >= minimal)
+    cocok.sort((a, b) => b.skor - a.skor || a.kode.localeCompare(b.kode))
+    const items = cocok.slice(0, take)
+    const ringkasan = ringkasBankKode(semua)
+
+    return NextResponse.json({
+      total: items.length,
+      totalBank,
+      totalCocok: cocok.length,
+      items,
+      ringkasan: { ...ringkasan, total: totalBank },
+    })
   } catch (error) {
     console.error('BankKode GET error:', error)
     return NextResponse.json({ error: 'Gagal memuat bank kode' }, { status: 500 })
