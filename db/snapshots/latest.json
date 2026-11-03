@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T00:48:07.625Z",
+  "generatedAt": "2026-11-03T02:54:53.007Z",
   "masterToko": [
     {
       "id": 257,
@@ -1411,6 +1411,20 @@
       "reorderLimit": 5,
       "hargaKlaim": 0,
       "createdAt": "2026-10-14T05:12:35.098Z"
+    },
+    {
+      "id": 363,
+      "kodePart": "FSDF",
+      "namaPart": "right side",
+      "brandKompatibel": "RINNAI",
+      "supplier": "",
+      "stokJual": 0,
+      "stokGaransi": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 0,
+      "reorderLimit": 5,
+      "hargaKlaim": 0,
+      "createdAt": "2026-11-03T02:54:52.969Z"
     },
     {
       "id": 362,
@@ -7832,6 +7846,21 @@
           "namaPartCache": "Top Plate RI 202 S",
           "editedAt": null,
           "editedBy": null
+        },
+        {
+          "id": 113,
+          "serviceRequestId": 31,
+          "sparepartId": 363,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "KATALOG",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -9531,6 +9560,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1292,
+      "aksi": "TAMBAH_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0029",
+      "deskripsi": "Tambah part saat pengerjaan: FSDF ×1 stok tidak cukup → ORDER ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-03T02:54:52.992Z"
+    },
+    {
+      "id": 1291,
+      "aksi": "CREATE_MASTER_SPAREPART",
+      "entitas": "master_sparepart",
+      "entitasId": "FSDF",
+      "deskripsi": "Part tambahan dari workshop otomatis masuk katalog: right side",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-03T02:54:52.975Z"
+    },
     {
       "id": 1290,
       "aksi": "CREATE_KUNJUNGAN",
@@ -18512,24 +18559,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2601008866 — RH-127 SS",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:27.555Z"
-    },
-    {
-      "id": 255,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2601271041",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2601271041 — RI-202 S",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:25.149Z"
-    },
-    {
-      "id": 254,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44070013614",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44070013614 — KG-202 CE",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:23.079Z"
     }
   ],
   "backupLog": [
