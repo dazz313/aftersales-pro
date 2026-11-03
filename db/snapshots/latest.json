@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T03:25:29.597Z",
+  "generatedAt": "2026-11-03T03:26:55.366Z",
   "masterToko": [
     {
       "id": 257,
@@ -9221,6 +9221,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 31,
+      "kodePart": "GCXX-MX151-XX-KGX",
+      "namaPart": "BACK COVER 502",
+      "brand": "Miyako",
+      "qty": 1,
+      "unitAssetId": 199,
+      "serialNumber": "44060074241",
+      "modelUnit": "KG-502C",
+      "tokoKode": "TOK-004",
+      "tokoNama": "Toko Surya Indah",
+      "catatan": "Reorder part inden — tiket SVC-2609-0004",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Teknisi Lapangan",
+      "createdAt": "2026-11-03T03:26:55.346Z",
+      "updatedAt": "2026-11-03T03:26:55.346Z",
+      "serviceRequestId": 88
+    },
+    {
       "id": 30,
       "kodePart": "B74-TF23-153-BB",
       "namaPart": "Body Grit black RH 127B",
@@ -9588,6 +9611,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1295,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0004",
+      "deskripsi": "Reorder 1 part inden via email: GCXX-MX151-XX-KGX ×1 — item menempel ke tiket SVC-2609-0004, siap dikirim ke produsen",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-03T03:26:55.350Z"
+    },
     {
       "id": 1294,
       "aksi": "TAMBAH_PART_SERVICE",
@@ -18578,15 +18610,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03040129852 — MCM-512C SBC",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:36.147Z"
-    },
-    {
-      "id": 258,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03010039792",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03010039792 — MCM-508 SBC",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:34.483Z"
     }
   ],
   "backupLog": [
