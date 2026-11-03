@@ -88,4 +88,15 @@ if (!faseBuild) {
   void db.$queryRawUnsafe('PRAGMA journal_mode = WAL').catch((e: unknown) => {
     console.warn('Gagal mengaktifkan SQLite WAL:', e instanceof Error ? e.message : JSON.stringify(e))
   })
+  // synchronous=NORMAL: aman dengan WAL (tahan crash proses, hanya kehilangan
+  // transaksi terakhir pada mati listrik tiba-tiba). Jauh lebih cepat daripada
+  // FULL (default) di disk lambat (HDD) — menghindari fsync tiap transaksi.
+  void db.$queryRawUnsafe('PRAGMA synchronous = NORMAL').catch((e: unknown) => {
+    console.warn('Gagal set synchronous:', e instanceof Error ? e.message : JSON.stringify(e))
+  })
+  // Tunggu hingga 5 detik bila DB sedang terkunci oleh proses lain (mis.
+  // backup/scheduler) alih-alih langsung error "database is locked".
+  void db.$queryRawUnsafe('PRAGMA busy_timeout = 5000').catch((e: unknown) => {
+    console.warn('Gagal set busy_timeout:', e instanceof Error ? e.message : JSON.stringify(e))
+  })
 }
