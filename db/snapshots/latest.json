@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T03:56:09.049Z",
+  "generatedAt": "2026-11-03T03:59:42.469Z",
   "masterToko": [
     {
       "id": 257,
@@ -3906,6 +3906,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-29T00:00:00.000Z"
+    },
+    {
+      "id": 265,
+      "serialNumber": "AH326510",
+      "modelUnit": "PS-230 BIT",
+      "merk": "Shimizu",
+      "nama": "pompa air",
+      "kerusakanAwal": "OTOMATIS DAN PENUTUP RUSAK",
+      "tokoId": 236,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-10-28T00:00:00.000Z"
     },
     {
       "id": 175,
@@ -9713,6 +9726,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1299,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "AH326510",
+      "deskripsi": "Unit baru teregistrasi: pompa air (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-03T03:59:42.449Z"
+    },
     {
       "id": 1298,
       "aksi": "CREATE_SERVICE_REQUEST",
@@ -18703,15 +18725,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03020073129 — MCM-509",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:43.493Z"
-    },
-    {
-      "id": 262,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "43070098367",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43070098367 — MCM-609",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:41.850Z"
     }
   ],
   "backupLog": [
