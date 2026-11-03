@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T08:52:00.459Z",
+  "generatedAt": "2026-11-03T08:52:51.815Z",
   "masterToko": [
     {
       "id": 257,
@@ -9387,6 +9387,29 @@
   "permintaanOrder": [],
   "orderEmailPart": [
     {
+      "id": 32,
+      "kodePart": "FSDF",
+      "namaPart": "right side",
+      "brand": "RINNAI",
+      "qty": 1,
+      "unitAssetId": 184,
+      "serialNumber": "2607466464",
+      "modelUnit": "RI-202S",
+      "tokoKode": "TOK-001",
+      "tokoNama": "Toko Semeru Ahmad Yani",
+      "catatan": "Reorder part inden — tiket SVC-2610-0029",
+      "status": "PENDING",
+      "emailTujuan": null,
+      "emailKirimAt": null,
+      "emailOleh": null,
+      "emailMode": null,
+      "emailPesanGagal": null,
+      "diinputOleh": "Admin Workshop",
+      "createdAt": "2026-11-03T08:52:51.796Z",
+      "updatedAt": "2026-11-03T08:52:51.796Z",
+      "serviceRequestId": 31
+    },
+    {
       "id": 31,
       "kodePart": "GCXX-MX151-XX-KGX",
       "namaPart": "BACK COVER 502",
@@ -9777,6 +9800,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1303,
+      "aksi": "ORDER_EMAIL_REORDER",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0029",
+      "deskripsi": "Reorder 1 part inden via email: FSDF ×1 — item menempel ke tiket SVC-2610-0029, siap dikirim ke produsen",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-03T08:52:51.800Z"
+    },
     {
       "id": 1302,
       "aksi": "UPDATE_UNIT_ASSET",
@@ -18767,15 +18799,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): FE02313377 — JET-100 BIT",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:54.043Z"
-    },
-    {
-      "id": 266,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZD152841",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZD152841 — PS-230 BIT",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:52.218Z"
     }
   ],
   "backupLog": [
