@@ -128,16 +128,54 @@ bisa **diklik** untuk mencari semua kode model tersebut, brand/produsen, dan sum
 
 ---
 
-## 6. Berkas terkait
+## 6. Referensi otomatis saat input part
+
+Selain pencarian manual, form input part sekarang **langsung mengecek kesamaan**
+saat pengguna mengetik kode atau nama yang sudah cukup lengkap:
+
+| Yang diketik | Ambang | Cara mencocokkan |
+|--------------|--------|------------------|
+| Kode part    | ≥ 4 karakter (huruf/angka) | Hanya ke kolom `kode`: persis = 100, awalan/terkandung = 90, salah ketik 1 huruf = 82 |
+| Nama part    | ≥ 3 karakter | Ke nama/model: persis = 100, memuat = 95, token = 55–100 |
+
+Komponen `src/components/referensi-part.tsx` menampilkan referensi setelah jeda
+400 ms (debounce) berisi:
+
+- kode + nama part;
+- badge **persis** / skor kemiripan;
+- sumber (KATALOG/CSV/PRODUCEN/…);
+- brand & model (bila ada);
+- stok katalog dan berapa kali kode itu **dipakai di tiket**.
+
+Klik satu baris → kode + nama langsung dipakai. Bila hanya ada **satu**
+kecocokan persis, field yang masih kosong diisi otomatis (nama terisi → kode
+diisi; kode terisi → nama diisi), sehingga tidak menimpa ketikan pengguna.
+
+Tempat yang memakai referensi ini:
+
+- `service-flow.tsx` — catat balasan produsen & tambah part manual di tiket;
+- `inventory-view.tsx` — dialog tambah sparepart inventory;
+- `master-data-view.tsx` — baris part saat registrasi unit & daftar part kurang.
+
+Endpoint-nya read-only: `GET /api/bank-kode/referensi?kode=&nama=&take=`.
+Kode yang hanya kebetulan berbagi angka (mis. `RI-202S` vs `RI202-001-…`)
+**tidak** dicocokkan sebagai referensi kode — supaya tidak menyesatkan.
+
+---
+
+## 7. Berkas terkait
 
 | Berkas | Isi |
 |--------|-----|
-| `src/lib/cocok-kode.ts` | normalisasi, ekstraksi model, skor, ringkasan (murni) |
-| `src/lib/bank-kode.ts` | `catatBankKode` (upsert aman), `cariKodeDariNama` |
+| `src/lib/cocok-kode.ts` | normalisasi, ekstraksi model, skor kode/nama, ringkasan (murni) |
+| `src/lib/bank-kode.ts` | `catatBankKode` (upsert aman), `cariReferensiPart`, `cariKodeDariNama` |
 | `src/app/api/bank-kode/route.ts` | GET pencarian + skor + ringkasan, POST manual |
+| `src/app/api/bank-kode/referensi/route.ts` | referensi otomatis saat input kode/nama |
 | `src/app/api/bank-kode/sinkron/route.ts` | tarik semua sumber kode |
 | `src/app/api/bank-kode/cari-nama/route.ts` | saran kode otomatis saat mengetik nama part |
+| `src/components/referensi-part.tsx` | komponen daftar referensi (debounce 400 ms) |
 | `src/components/views/sparepart-finder-view.tsx` | UI Bank Kode |
-| `tests/unit/cocok-kode.test.ts` | 15+ kasus pencocokan & ekstraksi model |
-| `scripts/debug-cek-bank-kode.mjs` | uji live |
+| `tests/unit/cocok-kode.test.ts` | kasus pencocokan kode/nama & ekstraksi model |
+| `scripts/debug-cek-bank-kode.mjs` | uji live pencarian & sinkron |
+| `scripts/debug-cek-referensi-part.mjs` | uji live referensi kode/nama |
 | `scripts/bersihkan-model-bank-kode.mjs` | pemulihan `modelTipe` dari backup |

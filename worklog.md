@@ -1,6 +1,26 @@
 # Worklog
 
 ---
+Task ID: 57
+Agent: DeepSeek V4.1 Flash Free (opencode)
+Task: Referensi otomatis saat input kode/nama sparepart — kode atau nama lengkap langsung dicek kesamaannya
+
+Work Log:
+- Permintaan user: saat memasukkan kode ATAU nama sparepart, bila yang diketik sudah lengkap sistem langsung mengecek kesamaan dan memunculkan referensi (bukan hanya saat kolom nama ditinggalkan seperti sebelumnya).
+- `src/lib/cocok-kode.ts`: fungsi baru `skorKodeCocok` (khusus kode: persis 100, awalan/terkandung 90, salah ketik 1 huruf 82, token sengaja TIDAK dipakai agar `RI-202S` tidak dianggap mirip `RI202-001-…`), `jarakEditTerbatas`, dan `skorNamaCocok` (nama/model persis 100, memuat 95, token proporsional) — bobot bidang tidak dipakai di sini supaya nama persis benar-benar "persis".
+- `src/lib/bank-kode.ts`: `cariReferensiPart({kode,nama})` menggabungkan Bank Kode + master katalog, menilai kode/nama, lalu memperkaya hasil dengan stok (`stokInventory`) dan jumlah pemakaian di tiket (`serviceRequestPart.groupBy`). `cariKodeDariNama` sekarang delegasi ke fungsi ini (kompatibel dengan pemanggil lama).
+- `GET /api/bank-kode/referensi?kode=&nama=&take=` (baru, read-only): ambang kode ≥4 karakter, nama ≥3 karakter; hasil urut skor lalu paling sering dipakai.
+- `src/components/referensi-part.tsx` (baru): debounce 400 ms, tampilkan kode, nama, badge persis/skor, sumber, brand/model, stok, dan "dipakai N×"; klik untuk memakai kode+nama. Bila tepat satu kecocokan persis, field yang masih kosong diisi otomatis (tidak menimpa ketikan).
+- Integrasi: `service-flow.tsx` (catat balasan produsen + tambah part manual; chip lama diganti komponen ini), `inventory-view.tsx` (dialog tambah sparepart), `master-data-view.tsx` (baris part registrasi unit + part kurang).
+- Uji unit baru: `skorKodeCocok` (persis/awalan/typo 1 huruf/kode beda tidak cocok) dan `skorNamaCocok` (nama persis, model di dalam nama, nama memuat kueri) — total 201 lulus.
+- Uji live `scripts/debug-cek-referensi-part.mjs`: kode lengkap 100% + katalog + dipakai 1×; awalan 90%; typo 1 huruf 82%; nama lengkap 100%; `RI-202S` tidak memunculkan `RI202-001-…` (tidak menyesatkan). `debug-cek-bank-kode.mjs` tetap OK (Top Plate ditemukan, tidak ada model salah tempel).
+- Verifikasi: tsc 0; eslint 0 (file berubah); vitest 201 lulus; build + PM2 + health 200.
+- Git: belum di-commit (menyatu dengan Task 56 yang juga uncommitted).
+
+Stage Summary:
+- Input part kini aktif mengecek kesamaan begitu kode (≥4 karakter) atau nama (≥3 karakter) dianggap lengkap, lalu menampilkan referensi kode/nama yang pernah ada lengkap dengan stok dan riwayat pemakaian. Pengguna bisa klik untuk memakai, dan field kosong terisi otomatis saat ada satu kecocokan persis — mengurangi salah kode tanpa menambah langkah manual.
+
+---
 Task ID: 56
 Agent: DeepSeek V4.1 Flash Free (opencode)
 Task: Bank Kode Produsen — rangkum semua kode yang pernah diinput & pencarian model toleran ("RI-202S" → Top Plate RI 202 S)

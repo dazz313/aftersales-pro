@@ -1,5 +1,5 @@
 import { db } from '@/lib/db'
-import { ekstrakModelDariNama, normCari, rapikanModel, skorCocokKode, skorKodeCocok, varianDbCari } from './cocok-kode'
+import { ekstrakModelDariNama, normCari, rapikanModel, skorKodeCocok, skorNamaCocok, varianDbCari } from './cocok-kode'
 
 /**
  * Bank Kode — pencatat terpusat semua kode sparepart yang pernah masuk aplikasi.
@@ -158,22 +158,24 @@ export async function cariReferensiPart(
       sumber: 'KATALOG',
     })
   }
-  // Baris Bank Kode menang atas master (sumber & catatan lebih lengkap).
+  // Baris Bank Kode menang atas master (sumber & catatan lebih lengkap), tetapi
+  // kolom yang kosong di Bank tetap diisi dari master agar referensi utuh.
   for (const b of bankRows) {
+    const lama = peta.get(b.kode)
     peta.set(b.kode, {
       kode: b.kode,
-      namaPart: b.namaPart,
-      brandKompatibel: b.brandKompatibel ?? '',
-      modelTipe: b.modelTipe ?? '',
-      produsen: b.produsen ?? '',
-      sumber: b.sumber ?? 'KATALOG',
+      namaPart: b.namaPart || lama?.namaPart || '',
+      brandKompatibel: b.brandKompatibel || lama?.brandKompatibel || '',
+      modelTipe: b.modelTipe || lama?.modelTipe || '',
+      produsen: b.produsen || lama?.produsen || '',
+      sumber: b.sumber || lama?.sumber || 'KATALOG',
     })
   }
 
   const hasil: ReferensiPart[] = []
   for (const row of peta.values()) {
     const skorKode = pakaiKode ? skorKodeCocok(kode, row.kode) : null
-    const skorNama = pakaiNama ? skorCocokKode(nama, { namaPart: row.namaPart, modelTipe: row.modelTipe }) : null
+    const skorNama = pakaiNama ? skorNamaCocok(nama, row.namaPart, row.modelTipe) : null
     const skor = Math.max(skorKode?.skor ?? 0, skorNama?.skor ?? 0)
     if (skor < 80) continue
     const pada = [...new Set([...(skorKode?.pada ?? []), ...(skorNama?.pada ?? [])])]

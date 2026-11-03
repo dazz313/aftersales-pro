@@ -205,14 +205,10 @@ function jarakEditTerbatas(a: string, b: string, maks: number): number {
   let sebelumnya = Array.from({ length: b.length + 1 }, (_, i) => i)
   for (let i = 1; i <= a.length; i++) {
     const kini = [i]
-    let minimum = i
     for (let j = 1; j <= b.length; j++) {
       const biaya = a[i - 1] === b[j - 1] ? 0 : 1
-      const nilai = Math.min(sebelumnya[j] + 1, kini[j - 1] + 1, sebelumnya[j - 1] + biaya)
-      kini.push(nilai)
-      if (nilai < minimum) minimum = nilai
+      kini.push(Math.min(sebelumnya[j] + 1, kini[j - 1] + 1, sebelumnya[j - 1] + biaya))
     }
-    if (minimum > maks) return maks + 1
     sebelumnya = kini
   }
   return sebelumnya[b.length]
@@ -237,6 +233,51 @@ export function skorKodeCocok(kueri: unknown, kode: unknown): SkorKode {
     return { skor: 82, pada: ['kode'] }
   }
   return { skor: 0, pada: [] }
+}
+
+/**
+ * Skor kemiripan NAMA part (tanpa bobot bidang lain) — nama persis = 100,
+ * nama memuat kueri = 95/94, kecocokan token proporsional = 55–100.
+ * Dipakai referensi otomatis agar nama yang diketik persis tetap dianggap
+ * "persis" (bukan 95% karena bobot bidang).
+ */
+export function skorNamaCocok(kueri: unknown, nama: unknown, model: unknown = ''): SkorKode {
+  const qn = normCari(kueri)
+  if (!qn) return { skor: 0, pada: [] }
+  const qc = rapatCari(qn)
+  const qt = tokenCari(qn)
+  const bidang = [
+    { label: 'nama', nilai: normCari(nama) },
+    { label: 'model', nilai: normCari(model) || ekstrakModelDariNama(nama) },
+  ]
+  let skor = 0
+  const pada: string[] = []
+  for (const b of bidang) {
+    if (!b.nilai) continue
+    const bc = rapatCari(b.nilai)
+    let dasar = 0
+    if (bc === qc) {
+      dasar = 100
+    } else if (qn.length >= 3 && bc.includes(qc)) {
+      dasar = 95
+    } else if (qn.length >= 3 && b.nilai.includes(qn)) {
+      dasar = 94
+    } else if (qt.length) {
+      const bt = tokenCari(b.nilai)
+      const setB = new Set(bt)
+      let ada = 0
+      for (const t of qt) {
+        if (setB.has(t)) ada += 1
+        else if (t.length >= 3 && bt.some((x) => x.length >= 3 && (x.startsWith(t) || t.startsWith(x)))) ada += 0.75
+        else if (bc.includes(t)) ada += 0.9
+      }
+      const rasio = ada / qt.length
+      if (rasio > 0) dasar = Math.round(55 + 45 * rasio)
+    }
+    if (dasar > skor) skor = dasar
+    if (dasar >= 70) pada.push(b.label)
+  }
+  return { skor: Math.min(100, skor), pada }
 }
 
 export interface RingkasanBankKode {

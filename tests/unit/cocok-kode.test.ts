@@ -6,6 +6,7 @@ import {
   ringkasBankKode,
   skorCocokKode,
   skorKodeCocok,
+  skorNamaCocok,
   tokenCari,
   varianDbCari,
 } from '@/lib/cocok-kode'
@@ -103,6 +104,44 @@ describe('skorCocokKode', () => {
 
   it('tidak mencocokkan part yang tidak berhubungan', () => {
     expect(skorCocokKode('filter kapasitor', topPlate).skor).toBeLessThan(45)
+  })
+})
+
+describe('skorKodeCocok', () => {
+  it('kode persis (beda strip/spasi) = 100', () => {
+    expect(skorKodeCocok('RI202-001-2-1X02-PR', 'RI202-001-2-1X02-PR').skor).toBe(100)
+    expect(skorKodeCocok('ri202 001 2 1x02 pr', 'RI202-001-2-1X02-PR').skor).toBe(100)
+  })
+
+  it('kode yang memuat kueri tetap ditemukan', () => {
+    expect(skorKodeCocok('RI202-001', 'RI202-001-2-1X02-PR').skor).toBe(90)
+    expect(skorKodeCocok('RI202-001-2-1X02-PR-EXTRA', 'RI202-001-2-1X02-PR').skor).toBe(90)
+  })
+
+  it('salah ketik 1 huruf pada kode panjang masih dianggap mirip', () => {
+    expect(skorKodeCocok('RI202-001-2-1X03-PR', 'RI202-001-2-1X02-PR').skor).toBe(82)
+  })
+
+  it('kode berbeda yang hanya berbagi angka TIDAK dicocokkan', () => {
+    expect(skorKodeCocok('RI-202S', 'RI202-001-2-1X02-PR').skor).toBe(0)
+    expect(skorKodeCocok('C5Q-1', 'RI202-001-2-1X02-PR').skor).toBe(0)
+  })
+})
+
+describe('skorNamaCocok', () => {
+  it('nama persis = 100 (beda kapital/tanda baca diabaikan)', () => {
+    expect(skorNamaCocok('Top Plate RI 202 S', 'Top Plate RI 202 S').skor).toBe(100)
+    expect(skorNamaCocok('top plate ri-202s', 'TOP PLATE RI 202 S').skor).toBe(100)
+  })
+
+  it('model di dalam nama juga dianggap persis', () => {
+    const hasil = skorNamaCocok('RI 202 S', 'Top Plate RI 202 S')
+    expect(hasil.skor).toBe(100)
+    expect(hasil.pada).toContain('model')
+  })
+
+  it('nama yang memuat kueri = 95', () => {
+    expect(skorNamaCocok('Top Plate', 'Top Plate RI 202 S').skor).toBe(95)
   })
 })
 
