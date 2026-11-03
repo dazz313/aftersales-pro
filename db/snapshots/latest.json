@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T03:50:14.588Z",
+  "generatedAt": "2026-11-03T03:56:09.049Z",
   "masterToko": [
     {
       "id": 257,
@@ -4751,6 +4751,57 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 112,
+      "noTiket": "SVC-2609-0008",
+      "unitAssetId": 257,
+      "status": "REQUEST",
+      "noSttb": "STTB-2609-0008",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "bodi penyok",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-20T00:00:00.000Z",
+      "createdAt": "2026-11-03T03:56:09.024Z",
+      "updatedAt": "2026-11-03T03:56:09.024Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 116,
+          "serviceRequestId": 112,
+          "sparepartId": 338,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 111,
       "noTiket": "SVC-2609-0007",
@@ -9662,6 +9713,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1298,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0008",
+      "deskripsi": "Tiket manual dibuat untuk unit 2604444478 (RI-602 BGX, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2609-0008 terbit sejak request part",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-03T03:56:09.030Z"
+    },
     {
       "id": 1297,
       "aksi": "CREATE_SERVICE_REQUEST",
@@ -18652,15 +18712,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43070098367 — MCM-609",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:41.850Z"
-    },
-    {
-      "id": 261,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "43110031525",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43110031525 — KAW-1689",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:40.009Z"
     }
   ],
   "backupLog": [
