@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T04:02:27.854Z",
+  "generatedAt": "2026-11-03T08:52:00.459Z",
   "masterToko": [
     {
       "id": 257,
@@ -3507,7 +3507,7 @@
     {
       "id": 184,
       "serialNumber": "2607466464",
-      "modelUnit": "RI202S",
+      "modelUnit": "RI-202S",
       "merk": "RINNAI",
       "nama": "",
       "kerusakanAwal": "BODY PENYOK",
@@ -3515,7 +3515,7 @@
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
-      "createdAt": "2026-10-15T04:41:23.577Z"
+      "createdAt": "2026-09-24T00:00:00.000Z"
     },
     {
       "id": 189,
@@ -9777,6 +9777,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1302,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "2607466464",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian, createdAt (2607466464)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-11-03T08:52:00.446Z"
+    },
+    {
+      "id": 1301,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP) dari IP 127.0.0.1",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-11-03T08:45:44.425Z"
+    },
     {
       "id": 1300,
       "aksi": "CREATE_SERVICE_REQUEST",
@@ -18758,24 +18776,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZD152841 — PS-230 BIT",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:52.218Z"
-    },
-    {
-      "id": 265,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "AH336947",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): AH336947 — KG-302 C",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:50.193Z"
-    },
-    {
-      "id": 264,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44050061941",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44050061941 — KG-502 C",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:45.468Z"
     }
   ],
   "backupLog": [
