@@ -99,4 +99,7 @@ if (!faseBuild) {
   void db.$executeRawUnsafe('PRAGMA busy_timeout = 5000').catch((e: unknown) => {
     console.warn('Gagal set busy_timeout:', e instanceof Error ? e.message : JSON.stringify(e))
   })
+  // Cache & temp di RAM — kurangi I/O disk untuk query/sort sementara.
+  void db.$executeRawUnsafe('PRAGMA cache_size = -8000').catch(() => {}) // ~8 MB
+  void db.$executeRawUnsafe('PRAGMA temp_store = MEMORY').catch(() => {})
 }
