@@ -578,6 +578,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (existing.status !== 'PROSES') {
         return NextResponse.json({ error: 'Hanya tiket PROSES yang dapat diselesaikan' }, { status: 409 })
       }
+      // Satu unit bisa rusak di beberapa bagian (top plate, side, rear, …).
+      // Jangan paksa FINISH hanya karena part gelombang pertama sudah datang:
+      // selama masih ada part ORDER_PRODUSEN, tiket tetap PROSES — tambah part
+      // susulan / tunggu kedatangan / hapus baris bila batal dipakai.
+      const pesanTungguPart = pesanPartBelumDatang(existing.parts)
+      if (pesanTungguPart) {
+        return NextResponse.json({ error: pesanTungguPart }, { status: 409 })
+      }
       // Foto nota berstempel kini OPSIONAL saat FINISH — alur baru memungkinkan
       // selesai dikerjakan di workshop walau unit belum kembali ke toko; nota
       // bisa menyusul. SUBMIT_CLAIM tetap menuntutnya sebagai bukti klaim.
