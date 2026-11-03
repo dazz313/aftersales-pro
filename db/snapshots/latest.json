@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T09:10:47.907Z",
+  "generatedAt": "2026-11-03T18:14:07.895Z",
   "masterToko": [
     {
       "id": 257,
@@ -9721,7 +9721,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-11-03"
+      "nilai": "2026-11-04"
     },
     {
       "id": 199,
@@ -9761,7 +9761,7 @@
     {
       "id": 266,
       "kunci": "gs_jadwal_terakhir",
-      "nilai": "2026-11-03 06:43"
+      "nilai": "2026-11-04 02:14"
     },
     {
       "id": 245,
@@ -9771,7 +9771,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-11-03 00:01"
+      "nilai": "2026-11-04 01:58"
     },
     {
       "id": 54,
@@ -9820,6 +9820,78 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1315,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-11-03T18-14-07.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-11-03T18:14:07.806Z"
+    },
+    {
+      "id": 1314,
+      "aksi": "LOGIN",
+      "entitas": "auth",
+      "entitasId": "arylthoshine@gmail.com",
+      "deskripsi": "Login berhasil: DAZZ (ADMIN_WORKSHOP) dari IP 127.0.0.1",
+      "aktor": "arylthoshine@gmail.com",
+      "createdAt": "2026-11-03T12:02:08.428Z"
+    },
+    {
+      "id": 1313,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "budi@teknikjaya.co.id",
+      "deskripsi": "Percobaan login gagal untuk \"budi@teknikjaya.co.id\" (IP 127.0.0.1)",
+      "aktor": "budi@teknikjaya.co.id",
+      "createdAt": "2026-11-03T12:01:56.864Z"
+    },
+    {
+      "id": 1312,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "ahmad@teknikjaya.co.id",
+      "deskripsi": "Percobaan login gagal untuk \"ahmad@teknikjaya.co.id\" (IP 127.0.0.1)",
+      "aktor": "ahmad@teknikjaya.co.id",
+      "createdAt": "2026-11-03T12:01:54.620Z"
+    },
+    {
+      "id": 1311,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "ahmad@teknikjaya.co.idgmail.com",
+      "deskripsi": "Percobaan login gagal untuk \"ahmad@teknikjaya.co.idgmail.com\" (IP 127.0.0.1)",
+      "aktor": "ahmad@teknikjaya.co.idgmail.com",
+      "createdAt": "2026-11-03T12:01:34.932Z"
+    },
+    {
+      "id": 1310,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 88 part tiket + 12 order-email + 144 katalog + 0 order (total bank: 299)",
+      "aktor": "debug",
+      "createdAt": "2026-11-03T09:35:37.253Z"
+    },
+    {
+      "id": 1309,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 0 dilengkapi dari 88 part tiket + 12 order-email + 144 katalog + 0 order (total bank: 299)",
+      "aktor": "debug",
+      "createdAt": "2026-11-03T09:21:56.557Z"
+    },
+    {
+      "id": 1308,
+      "aksi": "SINKRON_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Sinkron bank kode: 0 kode baru, 85 dilengkapi, 45 model terisi dari 88 part tiket + 12 order-email + 144 katalog + 0 order (total bank: 299)",
+      "aktor": "debug",
+      "createdAt": "2026-11-03T09:16:22.098Z"
+    },
     {
       "id": 1307,
       "aksi": "CREATE_KUNJUNGAN",
@@ -18747,81 +18819,19 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602316915 — RI-602E (W)",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T23:46:12.375Z"
-    },
-    {
-      "id": 278,
-      "aksi": "BULK_DELETE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": null,
-      "deskripsi": "Hapus massal toko: 45 terhapus (TOK-001, TOK-002, TOK-003, TOK-004, TOK-005, TOK-006, TOK-007, TOK-008, TOK-009, TOK-010…), 1 dilewati",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:46:00.125Z"
-    },
-    {
-      "id": 277,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "FSDFSDFSD",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): FSDFSDFSD — RI-602E (W)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:13:50.787Z"
-    },
-    {
-      "id": 276,
-      "aksi": "UPDATE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "FSDFSDFSD",
-      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, tokoId, customerId, statusGaransi, tglPembelian (FSDFSDFSD)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:52:29.507Z"
-    },
-    {
-      "id": 275,
-      "aksi": "CREATE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "FSDFSDFSD",
-      "deskripsi": "Unit baru teregistrasi: RI-602E (W) (GARANSI)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:44:28.415Z"
-    },
-    {
-      "id": 274,
-      "aksi": "CREATE_MASTER_CUSTOMER",
-      "entitas": "master_customer",
-      "entitasId": "27",
-      "deskripsi": "Customer baru: SUSILO ",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:43:52.583Z"
-    },
-    {
-      "id": 273,
-      "aksi": "CREATE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2602316915",
-      "deskripsi": "Unit baru teregistrasi: RI-602E (W) (STOK_TOKO)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:21:46.234Z"
-    },
-    {
-      "id": 272,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44010003998",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44010003998 — MCM-586",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:12:04.540Z"
-    },
-    {
-      "id": 271,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44020001427",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44020001427 — KAS-1697 DRW",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:12:02.380Z"
     }
   ],
   "backupLog": [
+    {
+      "id": 44,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 456,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-11-03T18-14-07.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-11-03T18:14:07.769Z"
+    },
     {
       "id": 43,
       "status": "LOCAL",
