@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T09:10:14.584Z",
+  "generatedAt": "2026-11-03T09:10:47.907Z",
   "masterToko": [
     {
       "id": 257,
@@ -474,7 +474,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-08T14:21:00.000Z",
+      "tglVisitTerakhir": "2026-11-03T09:10:00.000Z",
       "barcodeToko": "Toko Sumber Plastik",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4312,6 +4312,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 83,
+      "tokoId": 256,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-11-03T09:10:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 82,
       "tokoId": 258,
@@ -9810,6 +9820,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1307,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "83",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Sumber Plastik (TOK-030) · tgl 3/11/2026, 17.10.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-11-03T09:10:47.893Z"
+    },
     {
       "id": 1306,
       "aksi": "CREATE_KUNJUNGAN",
@@ -18800,15 +18819,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44020001427 — KAS-1697 DRW",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:12:02.380Z"
-    },
-    {
-      "id": 270,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "02060012333",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 02060012333 — KAS-1607 PL",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:12:00.338Z"
     }
   ],
   "backupLog": [
