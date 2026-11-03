@@ -89,3 +89,5 @@ db/custom.db-shm
 /playwright-report/
 /blob-report/
 /e2e/.tmp/
+scripts/_deploy-ssh.mjs
+scripts/_tmp-*.mjs
