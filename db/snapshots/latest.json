@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T03:09:57.847Z",
+  "generatedAt": "2026-11-03T03:25:29.597Z",
   "masterToko": [
     {
       "id": 257,
@@ -5706,6 +5706,21 @@
           "namaPartCache": null,
           "editedAt": null,
           "editedBy": null
+        },
+        {
+          "id": 114,
+          "serviceRequestId": 88,
+          "sparepartId": 362,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "KATALOG",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
         }
       ]
     },
@@ -9573,6 +9588,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1294,
+      "aksi": "TAMBAH_PART_SERVICE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0004",
+      "deskripsi": "Tambah part saat pengerjaan: GCXX-MX151-XX-KGX ×1 stok tidak cukup → ORDER ke produsen",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-03T03:25:29.579Z"
+    },
     {
       "id": 1293,
       "aksi": "CREATE_UNIT_ASSET",
@@ -18563,15 +18587,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03010039792 — MCM-508 SBC",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:34.483Z"
-    },
-    {
-      "id": 257,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "44010001050",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44010001050 — MCG-171",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:32.631Z"
     }
   ],
   "backupLog": [
