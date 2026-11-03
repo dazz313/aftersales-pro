@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T03:59:42.469Z",
+  "generatedAt": "2026-11-03T04:02:27.854Z",
   "masterToko": [
     {
       "id": 257,
@@ -1068,10 +1068,10 @@
       "namaPart": "PRESSURE SWITCH ASM - PS-230 BIT (SPARE PART)",
       "brandKompatibel": "Shimizu",
       "supplier": "PT BHAKTI IDOLA TAMA",
-      "stokJual": 1,
+      "stokJual": 0,
       "stokGaransi": 0,
-      "stokInventory": 1,
-      "totalTerpakai": 0,
+      "stokInventory": 0,
+      "totalTerpakai": 1,
       "reorderLimit": 0,
       "hargaKlaim": 0,
       "createdAt": "2026-10-13T21:53:41.514Z"
@@ -4764,6 +4764,57 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 113,
+      "noTiket": "SVC-2610-0053",
+      "unitAssetId": 265,
+      "status": "PROSES",
+      "noSttb": "STTB-2610-0053",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "OTOMATIS DAN PENUTUP RUSAK",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-28T00:00:00.000Z",
+      "createdAt": "2026-11-03T04:02:27.802Z",
+      "updatedAt": "2026-11-03T04:02:27.802Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 117,
+          "serviceRequestId": 113,
+          "sparepartId": 262,
+          "qty": 1,
+          "statusPart": "READY",
+          "statusKonfirmasi": "READY",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 112,
       "noTiket": "SVC-2609-0008",
@@ -9726,6 +9777,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1300,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0053",
+      "deskripsi": "Tiket manual dibuat untuk unit AH326510 (PS-230 BIT, stok toko → GARANSI otomatis) — STTB STTB-2610-0053 terbit sejak request part — part READY → otomatis PROSES",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-03T04:02:27.809Z"
+    },
     {
       "id": 1299,
       "aksi": "CREATE_UNIT_ASSET",
@@ -18716,15 +18776,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 44050061941 — KG-502 C",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:45.468Z"
-    },
-    {
-      "id": 263,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03020073129",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03020073129 — MCM-509",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:43.493Z"
     }
   ],
   "backupLog": [
