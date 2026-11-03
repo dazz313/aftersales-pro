@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T03:26:55.366Z",
+  "generatedAt": "2026-11-03T03:50:14.588Z",
   "masterToko": [
     {
       "id": 257,
@@ -4751,6 +4751,57 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 111,
+      "noTiket": "SVC-2609-0007",
+      "unitAssetId": 258,
+      "status": "REQUEST",
+      "noSttb": "STTB-2609-0007",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "bodi penyok",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-09-25T00:00:00.000Z",
+      "createdAt": "2026-11-03T03:50:14.568Z",
+      "updatedAt": "2026-11-03T03:50:14.568Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 115,
+          "serviceRequestId": 111,
+          "sparepartId": 338,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 108,
       "noTiket": "SVC-2610-0052",
@@ -9611,6 +9662,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1297,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0007",
+      "deskripsi": "Tiket manual dibuat untuk unit 2604430243 (RI-602 BGX, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2609-0007 terbit sejak request part",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-03T03:50:14.578Z"
+    },
+    {
+      "id": 1296,
+      "aksi": "ORDER_EMAIL_DRAF",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0004",
+      "deskripsi": "Draf email order part 1 item dibuka (SMTP belum diset) — tiket SVC-2609-0004",
+      "aktor": "Teknisi Lapangan",
+      "createdAt": "2026-11-03T03:26:55.387Z"
+    },
     {
       "id": 1295,
       "aksi": "ORDER_EMAIL_REORDER",
@@ -18592,24 +18661,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 43110031525 — KAW-1689",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:11:40.009Z"
-    },
-    {
-      "id": 260,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZX393847",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZX393847 — PS-130 BIT",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:38.370Z"
-    },
-    {
-      "id": 259,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "03040129852",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 03040129852 — MCM-512C SBC",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:36.147Z"
     }
   ],
   "backupLog": [
