@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T08:52:51.815Z",
+  "generatedAt": "2026-11-03T09:10:14.584Z",
   "masterToko": [
     {
       "id": 257,
@@ -490,7 +490,7 @@
       "frekuensiVisit": 14,
       "aktif": true,
       "modeSiklus": "REGULER",
-      "tglVisitTerakhir": "2026-10-08T11:07:00.000Z",
+      "tglVisitTerakhir": "2026-11-03T09:10:00.000Z",
       "barcodeToko": "Toko Ria",
       "jarakKm": null,
       "createdAt": "2026-10-14T00:26:39.218Z",
@@ -4312,6 +4312,16 @@
     }
   ],
   "kunjungan": [
+    {
+      "id": 82,
+      "tokoId": 258,
+      "teknisiId": 27,
+      "tglKunjungan": "2026-11-03T09:10:00.000Z",
+      "metodeCheckin": "MANUAL",
+      "barcodeTerscan": null,
+      "fotoOnsite": null,
+      "catatanStokRusak": null
+    },
     {
       "id": 81,
       "tokoId": 229,
@@ -9800,6 +9810,33 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1306,
+      "aksi": "CREATE_KUNJUNGAN",
+      "entitas": "kunjungan",
+      "entitasId": "82",
+      "deskripsi": "Teknisi SYAFRIL AFFANDI check-in manual di Toko Ria (TOK-031) · tgl 3/11/2026, 17.10.00",
+      "aktor": "SYAFRIL AFFANDI",
+      "createdAt": "2026-11-03T09:10:14.560Z"
+    },
+    {
+      "id": 1305,
+      "aksi": "IMPORT_BANK_KODE",
+      "entitas": "bank_kode",
+      "entitasId": null,
+      "deskripsi": "Import CSV kode produsen: 29 ditambahkan, 0 diperbarui, 174 dilewati, 0 gagal (mode: lewati)",
+      "aktor": "ADMIN_WORKSHOP",
+      "createdAt": "2026-11-03T08:56:49.110Z"
+    },
+    {
+      "id": 1304,
+      "aksi": "ORDER_WA_TEKS",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0029",
+      "deskripsi": "Teks order WA part 1 item disalin manual (nomor produsen belum diisi) — tiket SVC-2610-0029",
+      "aktor": "Admin Workshop",
+      "createdAt": "2026-11-03T08:52:51.841Z"
+    },
     {
       "id": 1303,
       "aksi": "ORDER_EMAIL_REORDER",
@@ -18772,33 +18809,6 @@
       "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 02060012333 — KAS-1607 PL",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T22:12:00.338Z"
-    },
-    {
-      "id": 269,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZX350005",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZX350005 — PS-135 E",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:58.059Z"
-    },
-    {
-      "id": 268,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "ZN032175",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): ZN032175 — PS-230 BIT",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:56.243Z"
-    },
-    {
-      "id": 267,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "FE02313377",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): FE02313377 — JET-100 BIT",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T22:11:54.043Z"
     }
   ],
   "backupLog": [
