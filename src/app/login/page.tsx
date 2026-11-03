@@ -154,7 +154,8 @@ function LoginForm() {
               </Button>
             </form>
 
-            {/* Akun demo */}
+            {/* Akun demo — hanya tampil di mode pengembangan, tidak di produksi */}
+            {process.env.NODE_ENV !== 'production' && (
             <div className="mt-6 rounded-lg border border-slate-700/70 bg-slate-900/60 p-3.5">
               <p className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
                 <Info className="h-3.5 w-3.5 text-emerald-400" /> Akun demo:
@@ -183,6 +184,7 @@ function LoginForm() {
                 </p>
               </div>
             </div>
+            )}
           </CardContent>
         </Card>
 
