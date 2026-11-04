@@ -1,0 +1,6 @@
+const r = await fetch('http://127.0.0.1:3000/')
+const h = await r.text()
+const m = h.match(/src="([^"]*2x3mdayw4[^"]*)"/)
+console.log('new chunk referenced in HTML:', !!m)
+const m2 = h.match(/src="(_next\/static\/chunks\/[^"]+\.js)"/)
+console.log('first script:', m2 ? m2[1] : 'none')

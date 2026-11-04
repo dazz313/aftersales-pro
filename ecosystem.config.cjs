@@ -23,7 +23,7 @@ module.exports = {
       watch: false,
       max_memory_restart: '512M',
       min_uptime: '10s',
-      max_restarts: 10,
+      max_restarts: 50,
     },
     {
       name: 'aspro-tg-poll',
