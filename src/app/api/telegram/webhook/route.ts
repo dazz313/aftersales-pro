@@ -75,18 +75,47 @@ function cariTeksLaporan(caption: string, barcode: string | null, ocr: string): 
   return baris ?? caption
 }
 
-export async function POST(request: Request) {
-  try {
-    if (!isWebhookAuthorized(request)) {
-      return NextResponse.json({ error: 'Webhook tidak terotorisasi' }, { status: 403 })
-    }
-    const body = (await request.json()) as TgUpdate
-    // Group/channel: terima juga channel_post & pesan editan (sebelumnya
-    // hanya `message` sehingga upload dari channel/group tertentu diam-diam
-    // dibalas BUKAN_PESAN tanpa diproses).
-    const msg = body.message ?? body.channel_post ?? body.edited_message ?? body.edited_channel_post
-    if (!msg) return NextResponse.json({ ok: true, aksi: 'BUKAN_PESAN' })
+const g = globalThis as unknown as { __tgProcessed?: Set<string> }
+function tgProcessedSet(): Set<string> {
+  if (!g.__tgProcessed) g.__tgProcessed = new Set()
+  return g.__tgProcessed
+}
 
+export async function POST(request: Request) {
+  // Balas CEPAT ke Telegram agar tidak timeout (penyebab Telegram mengirim
+  // ulang gambar yang sama). Pemrosesan berat dijalankan di background.
+  let body: TgUpdate
+  try {
+    body = (await request.json()) as TgUpdate
+  } catch {
+    return NextResponse.json({ ok: true, aksi: 'BODY_INVALID' })
+  }
+  if (!isWebhookAuthorized(request)) {
+    return NextResponse.json({ error: 'Webhook tidak terotorisasi' }, { status: 403 })
+  }
+  const msg = body.message ?? body.channel_post ?? body.edited_message ?? body.edited_channel_post
+  if (!msg) return NextResponse.json({ ok: true, aksi: 'BUKAN_PESAN' })
+
+  // Dedup: Telegram mengirim ulang update yang sama saat timeout. Kunci unik
+  // per chat+message agar tidak diproses dua kali.
+  const kunci = `${msg.chat.id}:${msg.message_id ?? body.update_id ?? ''}`
+  const set = tgProcessedSet()
+  if (set.has(kunci)) {
+    return NextResponse.json({ ok: true, aksi: 'DUPLIKAT_DILEWATI' })
+  }
+  set.add(kunci)
+  // Batasi ukuran set agar tidak bocor memori
+  if (set.size > 5000) {
+    const it = set.values().next()
+    if (!it.done) set.delete(it.value)
+  }
+
+  void prosesTelegramUpdate(body, msg).catch((e) => console.error('Telegram proses error:', e))
+  return NextResponse.json({ ok: true, aksi: 'DITERIMA' })
+}
+
+async function prosesTelegramUpdate(body: TgUpdate, msg: TgMessage) {
+  try {
     const cfg = await getGatewayConfig()
     const mode = await getInboxMode()
     const chatId = msg.chat.id

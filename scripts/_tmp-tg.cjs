@@ -1,0 +1,5 @@
+const { DatabaseSync } = require('node:sqlite')
+const db = new DatabaseSync('db/custom.db', { readOnly: true })
+const rows = db.prepare("SELECT kunci, nilai FROM Pengaturan WHERE kunci LIKE 'tg_%' OR kunci LIKE 'telegram_%' OR kunci LIKE 'gateway_%' OR kunci LIKE '%token%'").all()
+for (const r of rows) console.log(r.kunci, '=', r.kunci.includes('token') ? 'len=' + r.nilai.length : r.nilai)
+db.close()
