@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetcher, postJson, authHeaders } from '@/lib/api'
 import type { Toko } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -93,14 +93,16 @@ interface AnalisaUploadHasil {
 export default function AnalisaAiView() {
   const { toast } = useToast()
   const { setView, navigateTo } = useAppStore()
+  const queryClient = useQueryClient()
   // ===== 4. Surat jalan masuk (dialog mandiri) =====
   const [sjMasukOpen, setSjMasukOpen] = useState(false)
 
   // ===== 1. Ringkasan operasional =====
-  const [ringkasan, setRingkasan] = useState<RingkasanHasil | null>(null)
+  // Disimpan di React Query cache → tidak hilang saat user buka fitur lain (AI jalan di background).
+  const ringkasan = (queryClient.getQueryData<RingkasanHasil>(['ai-ringkasan'])) ?? null
   const ringkasMut = useMutation({
     mutationFn: () => postJson<{ ringkasan: string; model: string; pendingLama: PendingLama[]; pendingLamaTotal: number }>('/api/ai/ringkasan', {}),
-    onSuccess: (r) => setRingkasan({ teks: r.ringkasan, model: r.model, pendingLama: r.pendingLama ?? [], pendingLamaTotal: r.pendingLamaTotal ?? 0 }),
+    onSuccess: (r) => queryClient.setQueryData<RingkasanHasil>(['ai-ringkasan'], { teks: r.ringkasan, model: r.model, pendingLama: r.pendingLama ?? [], pendingLamaTotal: r.pendingLamaTotal ?? 0 }),
     onError: (e: Error) => toast({ title: 'Ringkasan AI gagal', description: e.message, variant: 'destructive' }),
   })
 
@@ -121,7 +123,7 @@ export default function AnalisaAiView() {
     return hari
   }, [])
   const namaTokoMap = useMemo(() => new Map((tokoList ?? []).map((t) => [t.kodeToko.toUpperCase(), t.namaToko])), [tokoList])
-  const [aiJadwal, setAiJadwal] = useState<AiRencana | null>(null)
+  const aiJadwal = (queryClient.getQueryData<AiRencana>(['ai-jadwal'])) ?? null
   const jadwalMut = useMutation({
     mutationFn: () => {
       const prioritas = [...(tokoList ?? [])].sort((a, b) => skorToko(b) - skorToko(a)).slice(0, 30)
@@ -134,7 +136,7 @@ export default function AnalisaAiView() {
       })
     },
     onSuccess: (r) => {
-      setAiJadwal(r)
+      queryClient.setQueryData(['ai-jadwal'], r)
       toast({ title: 'Jadwal AI diterima', description: `${r.rencana.length} hari disusun (${r.model}).` })
     },
     onError: (e: Error) => toast({ title: 'Jadwal AI gagal', description: e.message, variant: 'destructive' }),
@@ -143,7 +145,7 @@ export default function AnalisaAiView() {
   // ===== 3. Rekomendasi sparepart =====
   const [model, setModel] = useState('')
   const [rusak, setRusak] = useState('')
-  const [aiPart, setAiPart] = useState<AiRekomendasi | null>(null)
+  const aiPart = (queryClient.getQueryData<AiRekomendasi>(['ai-rekomendasi'])) ?? null
   const partMut = useMutation({
     mutationFn: async () => {
       if (!model.trim() && !rusak.trim()) throw new Error('Isi model unit dan/atau jenis kerusakan dulu.')
@@ -161,7 +163,7 @@ export default function AnalisaAiView() {
       })
     },
     onSuccess: (r) => {
-      setAiPart(r)
+      queryClient.setQueryData(['ai-rekomendasi'], r)
       toast({ title: 'Rekomendasi AI diterima', description: `${r.rekomendasi.length} part disarankan (${r.model}).` })
     },
     onError: (e: Error) => toast({ title: 'Rekomendasi AI gagal', description: e.message, variant: 'destructive' }),
@@ -169,17 +171,19 @@ export default function AnalisaAiView() {
 
   // ===== 5. Analisa tren multi-periode (semua data) =====
   const [trenPeriode, setTrenPeriode] = useState<'MINGGU' | 'BULAN' | 'TAHUN'>('TAHUN')
-  const [tren, setTren] = useState<TrenHasil | null>(null)
+  const tren = (queryClient.getQueryData<TrenHasil>(['ai-tren'])) ?? null
   const trenMut = useMutation({
     mutationFn: () => postJson<TrenHasil>('/api/ai/tren', { periode: trenPeriode }),
-    onSuccess: (r) => setTren(r),
+    onSuccess: (r) => {
+      queryClient.setQueryData(['ai-tren'], r)
+    },
     onError: (e: Error) => toast({ title: 'Analisa tren gagal', description: e.message, variant: 'destructive' }),
   })
 
   // ===== 6. Analisa file Excel vs data aplikasi =====
   const [fileAnalisa, setFileAnalisa] = useState<File | null>(null)
   const [pertanyaanAnalisa, setPertanyaanAnalisa] = useState('')
-  const [hasilUpload, setHasilUpload] = useState<AnalisaUploadHasil | null>(null)
+  const hasilUpload = (queryClient.getQueryData<AnalisaUploadHasil>(['ai-upload'])) ?? null
   const uploadMut = useMutation({
     mutationFn: async () => {
       if (!fileAnalisa) throw new Error('Pilih file Excel/CSV terlebih dahulu.')
@@ -191,7 +195,9 @@ export default function AnalisaAiView() {
       if (!res.ok) throw new Error(j.error ?? 'Analisa file gagal')
       return j
     },
-    onSuccess: (r) => setHasilUpload(r),
+    onSuccess: (r) => {
+      queryClient.setQueryData(['ai-upload'], r)
+    },
     onError: (e: Error) => toast({ title: 'Analisa file gagal', description: e.message, variant: 'destructive' }),
   })
 
@@ -249,7 +255,7 @@ export default function AnalisaAiView() {
             <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-3">
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <Badge variant="outline" className="border-violet-300 text-[10px] text-violet-700">AI · {ringkasan.model}</Badge>
-                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => setRingkasan(null)} aria-label="Tutup ringkasan">
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => queryClient.setQueryData(['ai-ringkasan'], null)} aria-label="Tutup ringkasan">
                   <X className="h-3 w-3" />
                 </Button>
               </div>
