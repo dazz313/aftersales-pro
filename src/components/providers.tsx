@@ -10,8 +10,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 10_000,
-            refetchOnWindowFocus: false,
+            // Data bisa berubah dari perangkat lain (Telegram, HP teknisi,
+            // pengguna lain) tanpa aksi di tab ini. Karena itu:
+            // - polling ringan tiap 30 detik agar daftar ikut segar sendiri,
+            // - refetch saat tab kembali aktif / jaringan tersambung lagi,
+            // - staleTime 0 supaya focus/reconnect tidak menunggu cache basi.
+            // Query yang butuh interval lain (chat, backup, dll.) tetap
+            // menimpa nilai ini di masing-masing useQuery.
+            staleTime: 0,
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
+            refetchInterval: 30_000,
+            refetchIntervalInBackground: false,
             retry: 1,
           },
         },

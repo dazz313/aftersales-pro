@@ -1,6 +1,21 @@
 # Worklog
 
 ---
+Task ID: 58
+Agent: DeepSeek V4.1 Flash Free (opencode)
+Task: Data baru (Telegram/perangkat lain) muncul otomatis tanpa refresh manual
+
+Work Log:
+- Keluhan user: "jika ada data masuk harus di-refresh dulu baru terlihat" — data yang dibuat dari Telegram, HP teknisi, atau pengguna lain tidak muncul di tab yang sedang terbuka.
+- Penyebab (sisi klien, bukan server): `src/components/providers.tsx` memakai `staleTime: 10_000` + `refetchOnWindowFocus: false`, dan sebagian besar view tidak punya `refetchInterval` (service, kunjungan, inventory, master data, claim, nota). Route Handler Next.js tidak di-cache by default, jadi data di server sebenarnya sudah baru.
+- Perbaikan `src/components/providers.tsx`: default React Query menjadi `staleTime: 0`, `refetchOnWindowFocus: true`, `refetchOnReconnect: true`, `refetchInterval: 30_000`, `refetchIntervalInBackground: false`. Artinya: daftar menyegarkan diri tiap 30 detik, dan langsung refetch saat tab kembali aktif atau jaringan tersambung lagi.
+- Interval khusus yang sudah ada tetap menang (chat 5 detik, notifikasi 20 detik, backup 60 detik/10 menit, dashboard chat 15 detik), jadi tidak ada perubahan perilaku pada fitur tersebut.
+- Uji: `tsc --noEmit` 0 error; eslint file berubah 0; vitest 201 lulus. Build produksi + PM2 restart + health check dilakukan setelah push.
+
+Stage Summary:
+- Tab yang sedang terbuka kini mengambil data terbaru sendiri (maks. ~30 detik) dan langsung menyegarkan saat tab diaktifkan kembali, sehingga input dari Telegram/perangkat lain terlihat tanpa refresh manual.
+
+---
 Task ID: 57
 Agent: DeepSeek V4.1 Flash Free (opencode)
 Task: Referensi otomatis saat input kode/nama sparepart — kode atau nama lengkap langsung dicek kesamaannya
