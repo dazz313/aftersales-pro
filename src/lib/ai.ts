@@ -19,8 +19,10 @@ export const AI_TIMEOUT_MS = 80000
 /**
  * Model cadangan bila model utama gagal/kosong/timeout. Urut dari yang paling
  * cepat. Model yang sama dengan model utama otomatis dilewati.
+ * Terakhir diubah: pakai Kiro (aktif di 9router) sebagai fallback utama —
+ * provider kilocode/cohere sempat ke-flag tidak aktif.
  */
-export const AI_FALLBACK_MODELS = ['kc/cohere/north-mini-code:free', 'kr/claude-haiku-4.5']
+export const AI_FALLBACK_MODELS = ['kr/claude-haiku-4.5']
 
 export interface AiConfig {
   baseUrl: string
