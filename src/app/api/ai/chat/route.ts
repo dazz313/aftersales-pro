@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { requireActiveSession } from '@/lib/auth-server'
 import { resolveAiConfig, chatCompletion, AI_TIMEOUT_MS, type ChatMessage } from '@/lib/ai'
-import { kumpulkanKonteks } from '@/lib/ai-context'
+import { kumpulkanKonteks, statusTiket } from '@/lib/ai-context'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
     const body = (await request.json().catch(() => null)) as
-      | { messages?: { role?: string; content?: string }[]; context?: { judul?: string; isi?: string } | null }
+      | { messages?: { role?: string; content?: string }[]; context?: { judul?: string; isi?: string } | null; tiket?: string }
       | null
 
     const riwayat: ChatMessage[] = []
@@ -48,6 +48,11 @@ export async function POST(request: Request) {
       konteksAi.audit ? `RIWAYAT AUDIT TERBARU:\n${konteksAi.audit}` : null,
       body?.context?.isi?.trim() ? `KONTEKS TAMBAHAN DARI PENGGUNA:\n${body.context.isi.trim()}` : null,
     ].filter(Boolean) as string[]
+
+    if (body?.tiket?.trim()) {
+      const stTiket = await statusTiket(body.tiket.trim())
+      if (stTiket) blok.push(`STATUS TIKET YANG DIMINTA:\n${stTiket}`)
+    }
 
     const pesan: ChatMessage[] = [{ role: 'system', content: 'Kamu adalah AI Asisten AfterSales Pro — asisten untuk layanan sparepart (tiket service, sparepart, klaim produsen, kunjungan toko, stok, SLA). Jawab dalam Bahasa Indonesia, praktis, ringkas, dan apa adanya. Gunakan konteks kondisi aplikasi bila tersedia untuk membantu analisis.' }]
     if (blok.length > 0) pesan.push({ role: 'system', content: blok.join('\n\n') })

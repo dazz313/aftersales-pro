@@ -111,3 +111,39 @@ export async function kumpulkanKonteks(): Promise<KonteksAi> {
   const [operasional, audit] = await Promise.all([kumpulkanKonteksOperasional(), kumpulkanKonteksAudit()])
   return { dibangunPada: new Date().toISOString(), operasional, audit }
 }
+
+/**
+ * Status tiket service + part-nya — untuk akses AI cek detail:
+ *  - tiket tertentu (noTiket) → status tiket + daftar part (READY / ORDER_PRODUSEN / TIDAK_READY).
+ *  - tanpa argumen → tiket berstatus PROSES (siap final assembly / butuh penanganan lanjut).
+ * Mengembalikan teks ringkas untuk konteks AI. Best-effort.
+ */
+export async function statusTiket(noTiket?: string): Promise<string | null> {
+  try {
+    if (noTiket) {
+      const t = await db.serviceRequest.findUnique({
+        where: { noTiket },
+        include: { parts: { include: { sparepart: true } }, unitAsset: true },
+      })
+      if (!t) return `TIKET ${noTiket} TIDAK DITEMUKAN.`
+      const bagian = t.parts
+        .map((p) => `part=${p.sparepart?.kodePart ?? '?'} nama=${p.sparepart?.namaPart ?? '?'} qty=${p.qty} statusPart=${p.statusPart} statusKonfirmasi=${p.statusKonfirmasi ?? '-'}`)
+        .join(' | ')
+      return `TIKET ${t.noTiket}: status=${t.status} lokasiUnit=${t.lokasiUnit} penanganan=${t.penanganan} unitSN=${t.unitAsset?.serialNumber ?? '-'} model=${t.unitAsset?.modelUnit ?? '-'}\nPARTS: ${bagian || 'tanpa part'}`
+    }
+    const daftar = await db.serviceRequest.findMany({
+      where: { status: 'PROSES' },
+      include: { parts: { include: { sparepart: true } } },
+      orderBy: { tglTiket: 'desc' },
+      take: 30,
+    })
+    if (daftar.length === 0) return null
+    const blok = daftar
+      .map((t) => `TIKET ${t.noTiket}: status=${t.status} PARTS: ${t.parts.map((p) => `part=${p.sparepart?.kodePart ?? '?'} statusPart=${p.statusPart} statusKonfirmasi=${p.statusKonfirmasi ?? '-'} qty=${p.qty}`).join(' | ') || 'tanpa part'}`)
+      .join('\n')
+    return `STATUS TIKET PROSES (final assembly / butuh penanganan):\n${blok}`
+  } catch (e) {
+    console.error('AI statusTiket gagal:', e)
+    return null
+  }
+}
