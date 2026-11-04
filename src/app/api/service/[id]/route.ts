@@ -1024,8 +1024,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         produsen: sp.supplier ?? '',
         sumber: 'PRODUSEN',
       })
+      const forceSk = body.statusKonfirmasi === 'READY' || body.statusKonfirmasi === 'TIDAK_READY' ? body.statusKonfirmasi : null
       let statusPart = 'ORDER_PRODUSEN'
-      let statusKonfirmasi = 'MENUNGGU'
+      let statusKonfirmasi = forceSk === 'TIDAK_READY' ? 'TIDAK_READY' : (forceSk === 'READY' ? 'READY' : 'MENUNGGU')
       // Cek duplikat SEBELUM menyentuh stok (agar 409 tidak membocorkan reserve)
       const partLama = existing.parts.find((p) => p.sparepartId === sp.id)
       const stokCukup = sp.stokInventory >= qty
@@ -1035,7 +1036,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           { status: 409 }
         )
       }
-      if (stokCukup) {
+      if (stokCukup && (forceSk === null || forceSk === 'READY')) {
         const ambilJual = Math.min(sp.stokJual, qty)
         await db.masterSparepart.update({
           where: { id: sp.id },
@@ -1047,8 +1048,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           },
         })
         statusPart = 'READY'
-        statusKonfirmasi = 'READY'
+        statusKonfirmasi = forceSk === 'TIDAK_READY' ? 'TIDAK_READY' : 'READY'
         await backupSparepartToGit('RESERVE', sp.kodePart, aktor)
+      } else if (forceSk === 'READY') {
+        // Override manual: tandai READY tanpa reserve (stok tidak cukup) — admin bertanggung jawab
+        statusPart = 'READY'
+        statusKonfirmasi = 'READY'
+      } else if (forceSk === 'TIDAK_READY') {
+        statusPart = 'ORDER_PRODUSEN'
+        statusKonfirmasi = 'TIDAK_READY'
       }
       // Cegah part ganda tanpa warning: kode yang sama digabung bila statusnya
       // sama; bila beda status, baris baru dicatat eksplisit (jujur, tidak diam-diam).

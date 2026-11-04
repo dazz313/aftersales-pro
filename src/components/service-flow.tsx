@@ -363,6 +363,37 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                   >
                     <PackagePlus className="mr-1 h-3 w-3" /> Catat
                   </Button>
+                  <Button
+                    size="sm"
+                    className="h-7 shrink-0 bg-emerald-600 text-[10px] hover:bg-emerald-700"
+                    disabled={pending || !lengkap || Number(row.qty) < 1 || dup}
+                    title="Catat & tandai READY"
+                    onClick={() => {
+                      onAction({ aksi: 'INPUT_PART_PRODUSEN', kodePart: row.kode.trim(), namaPart: row.nama.trim(), qty: Number(row.qty), statusKonfirmasi: 'READY' })
+                      setBalasRows((rows) => {
+                        const next = rows.filter((r) => r.key !== row.key)
+                        return next.length ? next : [{ key: balasKey.current++, kode: '', nama: '', qty: '1' }]
+                      })
+                    }}
+                  >
+                    Ready
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 shrink-0 border-rose-300 text-[10px] text-rose-700"
+                    disabled={pending || !lengkap || Number(row.qty) < 1 || dup}
+                    title="Catat & tandai TIDAK READY"
+                    onClick={() => {
+                      onAction({ aksi: 'INPUT_PART_PRODUSEN', kodePart: row.kode.trim(), namaPart: row.nama.trim(), qty: Number(row.qty), statusKonfirmasi: 'TIDAK_READY' })
+                      setBalasRows((rows) => {
+                        const next = rows.filter((r) => r.key !== row.key)
+                        return next.length ? next : [{ key: balasKey.current++, kode: '', nama: '', qty: '1' }]
+                      })
+                    }}
+                  >
+                    Tidak
+                  </Button>
                   {balasRows.length > 1 && (
                     <Button
                       type="button"
