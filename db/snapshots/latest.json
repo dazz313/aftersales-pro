@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T03:07:50.997Z",
+  "generatedAt": "2026-11-04T03:11:13.694Z",
   "masterToko": [
     {
       "id": 257,
@@ -3091,7 +3091,7 @@
     {
       "id": 251,
       "serialNumber": "1502014218",
-      "modelUnit": "KAS-1618 PL",
+      "modelUnit": "KAS-1618 B  PL",
       "merk": "MIYAKO",
       "nama": "KIPAS ANGIN",
       "kerusakanAwal": "MOTOR TIDAK BERPUTAR",
@@ -9884,6 +9884,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1318,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "1502014218",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (1502014218)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-04T03:11:13.683Z"
+    },
     {
       "id": 1317,
       "aksi": "CREATE_SERVICE_REQUEST",
@@ -18874,15 +18883,6 @@
       "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T23:51:47.481Z"
-    },
-    {
-      "id": 281,
-      "aksi": "IMPORT_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": null,
-      "deskripsi": "Import CSV massal unit: 33 ditambahkan, 0 diperbarui, 0 dilewati, 20 gagal (mode: lewati)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:49:37.546Z"
     }
   ],
   "backupLog": [
