@@ -1,0 +1,13 @@
+const { DatabaseSync } = require('node:sqlite')
+const db = new DatabaseSync('db/custom.db', { readOnly: true })
+const rows = db.prepare("SELECT kunci, nilai FROM Pengaturan WHERE kunci IN ('ai_api_key','ai_base_url','ai_model')").all()
+const map = Object.fromEntries(rows.map(r => [r.kunci, r.nilai]))
+db.close()
+// Print only lengths, not values
+console.log('ai_api_key len:', map.ai_api_key?.length)
+console.log('ai_base_url:', map.ai_base_url)
+console.log('ai_model:', map.ai_model)
+// Write key to a file for use (not stdout)
+const fs = require('fs')
+fs.writeFileSync('/tmp/hermes-key.txt', map.ai_api_key || '')
+console.log('key written to /tmp/hermes-key.txt')
