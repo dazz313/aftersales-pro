@@ -29,7 +29,11 @@ export async function POST(request: Request) {
     const trigger = body.trigger === 'AUTO' ? 'AUTO' : 'MANUAL'
     const outcome = await runBackup(trigger, body.aktor)
     await autoGitBackup('BACKUP', 'backup_google_sheets', outcome.status, body.aktor)
-    return NextResponse.json(outcome, { status: outcome.status === 'FAILED' ? 502 : 200 })
+    // Selalu 200 bila proses backup selesai (berhasil ATAU gagal): status
+    // sebenarnya ada di body.status. HTTP 502 membuat Cloudflare mengganti
+    // body dengan halaman error-nya sendiri, sehingga pesan penyebab gagal
+    // (mis. spreadsheet belum dibagikan) tidak sampai ke UI.
+    return NextResponse.json(outcome)
   } catch (error) {
     console.error('Backup POST error:', error)
     return NextResponse.json({ error: 'Proses backup gagal' }, { status: 500 })

@@ -10,10 +10,14 @@ Work Log:
 - Penyebab (sisi klien, bukan server): `src/components/providers.tsx` memakai `staleTime: 10_000` + `refetchOnWindowFocus: false`, dan sebagian besar view tidak punya `refetchInterval` (service, kunjungan, inventory, master data, claim, nota). Route Handler Next.js tidak di-cache by default, jadi data di server sebenarnya sudah baru.
 - Perbaikan `src/components/providers.tsx`: default React Query menjadi `staleTime: 0`, `refetchOnWindowFocus: true`, `refetchOnReconnect: true`, `refetchInterval: 30_000`, `refetchIntervalInBackground: false`. Artinya: daftar menyegarkan diri tiap 30 detik, dan langsung refetch saat tab kembali aktif atau jaringan tersambung lagi.
 - Interval khusus yang sudah ada tetap menang (chat 5 detik, notifikasi 20 detik, backup 60 detik/10 menit, dashboard chat 15 detik), jadi tidak ada perubahan perilaku pada fitur tersebut.
-- Uji: `tsc --noEmit` 0 error; eslint file berubah 0; vitest 201 lulus. Build produksi + PM2 restart + health check dilakukan setelah push.
+- Uji: `tsc --noEmit` 0 error; eslint file berubah 0; vitest 201 lulus. Build produksi + PM2 restart + health 200.
+- Verifikasi live di `https://api.eracool.id` lewat browser: setelah login, `/api/dashboard` dan `/api/inbox` dipanggil ulang otomatis ~30 detik kemudian, `/api/chat` ~12–15 detik, `/api/notifikasi` ~20 detik — tanpa reload.
+- Perbaikan tambahan `src/app/api/backup/sheets/route.ts`: POST backup tidak lagi mengembalikan HTTP 502 saat status FAILED (tetap 200 dengan `body.status`). HTTP 502 membuat Cloudflare mengganti body JSON dengan halaman error sendiri, sehingga pesan penyebab gagal tidak sampai ke UI.
+- Diagnosa Google Sheets di server (skrip sementara, tidak menyimpan kredensial): OAuth service account **200 OK**, artinya key/email valid dan Sheets API aktif; GET spreadsheet mengembalikan `403 PERMISSION_DENIED — The caller does not have permission` untuk spreadsheet `1slrwM5FFdmNbLZ_hVxth-ElOZuygaeE5WHbGnd_mLLc` maupun `1WfaovZCUOEXz69qtf_X2eHuLdTX7rRPSBuxING6zD0w`. Jadi satu-satunya yang kurang: spreadsheet belum di-Share ke `aftersales-backup@turing-guard-513723-j0.iam.gserviceaccount.com` sebagai Editor.
 
 Stage Summary:
 - Tab yang sedang terbuka kini mengambil data terbaru sendiri (maks. ~30 detik) dan langsung menyegarkan saat tab diaktifkan kembali, sehingga input dari Telegram/perangkat lain terlihat tanpa refresh manual.
+- Backup Google Sheets sudah benar secara konfigurasi (OAuth sukses), tinggal spreadsheet dibagikan ke email service account sebagai Editor; setelah itu tombol "Backup Sekarang" akan berstatus SUCCESS.
 
 ---
 Task ID: 57
