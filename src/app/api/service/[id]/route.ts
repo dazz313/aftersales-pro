@@ -428,7 +428,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return NextResponse.json(updated)
     }
 
-    const butuhPartSiap = () => existing.parts.filter((p) => p.statusPart !== 'READY')
+    const partSiap = (p: (typeof existing.parts)[number]) =>
+      p.statusKonfirmasi === 'READY' || (p.statusPart === 'READY' && p.statusKonfirmasi !== 'TIDAK_READY')
+    const butuhPartSiap = () => existing.parts.filter((p) => !partSiap(p))
 
     // 3a) KERJAKAN_DI_TOKO — part ready: unit dikerjakan di toko (tanpa STTB)
     if (aksi === 'KERJAKAN_DI_TOKO') {

@@ -247,6 +247,7 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
   }
   // Kerusakan quick-edit (REQUEST/PROSES) — tersimpan via UPDATE_JASA.
   const [rusak, setRusak] = useState(ticket.deskripsiKerusakan ?? '')
+  const [saranHidden, setSaranHidden] = useState(false)
   // Ganti tiket → ulangi form dari awal
   useEffect(() => {
     setBalasRows([{ key: balasKey.current++, kode: '', nama: '', qty: '1' }])
@@ -313,9 +314,9 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
           >
             <MessageCircle className="mr-1 h-3 w-3" /> {waPending ? 'Menyiapkan…' : 'Kirim ke Produsen via WA'}
           </Button>
-          {(saran ?? []).length > 0 && (
+          {(saran ?? []).length > 0 && !saranHidden && (
             <div className="flex flex-wrap items-center gap-1">
-              <span className="text-[10px] text-slate-500">Sering dipakai {ticket.unitAsset.modelUnit}:</span>
+              <span className="text-[10px] text-slate-500">Sering dipakai {ticket.unitAsset.modelUnit} (opsional, bisa di-skip):</span>
               {(saran ?? []).map((s) => (
                 <button
                   key={s.kodePart}
@@ -327,6 +328,14 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                   {s.kodePart} ({s.count}×)
                 </button>
               ))}
+              <button
+                type="button"
+                className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-400 hover:bg-slate-50"
+                title="Sembunyikan saran (opsional)"
+                onClick={() => setSaranHidden(true)}
+              >
+                × skip
+              </button>
             </div>
           )}
           {balasRows.map((row, i) => {
