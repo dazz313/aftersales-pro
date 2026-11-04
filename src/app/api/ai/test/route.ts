@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const teks = await chatCompletion(
       cfg,
       [{ role: 'user', content: 'Balas hanya dengan kata: OK' }],
-      { temperature: 0, maxTokens: 20, onModelUsed: (m) => { modelDipakai = m } }
+      { temperature: 0, maxTokens: 200, onModelUsed: (m) => { modelDipakai = m } }
     )
     return NextResponse.json({
       ok: true,
