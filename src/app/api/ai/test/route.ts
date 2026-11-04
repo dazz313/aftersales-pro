@@ -16,14 +16,16 @@ export async function POST(request: Request) {
     for (const r of rows) map[r.kunci] = r.nilai
     const cfg = resolveAiConfig(map)
     const t0 = Date.now()
+    let modelDipakai = cfg.model
     const teks = await chatCompletion(
       cfg,
       [{ role: 'user', content: 'Balas hanya dengan kata: OK' }],
-      { temperature: 0, maxTokens: 20 }
+      { temperature: 0, maxTokens: 20, onModelUsed: (m) => { modelDipakai = m } }
     )
     return NextResponse.json({
       ok: true,
-      model: cfg.model,
+      model: modelDipakai,
+      modelDiminta: cfg.model,
       keySource: cfg.keySource,
       ms: Date.now() - t0,
       reply: teks.slice(0, 200),

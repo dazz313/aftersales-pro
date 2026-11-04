@@ -186,7 +186,7 @@ export async function POST(request: Request) {
                 `Analisa: (1) arah tren tiap indikator (naik/stabil/turun), (2) periode puncak & kemungkinan penyebabnya, (3) satu anjuran tindakan konkret.`,
             },
           ],
-          { temperature: 0.35, maxTokens: 700, timeoutMs: 90000 }
+          { temperature: 0.35, maxTokens: 700, timeoutMs: 60000 }
         )
         model = cfg.model
       } catch (e) {

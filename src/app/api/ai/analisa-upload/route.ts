@@ -181,7 +181,7 @@ export async function POST(request: Request) {
               'Tugas: analisa file tersebut dan BANDINGKAN dengan data aplikasi di atas — mana yang sudah ada, mana yang belum terdaftar, selisih angka yang mencolok, dan rekomendasi.',
           },
         ],
-        { temperature: 0.3, maxTokens: 1600, timeoutMs: 90000 }
+        { temperature: 0.3, maxTokens: 1600, timeoutMs: 60000 }
       )
     } catch (e) {
       catatan = `Narasi AI tidak tersedia (${(e as Error).message}). Hasil perbandingan tetap tersedia di bawah — dibuat mesin, bukan AI.`
