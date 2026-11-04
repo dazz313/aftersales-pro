@@ -1,0 +1,6 @@
+const { execSync } = require('child_process')
+const out = execSync("wget -qO- https://api.github.com/repos/anomalyco/opencode/releases/latest", { encoding: 'utf8' })
+const j = JSON.parse(out)
+console.log('tag:', j.tag_name)
+console.log('assets:')
+;(j.assets || []).forEach(a => console.log(' ', a.name, a.size))

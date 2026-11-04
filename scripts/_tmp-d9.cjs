@@ -1,0 +1,7 @@
+const r1 = await fetch('http://127.0.0.1:20128/api/health')
+const t1 = await r1.text()
+console.log('health:', r1.status, t1.slice(0, 200))
+const r2 = await fetch('http://127.0.0.1:20128/api/providers')
+const t2 = await r2.text()
+console.log('providers status:', r2.status)
+console.log('providers:', t2.slice(0, 800))
