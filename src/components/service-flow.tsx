@@ -325,7 +325,7 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
                   title={`${s.namaPart} — dipakai ${s.count}× sebelumnya`}
                   onClick={() => isiBalasSaran(s.kodePart, s.namaPart)}
                 >
-                  {s.kodePart} ({s.count}×)
+                  {s.kodePart}
                 </button>
               ))}
               <button
