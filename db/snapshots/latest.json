@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T18:14:07.895Z",
+  "generatedAt": "2026-11-04T03:05:30.894Z",
   "masterToko": [
     {
       "id": 257,
@@ -2957,6 +2957,19 @@
       "statusGaransi": "STOK_TOKO",
       "tglPembelian": null,
       "createdAt": "2026-07-16T16:00:00.000Z"
+    },
+    {
+      "id": 266,
+      "serialNumber": "03020073130",
+      "modelUnit": "MCM-509",
+      "merk": "MIYAKO",
+      "nama": "RESKUKER",
+      "kerusakanAwal": "PENUTUP PECAH",
+      "tokoId": 250,
+      "customerId": null,
+      "statusGaransi": "STOK_TOKO",
+      "tglPembelian": null,
+      "createdAt": "2026-11-04T00:00:00.000Z"
     },
     {
       "id": 137,
@@ -9820,6 +9833,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1316,
+      "aksi": "CREATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "03020073130",
+      "deskripsi": "Unit baru teregistrasi: RESKUKER (STOK_TOKO) — input susulan (backdate) — diagnosa awal kerusakan tercatat",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-04T03:05:30.872Z"
+    },
     {
       "id": 1315,
       "aksi": "BACKUP_DATA",
@@ -18810,15 +18832,6 @@
       "deskripsi": "Import CSV massal toko: 47 ditambahkan, 0 diperbarui, 1 dilewati, 0 gagal (mode: lewati)",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T23:48:49.760Z"
-    },
-    {
-      "id": 279,
-      "aksi": "DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": "2602316915",
-      "deskripsi": "Unit dihapus dari registrasi (koreksi kesalahan input): 2602316915 — RI-602E (W)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:46:12.375Z"
     }
   ],
   "backupLog": [
