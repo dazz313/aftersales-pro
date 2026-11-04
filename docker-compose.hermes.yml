@@ -8,7 +8,8 @@
 #   HERMES_UID=$(id -u) HERMES_GID=$(id -g) docker compose -f docker-compose.hermes.yml up -d
 #
 # Data persisten di ~/.hermes (config, .env, sessions, skills, memories).
-# Port: 8642 (gateway API), 9119 (dashboard). Jangan bentrok dengan 3000/20128.
+# Port: 8642 (gateway API, perlu API_SERVER_ENABLED=true), 9119 (dashboard, perlu auth).
+# Jangan bentrok dengan 3000 (AfterSales Pro) dan 20128 (9router).
 
 services:
   hermes:
@@ -21,9 +22,8 @@ services:
     environment:
       - HERMES_UID=${HERMES_UID:-1000}
       - HERMES_GID=${HERMES_GID:-1000}
-      - HERMES_DASHBOARD=1
-      # Uncomment & isi bila ingin expose API server (min 8 char):
-      # - API_SERVER_ENABLED=true
-      # - API_SERVER_HOST=0.0.0.0
-      # - API_SERVER_KEY=${API_SERVER_KEY}
+      # Dashboard dimatikan by default (butuh auth untuk bind non-loopback).
+      # Aktifkan dengan HERMES_DASHBOARD=1 + set auth di config.yaml, atau
+      # jalankan manual: docker exec hermes hermes dashboard --host 127.0.0.1 --no-open
+      - HERMES_DASHBOARD=0
     command: ["gateway", "run"]
