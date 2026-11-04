@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T03:05:30.894Z",
+  "generatedAt": "2026-11-04T03:07:50.997Z",
   "masterToko": [
     {
       "id": 257,
@@ -4797,6 +4797,57 @@
     }
   ],
   "serviceRequest": [
+    {
+      "id": 114,
+      "noTiket": "SVC-2610-0054",
+      "unitAssetId": 266,
+      "status": "REQUEST",
+      "noSttb": "STTB-2610-0054",
+      "sumberLaporan": "MANUAL",
+      "tipeCustomer": "TOKO",
+      "lokasiUnit": "TOKO",
+      "penanganan": "BELUM",
+      "noSuratJalan": null,
+      "sttbDicabut": false,
+      "tglKembaliKeToko": null,
+      "noSttbKolektif": null,
+      "noSuratKembali": null,
+      "deskripsiKerusakan": "PENUTUP PECAH",
+      "fotoKerusakanWa": null,
+      "fotoNotaStempel": null,
+      "tandaTanganDigital": null,
+      "slaFlag": false,
+      "statusKlaimProdusen": "DRAFT",
+      "tglKlaim": null,
+      "biayaJasa": 0,
+      "tglFinish": null,
+      "tglTiket": "2026-10-07T00:00:00.000Z",
+      "createdAt": "2026-11-04T03:07:50.971Z",
+      "updatedAt": "2026-11-04T03:07:50.971Z",
+      "editedAt": null,
+      "editedBy": null,
+      "noSuratJalanProdusen": null,
+      "tglPartDatang": null,
+      "tglRequestPart": null,
+      "lampiranEmail": null,
+      "parts": [
+        {
+          "id": 118,
+          "serviceRequestId": 114,
+          "sparepartId": 360,
+          "qty": 1,
+          "statusPart": "ORDER_PRODUSEN",
+          "statusKonfirmasi": "MENUNGGU",
+          "sumberPart": "PRODUSEN",
+          "tglPasang": null,
+          "pasangOleh": null,
+          "kodePartCache": null,
+          "namaPartCache": null,
+          "editedAt": null,
+          "editedBy": null
+        }
+      ]
+    },
     {
       "id": 113,
       "noTiket": "SVC-2610-0053",
@@ -9833,6 +9884,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1317,
+      "aksi": "CREATE_SERVICE_REQUEST",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0054",
+      "deskripsi": "Tiket manual dibuat untuk unit 03020073130 (MCM-509, stok toko → GARANSI otomatis) — ada part ORDER_PRODUSEN — STTB STTB-2610-0054 terbit sejak request part",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-04T03:07:50.979Z"
+    },
     {
       "id": 1316,
       "aksi": "CREATE_UNIT_ASSET",
@@ -18823,15 +18883,6 @@
       "deskripsi": "Import CSV massal unit: 33 ditambahkan, 0 diperbarui, 0 dilewati, 20 gagal (mode: lewati)",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-13T23:49:37.546Z"
-    },
-    {
-      "id": 280,
-      "aksi": "IMPORT_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": null,
-      "deskripsi": "Import CSV massal toko: 47 ditambahkan, 0 diperbarui, 1 dilewati, 0 gagal (mode: lewati)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:48:49.760Z"
     }
   ],
   "backupLog": [
