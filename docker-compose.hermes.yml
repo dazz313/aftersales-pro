@@ -1,0 +1,29 @@
+# Hermes Agent (Nous Research) — Docker Compose
+# Jalankan di server setelah user dazz masuk grup docker:
+#   sudo usermod -aG docker dazz  (oleh admin/root)  lalu re-login SSH
+#
+# Penggunaan:
+#   mkdir -p ~/.hermes
+#   HERMES_UID=$(id -u) HERMES_GID=$(id -g) docker compose -f docker-compose.hermes.yml run --rm hermes setup
+#   HERMES_UID=$(id -u) HERMES_GID=$(id -g) docker compose -f docker-compose.hermes.yml up -d
+#
+# Data persisten di ~/.hermes (config, .env, sessions, skills, memories).
+# Port: 8642 (gateway API), 9119 (dashboard). Jangan bentrok dengan 3000/20128.
+
+services:
+  hermes:
+    image: nousresearch/hermes-agent:stable
+    container_name: hermes
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ${HERMES_DATA:-/home/dazz/.hermes}:/opt/data
+    environment:
+      - HERMES_UID=${HERMES_UID:-1000}
+      - HERMES_GID=${HERMES_GID:-1000}
+      - HERMES_DASHBOARD=1
+      # Uncomment & isi bila ingin expose API server (min 8 char):
+      # - API_SERVER_ENABLED=true
+      # - API_SERVER_HOST=0.0.0.0
+      # - API_SERVER_KEY=${API_SERVER_KEY}
+    command: ["gateway", "run"]
