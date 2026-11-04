@@ -386,23 +386,32 @@ export function ServiceFlowActions({ ticket, pending, onAction, spareparts, sara
         </div>
       )}
 
-      {ticket.status === 'REQUEST' && menunggu.length > 0 && (
+      {ticket.status === 'REQUEST' && ticket.parts.length > 0 && (
         <div className="space-y-1.5">
-          <Label className="text-xs">Konfirmasi produsen via WA — {menunggu.length} part menunggu</Label>
+          <Label className="text-xs">Konfirmasi produsen via WA — {menunggu.length} part menunggu{menunggu.length === 0 ? ' (sudah dikonfirmasi, bisa diubah ulang)' : ''}</Label>
           <div className="flex flex-wrap gap-1.5">
-            <Button size="sm" className="h-7 bg-teal-600 text-[11px] hover:bg-teal-700" disabled={pending} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', statusKonfirmasi: 'READY' })}>
-              <CheckCircle2 className="mr-1 h-3 w-3" /> Produsen READY
-            </Button>
-            <Button size="sm" variant="outline" className="h-7 border-rose-300 text-[11px] text-rose-700" disabled={pending} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', statusKonfirmasi: 'TIDAK_READY' })}>
-              <PackageX className="mr-1 h-3 w-3" /> Tidak Ready
-            </Button>
+            {menunggu.length > 0 && (
+              <>
+                <Button size="sm" className="h-7 bg-teal-600 text-[11px] hover:bg-teal-700" disabled={pending} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', statusKonfirmasi: 'READY' })}>
+                  <CheckCircle2 className="mr-1 h-3 w-3" /> Produsen READY (semua)
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 border-rose-300 text-[11px] text-rose-700" disabled={pending} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', statusKonfirmasi: 'TIDAK_READY' })}>
+                  <PackageX className="mr-1 h-3 w-3" /> Tidak Ready (semua)
+                </Button>
+              </>
+            )}
           </div>
-          {menunggu.map((p) => (
+          {ticket.parts.map((p) => (
             <div key={p.id} className="flex items-center justify-between gap-2 rounded-md bg-slate-50 px-2 py-1.5">
-              <span className="font-mono text-[10px] text-slate-600">{p.sparepart?.kodePart} · {p.sparepart?.namaPart}</span>
+              <span className="font-mono text-[10px] text-slate-600">
+                {p.sparepart?.kodePart} · {p.sparepart?.namaPart}
+                <span className={cn('ml-1.5 rounded px-1 py-0.5 text-[9px] font-semibold', p.statusKonfirmasi === 'READY' ? 'bg-teal-100 text-teal-700' : p.statusKonfirmasi === 'TIDAK_READY' ? 'bg-rose-100 text-rose-700' : 'bg-slate-200 text-slate-600')}>
+                  {p.statusKonfirmasi === 'READY' ? 'READY' : p.statusKonfirmasi === 'TIDAK_READY' ? 'TIDAK READY' : 'MENUNGGU'}
+                </span>
+              </span>
               <span className="flex gap-1">
-                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-[10px] text-teal-700" disabled={pending} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', partId: p.id, statusKonfirmasi: 'READY' })}>Ready</Button>
-                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-[10px] text-rose-600" disabled={pending} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', partId: p.id, statusKonfirmasi: 'TIDAK_READY' })}>Tidak</Button>
+                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-[10px] text-teal-700" disabled={pending || p.statusKonfirmasi === 'READY'} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', partId: p.id, statusKonfirmasi: 'READY' })}>Ready</Button>
+                <Button size="sm" variant="ghost" className="h-6 px-1.5 text-[10px] text-rose-600" disabled={pending || p.statusKonfirmasi === 'TIDAK_READY'} onClick={() => onAction({ aksi: 'KONFIRMASI_PRODUSEN', partId: p.id, statusKonfirmasi: 'TIDAK_READY' })}>Tidak</Button>
               </span>
             </div>
           ))}

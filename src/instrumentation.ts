@@ -32,5 +32,7 @@ export async function register() {
     startLogRetention()
     const { startAlertScheduler } = await import('@/lib/alert-scheduler')
     startAlertScheduler()
+    const { startStalePartScheduler } = await import('@/lib/stale-part-scheduler')
+    startStalePartScheduler()
   }
 }
