@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T03:11:13.694Z",
+  "generatedAt": "2026-11-04T03:17:19.839Z",
   "masterToko": [
     {
       "id": 257,
@@ -6562,7 +6562,7 @@
           "sparepartId": 347,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -7357,7 +7357,7 @@
           "sparepartId": 324,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -7642,7 +7642,7 @@
           "sparepartId": 314,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -7744,7 +7744,7 @@
           "sparepartId": 313,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -7897,7 +7897,7 @@
           "sparepartId": 311,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -8065,7 +8065,7 @@
           "sparepartId": 308,
           "qty": 1,
           "statusPart": "READY",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -8911,7 +8911,7 @@
           "sparepartId": 293,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -9354,7 +9354,7 @@
           "sparepartId": 284,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -9405,7 +9405,7 @@
           "sparepartId": 283,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -9884,6 +9884,87 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1327,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2607-0003",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.812Z"
+    },
+    {
+      "id": 1326,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0001",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.806Z"
+    },
+    {
+      "id": 1325,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0038",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.800Z"
+    },
+    {
+      "id": 1324,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0036",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.792Z"
+    },
+    {
+      "id": 1323,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0033",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.783Z"
+    },
+    {
+      "id": 1322,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0030",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.775Z"
+    },
+    {
+      "id": 1321,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0014",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.766Z"
+    },
+    {
+      "id": 1320,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0005",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.760Z"
+    },
+    {
+      "id": 1319,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2610-0004",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 1 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-04T03:17:19.754Z"
+    },
     {
       "id": 1318,
       "aksi": "UPDATE_UNIT_ASSET",
@@ -18802,87 +18883,6 @@
       "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-14T01:19:22.667Z"
-    },
-    {
-      "id": 290,
-      "aksi": "UPDATE_PENGATURAN",
-      "entitas": "pengaturan",
-      "entitasId": null,
-      "deskripsi": "Pengaturan perusahaan diperbarui: nama_perusahaan, alamat_perusahaan, email_perusahaan, partner_produsen",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T00:59:53.660Z"
-    },
-    {
-      "id": 289,
-      "aksi": "UPLOAD_LOGO",
-      "entitas": "pengaturan",
-      "entitasId": "logo_perusahaan",
-      "deskripsi": "Logo perusahaan diperbarui (logo-eracool.png, 380 KB)",
-      "aktor": "DAZZ",
-      "createdAt": "2026-10-14T00:59:52.196Z"
-    },
-    {
-      "id": 288,
-      "aksi": "IMPORT_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": null,
-      "deskripsi": "Import CSV massal unit: 53 ditambahkan, 0 diperbarui, 0 dilewati, 0 gagal (mode: lewati)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T00:30:33.673Z"
-    },
-    {
-      "id": 287,
-      "aksi": "IMPORT_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": null,
-      "deskripsi": "Import CSV massal toko: 48 ditambahkan, 0 diperbarui, 0 dilewati, 0 gagal (mode: lewati)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T00:26:39.233Z"
-    },
-    {
-      "id": 286,
-      "aksi": "BULK_DELETE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": null,
-      "deskripsi": "Hapus massal toko: 15 terhapus (TOK-042, TOK-007, TOK-008, TOK-010, TOK-015, TOK-017, TOK-025, TOK-026, TOK-027, TOK-028…), 0 dilewati",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T00:19:59.019Z"
-    },
-    {
-      "id": 285,
-      "aksi": "BULK_DELETE_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": null,
-      "deskripsi": "Hapus massal unit: 53 terhapus (ZL009032, ZX389116, ZX386683, 03010012479, 43050349398, 2602651578, 2511700906, 03050030726, 44030035188, 02070304887…), 0 dilewati",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T00:19:52.515Z"
-    },
-    {
-      "id": 284,
-      "aksi": "BULK_DELETE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": null,
-      "deskripsi": "Hapus massal toko: 33 terhapus (TOK-001, TOK-002, TOK-003, TOK-004, TOK-005, TOK-006, TOK-009, TOK-011, TOK-012, TOK-013…), 15 dilewati",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T00:18:40.739Z"
-    },
-    {
-      "id": 283,
-      "aksi": "IMPORT_UNIT_ASSET",
-      "entitas": "unit_asset",
-      "entitasId": null,
-      "deskripsi": "Import CSV massal unit: 20 ditambahkan, 0 diperbarui, 33 dilewati, 0 gagal (mode: lewati)",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:52:08.287Z"
-    },
-    {
-      "id": 282,
-      "aksi": "UPDATE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": "TOK-038",
-      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-13T23:51:47.481Z"
     }
   ],
   "backupLog": [
