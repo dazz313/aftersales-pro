@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T03:17:19.839Z",
+  "generatedAt": "2026-11-04T21:03:14.112Z",
   "masterToko": [
     {
       "id": 257,
@@ -9785,7 +9785,7 @@
     {
       "id": 174,
       "kunci": "alert_kirim_tanggal",
-      "nilai": "2026-11-04"
+      "nilai": "2026-11-05"
     },
     {
       "id": 199,
@@ -9825,7 +9825,7 @@
     {
       "id": 266,
       "kunci": "gs_jadwal_terakhir",
-      "nilai": "2026-11-04 02:14"
+      "nilai": "2026-11-05 05:03"
     },
     {
       "id": 245,
@@ -9835,7 +9835,7 @@
     {
       "id": 173,
       "kunci": "log_retensi_terakhir",
-      "nilai": "2026-11-04 01:58"
+      "nilai": "2026-11-05 00:14"
     },
     {
       "id": 54,
@@ -9884,6 +9884,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1328,
+      "aksi": "BACKUP_DATA",
+      "entitas": "backup_google_sheets",
+      "entitasId": "LOCAL",
+      "deskripsi": "Backup data bersama (AUTO): status LOCAL — Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-11-04T21-03-14.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "aktor": "SYSTEM-CRON",
+      "createdAt": "2026-11-04T21:03:14.078Z"
+    },
     {
       "id": 1327,
       "aksi": "AUTO_TIDAK_READY_STALE",
@@ -18874,18 +18883,19 @@
       "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-14T01:19:42.992Z"
-    },
-    {
-      "id": 291,
-      "aksi": "UPDATE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": "TOK-007",
-      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T01:19:22.667Z"
     }
   ],
   "backupLog": [
+    {
+      "id": 45,
+      "status": "LOCAL",
+      "trigger": "AUTO",
+      "sheetsWritten": 0,
+      "rowsTotal": 458,
+      "tabel": "Toko, Customer, Sparepart, Unit Asset, Kunjungan, Tiket Service, Surat Jalan Masuk",
+      "message": "Kredensial Google belum lengkap — snapshot lokal disimpan: C:\\Users\\bass_project2\\db\\backups\\backup-2026-11-04T21-03-14.json. Isi Spreadsheet ID, service account email & private key di Pengaturan untuk sinkron ke Google.",
+      "createdAt": "2026-11-04T21:03:14.068Z"
+    },
     {
       "id": 44,
       "status": "LOCAL",
