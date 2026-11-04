@@ -16,6 +16,7 @@ import HistoryInput from '@/components/history-input'
 import { Sparkles, Loader2, X, CalendarDays, SearchCheck, FileText, Truck, FileSpreadsheet, Layers, PackageCheck, TrendingUp, BarChart3, UploadCloud } from 'lucide-react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts'
 import SuratJalanMasukDialog from '@/components/surat-jalan-masuk-dialog'
+import AiChat from '@/components/ai-chat'
 import { cn } from '@/lib/utils'
 
 interface AiRencana {
@@ -688,6 +689,9 @@ export default function AnalisaAiView() {
         </CardContent>
       </Card>
       </div>
+
+      {/* ===== 7. Chat AI interaktif dua arah (dengan konteks pergerakan aplikasi) ===== */}
+      <AiChat />
 
       <SuratJalanMasukDialog open={sjMasukOpen} onOpenChange={setSjMasukOpen} />
 
