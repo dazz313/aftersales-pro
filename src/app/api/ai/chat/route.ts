@@ -46,6 +46,7 @@ export async function POST(request: Request) {
     const konteksAi = await kumpulkanKonteks()
     const konteksPertanyaan = await cariKonteksPertanyaan(teksTerakhir)
     const blok = [
+      konteksAi.sistem ? konteksAi.sistem : null,
       konteksAi.operasional ? `KONDISI APLIKASI SAAT INI:\n${konteksAi.operasional}` : null,
       konteksAi.audit ? `RIWAYAT AUDIT TERBARU:\n${konteksAi.audit}` : null,
       konteksPertanyaan ? `DATA RELEVAN DARI DATABASE (hasil pencarian untuk pertanyaan pengguna):\n${konteksPertanyaan}` : null,
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       if (stTiket) blok.push(`STATUS TIKET YANG DIMINTA:\n${stTiket}`)
     }
 
-    const pesan: ChatMessage[] = [{ role: 'system', content: 'Kamu adalah AI Asisten AfterSales Pro — asisten untuk layanan sparepart (tiket service, sparepart, klaim produsen, kunjungan toko, stok, SLA). Jawab dalam Bahasa Indonesia, praktis, ringkas, dan apa adanya. Kamu SUDAH diberi data dari database pada bagian KONDISI APLIKASI dan DATA RELEVAN: gunakan data itu apa adanya (sebutkan kode toko, nomor tiket, SN, model, jumlah, status part). Jangan mengatakan "tidak ada informasi" bila datanya ada di konteks; baru katakan tidak ditemukan bila memang tidak tercantum.' }]
+    const pesan: ChatMessage[] = [{ role: 'system', content: 'Kamu adalah AI Asisten AfterSales Pro — asisten untuk layanan sparepart (tiket service, sparepart, klaim produsen, kunjungan toko, stok, SLA) DAN penjelas sistem. Jawab dalam Bahasa Indonesia, praktis, ringkas, dan apa adanya. Kamu SUDAH diberi PENGETAHUAN SISTEM (cara kerja aplikasi, modul, alur, status, tabel database, kode produk) dan data dari database (KONDISI APLIKASI / DATA RELEVAN): gunakan data itu apa adanya (sebutkan kode toko, nomor tiket, SN, model, kode part, jumlah, status part). Jika ditanya cara kerja fitur/modul, jelaskan berdasarkan PENGETAHUAN SISTEM. Jika ditanya kode produk/sparepart, sebutkan kode, nama, brand, stok, supplier, model tipe, produsen dari DATA RELEVAN. Jangan mengatakan "tidak ada informasi" bila datanya ada di konteks; baru katakan tidak ditemukan bila memang tidak tercantum.' }]
     if (blok.length > 0) pesan.push({ role: 'system', content: blok.join('\n\n') })
     pesan.push(...riwayat)
 

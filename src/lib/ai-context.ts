@@ -12,10 +12,95 @@
  */
 import { db } from '@/lib/db'
 
+/**
+ * Pengetahuan sistem (statis) — deskripsi cara kerja aplikasi, modul, alur,
+ * status, tabel database, dan kode produk/sparepart. Dikirim ke AI di setiap
+ * chat agar AI memahami sistem & bisa menjelaskan cara kerja aplikasi.
+ */
+export const PENGETAHUAN_SISTEM = `PENGETAHUAN SISTEM AFTERSALES PRO (baca sebelum menjawab):
+
+Aplikasi web AfterSales Pro — otomasi after-sales & inventory sparepart antara Workshop dan Produsen. Single-route (semua view di "/"), navigasi internal. Database SQLite (Prisma). Multi-user dengan role: ADMIN_WORKSHOP, TEKNISI, MANAGER, PRODUSEN.
+
+MODUL/VIEW:
+- Dashboard KPI: monitoring, alert engine, akses cepat.
+- Master Data: Toko (MasterToko), Customer (MasterCustomer), Unit Asset (UnitAsset), Karyawan (Pengguna).
+- Proses Service: tiket service (ServiceRequest) + part (ServiceRequestPart). Workflow REQUEST → PROSES → FINISH.
+- Field Ops: kunjungan toko, scan barcode toko/unit.
+- Stok Inventory: sparepart titipan produsen (MasterSparepart) dengan stok jual/garansi/total.
+- Klaim & Rekap: klaim produsen (DRAFT/SUBMITTED/PAID), export Excel.
+- Nota Servis BASS: nota service center.
+- Lacak Sparepart: cari part dari riwayat kerusakan + AI.
+- Komunikasi: MiniChat & Notes antar akun.
+- Analisa AI: ringkasan operasional + chat AI.
+- Inbox: penampungan data Telegram.
+- Pengaturan: profil, gateway WA/Telegram, AI (9router), backup Google Sheets, audit log.
+
+ALUR SERVICE:
+- ServiceRequest.status: REQUEST (baru) → PROSES (sedang dikerjakan) → FINISH (selesai).
+- sumberLaporan: KUNJUNGAN | LAPORAN_TOKO | LAPORAN_CUSTOMER | WA_BOT | MANUAL.
+- tipeCustomer: TOKO (stok toko → otomatis garansi) | PERORANGAN.
+- lokasiUnit: TOKO (unit di toko) | WORKSHOP (ditarik via STTB).
+- penanganan: BELUM | TUNGGU_PART_TOKO | DI_TOKO | TARIK_WORKSHOP.
+- statusKlaimProdusen: DRAFT | SUBMITTED | PAID.
+- slaFlag: true bila melewati SLA 24 jam (REQUEST).
+- ServiceRequestPart.statusPart: READY (part ada di gudang) | ORDER_PRODUSEN (harus dipesan ke produsen).
+- ServiceRequestPart.statusKonfirmasi: MENUNGGU | READY | TIDAK_READY (jawaban produsen via WA).
+- sumberPart: KATALOG | PRODUSEN.
+
+STOK SPAREPART:
+- MasterSparepart: stokJual (bisa dijual) + stokGaransi (stok garansi/klaim) = stokInventory (total). totalTerpakai (pemakaian per unit, tidak menyentuh stok brand). reorderLimit (ROP). hargaKlaim (nilai klaim per unit ke produsen). brandKompatibel (brand kompatibel, koma). supplier.
+- Stok brand hanya bergerak saat stok masuk/keluar gudang. Part ORDER khusus unit dicatat di totalTerpakai.
+
+UNIT ASSET:
+- UnitAsset: serialNumber, modelUnit, merk, nama, kerusakanAwal, tokoId/customerId, statusGaransi (STOK_TOKO/GARANSI/NON_GARANSI), tglPembelian.
+- QR stiker: SN:[serial]|MOD:[model]|TOK:[toko/customer]|NAMA:[nama produk].
+
+TOKO:
+- MasterToko: kodeToko (TOK-xxx), namaToko, alamat, kontak, frekuensiVisit, modeSiklus (REGULER/BY_REQUEST), tglVisitTerakhir, aktif, barcodeToko, latitude/longitude, jarakKm.
+- Kunjungan: teknisi check-in ke toko (SCAN_BARCODE/MANUAL), fotoOnsite, catatanStokRusak.
+
+KLAIM:
+- Tiket FINISH dengan statusKlaimProdusen DRAFT → klaim produsen pending. Nilai = biayaJasa + sum(part.qty * hargaKlaim). Status SUBMITTED (diajukan) → PAID (dibayar).
+
+AUDIT & BACKUP:
+- AuditLog: aksi, entitas, entitasId, deskripsi, aktor, createdAt.
+- BackupLog: status (SUCCESS/LOCAL/FAILED), trigger (MANUAL/AUTO), sheetsWritten, rowsTotal, tabel, message.
+- Backup otomatis ke Google Spreadsheet (tanpa Nextcloud). Watcher jalan di background.
+
+INBOX TELEGRAM:
+- InboxItem: penampungan data/foto Telegram sebelum diteruskan. status PENDING/APPROVED/REJECTED/ARCHIVED. folder KUNJUNGAN/SERVICE.
+
+NOTIFIKASI:
+- Notifikasi: REGISTRASI_UNIT / TIKET_BARU, untukRole (null=semua). NotifikasiBaca per pengguna.
+
+NOTA BASS:
+- Nota service center dengan item (kode, nama, harga, qty), biaya service/transportasi, PPN, tanda tangan.
+
+KODE PRODUK / SPAREPART:
+- MasterSparepart.kodePart (unique) — kode sparepart utama.
+- BankKode — registry semua kode part yang pernah masuk (katalog, balasan produsen, order customer, CSV). sumber: KATALOG/PRODUSEN/WORKSHOP/CSV/MANUAL/SINKRON. Berisi kode, namaPart, brandKompatibel, modelTipe, produsen, catatan.
+- PermintaanOrder: order sparepart dari customer (BARU/DITERUSKAN/DATANG/SELESAI/BATAL).
+
+SURAT JALAN:
+- SuratJalanMasuk: penerimaan part dari produsen (DRAFT→DIPERIKSA→DITERAPKAN). Cocokkan kode/nama/SN ke tiket & unit.
+- SuratJalanRequest: request part ke produsen (SJR-YYYYMMDD-NNNN), snapshot tiket+part.
+
+AI & 9ROUTER:
+- AI gateway: 9router di mesin ini (port 20128). Providers aktif: kiro + openrouter. App AI config dari Pengaturan (ai_base_url, ai_model, ai_api_key). Default base URL http://127.0.0.1:20128/v1. Model utama openrouter/openai/gpt-4o-mini, fallback kr/claude-haiku-4.5.
+- AI membaca konteks operasional + audit + on-demand lookup (toko/unit/tiket/stok/sparepart/kode).
+
+DATABASE: SQLite (Prisma). Tabel utama: Pengguna, MasterToko, MasterCustomer, MasterSparepart, UnitAsset, Kunjungan, ServiceRequest, ServiceRequestPart, PermintaanOrder, AuditLog, BackupLog, Pengaturan, BankKode, VisionScan, InboxItem, SuratJalanMasuk(+Item), SuratJalanRequest(+Item), Notifikasi(+Baca), Nota(+Item), ChatPesan, Catatan(+Balasan), WaMessage, OrderEmailPart.
+
+ATURAN JAWAB:
+- Gunakan data konteks yang diberikan (KONDISI APLIKASI / DATA RELEVAN). Sebutkan kode toko, nomor tiket, SN, model, jumlah, status part. Jangan katakan "tidak ada informasi" bila datanya ada di konteks; baru katakan tidak ditemukan bila memang tidak tercantum.
+- Jika ditanya cara kerja fitur/modul, jelaskan berdasarkan PENGETAHUAN SISTEM di atas.
+- Jika ditanya kode produk/sparepart, cari di DATA RELEVAN (MasterSparepart/BankKode) dan sebutkan kode, nama, brand, stok, supplier, model tipe, produsen.`
+
 export interface KonteksAi {
   dibangunPada: string
   operasional: string | null
   audit: string | null
+  sistem: string
 }
 
 export async function kumpulkanKonteksAudit(max = 20): Promise<string | null> {
@@ -118,7 +203,7 @@ export async function kumpulkanKonteksOperasional(): Promise<string | null> {
 /** Gabungan konteks operasional + audit untuk satu penyusunan konteks AI. */
 export async function kumpulkanKonteks(): Promise<KonteksAi> {
   const [operasional, audit] = await Promise.all([kumpulkanKonteksOperasional(), kumpulkanKonteksAudit()])
-  return { dibangunPada: new Date().toISOString(), operasional, audit }
+  return { dibangunPada: new Date().toISOString(), operasional, audit, sistem: PENGETAHUAN_SISTEM }
 }
 
 /**
@@ -419,7 +504,96 @@ export async function cariKonteksPertanyaan(pertanyaan: string): Promise<string 
       }
     }
 
-    return blok.length ? blok.join('\n\n') : null
+    // 6) Kode produk / sparepart detail (MasterSparepart + BankKode).
+    if (/kode|part|sparepart|spare\\s*part|produk|bank\\s*kod|katalog/i.test(q)) {
+      const kodeCand = (q.match(/[A-Za-z0-9][A-Za-z0-9._-]{2,}/g) ?? [])
+        .map((s) => s.toUpperCase())
+        .filter((s) => !/^(TOKO|UNIT|SVC|SN|TOK)$/i.test(s))
+      const tokenQ = tokenPenting(q)
+      const [parts, bank] = await Promise.all([
+        db.masterSparepart.findMany({
+          take: 500,
+          select: {
+            kodePart: true, namaPart: true, brandKompatibel: true, supplier: true,
+            stokInventory: true, stokJual: true, stokGaransi: true, totalTerpakai: true,
+            reorderLimit: true, hargaKlaim: true,
+          },
+        }),
+        db.bankKode.findMany({
+          take: 500,
+          select: { kode: true, namaPart: true, brandKompatibel: true, modelTipe: true, produsen: true, sumber: true, catatan: true },
+        }),
+      ])
+      const partMatch = parts.filter((p) =>
+        kodeCand.some((k) => p.kodePart.toUpperCase().includes(k)) ||
+        tokenQ.some((t) => p.namaPart.toLowerCase().includes(t) || p.kodePart.toLowerCase().includes(t))
+      )
+      const bankMatch = bank.filter((b) =>
+        kodeCand.some((k) => b.kode.toUpperCase().includes(k)) ||
+        tokenQ.some((t) => b.namaPart.toLowerCase().includes(t) || b.kode.toLowerCase().includes(t) || (b.modelTipe || '').toLowerCase().includes(t))
+      )
+      const tampilPart = (partMatch.length ? partMatch : parts).slice(0, 20)
+      const tampilBank = (bankMatch.length ? bankMatch : bank).slice(0, 20)
+      if (tampilPart.length || tampilBank.length) {
+        const blokPart = tampilPart.length
+          ? `MASTER SPAREPART${partMatch.length ? ' (cocok)' : ' (contoh)'}:\\n` +
+            tampilPart.map((p) =>
+              `- ${p.kodePart} — ${p.namaPart} | brand ${p.brandKompatibel || '-'} | stok ${p.stokInventory} (jual ${p.stokJual}, garansi ${p.stokGaransi}, terpakai ${p.totalTerpakai}) | ROP ${p.reorderLimit} | hargaKlaim Rp ${Math.round(p.hargaKlaim).toLocaleString('id-ID')} | supplier ${p.supplier || '-'}`
+            ).join('\\n')
+          : ''
+        const blokBank = tampilBank.length
+          ? `BANK KODE PRODUK${bankMatch.length ? ' (cocok)' : ' (contoh)'}:\\n` +
+            tampilBank.map((b) =>
+              `- ${b.kode} — ${b.namaPart || '-'} | brand ${b.brandKompatibel || '-'} | model/tipe ${b.modelTipe || '-'} | produsen ${b.produsen || '-'} | sumber ${b.sumber}${b.catatan ? ` | catatan: ${b.catatan}` : ''}`
+            ).join('\\n')
+          : ''
+        blok.push([blokPart, blokBank].filter(Boolean).join('\\n\\n'))
+      }
+    }
+
+    // 7) Detail unit asset bila pertanyaan menyebut SN/serial/model unit spesifik.
+    if (/\\bsn\\b|serial|unit asset|model unit/i.test(q) && cocok.length === 0) {
+      const snCand = q.match(/[A-Za-z0-9][A-Za-z0-9._-]{4,}/g) ?? []
+      const units = await db.unitAsset.findMany({
+        where: snCand.length
+          ? { OR: snCand.map((s) => ({ serialNumber: { contains: s } })) }
+          : undefined,
+        take: 15,
+        select: {
+          serialNumber: true, modelUnit: true, merk: true, nama: true, statusGaransi: true,
+          kerusakanAwal: true, toko: { select: { kodeToko: true, namaToko: true } },
+          customer: { select: { nama: true } },
+          serviceRequests: { select: { noTiket: true, status: true, tglTiket: true }, orderBy: { tglTiket: 'desc' }, take: 5 },
+        },
+      })
+      if (units.length) {
+        blok.push(
+          `DETAIL UNIT (cocok ${units.length}):\\n` +
+            units.map((u) =>
+              `- ${u.merk || '-'} ${u.modelUnit}${u.nama ? ` (${u.nama})` : ''} | SN ${u.serialNumber || '-'} | ${u.statusGaransi} | toko ${u.toko ? `${u.toko.kodeToko} ${u.toko.namaToko}` : (u.customer?.nama ?? 'perorangan')} | kerusakan awal: ${u.kerusakanAwal || '-'} | tiket: ${u.serviceRequests.map((t) => `${t.noTiket}(${t.status})`).join(', ') || 'belum ada'}`
+            ).join('\\n')
+        )
+      }
+    }
+
+    // 8) Customer bila ditanya.
+    if (/customer|pelanggan|pemesan/i.test(q)) {
+      const tokenQ = tokenPenting(q)
+      const custs = await db.masterCustomer.findMany({
+        take: 200,
+        select: { id: true, nama: true, noWa: true, alamat: true, _count: { select: { unitAssets: true, orders: true } } },
+      })
+      const cocokCust = custs.filter((c) => tokenQ.some((t) => c.nama.toLowerCase().includes(t)))
+      const tampil = (cocokCust.length ? cocokCust : custs).slice(0, 15)
+      if (tampil.length) {
+        blok.push(
+          `CUSTOMER${cocokCust.length ? ' (cocok)' : ''}:\\n` +
+            tampil.map((c) => `- ${c.nama} | WA ${c.noWa || '-'} | ${c.alamat || '-'} | ${c._count.unitAssets} unit | ${c._count.orders} order`).join('\\n')
+        )
+      }
+    }
+
+    return blok.length ? blok.join('\\n\\n') : null
   } catch (e) {
     console.error('AI konteks pertanyaan gagal:', e)
     return null
