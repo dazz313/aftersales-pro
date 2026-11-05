@@ -82,6 +82,14 @@ export async function kumpulkanKonteksOperasional(): Promise<string | null> {
     const stokKritis = spareparts.filter((s) => s.stokInventory <= s.reorderLimit)
     const stokKosong = spareparts.filter((s) => s.stokInventory === 0)
 
+    const [unitTotal, unitStatus] = await Promise.all([
+      db.unitAsset.count(),
+      db.unitAsset.groupBy({ by: ['statusGaransi'], _count: { _all: true } }),
+    ])
+    const unitPerStatus = unitStatus
+      .map((g) => `${g.statusGaransi}=${g._count._all}`)
+      .join(', ')
+
     const daftarTerlambat = daftarToko
       .filter((t) => t.modeSiklus !== 'BY_REQUEST')
       .filter((t) => !t.tglVisitTerakhir || (Date.now() - new Date(t.tglVisitTerakhir).getTime()) / (24 * 3600 * 1000) > t.frekuensiVisit)
@@ -97,6 +105,7 @@ export async function kumpulkanKonteksOperasional(): Promise<string | null> {
       barisBelumProses,
       `- Klaim produsen pending (DRAFT dari FINISH): ${claims.length} buah, nilai ±Rp ${Math.round(totalKlaimPending).toLocaleString('id-ID')}.`,
       `- Stok sparepart: total item ${spareparts.length}, kritis (stok<=reorder) ${stokKritis.length}, kosong ${stokKosong.length}.`,
+      `- Unit asset: total ${unitTotal}${unitPerStatus ? ` (${unitPerStatus})` : ''}; toko aktif: ${daftarToko.length}.`,
       `- Kunjungan toko: ${daftarTerlambat.length} toko aktif terlambat visit (kunjungan 7 hari terakhir = ${kunjungan7}).`,
     ]
     return lines.join('\n')
@@ -144,6 +153,275 @@ export async function statusTiket(noTiket?: string): Promise<string | null> {
     return `STATUS TIKET PROSES (final assembly / butuh penanganan):\n${blok}`
   } catch (e) {
     console.error('AI statusTiket gagal:', e)
+    return null
+  }
+}
+
+// ============================================================================
+// Pencarian konteks sesuai pertanyaan pengguna
+// ----------------------------------------------------------------------------
+// Konteks operasional saja hanya berisi ANGKA AGREGAT (jumlah tiket, stok,
+// dsb). Tanpa bagian ini, AI tidak pernah melihat daftar toko, unit asset,
+// atau detail per toko — sehingga pertanyaan seperti "unit Toko Semeru Ahmad
+// Yani apa saja?" dijawab "tidak ada informasi" padahal datanya ada.
+// ============================================================================
+
+/** Kata yang terlalu umum — tidak dipakai sebagai kata kunci pencarian. */
+const KATA_UMUM = new Set([
+  'toko', 'unit', 'units', 'dari', 'yang', 'apa', 'saja', 'ada', 'adalah', 'untuk',
+  'dengan', 'dan', 'di', 'ke', 'ini', 'itu', 'tolong', 'coba', 'lihat', 'cek',
+  'carikan', 'berikan', 'info', 'informasi', 'data', 'detail', 'rincian',
+  'bagaimana', 'berapa', 'siapa', 'kapan', 'status', 'terakhir', 'semua', 'saat',
+  'sekarang', 'mau', 'ingin', 'bisa', 'kah', 'nya', 'aku', 'saya', 'sedang',
+  'punya', 'milik', 'tersebut', 'tentang', 'pada', 'dalam', 'atau', 'juga',
+])
+
+/** Ambil kata kunci penting (huruf kecil, tanpa tanda baca, tanpa kata umum). */
+function tokenPenting(teks: string): string[] {
+  return teks
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .split(/[\s-]+/)
+    .filter((t) => t.length >= 3 && !KATA_UMUM.has(t))
+}
+
+/** Normalisasi teks untuk pencocokan nama toko. */
+function normal(teks: string): string {
+  return teks.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+interface TokoRingkas {
+  id: number
+  kodeToko: string
+  namaToko: string
+  alamat: string | null
+  frekuensiVisit: number
+  modeSiklus: string
+  tglVisitTerakhir: Date | null
+  jumlahUnit: number
+}
+
+/** Semua toko aktif + jumlah unitnya (ringkas). */
+async function ambilTokoRingkas(): Promise<TokoRingkas[]> {
+  const rows = await db.masterToko.findMany({
+    where: { aktif: true },
+    select: {
+      id: true,
+      kodeToko: true,
+      namaToko: true,
+      alamat: true,
+      frekuensiVisit: true,
+      modeSiklus: true,
+      tglVisitTerakhir: true,
+      _count: { select: { unitAssets: true } },
+    },
+    orderBy: { namaToko: 'asc' },
+  })
+  return rows.map((r) => ({
+    id: r.id,
+    kodeToko: r.kodeToko,
+    namaToko: r.namaToko,
+    alamat: r.alamat,
+    frekuensiVisit: r.frekuensiVisit,
+    modeSiklus: r.modeSiklus,
+    tglVisitTerakhir: r.tglVisitTerakhir,
+    jumlahUnit: r._count.unitAssets,
+  }))
+}
+
+/** Jumlah tiket aktif (REQUEST/PROSES) per toko. */
+async function tiketAktifPerToko(): Promise<Map<number, number>> {
+  const rows = await db.serviceRequest.findMany({
+    where: { status: { in: ['REQUEST', 'PROSES'] } },
+    select: { unitAsset: { select: { tokoId: true } } },
+  })
+  const map = new Map<number, number>()
+  for (const r of rows) {
+    const id = r.unitAsset?.tokoId
+    if (id) map.set(id, (map.get(id) ?? 0) + 1)
+  }
+  return map
+}
+
+/** Detail satu toko: info, daftar unit, tiket terakhir, kunjungan terakhir. */
+async function detailToko(toko: TokoRingkas): Promise<string> {
+  const [units, tiket, kunjungan] = await Promise.all([
+    db.unitAsset.findMany({
+      where: { tokoId: toko.id },
+      orderBy: { createdAt: 'desc' },
+      take: 60,
+      select: { serialNumber: true, modelUnit: true, merk: true, nama: true, statusGaransi: true },
+    }),
+    db.serviceRequest.findMany({
+      where: { unitAsset: { tokoId: toko.id } },
+      orderBy: { tglTiket: 'desc' },
+      take: 8,
+      select: {
+        noTiket: true,
+        status: true,
+        tglTiket: true,
+        penanganan: true,
+        unitAsset: { select: { serialNumber: true, modelUnit: true } },
+        parts: {
+          select: {
+            qty: true,
+            statusPart: true,
+            statusKonfirmasi: true,
+            sparepart: { select: { kodePart: true, namaPart: true } },
+          },
+        },
+      },
+    }),
+    db.kunjungan.findMany({
+      where: { tokoId: toko.id },
+      orderBy: { tglKunjungan: 'desc' },
+      take: 3,
+      select: { tglKunjungan: true, metodeCheckin: true },
+    }),
+  ])
+
+  const unitBaris = units.length
+    ? units
+        .map(
+          (u) =>
+            `  - ${u.merk || '-'} ${u.modelUnit} | SN ${u.serialNumber || '-'} | ${u.statusGaransi}${u.nama ? ` | ${u.nama}` : ''}`
+        )
+        .join('\n')
+    : '  (tidak ada unit terdaftar)'
+
+  const tiketBaris = tiket.length
+    ? tiket
+        .map((t) => {
+          const parts =
+            t.parts
+              .map(
+                (p) =>
+                  `${p.sparepart?.kodePart ?? '?'} (${p.sparepart?.namaPart ?? '?'}) x${p.qty} → ${p.statusPart}${p.statusKonfirmasi ? `/${p.statusKonfirmasi}` : ''}`
+              )
+              .join(', ') || 'tanpa part'
+          return `  - ${t.noTiket} | ${t.status} | ${new Date(t.tglTiket).toLocaleDateString('id-ID')} | ${t.unitAsset?.modelUnit ?? '-'} SN ${t.unitAsset?.serialNumber ?? '-'} | penanganan ${t.penanganan} | part: ${parts}`
+        })
+        .join('\n')
+    : '  (belum ada tiket)'
+
+  const kunjBaris = kunjungan.length
+    ? kunjungan.map((k) => `  - ${new Date(k.tglKunjungan).toLocaleDateString('id-ID')} (${k.metodeCheckin})`).join('\n')
+    : '  (belum ada kunjungan)'
+
+  return [
+    `DETAIL TOKO ${toko.kodeToko} — ${toko.namaToko}`,
+    `- Alamat: ${toko.alamat || '-'} | Siklus: ${toko.modeSiklus} tiap ${toko.frekuensiVisit} hari | Kunjungan terakhir: ${toko.tglVisitTerakhir ? new Date(toko.tglVisitTerakhir).toLocaleDateString('id-ID') : '-'}`,
+    `- Jumlah unit: ${toko.jumlahUnit}${units.length < toko.jumlahUnit ? ` (ditampilkan ${units.length} terbaru)` : ''}`,
+    `- Daftar unit:\n${unitBaris}`,
+    `- Tiket terakhir (maks 8):\n${tiketBaris}`,
+    `- Kunjungan terakhir:\n${kunjBaris}`,
+  ].join('\n')
+}
+
+/** Cari toko yang paling cocok dengan pertanyaan (nama atau kode). */
+function cariTokoCocok(pertanyaan: string, daftar: TokoRingkas[]): TokoRingkas[] {
+  const qNorm = normal(pertanyaan)
+  const tokenQ = new Set(tokenPenting(pertanyaan))
+  const kode = pertanyaan.match(/tok-\d{3,}/i)?.[0]?.toUpperCase()
+  return daftar
+    .map((t) => {
+      const tokenToko = tokenPenting(t.namaToko)
+      const cocok = tokenToko.filter((x) => tokenQ.has(x)).length
+      const cakupan = tokenToko.length ? cocok / tokenToko.length : 0
+      let nilai = cocok * 2 + cakupan
+      if (kode && t.kodeToko.toUpperCase() === kode) nilai += 10
+      if (qNorm.includes(normal(t.namaToko))) nilai += 10
+      return { t, nilai, cocok }
+    })
+    .filter((s) => s.nilai >= 2 && s.cocok >= 1)
+    .sort((a, b) => b.nilai - a.nilai)
+    .map((s) => s.t)
+}
+
+/**
+ * Konteks tambahan yang diambil dari database sesuai isi pertanyaan pengguna:
+ * daftar toko, detail toko yang disebut (unit + tiket + kunjungan), tiket
+ * tertentu, dan stok sparepart. Best-effort (null bila tidak ada yang relevan).
+ */
+export async function cariKonteksPertanyaan(pertanyaan: string): Promise<string | null> {
+  const q = (pertanyaan || '').trim()
+  if (!q) return null
+  try {
+    const [daftarToko, tiketAktif] = await Promise.all([ambilTokoRingkas(), tiketAktifPerToko()])
+    const blok: string[] = []
+
+    // 1) Daftar semua toko aktif — supaya AI tahu toko mana saja yang ada.
+    if (daftarToko.length) {
+      blok.push(
+        `DAFTAR TOKO AKTIF (${daftarToko.length}):\n` +
+          daftarToko
+            .map((t) => `- ${t.kodeToko} — ${t.namaToko} | ${t.jumlahUnit} unit | tiket aktif ${tiketAktif.get(t.id) ?? 0}`)
+            .join('\n')
+      )
+    }
+
+    // 2) Nomor tiket spesifik.
+    const noTiket = q.match(/SVC-\d{4}-\d{4}/i)?.[0]?.toUpperCase()
+    if (noTiket) {
+      const st = await statusTiket(noTiket)
+      if (st) blok.push(st)
+    }
+
+    // 3) Detail toko yang namanya/kodenya disebut.
+    const cocok = cariTokoCocok(q, daftarToko)
+    if (cocok.length) blok.push(await detailToko(cocok[0]))
+
+    // 4) Stok sparepart bila ditanya.
+    if (/stok|sparepart|spare\s*part|\bpart\b|kosong|kritis|reorder/i.test(q)) {
+      const parts = await db.masterSparepart.findMany({
+        orderBy: { stokInventory: 'asc' },
+        take: 60,
+        select: {
+          kodePart: true,
+          namaPart: true,
+          stokInventory: true,
+          stokJual: true,
+          stokGaransi: true,
+          reorderLimit: true,
+          supplier: true,
+        },
+      })
+      const tokenQ = tokenPenting(q)
+      const relevan = parts.filter((p) =>
+        tokenQ.some((t) => p.namaPart.toLowerCase().includes(t) || p.kodePart.toLowerCase().includes(t))
+      )
+      const tampil = (relevan.length ? relevan : parts).slice(0, 15)
+      if (tampil.length) {
+        blok.push(
+          `STOK SPAREPART${relevan.length ? ' (paling relevan)' : ' TERENDAH (15)'}:\n` +
+            tampil
+              .map(
+                (p) =>
+                  `- ${p.kodePart} — ${p.namaPart} | stok ${p.stokInventory} (jual ${p.stokJual}, garansi ${p.stokGaransi}) | ROP ${p.reorderLimit} | ${p.supplier || '-'}`
+              )
+              .join('\n')
+        )
+      }
+    }
+
+    // 5) Ringkasan unit per merk/status bila pertanyaan soal unit tapi tanpa toko spesifik.
+    if (/unit|\bsn\b|serial|garansi/i.test(q) && cocok.length === 0) {
+      const perMerk = await db.unitAsset.groupBy({
+        by: ['merk', 'statusGaransi'],
+        _count: { _all: true },
+        orderBy: { merk: 'asc' },
+      })
+      if (perMerk.length) {
+        blok.push(
+          `RINGKASAN UNIT PER MERK/STATUS:\n` +
+            perMerk.map((g) => `- ${g.merk || '(tanpa merk)'} | ${g.statusGaransi} = ${g._count._all}`).join('\n')
+        )
+      }
+    }
+
+    return blok.length ? blok.join('\n\n') : null
+  } catch (e) {
+    console.error('AI konteks pertanyaan gagal:', e)
     return null
   }
 }

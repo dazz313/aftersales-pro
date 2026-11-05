@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 import { logAudit } from '@/lib/audit'
 import { requireActiveSession } from '@/lib/auth-server'
 import { resolveAiConfig, chatCompletion, AI_TIMEOUT_MS, type ChatMessage } from '@/lib/ai'
-import { kumpulkanKonteks, statusTiket } from '@/lib/ai-context'
+import { kumpulkanKonteks, statusTiket, cariKonteksPertanyaan } from '@/lib/ai-context'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -44,9 +44,11 @@ export async function POST(request: Request) {
     let modelDipakai = cfg.model
 
     const konteksAi = await kumpulkanKonteks()
+    const konteksPertanyaan = await cariKonteksPertanyaan(teksTerakhir)
     const blok = [
       konteksAi.operasional ? `KONDISI APLIKASI SAAT INI:\n${konteksAi.operasional}` : null,
       konteksAi.audit ? `RIWAYAT AUDIT TERBARU:\n${konteksAi.audit}` : null,
+      konteksPertanyaan ? `DATA RELEVAN DARI DATABASE (hasil pencarian untuk pertanyaan pengguna):\n${konteksPertanyaan}` : null,
       body?.context?.isi?.trim() ? `KONTEKS TAMBAHAN DARI PENGGUNA:\n${body.context.isi.trim()}` : null,
     ].filter(Boolean) as string[]
 
@@ -55,7 +57,7 @@ export async function POST(request: Request) {
       if (stTiket) blok.push(`STATUS TIKET YANG DIMINTA:\n${stTiket}`)
     }
 
-    const pesan: ChatMessage[] = [{ role: 'system', content: 'Kamu adalah AI Asisten AfterSales Pro — asisten untuk layanan sparepart (tiket service, sparepart, klaim produsen, kunjungan toko, stok, SLA). Jawab dalam Bahasa Indonesia, praktis, ringkas, dan apa adanya. Gunakan konteks kondisi aplikasi bila tersedia untuk membantu analisis.' }]
+    const pesan: ChatMessage[] = [{ role: 'system', content: 'Kamu adalah AI Asisten AfterSales Pro — asisten untuk layanan sparepart (tiket service, sparepart, klaim produsen, kunjungan toko, stok, SLA). Jawab dalam Bahasa Indonesia, praktis, ringkas, dan apa adanya. Kamu SUDAH diberi data dari database pada bagian KONDISI APLIKASI dan DATA RELEVAN: gunakan data itu apa adanya (sebutkan kode toko, nomor tiket, SN, model, jumlah, status part). Jangan mengatakan "tidak ada informasi" bila datanya ada di konteks; baru katakan tidak ditemukan bila memang tidak tercantum.' }]
     if (blok.length > 0) pesan.push({ role: 'system', content: blok.join('\n\n') })
     pesan.push(...riwayat)
 
