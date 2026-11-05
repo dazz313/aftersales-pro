@@ -79,6 +79,8 @@ export default function AnalisaAiView() {
         </div>
       </div>
 
+      {/* ===== Dua kolom: Ringkasan AI (kiri) + Chat AI (kanan) di desktop ===== */}
+      <div className="grid gap-4 lg:grid-cols-2">
       {/* ===== Ringkasan operasional ===== */}
       <Card className="overflow-hidden border-slate-200/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
         <div className="h-1 bg-gradient-to-r from-violet-500 via-fuchsia-400 to-violet-300" />
@@ -157,6 +159,7 @@ export default function AnalisaAiView() {
 
       {/* ===== Chat AI interaktif ===== */}
       <AiChat />
+      </div>
 
       <p className="text-center text-[11px] text-slate-400">
         Ditenagai 9router di mesin ini · atur model & kunci di Pengaturan → AI Suggest · data yang dikirim hanya ringkasan operasional.
