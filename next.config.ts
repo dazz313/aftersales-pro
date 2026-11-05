@@ -42,7 +42,7 @@ const nextConfig: NextConfig = {
   },
   // Sertakan Prisma client + engine di standalone build (wajib untuk versi desktop)
   outputFileTracingIncludes: {
-    "/*": ["./node_modules/.prisma/**", "./node_modules/@prisma/**", "./node_modules/pdfjs-dist/**", "./node_modules/next/dist/server/mcp/**"],
+    "/*": ["./node_modules/.prisma/**", "./node_modules/@prisma/**", "./node_modules/pdfjs-dist/**", "./node_modules/next/dist/server/**"],
   },
   // Jangan salin folder data repo ke dalam output standalone:
   // db/ (custom.db + backup + snapshot), upload/, download/ dan .cache/
