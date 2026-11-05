@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T03:03:25.782Z",
+  "generatedAt": "2026-11-05T04:51:40.646Z",
   "masterToko": [
     {
       "id": 257,
@@ -5417,7 +5417,7 @@
           "sparepartId": 309,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -5432,7 +5432,7 @@
           "sparepartId": 310,
           "qty": 1,
           "statusPart": "ORDER_PRODUSEN",
-          "statusKonfirmasi": "MENUNGGU",
+          "statusKonfirmasi": "TIDAK_READY",
           "sumberPart": "PRODUSEN",
           "tglPasang": null,
           "pasangOleh": null,
@@ -9884,6 +9884,15 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1331,
+      "aksi": "AUTO_TIDAK_READY_STALE",
+      "entitas": "service_request",
+      "entitasId": "SVC-2609-0005",
+      "deskripsi": "Tiket tidak ada aktivitas > 6 hari — 2 part otomatis ditandai TIDAK_READY",
+      "aktor": "SYSTEM-STALE",
+      "createdAt": "2026-11-05T04:51:40.618Z"
+    },
     {
       "id": 1330,
       "aksi": "UPDATE_UNIT_ASSET",
@@ -18874,15 +18883,6 @@
       "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-14T01:22:13.474Z"
-    },
-    {
-      "id": 294,
-      "aksi": "UPDATE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": "TOK-038",
-      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T01:20:05.757Z"
     }
   ],
   "backupLog": [
