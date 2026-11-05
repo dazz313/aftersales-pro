@@ -68,6 +68,20 @@ async function cariTokoDariBarcode(barcode: string) {
   ) as { id: number; kodeToko: string; namaToko: string } | undefined) ?? null
 }
 
+/** Cek apakah foto serupa sudah masuk inbox baru-baru ini (dedup pengirim ulang). */
+async function cariDuplikatInbox(pengirim: string, barcode: string | null, ocrText: string, folder: InboxKind): Promise<number | null> {
+  const since = new Date(Date.now() - 10 * 60 * 1000)
+  const ocrKey = (ocrText || '').trim().slice(0, 200)
+  const where: Record<string, unknown> = { pengirim, folder, createdAt: { gte: since } }
+  const kandidat = await db.inboxItem.findMany({ where, orderBy: { createdAt: 'desc' }, take: 20, select: { id: true, barcode: true, ocrText: true } })
+  for (const k of kandidat) {
+    const ocrK = (k.ocrText || '').trim().slice(0, 200)
+    if (barcode && k.barcode && k.barcode === barcode) return k.id
+    if (ocrKey.length >= 20 && ocrK === ocrKey) return k.id
+  }
+  return null
+}
+
 function cariTeksLaporan(caption: string, barcode: string | null, ocr: string): string {
   if (/#LAPOR/i.test(caption)) return caption
   if (barcode && /#LAPOR/i.test(barcode)) return barcode
@@ -178,6 +192,11 @@ async function prosesTelegramUpdate(body: TgUpdate, msg: TgMessage) {
 
     // ---- D. Mode TAHAN → inbox ; OTOMATIS → proses langsung ----
     if (mode === 'TAHAN') {
+      const dupId = await cariDuplikatInbox(pengirim, barcode, ocrText, kind)
+      if (dupId) {
+        await balasKeAsal(`♻️ Foto ini terdeteksi duplikat (sudah ada di Inbox #${dupId}). Tidak ditambahkan lagi.`)
+        return NextResponse.json({ ok: true, aksi: 'DUPLIKAT_FOTO_DILEWATI', dupId })
+      }
       await db.inboxItem.create({
         data: {
           pengirim, chatId: String(chatId), fileName, filePath: filePathRel, folder: kind,
@@ -198,6 +217,11 @@ async function prosesTelegramUpdate(body: TgUpdate, msg: TgMessage) {
     if (/#LAPOR/i.test(teksLaporan)) {
       const hasil = await prosesLaporanTeks({ pesan: teksLaporan, pengirim, channel: 'TELEGRAM', foto: filePathRel })
       return NextResponse.json({ folder: kind, file: filePathRel, barcode, ocrText, ...hasil })
+    }
+    const dupId2 = await cariDuplikatInbox(pengirim, barcode, ocrText, kind)
+    if (dupId2) {
+      await balasKeAsal(`♻️ Foto ini terdeteksi duplikat (sudah ada di Inbox #${dupId2}). Tidak ditambahkan lagi.`)
+      return NextResponse.json({ ok: true, aksi: 'DUPLIKAT_FOTO_DILEWATI', dupId: dupId2 })
     }
     await db.inboxItem.create({
       data: { pengirim, chatId: String(chatId), fileName, filePath: filePathRel, folder: kind, caption: caption || null, barcode, barcodeFormat: format, ocrText: ocrText || null, ocrConfidence: conf, status: 'PENDING', hasilRef: tokoCocok ? `TOKO:${tokoCocok.kodeToko}` : null },

@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
-import { Inbox, MapPin, Wrench, Archive, XCircle, ArrowRightLeft, Barcode, ScanText, User } from 'lucide-react'
+import { Inbox, MapPin, Wrench, Archive, XCircle, ArrowRightLeft, Barcode, ScanText, User, Trash2 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import QuickSearch, { matchQuery } from '@/components/quick-search'
 import SearchSelect from '@/components/search-select'
 import HistoryInput from '@/components/history-input'
@@ -38,6 +39,7 @@ export default function InboxView() {
   const [teknisiId, setTeknisiId] = useState<Record<number, string>>({})
   const [alasan, setAlasan] = useState<Record<number, string>>({})
   const [cariInbox, setCariInbox] = useState('')
+  const [selected, setSelected] = useState<Set<number>>(new Set())
 
   const { data, isLoading } = useQuery({
     queryKey: ['inbox', folder, tab],
@@ -64,6 +66,16 @@ export default function InboxView() {
       toast({ title: 'Inbox diproses', description: `Aksi ${String(vars.aksi)} pada #${String(vars.id)} berhasil.` })
     },
     onError: (e: Error) => toast({ title: 'Gagal memproses', description: e.message, variant: 'destructive' }),
+  })
+
+  const hapusMassalMut = useMutation({
+    mutationFn: (ids: number[]) => prosesInbox({ aksi: 'HAPUS_MASSAL', ids }),
+    onSuccess: (res) => {
+      invalidate()
+      setSelected(new Set())
+      toast({ title: 'Inbox dihapus', description: `${String(res.count ?? selected.size)} item dihapus.` })
+    },
+    onError: (e: Error) => toast({ title: 'Gagal menghapus', description: e.message, variant: 'destructive' }),
   })
 
   const defaultTeks = (it: InboxItem) => teks[it.id] ?? [it.caption, it.barcode, it.ocrText].find((s) => s && /#LAPOR/i.test(s)) ?? it.caption ?? it.barcode ?? it.ocrText ?? ''
@@ -103,6 +115,32 @@ export default function InboxView() {
             </TabsList>
           </Tabs>
           <QuickSearch value={cariInbox} onChange={setCariInbox} placeholder="Cari pengirim / caption / barcode / teks…" className="min-w-52 flex-1" resultCount={inboxTampil.length} />
+          <div className="flex flex-wrap items-center gap-2 border-t pt-2">
+            <Button
+              size="sm" variant="outline" className="h-7 text-[11px]"
+              onClick={() => {
+                if (selected.size === inboxTampil.length) setSelected(new Set())
+                else setSelected(new Set(inboxTampil.map((it) => it.id)))
+              }}
+            >
+              {selected.size === inboxTampil.length && inboxTampil.length > 0 ? 'Batal pilih semua' : 'Pilih semua'}
+            </Button>
+            <Button
+              size="sm" variant="outline" className="h-7 border-rose-300 text-[11px] text-rose-600 hover:bg-rose-50"
+              disabled={selected.size === 0 || hapusMassalMut.isPending}
+              onClick={() => {
+                if (confirm(`Hapus ${selected.size} item inbox terpilih? Tindakan ini tidak bisa dibatalkan.`)) {
+                  hapusMassalMut.mutate([...selected])
+                }
+              }}
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" />
+              {hapusMassalMut.isPending ? 'Menghapus…' : `Hapus terpilih (${selected.size})`}
+            </Button>
+            {selected.size > 0 && (
+              <span className="text-[11px] text-slate-500">{selected.size} item dipilih</span>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -120,6 +158,18 @@ export default function InboxView() {
               <Card key={it.id} className={cn(pending && 'border-amber-300')}>
                 <CardContent className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-2">
+                    <Checkbox
+                      checked={selected.has(it.id)}
+                      onCheckedChange={(c) => {
+                        setSelected((prev) => {
+                          const next = new Set(prev)
+                          if (c) next.add(it.id); else next.delete(it.id)
+                          return next
+                        })
+                      }}
+                      aria-label={`Pilih inbox #${it.id}`}
+                      className="mt-0.5"
+                    />
                     <div className="min-w-0">
                       <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
                         <User className="h-3 w-3 text-slate-400" /> {it.pengirim}

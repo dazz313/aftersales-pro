@@ -101,5 +101,57 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, item: done, kunjunganId: kunj.id })
   }
 
+  if (aksi === 'HAPUS') {
+    const { unlink } = await import('node:fs/promises')
+    const { dariRoot } = await import('@/lib/paths')
+    const { basename } = await import('node:path')
+    if (item.filePath) {
+      const safe = basename(item.filePath)
+      const candidates = [
+        dariRoot(item.filePath),
+        dariRoot(`upload/telegram-kunjungan/${safe}`),
+        dariRoot(`upload/telegram-service/${safe}`),
+        dariRoot(`upload/telegram-inbox/${safe}`),
+      ]
+      for (const p of candidates) {
+        try { await unlink(p) } catch { /* file mungkin sudah hilang */ }
+      }
+    }
+    await db.inboxItem.delete({ where: { id } })
+    const { logAudit } = await import('@/lib/audit')
+    await logAudit({ aksi: 'INBOX_HAPUS', entitas: 'inbox_item', entitasId: String(id), deskripsi: `Inbox #${id} [${folder}] dihapus massal/single`, aktor })
+    await autoGitBackup('DELETE', 'inbox_item', `#${id}`, aktor)
+    return NextResponse.json({ ok: true, id })
+  }
+
+  if (aksi === 'HAPUS_MASSAL') {
+    const ids = (body.ids as number[] | undefined) ?? []
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'Daftar id kosong.' }, { status: 400 })
+    }
+    const { unlink } = await import('node:fs/promises')
+    const { dariRoot } = await import('@/lib/paths')
+    const { basename } = await import('node:path')
+    const items = await db.inboxItem.findMany({ where: { id: { in: ids } }, select: { id: true, filePath: true } })
+    for (const it of items) {
+      if (!it.filePath) continue
+      const safe = basename(it.filePath)
+      const candidates = [
+        dariRoot(it.filePath),
+        dariRoot(`upload/telegram-kunjungan/${safe}`),
+        dariRoot(`upload/telegram-service/${safe}`),
+        dariRoot(`upload/telegram-inbox/${safe}`),
+      ]
+      for (const p of candidates) {
+        try { await unlink(p) } catch { /* abaikan */ }
+      }
+    }
+    await db.inboxItem.deleteMany({ where: { id: { in: ids } } })
+    const { logAudit } = await import('@/lib/audit')
+    await logAudit({ aksi: 'INBOX_HAPUS_MASSAL', entitas: 'inbox_item', entitasId: ids.join(','), deskripsi: `Hapus massal ${ids.length} item inbox`, aktor })
+    await autoGitBackup('DELETE', 'inbox_item', `#${ids.join(',')}`, aktor)
+    return NextResponse.json({ ok: true, count: ids.length })
+  }
+
   return NextResponse.json({ error: 'Aksi tidak dikenal.' }, { status: 400 })
 }
