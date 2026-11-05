@@ -30,9 +30,40 @@ export async function POST(request: Request) {
   }
   const body = await request.json()
   const { aksi, id } = body as { aksi: string; id: number }
+
+  // Hapus massal tidak butuh satu item tunggal — tangani sebelum lookup single.
+  if (aksi === 'HAPUS_MASSAL') {
+    const ids = (body.ids as number[] | undefined) ?? []
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'Daftar id kosong.' }, { status: 400 })
+    }
+    const { unlink } = await import('node:fs/promises')
+    const { dariRoot } = await import('@/lib/paths')
+    const { basename } = await import('node:path')
+    const items = await db.inboxItem.findMany({ where: { id: { in: ids } }, select: { id: true, filePath: true } })
+    for (const it of items) {
+      if (!it.filePath) continue
+      const safe = basename(it.filePath)
+      const candidates = [
+        dariRoot(it.filePath),
+        dariRoot(`upload/telegram-kunjungan/${safe}`),
+        dariRoot(`upload/telegram-service/${safe}`),
+        dariRoot(`upload/telegram-inbox/${safe}`),
+      ]
+      for (const p of candidates) {
+        try { await unlink(p) } catch { /* abaikan */ }
+      }
+    }
+    await db.inboxItem.deleteMany({ where: { id: { in: ids } } })
+    const { logAudit } = await import('@/lib/audit')
+    await logAudit({ aksi: 'INBOX_HAPUS_MASSAL', entitas: 'inbox_item', entitasId: ids.join(','), deskripsi: `Hapus massal ${ids.length} item inbox`, aktor: role ?? 'SYSTEM' })
+    await autoGitBackup('DELETE', 'inbox_item', `#${ids.join(',')}`, role ?? 'SYSTEM')
+    return NextResponse.json({ ok: true, count: ids.length })
+  }
+
   const item = await db.inboxItem.findUnique({ where: { id } })
   if (!item) return NextResponse.json({ error: 'Item inbox tidak ditemukan.' }, { status: 404 })
-  if (item.status !== 'PENDING') return NextResponse.json({ error: `Item sudah diproses (${item.status}).` }, { status: 409 })
+  if (item.status !== 'PENDING' && aksi !== 'HAPUS') return NextResponse.json({ error: `Item sudah diproses (${item.status}).` }, { status: 409 })
   const aktor = body.aktor || role
   const folder = item.folder as InboxKind
 
@@ -122,35 +153,6 @@ export async function POST(request: Request) {
     await logAudit({ aksi: 'INBOX_HAPUS', entitas: 'inbox_item', entitasId: String(id), deskripsi: `Inbox #${id} [${folder}] dihapus massal/single`, aktor })
     await autoGitBackup('DELETE', 'inbox_item', `#${id}`, aktor)
     return NextResponse.json({ ok: true, id })
-  }
-
-  if (aksi === 'HAPUS_MASSAL') {
-    const ids = (body.ids as number[] | undefined) ?? []
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json({ error: 'Daftar id kosong.' }, { status: 400 })
-    }
-    const { unlink } = await import('node:fs/promises')
-    const { dariRoot } = await import('@/lib/paths')
-    const { basename } = await import('node:path')
-    const items = await db.inboxItem.findMany({ where: { id: { in: ids } }, select: { id: true, filePath: true } })
-    for (const it of items) {
-      if (!it.filePath) continue
-      const safe = basename(it.filePath)
-      const candidates = [
-        dariRoot(it.filePath),
-        dariRoot(`upload/telegram-kunjungan/${safe}`),
-        dariRoot(`upload/telegram-service/${safe}`),
-        dariRoot(`upload/telegram-inbox/${safe}`),
-      ]
-      for (const p of candidates) {
-        try { await unlink(p) } catch { /* abaikan */ }
-      }
-    }
-    await db.inboxItem.deleteMany({ where: { id: { in: ids } } })
-    const { logAudit } = await import('@/lib/audit')
-    await logAudit({ aksi: 'INBOX_HAPUS_MASSAL', entitas: 'inbox_item', entitasId: ids.join(','), deskripsi: `Hapus massal ${ids.length} item inbox`, aktor })
-    await autoGitBackup('DELETE', 'inbox_item', `#${ids.join(',')}`, aktor)
-    return NextResponse.json({ ok: true, count: ids.length })
   }
 
   return NextResponse.json({ error: 'Aksi tidak dikenal.' }, { status: 400 })
