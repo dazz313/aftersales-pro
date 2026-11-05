@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T21:03:14.112Z",
+  "generatedAt": "2026-11-05T03:03:25.782Z",
   "masterToko": [
     {
       "id": 257,
@@ -4225,7 +4225,7 @@
       "modelUnit": "PS-230 BIT",
       "merk": "Shimizu",
       "nama": "pompa air",
-      "kerusakanAwal": "MOTOR RUSAK",
+      "kerusakanAwal": "AS, IMPELLER, DAN CASING RUSAK",
       "tokoId": 243,
       "customerId": null,
       "statusGaransi": "STOK_TOKO",
@@ -9884,6 +9884,24 @@
     }
   ],
   "auditLog": [
+    {
+      "id": 1330,
+      "aksi": "UPDATE_UNIT_ASSET",
+      "entitas": "unit_asset",
+      "entitasId": "ZR381135",
+      "deskripsi": "Data unit diperbarui: modelUnit, merk, nama, kerusakanAwal, tokoId, customerId, statusGaransi, tglPembelian (ZR381135)",
+      "aktor": "TEKNISI",
+      "createdAt": "2026-11-05T03:03:25.760Z"
+    },
+    {
+      "id": 1329,
+      "aksi": "LOGIN_GAGAL",
+      "entitas": "auth",
+      "entitasId": "budi@teknikjaya.co.id",
+      "deskripsi": "Percobaan login gagal untuk \"budi@teknikjaya.co.id\" (IP 127.0.0.1)",
+      "aktor": "budi@teknikjaya.co.id",
+      "createdAt": "2026-11-05T00:55:12.859Z"
+    },
     {
       "id": 1328,
       "aksi": "BACKUP_DATA",
@@ -18865,24 +18883,6 @@
       "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
       "aktor": "ADMIN_WORKSHOP",
       "createdAt": "2026-10-14T01:20:05.757Z"
-    },
-    {
-      "id": 293,
-      "aksi": "UPDATE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": "TOK-036",
-      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T01:19:52.299Z"
-    },
-    {
-      "id": 292,
-      "aksi": "UPDATE_MASTER_TOKO",
-      "entitas": "master_toko",
-      "entitasId": "TOK-010",
-      "deskripsi": "Data toko diperbarui: namaToko, alamat, kontak, frekuensiVisit",
-      "aktor": "ADMIN_WORKSHOP",
-      "createdAt": "2026-10-14T01:19:42.992Z"
     }
   ],
   "backupLog": [
