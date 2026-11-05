@@ -41,6 +41,7 @@ export async function POST(request: Request) {
     const map: Record<string, string> = {}
     for (const r of rows) map[r.kunci] = r.nilai
     const cfg = resolveAiConfig(map)
+    let modelDipakai = cfg.model
 
     const konteksAi = await kumpulkanKonteks()
     const blok = [
@@ -58,14 +59,18 @@ export async function POST(request: Request) {
     if (blok.length > 0) pesan.push({ role: 'system', content: blok.join('\n\n') })
     pesan.push(...riwayat)
 
-    const hasil = await chatCompletion(cfg, pesan, { maxTokens: 2000, timeoutMs: AI_TIMEOUT_MS })
+    const hasil = await chatCompletion(cfg, pesan, {
+      maxTokens: 2000,
+      timeoutMs: AI_TIMEOUT_MS,
+      onModelUsed: (m) => { modelDipakai = m },
+    })
     await logAudit({
       aksi: 'AI_CHAT',
       entitas: 'ai_chat',
       deskripsi: `Percakapan AI: ${teksTerakhir.slice(0, 120)}`,
       aktor: session?.nama ?? 'SYSTEM',
     })
-    return NextResponse.json({ reply: hasil, model: cfg.model })
+    return NextResponse.json({ reply: hasil, model: modelDipakai })
   } catch (error) {
     console.error('AI chat error:', error)
     return NextResponse.json({ error: (error as Error).message || 'Gagal membalas chat AI' }, { status: 502 })

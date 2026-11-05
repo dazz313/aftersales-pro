@@ -9,7 +9,7 @@ import { DatabaseSync } from 'node:sqlite'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-export const AI_DEFAULT_BASE_URL = 'http://localhost:20128/v1'
+export const AI_DEFAULT_BASE_URL = 'http://127.0.0.1:20128/v1'
 export const AI_DEFAULT_MODEL = 'kr/claude-haiku-4.5'
 /**
  * Anggaran total satu permintaan AI (detik). Dijaga di bawah ±100 detik agar
@@ -91,25 +91,68 @@ function bacaIsi(obj: unknown): HasilAi {
 }
 
 /**
+ * Ambil objek JSON pertama yang kurung kurawalnya seimbang dari sebuah teks.
+ * Dipakai untuk membuang ekor/awalan non-JSON (mis. spasi atau `data: [DONE]`
+ * yang menempel di belakang body).
+ */
+function ambilObjekJson(teks: string): unknown | null {
+  const mulai = teks.indexOf('{')
+  if (mulai < 0) return null
+  let kedalaman = 0
+  let dalamString = false
+  let escape = false
+  for (let i = mulai; i < teks.length; i++) {
+    const c = teks[i]
+    if (dalamString) {
+      if (escape) escape = false
+      else if (c === '\\') escape = true
+      else if (c === '"') dalamString = false
+      continue
+    }
+    if (c === '"') {
+      dalamString = true
+      continue
+    }
+    if (c === '{') kedalaman++
+    else if (c === '}') {
+      kedalaman--
+      if (kedalaman === 0) {
+        try {
+          return JSON.parse(teks.slice(mulai, i + 1)) as unknown
+        } catch {
+          return null
+        }
+      }
+    }
+  }
+  return null
+}
+
+/**
  * 9router tidak konsisten: sebagian provider membalas JSON biasa, sebagian SSE
  * (`data: {...}`), dan ada yang mengirim JSON utuh TANPA awalan `data:` lalu
- * diakhiri `data: [DONE]`. Semua bentuk harus terbaca.
+ * ditempeli `data: [DONE]` TANPA baris baru (mis. OpenRouter). Semua bentuk
+ * harus terbaca — kalau tidak, jawaban valid dianggap kosong lalu AI jatuh ke
+ * model cadangan (Kiro) atau gagal total.
  */
 function bacaJawaban(mentah: string): HasilAi {
   const utuh = (() => {
     try {
       return JSON.parse(mentah.trim()) as unknown
     } catch {
-      return null
+      // JSON + ekor `data: [DONE]` — ambil objek JSON seimbangnya saja.
+      return ambilObjekJson(mentah)
     }
   })()
   if (utuh) {
     const hasil = bacaIsi(utuh)
     if (hasil.teks || hasil.alasan) return hasil
   }
+  // Pisahkan penanda `data:` yang menempel pada penutup JSON (`}data:`).
+  const siapSse = mentah.replace(/}(\s*)data:/g, '}$1\ndata:').replace(/](\s*)data:/g, ']$1\ndata:')
   const potongan: string[] = []
   const alasan: string[] = []
-  for (const baris of mentah.split('\n')) {
+  for (const baris of siapSse.split('\n')) {
     let t = baris.trim()
     if (!t) continue
     if (t.startsWith('data:')) t = t.slice(5).trim()

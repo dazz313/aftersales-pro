@@ -35,14 +35,14 @@ export async function GET(request: Request) {
   try {
     res = await fetch(`${cfg.baseUrl}/models`, {
       headers: { Authorization: `Bearer ${cfg.apiKey}` },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(40000),
     })
   } catch {
     return NextResponse.json({
       ok: false,
       models: [],
       error:
-        'Gateway AI tidak merespons dalam 15 detik — 9router sedang bermasalah (cek OAuth provider di dashboardnya). Isi nama model secara manual.',
+        'Gateway AI tidak merespons dalam 40 detik — 9router sedang sibuk/bermasalah (cek OAuth provider di dashboardnya). Isi nama model secara manual.',
     })
   }
   const j = (await res.json().catch(() => null)) as {

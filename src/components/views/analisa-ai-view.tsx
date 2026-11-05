@@ -342,7 +342,7 @@ export default function AnalisaAiView() {
             <div>
               <div className="mb-2 flex items-center justify-between gap-2">
                 <Badge variant="outline" className="border-violet-300 text-[10px] text-violet-700">AI · {aiJadwal.model}</Badge>
-                <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-slate-400 hover:text-slate-700" onClick={() => setAiJadwal(null)}>
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-slate-400 hover:text-slate-700" onClick={() => queryClient.setQueryData(['ai-jadwal'], null)}>
                   <X className="mr-1 h-3 w-3" /> Tutup
                 </Button>
               </div>
@@ -421,7 +421,7 @@ export default function AnalisaAiView() {
             <div className="rounded-xl border border-violet-300 bg-violet-50/50 p-2.5">
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <Badge variant="outline" className="border-violet-300 text-[10px] text-violet-700">AI · {aiPart.model}</Badge>
-                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => setAiPart(null)} aria-label="Tutup rekomendasi">
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => queryClient.setQueryData(['ai-rekomendasi'], null)} aria-label="Tutup rekomendasi">
                   <X className="h-3 w-3" />
                 </Button>
               </div>
@@ -504,7 +504,7 @@ export default function AnalisaAiView() {
                 variant={trenPeriode === p ? 'default' : 'outline'}
                 className={cn('h-7 px-2 text-[11px]', trenPeriode === p ? 'bg-rose-600 hover:bg-rose-700' : 'border-rose-300 text-rose-700 hover:bg-rose-50')}
                 disabled={trenMut.isPending}
-                onClick={() => { setTrenPeriode(p); setTren(null) }}
+                onClick={() => { setTrenPeriode(p); queryClient.setQueryData(['ai-tren'], null) }}
               >
                 {p === 'MINGGU' ? 'Mingguan' : p === 'BULAN' ? 'Bulanan' : 'Tahunan'}
               </Button>
@@ -552,7 +552,7 @@ export default function AnalisaAiView() {
                 <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-2.5">
                   <div className="mb-1 flex items-center justify-between gap-2">
                     <Badge variant="outline" className="border-rose-300 text-[10px] text-rose-700">AI · {tren.model}</Badge>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => setTren({ ...tren, narasi: null })} aria-label="Tutup narasi">
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => queryClient.setQueryData(['ai-tren'], { ...tren, narasi: null })} aria-label="Tutup narasi">
                       <X className="h-3 w-3" />
                     </Button>
                   </div>
@@ -622,7 +622,7 @@ export default function AnalisaAiView() {
               type="file"
               accept=".xlsx,.xls,.csv"
               className="h-9 text-[11px] file:mr-2 file:h-7 file:rounded-md file:border-0 file:bg-sky-100 file:px-2 file:text-[11px] file:text-sky-800"
-              onChange={(e) => { setFileAnalisa(e.target.files?.[0] ?? null); setHasilUpload(null) }}
+              onChange={(e) => { setFileAnalisa(e.target.files?.[0] ?? null); queryClient.setQueryData(['ai-upload'], null) }}
             />
             {fileAnalisa && <p className="font-mono text-[10px] text-slate-500">{fileAnalisa.name} · {(fileAnalisa.size / 1024).toFixed(0)} KB</p>}
           </div>
@@ -649,7 +649,7 @@ export default function AnalisaAiView() {
                 <div className="flex items-center gap-1">
                   <Badge variant="outline" className="text-[10px]">{hasilUpload.fileMeta.jumlahBaris} baris</Badge>
                   <Badge variant="outline" className="text-[10px]">{hasilUpload.fileMeta.kolom.length} kolom</Badge>
-                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => setHasilUpload(null)} aria-label="Tutup hasil analisa">
+                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-700" onClick={() => queryClient.setQueryData(['ai-upload'], null)} aria-label="Tutup hasil analisa">
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
