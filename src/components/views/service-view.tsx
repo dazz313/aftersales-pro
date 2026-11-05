@@ -133,7 +133,19 @@ export default function ServiceView() {
   const [alurFilter, setAlurFilter] = useState<AlurSj | 'SEMUA'>('SEMUA')
   const [cariTiket, setCariTiket] = useState('')
   // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => {
+    try {
+      const raw = localStorage.getItem('aspro_selected_ids')
+      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
+    } catch {
+      return new Set<number>()
+    }
+  })
+  // Simpan pilihan tiket (surat jalan/STTB) ke localStorage agar tidak hilang
+  // saat berpindah mode/view; hanya dihapus manual (Reset) atau kolektif.
+  useEffect(() => {
+    try { localStorage.setItem('aspro_selected_ids', JSON.stringify([...selectedIds])) } catch { /* abaikan */ }
+  }, [selectedIds])
   const [sjOpen, setSjOpen] = useState(false)
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
   const [tiketEdit, setTiketEdit] = useState(false)

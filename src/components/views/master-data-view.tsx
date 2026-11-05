@@ -124,7 +124,17 @@ export default function MasterDataView() {
   const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
   const bisaHapusToko = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
   // Hapus massal unit (centang baris tanpa tiket lalu hapus sekaligus)
-  const [unitDipilih, setUnitDipilih] = useState<Set<number>>(new Set())
+  const [unitDipilih, setUnitDipilih] = useState<Set<number>>(() => {
+    try {
+      const raw = localStorage.getItem('aspro_unit_dipilih')
+      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
+    } catch {
+      return new Set<number>()
+    }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('aspro_unit_dipilih', JSON.stringify([...unitDipilih])) } catch { /* abaikan */ }
+  }, [unitDipilih])
   const [hapusUnitOpen, setHapusUnitOpen] = useState(false)
   const [editCust, setEditCust] = useState<Customer | null>(null)
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
