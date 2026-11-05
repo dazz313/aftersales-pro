@@ -166,7 +166,7 @@ export default function KomunikasiView() {
   return (
     <div className="grid gap-4 xl:grid-cols-2 xl:items-start">
       {/* ===== KIRI — MiniChat (chat antar akun) ===== */}
-      <Card className="flex h-[30rem] min-h-0 flex-col xl:h-[36rem]">
+      <Card className="flex min-h-[24rem] flex-col xl:h-[36rem]">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <MessageSquare className="h-4 w-4 text-emerald-600" /> MiniChat
@@ -194,7 +194,7 @@ export default function KomunikasiView() {
       </Card>
 
       {/* ===== KANAN — Notes (papan catatan bersama) ===== */}
-      <Card className="flex h-[30rem] min-h-0 flex-col xl:h-[36rem]">
+      <Card className="flex min-h-[24rem] flex-col xl:h-[36rem]">
         <CardHeader className="flex-row items-start justify-between gap-2 space-y-0 pb-2">
           <div className="min-w-0">
             <CardTitle className="flex items-center gap-2 text-base">

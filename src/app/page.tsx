@@ -430,7 +430,7 @@ export default function Home() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-4 sm:p-6 pb-10">
+        <main className="flex-1 p-4 sm:p-6 pb-24 lg:pb-10">
           {view === 'dashboard' && (
             <div className="space-y-4">
               <QuickActions />

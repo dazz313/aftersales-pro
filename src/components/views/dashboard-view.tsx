@@ -185,7 +185,7 @@ export default function DashboardView() {
 
   if (isLoading || !dash) {
     return (
-      <div className="h-[calc(100dvh-9rem)] space-y-4 overflow-y-auto pr-1">
+      <div className="space-y-4 overflow-y-auto pr-1 md:h-[calc(100dvh-9rem)]">
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-5">
           {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
         </div>
