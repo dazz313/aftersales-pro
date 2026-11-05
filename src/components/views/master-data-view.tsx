@@ -1554,7 +1554,7 @@ export default function MasterDataView() {
 
       {/* Dialog quick input kode+nama part → tiket otomatis PROSES bila ready */}
       <Dialog open={!!partUnit} onOpenChange={(o) => !o && setPartUnit(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Input Part Unit</DialogTitle>
             <DialogDescription>
@@ -1671,7 +1671,7 @@ export default function MasterDataView() {
       {/* Dialog Input Part Kurang — data tersimpan (PENDING), kirim email ke produsen
           menyusul di tahap berikutnya; data ini melengkapi PDF Detail Unit */}
       <Dialog open={!!partKurangUnit} onOpenChange={(o) => !o && setPartKurangUnit(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Input Part Kurang</DialogTitle>
             <DialogDescription>
