@@ -1,0 +1,704 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// MODUL 1.3 - Master Employee & User Management
+// ==========================================
+model Pengguna {
+  id           Int         @id @default(autoincrement())
+  nama         String
+  email        String      @unique
+  username     String?     @unique // login alternatif selain email
+  kodeTeknisi  String?     @unique // kode teknisi/karyawan (mis. TKN-001), opsional & unik
+  passwordHash String? // scrypt: scrypt$<salt>$<hash> (null = belum bisa login)
+  role         String      @default("TEKNISI") // ADMIN_WORKSHOP | TEKNISI | MANAGER | PRODUSEN
+  noWa         String?
+  wilayahKerja String? // pemetaan wilayah kerja teknisi
+  aktif        Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  kunjungan    Kunjungan[]
+  notifikasiBaca NotifikasiBaca[]
+  chatTerkirim   ChatPesan[] @relation("chatTerkirim")
+  chatDiterima   ChatPesan[] @relation("chatDiterima")
+  catatans       Catatan[]        @relation("catatanPenulis")
+  catatanBalasan CatatanBalasan[] @relation("catatanBalasan")
+}
+
+// ==========================================
+// 1. Master Store Table (master_toko)
+// ==========================================
+model MasterToko {
+  id               Int               @id @default(autoincrement())
+  kodeToko         String            @unique
+  namaToko         String
+  alamat           String?
+  kontak           String?
+  frekuensiVisit   Int               @default(14) // siklus kunjungan dalam hari
+  // Toko masih beroperasi — centang "Tidak aktif" (false) bila toko ditutup/
+  // berhenti dikunjungi; toko nonaktif dikucilkan dari siklus & alert visit.
+  aktif            Boolean           @default(true)
+  // Mode siklus kunjungan: REGULER = otomatis per frekuensiVisit |
+  // BY_REQUEST = kunjungan hanya dilakukan saat toko meminta (tanpa alert telat).
+  modeSiklus       String            @default("REGULER")
+  tglVisitTerakhir DateTime?
+  barcodeToko      String            @unique @default("") // barcode per-TOKO (bukan per unit) untuk identifikasi kunjungan
+  jarakKm          Float? // jarak toko dari workshop (km) — diisi manual; otomatis setelah maps terintegrasi
+  createdAt        DateTime          @default(now())
+  // Koordinat posisi toko — diisi otomatis via Nominatim/OpenStreetMap (gratis,
+  // tanpa API key) dari alamat saat peta pertama kali dibuka, atau diset manual
+  // dengan klik di peta oleh Admin/Manager. Null = belum ditetapkan.
+  latitude         Float?
+  longitude        Float?
+  unitAssets       UnitAsset[]
+  kunjungan        Kunjungan[]
+  orders           PermintaanOrder[]
+}
+
+// ==========================================
+// 2. Master Customer Table (master_customer)
+// ==========================================
+model MasterCustomer {
+  id         Int               @id @default(autoincrement())
+  nama       String
+  noWa       String?
+  alamat     String?
+  createdAt  DateTime          @default(now())
+  unitAssets UnitAsset[]
+  orders     PermintaanOrder[]
+}
+
+// ==========================================
+// 3. Master Sparepart Table (master_sparepart)
+// ==========================================
+model MasterSparepart {
+  id              Int                  @id @default(autoincrement())
+  kodePart        String               @unique
+  namaPart        String
+  // 5 komponen utama sparepart:
+  // 1. kodePart (kode sparepart) · 2. namaPart (nama sparepart)
+  // 3. brandKompatibel (brand kompatibel, koma-dipisah mis. "Miyako, Rinnai")
+  // 4. stokJual (bisa dijual) + stokGaransi (stok garansi/klaim) — stokInventory = total
+  // 5. supplier (nama supplier)
+  brandKompatibel String               @default("")
+  supplier        String               @default("")
+  // Stok BRAND (fisik di gudang) — hanya bergerak saat stok masuk/keluar gudang.
+  stokJual        Int                  @default(0)
+  stokGaransi     Int                  @default(0)
+  stokInventory   Int                  @default(0)
+  // Pemakaian per unit — part ORDER khusus unit TIDAK menyentuh stok brand,
+  // hanya dicatat di sini agar "banyaknya part terpakai" tetap terlihat.
+  totalTerpakai   Int                  @default(0)
+  reorderLimit    Int                  @default(5)
+  hargaKlaim      Float                @default(0) // nilai klaim per unit ke produsen
+  createdAt       DateTime             @default(now())
+  serviceParts    ServiceRequestPart[]
+  orders          PermintaanOrder[]
+}
+
+// ==========================================
+// 4. Unit Asset / Barcode Table (unit_asset)
+// Format isi QR stiker: SN:[nomor seri]|MOD:[model]|TOK:[toko/customer]|NAMA:[nama produk]
+// ==========================================
+model UnitAsset {
+  id              Int              @id @default(autoincrement())
+  serialNumber    String           // opsional — boleh kosong (diisi belakangan lewat Edit Unit); tidak lagi unique karena beberapa unit boleh tanpa nomor seri
+  modelUnit       String
+  merk            String           @default("") // merk/brand unit (mis. Miyako, Shimizu)
+  nama            String           @default("") // nama panggilan unit (mis. "Kipas Ruang Tamu")
+  // Kerusakan unit sebagai DIAGNOSA AWAL (bahasa awam utk customer) — dicatat
+  // saat registrasi SEBELUM kode part terbit, agar unit yang lama menunggu
+  // tetap punya catatan kelengkel & tidak "lost" tanpa dokumentasi kerusakan.
+  kerusakanAwal   String?
+  tokoId          Int?
+  customerId      Int?
+  statusGaransi   String           @default("GARANSI") // STOK_TOKO | GARANSI | NON_GARANSI
+  tglPembelian    DateTime?
+  createdAt       DateTime         @default(now())
+  toko            MasterToko?      @relation(fields: [tokoId], references: [id])
+  customer        MasterCustomer?  @relation(fields: [customerId], references: [id])
+  serviceRequests ServiceRequest[]
+  orderEmailParts OrderEmailPart[]
+
+  @@index([tokoId])
+  @@index([customerId])
+  @@index([serialNumber])
+}
+
+// ==========================================
+// 5. Onsite Store Visit Table (kunjungan)
+// ==========================================
+model Kunjungan {
+  id               Int        @id @default(autoincrement())
+  tokoId           Int
+  teknisiId        Int
+  tglKunjungan     DateTime   @default(now())
+  metodeCheckin    String     @default("MANUAL") // SCAN_BARCODE (scan barcode toko) | MANUAL
+  barcodeTerscan   String? // nilai barcode toko yang dipindai
+  fotoOnsite       String?
+  catatanStokRusak String?
+  toko             MasterToko @relation(fields: [tokoId], references: [id])
+  teknisi          Pengguna   @relation(fields: [teknisiId], references: [id])
+
+  @@index([tokoId])
+  @@index([teknisiId])
+  @@index([tglKunjungan])
+}
+
+// ==========================================
+// 6. Service Request Main Table (service_request)
+// status: REQUEST | PROSES | FINISH
+// status_klaim_produsen: DRAFT | SUBMITTED | PAID
+// --- Alur service lapangan (toko → produsen → workshop → toko):
+// sumberLaporan: KUNJUNGAN | LAPORAN_TOKO | LAPORAN_CUSTOMER | WA_BOT | MANUAL
+// lokasiUnit: TOKO (unit di toko) | WORKSHOP (ditarik via STTB)
+// penanganan: BELUM | TUNGGU_PART_TOKO (teregistrasi, simpan di toko krn part tidak ready)
+//             | DI_TOKO (dikerjakan di toko) | TARIK_WORKSHOP (ditarik + STTB)
+// noSuratJalan: nomor SJ saat part rusak dikirim ke produsen
+// sttbDicabut: true saat unit kembali ke toko (STTB dicabut)
+// noSttbKolektif: nomor STTB-kolektif (STTBK) yang SAHITAN-nya ditarik —
+//   mencatat stikker kertas = realita: hanya tiket yg benar-benar ditarik
+//   ke workshop yang dibubuhkan nomor dokumen STTB-nya (penukaran ganda aman).
+// noSuratKembali: nomor Surat Pengembalian Barang (SKTB) terbit — ditulis saat
+//   surat pengembalian dicetak, sebelum maupun sesudah unit tertulis kembali.
+// ==========================================
+model ServiceRequest {
+  id                  Int                  @id @default(autoincrement())
+  noTiket             String               @unique
+  unitAssetId         Int
+  status              String               @default("REQUEST")
+  noSttb              String?
+  sumberLaporan       String               @default("MANUAL")
+  tipeCustomer        String               @default("PERORANGAN") // TOKO (stok toko → otomatis garansi) | PERORANGAN
+  lokasiUnit          String               @default("TOKO")
+  penanganan          String               @default("BELUM")
+  noSuratJalan        String?
+  sttbDicabut         Boolean              @default(false)
+  tglKembaliKeToko    DateTime?
+  noSttbKolektif      String? // nomor STTB kolektif pengeluaran unit ditarik (STTBK-...)
+  noSuratKembali      String? // nomor Surat Pengembalian Barang (SKTB-...) yang mencakup unit
+  deskripsiKerusakan  String?
+  fotoKerusakanWa     String?
+  fotoNotaStempel     String?
+  tandaTanganDigital  String?
+  slaFlag             Boolean              @default(false) // ALT-02 flag merah
+  statusKlaimProdusen String               @default("DRAFT")
+  tglKlaim            DateTime?
+  biayaJasa           Float                @default(0)
+  tglFinish           DateTime?
+  tglTiket            DateTime             @default(now()) // tanggal kejadian/laporan — boleh backdated (data historis)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  // Tanda koreksi (mis. salah input part baru ditemukan setelah FINISH) —
+  // ditampilkan sebagai badge kecil "(edited)" untuk kepentingan pemeriksaan.
+  editedAt            DateTime?
+  editedBy            String?
+  // Nomor surat jalan produsen & tanggal datangnya part — diisi otomatis
+  // oleh modul "Part Masuk (Surat Jalan Produsen)" saat barang cocok diterima.
+  noSuratJalanProdusen String?
+  tglPartDatang        DateTime?
+  // Tanggal klik "Surat Jalan" (request part ke produsen) — diisi otomatis
+  // saat dokumen SJR dibuat; tampil di bawah badge REQUEST pada baris tiket
+  // agar jelas kapan part diorder (part sering datang tidak serentak).
+  tglRequestPart       DateTime?
+  unitAsset           UnitAsset            @relation(fields: [unitAssetId], references: [id])
+  parts               ServiceRequestPart[]
+  // Lampiran (PDF/foto) untuk tiket REQUEST EMAIL — dilampirkan saat kirim email ke produsen
+  lampiranEmail       String?
+  // Item kekurangan part (OrderEmailPart) yang menempuh alur email produsen
+  orderEmailParts     OrderEmailPart[]
+
+  @@index([unitAssetId])
+  @@index([status])
+  @@index([tglTiket])
+  @@index([createdAt])
+}
+
+// ==========================================
+// 7. Service Request Sparepart Junction (service_request_part)
+// status_part: READY | ORDER_PRODUSEN
+// status_konfirmasi: jawaban produsen via WA — MENUNGGU | READY | TIDAK_READY
+// ==========================================
+model ServiceRequestPart {
+  id               Int             @id @default(autoincrement())
+  serviceRequestId Int
+  sparepartId      Int
+  qty              Int             @default(1)
+  statusPart       String          @default("READY")
+  statusKonfirmasi String          @default("MENUNGGU")
+  sumberPart       String          @default("KATALOG") // KATALOG | PRODUSEN (kode dari balasan produsen)
+  // Catatan pemasangan part ke unit — diisi lewat panel "Pemasangan Part":
+  // centang item per toko → sahkan → tgl pasang tercatat + dokumen pemasangan.
+  tglPasang        DateTime?
+  pasangOleh       String?
+  // Cache kode/nama part pada momen kunci (sahkan pemasangan, FINISH, koreksi
+  // part) — statistik & riwayat pemasangan tetap stabil walau master diubah/
+  // dihapus. Pembacaan: cache dulu, fallback ke relasi master.
+  kodePartCache    String?
+  namaPartCache    String?
+  // Tanda koreksi baris part (ubah kode/nama/qty oleh Admin/Manager setelah
+  // tiket selesai) — tampil kecil "(edited)" di UI untuk pemeriksaan kelak.
+  editedAt         DateTime?
+  editedBy         String?
+  serviceRequest   ServiceRequest  @relation(fields: [serviceRequestId], references: [id])
+  sparepart        MasterSparepart @relation(fields: [sparepartId], references: [id])
+
+  @@index([serviceRequestId])
+  @@index([sparepartId])
+}
+
+// ==========================================
+// 8. Permintaan Order Sparepart dari Customer (customer_order)
+// Customer (toko/perorangan) memesan part — termasuk part yang stok
+// titipannya kosong. Status: BARU | DITERUSKAN | DATANG | SELESAI | BATAL
+// - DITERUSKAN: order diteruskan ke produsen/supplier
+// - DATANG: part tiba → stok inventory (bisa jual) otomatis bertambah
+// - SELESAI: part diserahkan ke pemesan
+// ==========================================
+model PermintaanOrder {
+  id           Int              @id @default(autoincrement())
+  noOrder      String           @unique
+  tipeCustomer String           @default("PERORANGAN") // TOKO | PERORANGAN
+  tokoId       Int?
+  customerId   Int?
+  namaPemesan  String
+  sparepartId  Int?
+  kodePart     String
+  namaPart     String
+  brand        String           @default("")
+  qty          Int              @default(1)
+  status       String           @default("BARU")
+  catatan      String?
+  createdAt    DateTime         @default(now())
+  tglSelesai   DateTime?
+  toko         MasterToko?      @relation(fields: [tokoId], references: [id])
+  customer     MasterCustomer?  @relation(fields: [customerId], references: [id])
+  sparepart    MasterSparepart? @relation(fields: [sparepartId], references: [id])
+}
+
+// ==========================================
+// MODUL 6 - Audit Activity Logs
+// ==========================================
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  aksi      String
+  entitas   String
+  entitasId String?
+  deskripsi String
+  aktor     String   @default("SYSTEM")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ==========================================
+// WhatsApp Gateway Message Log (simulasi WA Bot)
+// tipe: IN (masuk ke sistem) | OUT (balasan bot)
+// ==========================================
+// Gateway message log — mendukung multi-channel
+// channel: WHATSAPP | TELEGRAM ; tipe: IN (masuk) | OUT (balasan bot)
+model WaMessage {
+  id        Int      @id @default(autoincrement())
+  pengirim  String
+  grup      String   @default("Gateway Group Produsen")
+  channel   String   @default("WHATSAPP")
+  tipe      String // IN | OUT
+  pesan     String
+  meta      String? // JSON: noTiket, aksi bot, dll
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ==========================================
+// MODUL 6 - Backup Otomatis Google Spreadsheet
+// status: SUCCESS (tersinkron ke Google Sheets) | LOCAL (fallback snapshot lokal) | FAILED
+// trigger: MANUAL | AUTO
+// ==========================================
+model BackupLog {
+  id            Int      @id @default(autoincrement())
+  status        String
+  trigger       String   @default("MANUAL")
+  sheetsWritten Int      @default(0)
+  rowsTotal     Int      @default(0)
+  tabel         String? // daftar tabel yang dibackup
+  message       String?
+  createdAt     DateTime @default(now())
+}
+
+// ==========================================
+// MODUL 6 - System Settings (Profil, Gateway WA/Telegram, Backup Google Sheets)
+// ==========================================
+model Pengaturan {
+  id    Int    @id @default(autoincrement())
+  kunci String @unique
+  nilai String
+}
+
+// ==========================================
+// Bank Kode Sparepart — registry semua kode part yang pernah masuk aplikasi
+// (katalog inventory, balasan produsen via tiket, order customer, CSV).
+// Produsen memakai kode rumit → bank ini jadi acuan cepat + bahan AI.
+// sumber: KATALOG | PRODUSEN | WORKSHOP | CSV | MANUAL | SINKRON
+// ==========================================
+model BankKode {
+  id              Int      @id @default(autoincrement())
+  kode            String   @unique // uppercase, mis. "PRT-KMP-075" / kode rumit produsen
+  namaPart        String   @default("")
+  brandKompatibel String   @default("")
+  modelTipe       String   @default("") // model/tipe unit yang cocok — indikator pelacakan cepat
+  produsen        String   @default("") // produsen/supplier penerbit kode
+  sumber          String   @default("KATALOG")
+  catatan         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ==========================================
+// Hasil pindai foto/barcode (Telegram webhook & upload manual)
+// sumber: TELEGRAM_WEBHOOK | UPLOAD ; status: OK | GAGAL_BACA | FILE_NON_GAMBAR
+// ==========================================
+model VisionScan {
+  id            Int      @id @default(autoincrement())
+  sumber        String   @default("TELEGRAM_WEBHOOK")
+  pengirim      String   @default("UNKNOWN")
+  fileName      String
+  filePath      String // relatif, mis. upload/telegram-service/tg-xxx.jpg
+  mime          String?
+  caption       String?
+  barcode       String?
+  barcodeFormat String?
+  ocrText       String?
+  ocrConfidence Float?
+  status        String   @default("OK")
+  createdAt     DateTime @default(now())
+}
+
+// ==========================================
+// Inbox Penampungan — buffer data/foto Telegram sebelum diteruskan ke fitur
+// status: PENDING | APPROVED | REJECTED | ARCHIVED ; folder: KUNJUNGAN | SERVICE
+// ==========================================
+model InboxItem {
+  id            Int       @id @default(autoincrement())
+  pengirim      String    @default("UNKNOWN")
+  chatId        String    @default("")
+  fileName      String?
+  filePath      String?
+  mime          String?
+  folder        String    @default("SERVICE")
+  caption       String?
+  barcode       String?
+  barcodeFormat String?
+  ocrText       String?
+  ocrConfidence Float?
+  status        String    @default("PENDING")
+  tujuan        String? // SERVICE | KUNJUNGAN | ARSIP
+  teksTerusan   String?
+  hasilRef      String? // noTiket / KJ-{id} / TOKO:{kode} (petunjuk)
+  alasanTolak   String?
+  direviewOleh  String?
+  direviewAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([status, createdAt])
+}
+
+// ==========================================
+// 10. Order Email Part (order_email_part)
+// Daftar khusus kekurangan sparepart unit yang DIORDER KE PRODUSEN VIA EMAIL.
+// Dibuat dari form Input Part unit dengan pilihan "Kekurangan Sparepart" → tombol Simpan & Email.
+// Status: PENDING (menunggu email) → TERKIRIM (email terkirim ke produsen) → SELESAI (sudah ditangani).
+// ==========================================
+model OrderEmailPart {
+  id               Int             @id @default(autoincrement())
+  kodePart         String
+  namaPart         String
+  brand            String?
+  qty              Int             @default(1)
+  unitAssetId      Int?
+  serialNumber     String? // snapshot unit saat input
+  modelUnit        String?
+  tokoKode         String?
+  tokoNama         String?
+  catatan          String?
+  status           String          @default("PENDING") // PENDING | TERKIRIM | SELESAI
+  emailTujuan      String?
+  emailKirimAt     DateTime?
+  emailOleh        String?
+  emailMode        String? // SMTP | MANUAL
+  emailPesanGagal  String?
+  diinputOleh      String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  unit             UnitAsset?      @relation(fields: [unitAssetId], references: [id], onDelete: SetNull)
+  // Tiket "REQUEST EMAIL" (kode service) yang terbit otomatis saat part kurang disimpan.
+  serviceRequestId Int?
+  service          ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: SetNull)
+
+  @@index([serviceRequestId])
+}
+
+// ==========================================
+// 9x. Surat Jalan Masuk dari Produsen (surat_jalan_masuk)
+// Bukti pengiriman sparepart dari produsen — sumber data hasil scan manual
+// ke Excel. Tiap baris dicocokkan (aturan kode/nama/SN + bantuan AI) ke
+// tiket service & unit asset; saat diterapkan:
+//  - part di tiket → READY (statusKonfirmasi READY, sumberPart PRODUSEN)
+//  - item OrderEmailPart tiket SV-EM → DATANG
+//  - tiket dicatat no surat jalan produsen + tanggal datang, lalu PK status
+//    REQUEST/REQUEST_EMAIL yang part-nya lengkap otomatis naik ke PROSES
+// ==========================================
+model SuratJalanMasuk {
+  id            Int                   @id  @default(autoincrement())
+  noSuratJalan  String
+  // Referensi ke nomor dokumen request (SJR-YYYYMMDD-NNNN) bila kiriman ini
+  // menjawab surat jalan request ke produsen — dipakai sistem untuk menandai
+  // part request yang benar-benar sudah dikirim (cross-check manual tetap jalan).
+  refSjrNo      String?
+  tglSurat      DateTime?
+  produsen      String?
+  namaFile      String? // nama file Excel/CSV sumber
+  totalItem     Int                   @default(0)
+  cocokCount    Int                   @default(0)
+  tanpaTiket    Int                   @default(0)
+  catatan       String?
+  createdAt     DateTime              @default(now())
+  createdBy     String?
+  // Alur cek berlapis: DRAFT (simpan) → DIPERIKSA (cek otomatis/manual) → DITERAPKAN.
+  // Efek ke tiket/unit HANYA saat status naik ke DITERAPKAN (cek akhir bersih).
+  status         String    @default("DRAFT")
+  cekManual      Boolean   @default(false)
+  diperiksaAt    DateTime?
+  diperiksaOleh  String?
+  diterapkanAt   DateTime?
+  diterapkanOleh String?
+  items         SuratJalanMasukItem[]
+}
+
+model SuratJalanMasukItem {
+  id                Int            @id @default(autoincrement())
+  suratJalanMasukId Int
+  kodePart          String
+  namaPart          String?
+  qty               Int            @default(1)
+  serialNumber      String? // SN unit yang tertulis di surat jalan (opsional)
+  // Hasil pencocokan (aturan + AI):
+  statusMatch       String         @default("TANPA_TIKET") // COCOK | TANPA_TIKET
+  cocokTipe         String? // TIKET_PART | UNIT_TANPA_PART
+  cocokTiketId      Int?
+  cocokUnitId       Int?
+  cocokPartId       Int? // MasterSparepart id bila kode terbaca di katalog
+  alasan            String? // penjelasan singkat cara mencocokkan
+  suratJalanMasuk   SuratJalanMasuk @relation(fields: [suratJalanMasukId], references: [id])
+
+  @@index([suratJalanMasukId])
+}
+
+// ==========================================
+// 15. Surat Jalan REQUEST part ke Produsen (surat_jalan_request)
+// Dibuat otomatis saat Admin menekan "Surat Jalan" di Service Tiket lalu
+// mengunduh PDF/Excel — snapshot tiket + part yang di-request, lengkap dengan
+// no. dokumen SJR-YYYYMMDD-NNNN. Tujuan: part ke produsen sering datang
+// tidak serentak, jadi tanggal request harus tercatat per dokumen & per tiket.
+// Tanggal datang balasannya dicatat alami via SuratJalanMasuk (+ tglPartDatang
+// di tiket), sehingga request vs datang bisa dibandingkan di Lacak Sparepart.
+// ==========================================
+model SuratJalanRequest {
+  id              Int                     @id @default(autoincrement())
+  noSurat         String                  @unique // SJR-YYYYMMDD-NNNN
+  tglRequest      DateTime                @default(now())
+  // Produsen tujuan surat ("Kepada: PT ...") — diisi manusiawi saat unduh;
+  // saran otomatis dari merk unit tiket terpilih bila semua sama.
+  produsenTujuan  String?
+  dibuatOleh      String?
+  totalTiket      Int                     @default(0)
+  totalItem       Int                     @default(0)
+  totalQty        Int                     @default(0)
+  lewatTanpaKode  Int                     @default(0) // part dengan kode/nama belum lengkap — lewat dari dokumen
+  items           SuratJalanRequestItem[]
+}
+
+model SuratJalanRequestItem {
+  id                  Int               @id @default(autoincrement())
+  suratJalanRequestId Int
+  serviceRequestId    Int?
+  noTiket             String
+  kodePart            String
+  namaPart            String?
+  qty                 Int               @default(1)
+  toko                String? // snapshot nama toko saat request dibuat
+  serialNumber        String?
+  modelUnit           String?
+  suratJalanRequest   SuratJalanRequest @relation(fields: [suratJalanRequestId], references: [id])
+
+  @@index([suratJalanRequestId])
+}
+
+// ==========================================
+// MODUL 7 - Notifikasi In-App (lonceng header)
+// ==========================================
+// Notifikasi terbentuk dari kejadian penting di aplikasi, terutama
+// Registrasi Service (unit baru) & tiket service baru. Disimpan di server
+// supaya SEMUA role (teknisi / admin / manager) melihat notifikasi yang sama
+// dan status "sudah dibaca" tercatat per pengguna (bukan per browser).
+// tipe: REGISTRASI_UNIT | TIKET_BARU
+// untukRole: null = semua role; else daftar role dipisah koma
+// ==========================================
+model Notifikasi {
+  id         Int               @id @default(autoincrement())
+  tipe       String            @default("REGISTRASI_UNIT") // REGISTRASI_UNIT | TIKET_BARU
+  judul      String
+  pesan      String
+  refType    String? // 'unit' | 'service_request' | 'unit-massal'
+  refId      Int?
+  refLabel   String? // nomor seri unit / nomor tiket
+  dibuatOleh String?
+  untukRole  String? // null = semua role
+  createdAt  DateTime          @default(now())
+  dibaca     NotifikasiBaca[]
+
+  @@index([createdAt])
+  @@index([tipe])
+}
+
+// Status baca per pengguna — satu notifikasi dibaca oleh teknisi/admin/manager
+// masing-masing secara terpisah (membaca di satu device TIDAK menghapus
+// notifikasi untuk user lain).
+model NotifikasiBaca {
+  id            Int         @id @default(autoincrement())
+  notifikasiId  Int
+  penggunaId    Int
+  dibacaAt      DateTime    @default(now())
+  notifikasi    Notifikasi @relation(fields: [notifikasiId], references: [id], onDelete: Cascade)
+  pengguna      Pengguna   @relation(fields: [penggunaId], references: [id], onDelete: Cascade)
+
+  @@unique([notifikasiId, penggunaId])
+  @@index([penggunaId])
+}
+
+// ==========================================
+// Nota Servis BASS (nota + nota_item) — nota servis "SERVICE CENTER"
+// persis seperti nota kertas asli: header statis (logo montir, kontak CSO),
+// kotak Indoor/Outdoor + nomor BASS 6 digit, panel data konsumen (kiri),
+// panel teknis (kanan), tabel suku cadang maks 7 baris, ringkasan biaya,
+// dan 3 tanda tangan (customer serah, teknisi, customer ambil).
+// Tanggal/jam disimpan sebagai string "YYYY-MM-DD"/"HH:MM" agar setia
+// dengan input form & sorting leksikografis tetap urut waktu.
+// ==========================================
+model Nota {
+  id                Int        @id @default(autoincrement())
+  nomorBass         String     @unique @map("nomor_bass") // angka 6 digit (digit) — unik
+  lokasi            String? // Indoor | Outdoor (dilingkari di nota)
+  tanggal           String? // "YYYY-MM-DD" — tampil "D-M-YYYY"
+  jamMasuk          String? @map("jam_masuk")
+  nama              String
+  alamat            String?
+  telp              String?
+  hp                String?
+  merk              String?
+  lp                String? // LP (L-Pil/eks cerc) — teks bebas sesuai nota
+  model             String?
+  noSeri            String? @map("no_seri")
+  tglBeli           String? @map("tgl_beli")
+  garansi           String? // Ya | Tdk (dilingkari di nota)
+  tglSelesai        String? @map("tgl_selesai")
+  jamSelesai        String? @map("jam_selesai")
+  pengaduan         String?
+  kelengkapan       String?
+  penyebab          String?
+  perbaikan         String?
+  biayaService      Float      @default(0) @map("biaya_service")
+  biayaTransportasi Float      @default(0) @map("biaya_transportasi")
+  ppnPersen         Float      @default(0) @map("ppn_persen")
+  total             Float      @default(0) // Total Biaya Service (disimpan & bisa di-override)
+  tglAmbil          String? @map("tgl_ambil")
+  ttdCustomer1      String? @map("ttd_customer1") // dataURL PNG — Diserahkan oleh (customer)
+  ttdTeknisi        String? @map("ttd_teknisi")
+  ttdCustomer2      String? @map("ttd_customer2") // Diambil oleh (customer)
+  namaCustomer1     String? @map("nama_customer1")
+  namaTeknisi       String? @map("nama_teknisi")
+  namaCustomer2     String? @map("nama_customer2")
+  status            String     @default("draft") // draft | selesai | diambil
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  items             NotaItem[]
+
+  @@index([status])
+  @@index([nama])
+  @@index([tanggal])
+  @@index([createdAt])
+}
+
+model NotaItem {
+  id     Int    @id @default(autoincrement())
+  notaId Int    @map("nota_id")
+  kode   String?
+  nama   String?
+  harga  Float  @default(0) // harga satuan (Rp)
+  qty    Int    @default(1)
+  nota   Nota   @relation(fields: [notaId], references: [id], onDelete: Cascade)
+
+  @@index([notaId])
+}
+
+// ==========================================
+// MODUL 8 - Komunikasi Antar Akun (MiniChat & Notes)
+// ==========================================
+// MiniChat — pesan internal antar akun aplikasi (bukan WA nyata):
+//  - DM        : penerimaId = id pengguna tujuan
+//  - Broadcast : penerimaId = null → papan umum, terlihat semua akun aktif
+// Tampil sebagai widget melayang (MiniChat) + tab di view Komunikasi.
+// ==========================================
+model ChatPesan {
+  id         Int       @id @default(autoincrement())
+  pengirimId Int
+  penerimaId Int?      // null = broadcast ke semua akun (papan umum)
+  isi        String
+  createdAt  DateTime  @default(now())
+  pengirim   Pengguna  @relation("chatTerkirim", fields: [pengirimId], references: [id], onDelete: Cascade)
+  penerima   Pengguna? @relation("chatDiterima", fields: [penerimaId], references: [id], onDelete: Cascade)
+
+  @@index([pengirimId])
+  @@index([penerimaId])
+  @@index([createdAt])
+}
+
+// Catatan (Notes) — papan catatan bersama antar akun: pengumuman/kesepakatan
+// kerja yang tidak boleh hilang lewat chat. untukRole: null = semua role,
+// else daftar role dipisah koma (difilter saat GET sesuai role pembaca).
+// Balasan inline memakai CatatanBalasan.
+// ==========================================
+model Catatan {
+  id        Int              @id @default(autoincrement())
+  judul     String?
+  isi       String
+  untukRole String?
+  pinned    Boolean          @default(false)
+  penulisId Int
+  editedAt  DateTime?
+  editedBy  String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  penulis   Pengguna         @relation("catatanPenulis", fields: [penulisId], references: [id], onDelete: Cascade)
+  balasan   CatatanBalasan[]
+
+  @@index([createdAt])
+  @@index([pinned])
+}
+
+model CatatanBalasan {
+  id        Int      @id @default(autoincrement())
+  catatanId Int
+  penulisId Int
+  isi       String
+  createdAt DateTime @default(now())
+  catatan   Catatan  @relation(fields: [catatanId], references: [id], onDelete: Cascade)
+  penulis   Pengguna @relation("catatanBalasan", fields: [penulisId], references: [id])
+
+  @@index([catatanId])
+}

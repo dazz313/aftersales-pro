@@ -401,6 +401,11 @@ export const TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'get_schema',
+    description: 'Mengembalikan schema Prisma (prisma/schema.prisma) AfterSales Pro — daftar model/tabel, field, relasi, dan status. Berguna agar AI memahami struktur database sebelum menyusun query/analisis.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+  },
 ]
 
 // ---------- Implementasi handler ----------
@@ -888,6 +893,23 @@ async function hListAudit(args) {
   })
 }
 
+// ---------- Skema database (Prisma) ----------
+async function hGetSchema() {
+  const { fileURLToPath } = await import('node:url')
+  const { dirname, join } = await import('node:path')
+  const here = dirname(fileURLToPath(import.meta.url))
+  // Cari schema: mcp/schema.prisma (lokal) → fallback ke schema root project
+  const candidates = [join(here, 'schema.prisma'), join(here, '..', 'prisma', 'schema.prisma')]
+  for (const p of candidates) {
+    try {
+      const fs = await import('node:fs')
+      const txt = fs.readFileSync(p, 'utf8')
+      return jsonOut({ path: p, length: txt.length, schema: txt })
+    } catch { /* coba berikutnya */ }
+  }
+  return errOut('Schema Prisma tidak ditemukan.')
+}
+
 // ---------- Dispatcher ----------
 
 // Tool yang mengubah data → selalu dibackup otomatis ke git
@@ -923,6 +945,7 @@ const HANDLERS = {
   set_gateway_config: hSetGatewayConfig,
   run_backup: hRunBackup,
   list_audit: hListAudit,
+  get_schema: hGetSchema,
 }
 
 export async function handleToolCall({ name, arguments: args }) {
