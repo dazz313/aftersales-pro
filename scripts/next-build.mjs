@@ -62,7 +62,18 @@ if (fs.existsSync(nextCli)) {
   cmd = process.platform === 'win32' ? 'npx.cmd' : 'npx'
   args = ['next', 'build']
 }
-// DATABASE_URL untuk proses build — WAJIB absolut. Nilai relatif
+// CPU tanpa AVX (mis. AMD E1-1200 di server produksi) tidak bisa menjalankan
+// biner Turbopack — crash "Illegal instruction". Pakai Webpack di mesin
+// tersebut agar build tetap jalan. Di mesin dengan AVX (PC dev) tetap Turbopack.
+try {
+  const cpuinfo = fs.readFileSync('/proc/cpuinfo', 'utf8')
+  if (!/\bavx\b/i.test(cpuinfo)) {
+    args = [...args, '--webpack']
+    console.log('! CPU tanpa AVX terdeteksi — build memakai Webpack (bukan Turbopack).')
+  }
+} catch {
+  // Bukan Linux / tidak ada /proc/cpuinfo — biarkan default Turbopack.
+}
 // ('file:./db/custom.db') di-resolve relatif terhadap folder schema
 // (prisma/) → Prisma membuka DB yang tidak ada ("Unable to open the database
 // file") saat build.
