@@ -576,6 +576,36 @@ export async function cariKonteksPertanyaan(pertanyaan: string): Promise<string 
       }
     }
 
+    // 9) Daftar tiket/unit berdasarkan STATUS (REQUEST/PROSES/FINISH) bila ditanya.
+    //    Sebelumnya AI hanya punya angka agregat → sering mencampur status (mis.
+    //    "unit proses" ikut menampilkan unit finish). Sekarang daftar eksplisit
+    //    per status dikirim supaya jawaban akurat.
+    const statusDiminta = /\\bfinish\\b|\\bselesai\\b/i.test(q)
+      ? 'FINISH'
+      : /\\bproses\\b/i.test(q)
+        ? 'PROSES'
+        : /\\brequest\\b/i.test(q)
+          ? 'REQUEST'
+          : null
+    if (statusDiminta && /unit|tiket|service/i.test(q)) {
+      const daftar = await db.serviceRequest.findMany({
+        where: { status: statusDiminta },
+        include: { unitAsset: { include: { toko: { select: { kodeToko: true, namaToko: true } } } }, parts: { include: { sparepart: { select: { kodePart: true, namaPart: true } } } } },
+        orderBy: { tglTiket: 'desc' },
+        take: 40,
+      })
+      if (daftar.length) {
+        blok.push(
+          `TIKET BERSTATUS ${statusDiminta} (${daftar.length}${daftar.length === 40 ? '+' : ''}):\\n` +
+            daftar.map((t) =>
+              `- ${t.noTiket} | ${t.status} | ${new Date(t.tglTiket).toLocaleDateString('id-ID')} | ${t.unitAsset?.merk || '-'} ${t.unitAsset?.modelUnit ?? '-'} | SN ${t.unitAsset?.serialNumber ?? '-'} | toko ${t.unitAsset?.toko ? `${t.unitAsset.toko.kodeToko} ${t.unitAsset.toko.namaToko}` : 'perorangan'} | penanganan ${t.penanganan} | part: ${t.parts.map((p) => `${p.sparepart?.kodePart ?? '?'}(${p.statusPart})`).join(', ') || 'tanpa part'}`
+            ).join('\\n')
+        )
+      } else {
+        blok.push(`TIKET BERSTATUS ${statusDiminta}: 0 (tidak ada).`)
+      }
+    }
+
     // 8) Customer bila ditanya.
     if (/customer|pelanggan|pemesan/i.test(q)) {
       const tokenQ = tokenPenting(q)
