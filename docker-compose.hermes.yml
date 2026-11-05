@@ -19,6 +19,12 @@ services:
     network_mode: host
     volumes:
       - ${HERMES_DATA:-/home/dazz/.hermes}:/opt/data
+      # Akses read-only ke MCP server + node_modules + DB AfterSales Pro
+      # agar Hermes bisa memanggil tools MCP (get_stats, list_toko, dll.).
+      - /home/dazz/aftersales-pro/mcp:/app/mcp:ro
+      - /home/dazz/aftersales-pro/node_modules:/app/node_modules:ro
+      - /home/dazz/aftersales-pro/db:/app/db:ro
+      - /home/dazz/aftersales-pro/prisma:/app/prisma:ro
     environment:
       - HERMES_UID=${HERMES_UID:-1000}
       - HERMES_GID=${HERMES_GID:-1000}
