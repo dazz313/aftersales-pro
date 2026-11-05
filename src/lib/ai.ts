@@ -31,16 +31,20 @@ export interface AiConfig {
   model: string
 }
 
+/** Lokasi kandidat database 9router lokal (Windows dev & Linux produksi). */
+function kandidatDbNineRouter(): string[] {
+  const appdata = process.env.APPDATA || join(homedir(), 'AppData', 'Roaming')
+  return [
+    process.env.NINEROUTER_DB,
+    join(appdata, '9router', 'db', 'data.sqlite'),
+    join(homedir(), '.9router', 'db', 'data.sqlite'),
+  ].filter((p): p is string => !!p)
+}
+
 /** Baca kunci gateway 9router lokal (best-effort, null bila tak ada). */
 export function readNineRouterKey(): string | null {
   try {
-    const appdata = process.env.APPDATA || join(homedir(), 'AppData', 'Roaming')
-    const kandidat = [
-      process.env.NINEROUTER_DB,
-      join(appdata, '9router', 'db', 'data.sqlite'),
-      join(homedir(), '.9router', 'db', 'data.sqlite'),
-    ].filter((p): p is string => !!p)
-    for (const p of kandidat) {
+    for (const p of kandidatDbNineRouter()) {
       try {
         const db = new DatabaseSync(p, { readOnly: true })
         try {
@@ -59,6 +63,36 @@ export function readNineRouterKey(): string | null {
   } catch {
     return null
   }
+}
+
+/**
+ * Aktifkan kembali koneksi provider di database 9router lokal.
+ *
+ * 9router bisa menandai `providerConnections.isActive = 0` (mis. setelah
+ * percobaan koneksi gagal atau toggle di dashboard), sehingga semua permintaan
+ * ke model provider itu ditolak "No active credentials" meski API key-nya sehat.
+ * Perubahan DB langsung dibaca 9router tanpa perlu restart.
+ *
+ * Best-effort: true bila ada baris yang diubah.
+ */
+export function aktifkanProviderNineRouter(provider: string): boolean {
+  if (!/^[a-z0-9_-]+$/i.test(provider)) return false
+  for (const p of kandidatDbNineRouter()) {
+    try {
+      const db = new DatabaseSync(p)
+      try {
+        const info = db
+          .prepare('UPDATE providerConnections SET isActive = 1 WHERE provider = ?')
+          .run(provider) as { changes?: number | bigint }
+        if (Number(info.changes ?? 0) > 0) return true
+      } finally {
+        db.close()
+      }
+    } catch {
+      // file tak ada / terkunci — coba kandidat berikutnya
+    }
+  }
+  return false
 }
 
 export function resolveAiConfig(pengaturan: Record<string, string>): AiConfig {
@@ -168,6 +202,16 @@ function bacaJawaban(mentah: string): HasilAi {
   return { teks: potongan.join(''), alasan: alasan.join('') }
 }
 
+/** Ambil pesan error dari body non-2xx 9router. */
+function detailError(mentah: string): string {
+  try {
+    const j = JSON.parse(mentah) as { error?: { message?: string } | string }
+    return typeof j.error === 'string' ? j.error : j.error?.message ?? ''
+  } catch {
+    return mentah.slice(0, 300)
+  }
+}
+
 /** Satu percobaan ke satu model. */
 async function panggilModel(
   cfg: AiConfig,
@@ -175,40 +219,51 @@ async function panggilModel(
   messages: ChatMessage[],
   opts?: { temperature?: number; maxTokens?: number; timeoutMs?: number }
 ): Promise<HasilAi> {
-  let res: Response
-  try {
-    res = await fetch(`${cfg.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: opts?.temperature ?? 0.2,
-        max_tokens: opts?.maxTokens ?? 1500,
-      }),
-      signal: AbortSignal.timeout(opts?.timeoutMs ?? AI_TIMEOUT_MS),
-    })
-  } catch (e) {
-    const nama = typeof e === 'object' && e !== null && 'name' in e ? (e as { name?: string }).name : null
-    if (nama === 'TimeoutError' || nama === 'AbortError') {
+  const kirim = async (): Promise<{ res: Response; mentah: string }> => {
+    let res: Response
+    try {
+      res = await fetch(`${cfg.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: opts?.temperature ?? 0.2,
+          max_tokens: opts?.maxTokens ?? 1500,
+        }),
+        signal: AbortSignal.timeout(opts?.timeoutMs ?? AI_TIMEOUT_MS),
+      })
+    } catch (e) {
+      const nama = typeof e === 'object' && e !== null && 'name' in e ? (e as { name?: string }).name : null
+      if (nama === 'TimeoutError' || nama === 'AbortError') {
+        throw new Error(
+          `9router tidak merespons dalam ${Math.round((opts?.timeoutMs ?? AI_TIMEOUT_MS) / 1000)} detik (model ${model})`
+        )
+      }
       throw new Error(
-        `9router tidak merespons dalam ${Math.round((opts?.timeoutMs ?? AI_TIMEOUT_MS) / 1000)} detik (model ${model})`
+        `Tidak dapat menghubungi 9router di ${cfg.baseUrl} — pastikan aplikasi 9router berjalan. (${(e as Error).message})`
       )
     }
-    throw new Error(
-      `Tidak dapat menghubungi 9router di ${cfg.baseUrl} — pastikan aplikasi 9router berjalan. (${(e as Error).message})`
-    )
+    // Body hanya bisa dibaca sekali — baca teks mentah lalu deteksi formatnya.
+    return { res, mentah: await res.text() }
   }
-  // Body hanya bisa dibaca sekali — baca teks mentah lalu deteksi formatnya.
-  const mentah = await res.text()
+
+  let { res, mentah } = await kirim()
+  let detail = res.ok ? '' : detailError(mentah)
+
+  // Self-heal: 9router menolak karena provider-nya sedang dinonaktifkan
+  // (`isActive = 0`) — aktifkan lagi lalu ulangi sekali. Perubahan DB 9router
+  // langsung berlaku tanpa restart.
   if (!res.ok) {
-    let detail = ''
-    try {
-      const j = JSON.parse(mentah) as { error?: { message?: string } | string }
-      detail = typeof j.error === 'string' ? j.error : j.error?.message ?? ''
-    } catch {
-      detail = mentah.slice(0, 300)
+    const provider = detail.match(/No active credentials for provider:\s*([a-z0-9_-]+)/i)?.[1]
+    if (provider && aktifkanProviderNineRouter(provider)) {
+      console.warn(`9router: provider ${provider} nonaktif → diaktifkan ulang, mencoba lagi (model ${model})`)
+      ;({ res, mentah } = await kirim())
+      detail = res.ok ? '' : detailError(mentah)
     }
+  }
+
+  if (!res.ok) {
     throw new Error(`9router menolak permintaan (${res.status}, model ${model})${detail ? ` — ${detail.slice(0, 300)}` : ''}`)
   }
   return bacaJawaban(mentah)
