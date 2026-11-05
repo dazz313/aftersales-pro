@@ -34,5 +34,7 @@ export async function register() {
     startAlertScheduler()
     const { startStalePartScheduler } = await import('@/lib/stale-part-scheduler')
     startStalePartScheduler()
+    const { startBackupLokalScheduler } = await import('@/lib/backup-lokal-scheduler')
+    startBackupLokalScheduler()
   }
 }
