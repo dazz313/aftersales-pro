@@ -647,6 +647,19 @@ model NotaItem {
 }
 
 // ==========================================
+// Pilihan centang (checkbox) yang disimpan di server agar bisa dilihat
+// semua user, bukan hanya localStorage per-browser.
+// type: SELECTED_IDS | UNIT_DIPLIH | TOKO_DIPLIH | PASANG_SEL
+// itemIds: JSON array of id numerik (service request id / unit id / toko id)
+// ==========================================
+model SharedSelection {
+  id        Int      @id @default(autoincrement())
+  type      String   @unique
+  itemIds   String   // JSON array: [1, 2, 3]
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
 // MODUL 8 - Komunikasi Antar Akun (MiniChat & Notes)
 // ==========================================
 // MiniChat — pesan internal antar akun aplikasi (bukan WA nyata):

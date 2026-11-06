@@ -64,7 +64,7 @@ let partRowKeyCounter = 1
 export default function MasterDataView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role, navIntent, clearNavIntent } = useAppStore()
+  const { role, user, navIntent, clearNavIntent } = useAppStore()
   // Tab aktif — bisa dibuka langsung dari Dashboard via intent (mis. indikator unit belum diproses)
   const [tabAktif, setTabAktif] = useState('toko')
 
@@ -120,33 +120,78 @@ export default function MasterDataView() {
   const [editToko, setEditToko] = useState<Toko | null>(null)
   const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '', aktif: true, modeSiklus: 'REGULER' as 'REGULER' | 'BY_REQUEST', latitude: '', longitude: '' })
   // Hapus massal toko (khusus Admin/Manager — centang baris lalu hapus sekaligus)
-  // Pilihan toko tersimpan di localStorage agar tidak hilang saat berpindah
-  // mode/view; dihapus hanya manual (Reset) atau kolektif.
-  const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(() => {
-    try {
-      const raw = localStorage.getItem('aspro_toko_dipilih')
-      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
-    } catch {
-      return new Set<number>()
-    }
+  // Pilihan toko tersimpan di server (shared_selection) agar dilihat semua user,
+  // bukan hanya localStorage per-browser.
+  const selTokoDipilihQuery = useQuery<{ type: string; itemIds: number[] }>({
+    queryKey: ['shared-selection', 'TOKO_DIPLIH'],
+    queryFn: () => fetcher<{ type: string; itemIds: number[] }>('/api/user-selection?type=TOKO_DIPLIH'),
+    enabled: !!user?.id,
   })
-  useEffect(() => {
-    try { localStorage.setItem('aspro_toko_dipilih', JSON.stringify([...tokoDipilih])) } catch { /* abaikan */ }
-  }, [tokoDipilih])
+  const tokoDipilih: number[] = selTokoDipilihQuery.data?.itemIds ?? []
+  const saveTokoSelectionMutation = useMutation({
+    mutationFn: (itemIds: number[]) => postJson('/api/user-selection', { type: 'TOKO_DIPLIH', itemIds }),
+    onMutate: async (newItemIds) => {
+      await queryClient.cancelQueries({ queryKey: ['shared-selection', 'TOKO_DIPLIH'] })
+      const previous = queryClient.getQueryData<{ type: string; itemIds: number[] }>(['shared-selection', 'TOKO_DIPLIH'])
+      queryClient.setQueryData(['shared-selection', 'TOKO_DIPLIH'], { type: 'TOKO_DIPLIH', itemIds: newItemIds })
+      return { previous }
+    },
+    onError: (_err, _newItemIds, context) => {
+      queryClient.setQueryData(['shared-selection', 'TOKO_DIPLIH'], context?.previous)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shared-selection', 'TOKO_DIPLIH'] })
+    },
+  })
+  const toggleTokoId = (id: number) => {
+    const current = [...tokoDipilih]
+    const next = current.includes(id) ? current.filter((i) => i !== id) : [...current, id].sort((a, b) => a - b)
+    saveTokoSelectionMutation.mutate(next)
+  }
+  const toggleAllToko = (list: { id: number }[]) => {
+    const allSelected = list.length > 0 && list.every((t) => tokoDipilih.includes(t.id))
+    const next = allSelected
+      ? list.filter((t) => !tokoDipilih.includes(t.id)).map((t) => t.id).sort((a, b) => a - b)
+      : [...new Set([...tokoDipilih, ...list.map((t) => t.id)])].sort((a, b) => a - b)
+    saveTokoSelectionMutation.mutate(next)
+  }
   const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
   const bisaHapusToko = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
   // Hapus massal unit (centang baris tanpa tiket lalu hapus sekaligus)
-  const [unitDipilih, setUnitDipilih] = useState<Set<number>>(() => {
-    try {
-      const raw = localStorage.getItem('aspro_unit_dipilih')
-      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
-    } catch {
-      return new Set<number>()
-    }
+  // Pilihan unit tersimpan di server (shared_selection) agar dilihat semua user.
+  const selUnitDipilihQuery = useQuery<{ type: string; itemIds: number[] }>({
+    queryKey: ['shared-selection', 'UNIT_DIPLIH'],
+    queryFn: () => fetcher<{ type: string; itemIds: number[] }>('/api/user-selection?type=UNIT_DIPLIH'),
+    enabled: !!user?.id,
   })
-  useEffect(() => {
-    try { localStorage.setItem('aspro_unit_dipilih', JSON.stringify([...unitDipilih])) } catch { /* abaikan */ }
-  }, [unitDipilih])
+  const unitDipilih: number[] = selUnitDipilihQuery.data?.itemIds ?? []
+  const saveUnitSelectionMutation = useMutation({
+    mutationFn: (itemIds: number[]) => postJson('/api/user-selection', { type: 'UNIT_DIPLIH', itemIds }),
+    onMutate: async (newItemIds) => {
+      await queryClient.cancelQueries({ queryKey: ['shared-selection', 'UNIT_DIPLIH'] })
+      const previous = queryClient.getQueryData<{ type: string; itemIds: number[] }>(['shared-selection', 'UNIT_DIPLIH'])
+      queryClient.setQueryData(['shared-selection', 'UNIT_DIPLIH'], { type: 'UNIT_DIPLIH', itemIds: newItemIds })
+      return { previous }
+    },
+    onError: (_err, _newItemIds, context) => {
+      queryClient.setQueryData(['shared-selection', 'UNIT_DIPLIH'], context?.previous)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shared-selection', 'UNIT_DIPLIH'] })
+    },
+  })
+  const toggleUnitId = (id: number) => {
+    const current = [...unitDipilih]
+    const next = current.includes(id) ? current.filter((i) => i !== id) : [...current, id].sort((a, b) => a - b)
+    saveUnitSelectionMutation.mutate(next)
+  }
+  const toggleAllUnit = (list: { id: number }[]) => {
+    const allSelected = list.length > 0 && list.every((t) => unitDipilih.includes(t.id))
+    const next = allSelected
+      ? list.filter((t) => !unitDipilih.includes(t.id)).map((t) => t.id).sort((a, b) => a - b)
+      : [...new Set([...unitDipilih, ...list.map((t) => t.id)])].sort((a, b) => a - b)
+    saveUnitSelectionMutation.mutate(next)
+  }
   const [hapusUnitOpen, setHapusUnitOpen] = useState(false)
   const [editCust, setEditCust] = useState<Customer | null>(null)
   const [editCustForm, setEditCustForm] = useState({ nama: '', noWa: '', alamat: '' })
@@ -216,7 +261,7 @@ export default function MasterDataView() {
     mutationFn: (ids: number[]) => postJson<{ deleted: number; deletedCodes: string[]; skipped: { id: number; kodeToko: string; namaToko: string; alasan: string }[]; skippedCount: number }>('/api/toko/bulk-delete', { ids, aktor: role }),
     onSuccess: (r) => {
       invalidate(['toko', 'dashboard', 'alerts', 'kunjungan', 'units'])
-      setTokoDipilih(new Set())
+      saveTokoSelectionMutation.mutate([])
       setHapusTokoOpen(false)
       toast({
         title: `Hapus massal selesai — ${r.deleted} terhapus`,
@@ -476,7 +521,7 @@ export default function MasterDataView() {
     mutationFn: (ids: number[]) => postJson<{ deleted: number; deletedSerials: string[]; skipped: { id: number; serialNumber: string; modelUnit: string; alasan: string }[]; skippedCount: number }>('/api/unit/bulk-delete', { ids, aktor: role }),
     onSuccess: (r) => {
       invalidate(['units', 'toko', 'customer', 'dashboard', 'service-tickets', 'alerts'])
-      setUnitDipilih(new Set())
+      saveUnitSelectionMutation.mutate([])
       setHapusUnitOpen(false)
       toast({
         title: `Hapus massal selesai — ${r.deleted} terhapus`,
@@ -497,22 +542,8 @@ export default function MasterDataView() {
     () => (tokoList ?? []).filter((t) => matchQuery([t.kodeToko, t.namaToko, t.alamat, t.kontak, t.barcodeToko], cariToko)),
     [tokoList, cariToko]
   )
-  const toggleToko = (id: number) =>
-    setTokoDipilih((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  const toggleSemuaToko = () =>
-    setTokoDipilih((prev) => {
-      const ids = tokoTampil.map((t) => t.id)
-      const semua = ids.length > 0 && ids.every((id) => prev.has(id))
-      const next = new Set(prev)
-      if (semua) ids.forEach((id) => next.delete(id))
-      else ids.forEach((id) => next.add(id))
-      return next
-    })
+  const toggleToko = (id: number) => toggleTokoId(id)
+  const toggleSemuaToko = () => toggleAllToko(tokoTampil)
   const custTampil = useMemo(
     () => (customerList ?? []).filter((c) => matchQuery([c.nama, c.noWa, c.alamat, ...c.unitAssets.map((u) => u.modelUnit)], cariCust)),
     [customerList, cariCust]
@@ -545,8 +576,8 @@ export default function MasterDataView() {
   )
 
   // Stiker kolektif: seluruh toko/unit terpilih (urutan mengikuti daftar master)
-  const tokoKolektif = useMemo(() => (tokoList ?? []).filter((t) => tokoDipilih.has(t.id)), [tokoList, tokoDipilih])
-  const unitKolektif = useMemo(() => (unitList ?? []).filter((u) => unitDipilih.has(u.id)), [unitList, unitDipilih])
+  const tokoKolektif = useMemo(() => (tokoList ?? []).filter((t) => tokoDipilih.includes(t.id)), [tokoList, tokoDipilih])
+  const unitKolektif = useMemo(() => (unitList ?? []).filter((u) => unitDipilih.includes(u.id)), [unitList, unitDipilih])
   // Deteksi nomor seri ganda secara live saat mengetik — instant dari daftar unit yang
   // sudah termuat (kunci normalisasi sama dengan server: trim + uppercase), jadi faktanya
   // tampak jauh sebelum request dikirim & tombol Registrasi tidak bisa dipaksa berulang.
@@ -577,22 +608,8 @@ export default function MasterDataView() {
   const unitSudahPart = useMemo(() => unitTampil.filter((u) => (partInfoByUnit.get(u.id)?.countAktif ?? 0) > 0), [unitTampil, partInfoByUnit])
   // Unit terkunci (punya tiket) tidak bisa dicentang — server juga melewatinya
   const unitBisaHapus = (u: UnitAsset) => (u.serviceRequests ?? []).length === 0
-  const toggleUnit = (id: number) =>
-    setUnitDipilih((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  const toggleSemuaUnit = (list: UnitAsset[]) => () =>
-    setUnitDipilih((prev) => {
-      const ids = list.filter(unitBisaHapus).map((u) => u.id)
-      const semua = ids.length > 0 && ids.every((id) => prev.has(id))
-      const next = new Set(prev)
-      if (semua) ids.forEach((id) => next.delete(id))
-      else ids.forEach((id) => next.add(id))
-      return next
-    })
+  const toggleUnit = (id: number) => toggleUnitId(id)
+  const toggleSemuaUnit = (list: UnitAsset[]) => () => toggleAllUnit(list.filter(unitBisaHapus))
   const userTampil = useMemo(
     () => (userList ?? []).filter((u) => matchQuery([u.nama, u.email, u.username, u.kodeTeknisi, u.noWa, u.wilayahKerja, u.role], cariUser)),
     [userList, cariUser]
@@ -616,7 +633,7 @@ export default function MasterDataView() {
             <TableHead className="w-9 pr-0">
               <Checkbox
                 aria-label="Pilih semua unit tampil yang bisa dihapus"
-                checked={list.filter(unitBisaHapus).length > 0 && list.filter(unitBisaHapus).every((u) => unitDipilih.has(u.id))}
+                checked={list.filter(unitBisaHapus).length > 0 && list.filter(unitBisaHapus).every((u) => unitDipilih.includes(u.id))}
                 onCheckedChange={toggleSemuaUnit(list)}
               />
             </TableHead>
@@ -648,11 +665,11 @@ export default function MasterDataView() {
             const emailTiket = (u.serviceRequests ?? []).find((t) => t.status === 'REQUEST_EMAIL')
             const waitingPart = !finish && !aktifTiket && !!emailTiket
             return (
-              <TableRow key={u.id} className={cn(finish && 'bg-slate-100/80 opacity-70', waitingPart && 'bg-indigo-50/40', unitDipilih.has(u.id) && 'bg-red-50/50 opacity-100')}>
+              <TableRow key={u.id} className={cn(finish && 'bg-slate-100/80 opacity-70', waitingPart && 'bg-indigo-50/40', unitDipilih.includes(u.id) && 'bg-red-50/50 opacity-100')}>
                 <TableCell className="pr-0">
                   <Checkbox
                     aria-label={`Pilih unit ${u.serialNumber}`}
-                    checked={unitDipilih.has(u.id)}
+                    checked={unitDipilih.includes(u.id)}
                     disabled={!unitBisaHapus(u)}
                     title={!unitBisaHapus(u) ? 'Terkunci: sudah punya tiket service' : `Pilih unit ${u.serialNumber}`}
                     onCheckedChange={() => toggleUnit(u.id)}
@@ -828,16 +845,16 @@ export default function MasterDataView() {
           <CardContent>
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <QuickSearch value={cariToko} onChange={setCariToko} placeholder="Cari kode / nama / alamat / kontak toko…" className="max-w-xs flex-1" resultCount={tokoTampil.length} />
-              {bisaHapusToko && tokoDipilih.size > 0 && (
+              {bisaHapusToko && tokoDipilih.length > 0 && (
                 <>
-                  <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{tokoDipilih.size} dipilih</Badge>
+                  <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{tokoDipilih.length} dipilih</Badge>
                   <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-emerald-700 hover:bg-emerald-50" onClick={() => setKolektifTokoOpen(true)}>
-                    <Barcode className="mr-1 h-3 w-3" /> Cetak Kolektif ({tokoDipilih.size})
+                    <Barcode className="mr-1 h-3 w-3" /> Cetak Kolektif ({tokoDipilih.length})
                   </Button>
                   <Button size="sm" variant="destructive" className="h-7 px-2 text-[11px]" onClick={() => setHapusTokoOpen(true)}>
-                    <Trash2 className="mr-1 h-3 w-3" /> Hapus ({tokoDipilih.size})
+                    <Trash2 className="mr-1 h-3 w-3" /> Hapus ({tokoDipilih.length})
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500" onClick={() => setTokoDipilih(new Set())} aria-label="Batalkan pilihan toko">
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500" onClick={() => saveTokoSelectionMutation.mutate([])} aria-label="Batalkan pilihan toko">
                     <X className="h-3 w-3" />
                   </Button>
                 </>
@@ -854,7 +871,7 @@ export default function MasterDataView() {
                         <TableHead className="w-9 pr-0">
                           <Checkbox
                             aria-label="Pilih semua toko tampil"
-                            checked={tokoTampil.length > 0 && tokoTampil.every((t) => tokoDipilih.has(t.id))}
+                            checked={tokoTampil.length > 0 && tokoTampil.every((t) => tokoDipilih.includes(t.id))}
                             onCheckedChange={toggleSemuaToko}
                           />
                         </TableHead>
@@ -870,12 +887,12 @@ export default function MasterDataView() {
                   </TableHeader>
                   <TableBody>
                     {tokoBertahap.tampil.map((t) => (
-                      <TableRow key={t.id} className={cn(!t.aktif && 'opacity-60', tokoDipilih.has(t.id) && 'bg-red-50/50')}>
+                      <TableRow key={t.id} className={cn(!t.aktif && 'opacity-60', tokoDipilih.includes(t.id) && 'bg-red-50/50')}>
                         {bisaHapusToko && (
                           <TableCell className="pr-0">
                             <Checkbox
                               aria-label={`Pilih toko ${t.kodeToko}`}
-                              checked={tokoDipilih.has(t.id)}
+                              checked={tokoDipilih.includes(t.id)}
                               onCheckedChange={() => toggleToko(t.id)}
                             />
                           </TableCell>
@@ -1006,16 +1023,16 @@ export default function MasterDataView() {
           <CardContent>
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <QuickSearch value={cariUnit} onChange={setCariUnit} placeholder="Cari toko / customer / merk / model / seri / kode part…" className="max-w-xs flex-1" resultCount={unitTampil.length} />
-              {unitDipilih.size > 0 && (
+              {unitDipilih.length > 0 && (
                 <>
-                  <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{unitDipilih.size} dipilih</Badge>
+                  <Badge variant="outline" className="border-red-300 bg-red-50 text-[11px] text-red-700">{unitDipilih.length} dipilih</Badge>
                   <Button size="sm" variant="outline" className="h-7 px-2 text-[11px] text-emerald-700 hover:bg-emerald-50" onClick={() => setKolektifUnitOpen(true)}>
-                    <Barcode className="mr-1 h-3 w-3" /> Cetak Kolektif ({unitDipilih.size})
+                    <Barcode className="mr-1 h-3 w-3" /> Cetak Kolektif ({unitDipilih.length})
                   </Button>
                   <Button size="sm" variant="destructive" className="h-7 px-2 text-[11px]" onClick={() => setHapusUnitOpen(true)}>
-                    <Trash2 className="mr-1 h-3 w-3" /> Hapus ({unitDipilih.size})
+                    <Trash2 className="mr-1 h-3 w-3" /> Hapus ({unitDipilih.length})
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500" onClick={() => setUnitDipilih(new Set())} aria-label="Batalkan pilihan unit">
+                  <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px] text-slate-500" onClick={() => saveUnitSelectionMutation.mutate([])} aria-label="Batalkan pilihan unit">
                     <X className="h-3 w-3" />
                   </Button>
                 </>
@@ -1367,18 +1384,18 @@ export default function MasterDataView() {
       <Dialog open={hapusTokoOpen} onOpenChange={setHapusTokoOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Hapus {tokoDipilih.size} Toko?</DialogTitle>
+            <DialogTitle>Hapus {tokoDipilih.length} Toko?</DialogTitle>
             <DialogDescription>
               Toko yang masih punya unit terdaftar, riwayat kunjungan, atau order sparepart otomatis dilewati server. Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-56 space-y-1 overflow-y-auto rounded-md border bg-slate-50 p-2.5">
-            {(tokoList ?? []).filter((t) => tokoDipilih.has(t.id)).map((t) => (
+            {(tokoList ?? []).filter((t) => tokoDipilih.includes(t.id)).map((t) => (
               <p key={t.id} className="text-xs text-slate-700">
                 <span className="font-mono font-semibold">{t.kodeToko}</span> — {t.namaToko} <span className="text-slate-400">({t.jumlahUnit} unit)</span>
               </p>
             ))}
-            {tokoDipilih.size === 0 && (
+            {tokoDipilih.length === 0 && (
               <p className="py-4 text-center text-xs text-slate-400">Tidak ada toko terpilih.</p>
             )}
           </div>
@@ -1386,10 +1403,10 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setHapusTokoOpen(false)}>Batal</Button>
             <Button
               variant="destructive"
-              disabled={tokoDipilih.size === 0 || bulkDeleteToko.isPending}
+              disabled={tokoDipilih.length === 0 || bulkDeleteToko.isPending}
               onClick={() => bulkDeleteToko.mutate([...tokoDipilih])}
             >
-              <Trash2 className="mr-1 h-4 w-4" /> {bulkDeleteToko.isPending ? 'Menghapus…' : `Ya, Hapus (${tokoDipilih.size})`}
+              <Trash2 className="mr-1 h-4 w-4" /> {bulkDeleteToko.isPending ? 'Menghapus…' : `Ya, Hapus (${tokoDipilih.length})`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1546,18 +1563,18 @@ export default function MasterDataView() {
       <Dialog open={hapusUnitOpen} onOpenChange={setHapusUnitOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Hapus {unitDipilih.size} Unit?</DialogTitle>
+            <DialogTitle>Hapus {unitDipilih.length} Unit?</DialogTitle>
             <DialogDescription>
               Unit yang sudah punya tiket service otomatis dilewati server agar riwayat &amp; klaim tetap utuh. Tindakan ini tidak dapat dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-56 space-y-1 overflow-y-auto rounded-md border bg-slate-50 p-2.5">
-            {(unitList ?? []).filter((u) => unitDipilih.has(u.id)).map((u) => (
+            {(unitList ?? []).filter((u) => unitDipilih.includes(u.id)).map((u) => (
               <p key={u.id} className="text-xs text-slate-700">
                 <span className="font-mono font-semibold">{u.serialNumber}</span> — {u.modelUnit}
               </p>
             ))}
-            {unitDipilih.size === 0 && (
+            {unitDipilih.length === 0 && (
               <p className="py-4 text-center text-xs text-slate-400">Tidak ada unit terpilih.</p>
             )}
           </div>
@@ -1565,10 +1582,10 @@ export default function MasterDataView() {
             <Button variant="outline" onClick={() => setHapusUnitOpen(false)}>Batal</Button>
             <Button
               variant="destructive"
-              disabled={unitDipilih.size === 0 || bulkDeleteUnit.isPending}
+              disabled={unitDipilih.length === 0 || bulkDeleteUnit.isPending}
               onClick={() => bulkDeleteUnit.mutate([...unitDipilih])}
             >
-              <Trash2 className="mr-1 h-4 w-4" /> {bulkDeleteUnit.isPending ? 'Menghapus…' : `Ya, Hapus (${unitDipilih.size})`}
+              <Trash2 className="mr-1 h-4 w-4" /> {bulkDeleteUnit.isPending ? 'Menghapus…' : `Ya, Hapus (${unitDipilih.length})`}
             </Button>
           </DialogFooter>
         </DialogContent>

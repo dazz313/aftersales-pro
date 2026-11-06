@@ -121,7 +121,7 @@ function BadgeEdited({ waktu, oleh }: { waktu: string; oleh?: string | null }) {
 export default function ServiceView() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const { role, navIntent, clearNavIntent } = useAppStore()
+  const { role, user, navIntent, clearNavIntent } = useAppStore()
   const [tab, setTab] = useState('SEMUA')
   // Filter drill-down dari Dashboard (KPI garansi / klik batang tren model)
   const [garansiFilter, setGaransiFilter] = useState<'SEMUA' | 'GARANSI' | 'NON_GARANSI'>('SEMUA')
@@ -133,19 +133,36 @@ export default function ServiceView() {
   const [alurFilter, setAlurFilter] = useState<AlurSj | 'SEMUA'>('SEMUA')
   const [cariTiket, setCariTiket] = useState('')
   // Pilih tiket untuk surat jalan kolektif (part rusak dikirim bersama ke produsen)
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => {
-    try {
-      const raw = localStorage.getItem('aspro_selected_ids')
-      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
-    } catch {
-      return new Set<number>()
-    }
+  // Pilihan tersimpan di server (shared_selection) agar dilihat semua user,
+  // bukan hanya localStorage per-browser. Menggunakan queryClient.setQueryData
+  // untuk optimistic update agar tidak butuh useState + useEffect.
+  const selSelectedIdsQuery = useQuery<{ type: string; itemIds: number[] }>({
+    queryKey: ['shared-selection', 'SELECTED_IDS'],
+    queryFn: () => fetcher<{ type: string; itemIds: number[] }>('/api/user-selection?type=SELECTED_IDS'),
+    enabled: !!user?.id,
   })
-  // Simpan pilihan tiket (surat jalan/STTB) ke localStorage agar tidak hilang
-  // saat berpindah mode/view; hanya dihapus manual (Reset) atau kolektif.
-  useEffect(() => {
-    try { localStorage.setItem('aspro_selected_ids', JSON.stringify([...selectedIds])) } catch { /* abaikan */ }
-  }, [selectedIds])
+  const selectedIds: number[] = selSelectedIdsQuery.data?.itemIds ?? []
+  const saveSelectionMutation = useMutation({
+    mutationFn: (itemIds: number[]) => postJson('/api/user-selection', { type: 'SELECTED_IDS', itemIds }),
+    onMutate: async (newItemIds) => {
+      await queryClient.cancelQueries({ queryKey: ['shared-selection', 'SELECTED_IDS'] })
+      const previous = queryClient.getQueryData<{ type: string; itemIds: number[] }>(['shared-selection', 'SELECTED_IDS'])
+      queryClient.setQueryData(['shared-selection', 'SELECTED_IDS'], { type: 'SELECTED_IDS', itemIds: newItemIds })
+      return { previous }
+    },
+    onError: (_err, _newItemIds, context) => {
+      queryClient.setQueryData(['shared-selection', 'SELECTED_IDS'], context?.previous)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shared-selection', 'SELECTED_IDS'] })
+    },
+  })
+  const toggleSelectedId = (id: number) => {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((i) => i !== id)
+      : [...selectedIds, id].sort((a, b) => a - b)
+    saveSelectionMutation.mutate(next)
+  }
   const [sjOpen, setSjOpen] = useState(false)
   const [detail, setDetail] = useState<ServiceTicket | null>(null)
   const [tiketEdit, setTiketEdit] = useState(false)
@@ -349,27 +366,20 @@ export default function ServiceView() {
   }, [tickets])
 
   const toggleSelect = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+    const current = [...selectedIds]
+    const next = current.includes(id) ? current.filter((i) => i !== id) : [...current, id].sort((a, b) => a - b)
+    saveSelectionMutation.mutate(next)
   }
 
   const toggleAll = (list: { id: number }[]) => {
-    const allSelected = list.length > 0 && list.every((t) => selectedIds.has(t.id))
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      for (const t of list) {
-        if (allSelected) next.delete(t.id)
-        else next.add(t.id)
-      }
-      return next
-    })
+    const allSelected = list.length > 0 && list.every((t) => selectedIds.includes(t.id))
+    const next = allSelected
+      ? list.filter((t) => !selectedIds.includes(t.id)).map((t) => t.id).sort((a, b) => a - b)
+      : [...new Set([...selectedIds, ...list.map((t) => t.id)])].sort((a, b) => a - b)
+    saveSelectionMutation.mutate(next)
   }
 
-  const sjTickets = useMemo(() => (tickets ?? []).filter((t) => selectedIds.has(t.id)), [tickets, selectedIds])
+  const sjTickets = useMemo(() => (tickets ?? []).filter((t) => selectedIds.includes(t.id)), [tickets, selectedIds])
 
   // STTB kolektif per toko (pick up): wajib 1 toko yang sama
   const [sttbBusy, setSttbBusy] = useState(false)
@@ -396,19 +406,35 @@ export default function ServiceView() {
   const [pasangOpen, setPasangOpen] = useState(false)
   const [pasangData, setPasangData] = useState<{ siap: PasangRow[]; riwayat: PasangRow[] } | null>(null)
   const [pasangLoading, setPasangLoading] = useState(false)
-  // Centangan panel Pemasangan Part — tersimpan di localStorage agar tidak
-  // hilang saat user sempat berpindah mode; dihapus manual/kolektif saja.
-  const [pasangSel, setPasangSel] = useState<Set<number>>(() => {
-    try {
-      const raw = localStorage.getItem('aspro_pasang_sel')
-      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
-    } catch {
-      return new Set<number>()
-    }
+  // Centangan panel Pemasangan Part — tersimpan di server (shared_selection)
+  // agar dilihat semua user, tidak hilang saat berpindah mode.
+  const selPasangSelQuery = useQuery<{ type: string; itemIds: number[] }>({
+    queryKey: ['shared-selection', 'PASANG_SEL'],
+    queryFn: () => fetcher<{ type: string; itemIds: number[] }>('/api/user-selection?type=PASANG_SEL'),
+    enabled: !!user?.id,
   })
-  useEffect(() => {
-    try { localStorage.setItem('aspro_pasang_sel', JSON.stringify([...pasangSel])) } catch { /* abaikan */ }
-  }, [pasangSel])
+  const pasangSel: number[] = selPasangSelQuery.data?.itemIds ?? []
+  const savePasangSelectionMutation = useMutation({
+    mutationFn: (itemIds: number[]) => postJson('/api/user-selection', { type: 'PASANG_SEL', itemIds }),
+    onMutate: async (newItemIds) => {
+      await queryClient.cancelQueries({ queryKey: ['shared-selection', 'PASANG_SEL'] })
+      const previous = queryClient.getQueryData<{ type: string; itemIds: number[] }>(['shared-selection', 'PASANG_SEL'])
+      queryClient.setQueryData(['shared-selection', 'PASANG_SEL'], { type: 'PASANG_SEL', itemIds: newItemIds })
+      return { previous }
+    },
+    onError: (_err, _newItemIds, context) => {
+      queryClient.setQueryData(['shared-selection', 'PASANG_SEL'], context?.previous)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['shared-selection', 'PASANG_SEL'] })
+    },
+  })
+  const togglePasangId = (id: number) => {
+    const next = pasangSel.includes(id)
+      ? pasangSel.filter((i) => i !== id)
+      : [...pasangSel, id].sort((a, b) => a - b)
+    savePasangSelectionMutation.mutate(next)
+  }
   const [pasangBusy, setPasangBusy] = useState(false)
   const [pasangRiwayatOpen, setPasangRiwayatOpen] = useState(false)
   async function muatPasang() {
@@ -436,8 +462,8 @@ export default function ServiceView() {
     return [...m.entries()]
   }, [pasangData])
   async function sahkanPasang(denganDokumen: boolean) {
-    if (pasangSel.size === 0 || pasangBusy) return
-    const n = pasangSel.size
+    if (pasangSel.length === 0 || pasangBusy) return
+    const n = pasangSel.length
     setPasangBusy(true)
     try {
       const res = await fetch('/api/pemasangan', {
@@ -465,7 +491,7 @@ export default function ServiceView() {
         URL.revokeObjectURL(url)
       }
       void queryClient.invalidateQueries({ queryKey: ['service-tickets'] })
-      setPasangSel(new Set())
+      savePasangSelectionMutation.mutate([])
       await muatPasang()
       toast({
         title: `${n} part dinyatakan dipasang`,
@@ -649,7 +675,7 @@ export default function ServiceView() {
   const [riwayatLoading, setRiwayatLoading] = useState(false)
   const [riwayatBusy, setRiwayatBusy] = useState<string | null>(null)
   const daftarNoTiketTerpilih = useMemo(
-    () => (tickets ?? []).filter((t) => selectedIds.has(t.id)).map((t) => t.noTiket),
+    () => (tickets ?? []).filter((t) => selectedIds.includes(t.id)).map((t) => t.noTiket),
     [tickets, selectedIds]
   )
 
@@ -935,7 +961,7 @@ export default function ServiceView() {
             ) : (
               <>
                 {pasangToko.map(([toko, rows]) => {
-                  const semuaCeklis = rows.every((r) => pasangSel.has(r.id))
+                  const semuaCeklis = rows.every((r) => pasangSel.includes(r.id))
                   return (
                     <div key={toko} className="overflow-hidden rounded-lg border">
                       <div className="flex items-center justify-between gap-2 bg-slate-50 px-3 py-1.5">
@@ -946,12 +972,12 @@ export default function ServiceView() {
                           type="button"
                           className="text-[10px] text-teal-700 hover:underline"
                           onClick={() => {
-                            const ids = rows.map((r) => r.id)
-                            setPasangSel((prev) => {
-                              const next = new Set(prev)
-                              for (const id of ids) if (semuaCeklis) next.delete(id); else next.add(id)
-                              return next
-                            })
+                            const ids = rows.map((r) => r.id).sort((a, b) => a - b)
+                            const semuaCeklis = rows.every((r) => pasangSel.includes(r.id))
+                            const next = semuaCeklis
+                              ? ids.filter((id) => !pasangSel.includes(id))
+                              : [...new Set([...pasangSel, ...ids])].sort((a, b) => a - b)
+                            savePasangSelectionMutation.mutate(next)
                           }}
                         >
                           {semuaCeklis ? 'Lepas semua' : 'Pilih semua'}
@@ -971,18 +997,12 @@ export default function ServiceView() {
                         </TableHeader>
                         <TableBody>
                           {rows.map((r) => (
-                            <TableRow key={r.id} className={cn(pasangSel.has(r.id) && 'bg-teal-50/60')}>
+                            <TableRow key={r.id} className={cn(pasangSel.includes(r.id) && 'bg-teal-50/60')}>
                               <TableCell>
                                 <Checkbox
                                   aria-label={`Pilih part ${r.kodePart} — tiket ${r.noTiket}`}
-                                  checked={pasangSel.has(r.id)}
-                                  onCheckedChange={() =>
-                                    setPasangSel((prev) => {
-                                      const next = new Set(prev)
-                                      if (next.has(r.id)) next.delete(r.id); else next.add(r.id)
-                                      return next
-                                    })
-                                  }
+                                  checked={pasangSel.includes(r.id)}
+                                  onCheckedChange={() => togglePasangId(r.id)}
                                 />
                               </TableCell>
                               <TableCell>
@@ -1012,13 +1032,13 @@ export default function ServiceView() {
                 })}
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className="border-teal-300 text-[10px] text-teal-700">
-                    {pasangSel.size} item dipilih
+                    {pasangSel.length} item dipilih
                   </Badge>
                   <Button
                     size="sm"
                     variant="outline"
                     className="border-teal-700 text-teal-700 hover:bg-teal-50"
-                    disabled={pasangSel.size === 0 || pasangBusy}
+                    disabled={pasangSel.length === 0 || pasangBusy}
                     onClick={() => void sahkanPasang(true)}
                     title="Tandai dipasang + unduh Dokumen Pemasangan (PDF, seksi per toko)"
                   >
@@ -1028,7 +1048,7 @@ export default function ServiceView() {
                   <Button
                     size="sm"
                     variant="outline"
-                    disabled={pasangSel.size === 0 || pasangBusy}
+                    disabled={pasangSel.length === 0 || pasangBusy}
                     onClick={() => void sahkanPasang(false)}
                   >
                     <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Sahkan Saja
@@ -1153,14 +1173,14 @@ export default function ServiceView() {
                 <X className="mr-1 h-3.5 w-3.5" /> Bersihkan alur
               </Button>
             )}
-            {selectedIds.size > 0 && (
+            {selectedIds.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-slate-500 hover:text-slate-700"
-                onClick={() => setSelectedIds(new Set())}
+                onClick={() => saveSelectionMutation.mutate([])}
               >
-                <X className="mr-1 h-3.5 w-3.5" /> Reset ({selectedIds.size})
+                <X className="mr-1 h-3.5 w-3.5" /> Reset ({selectedIds.length})
               </Button>
             )}
             <Button
@@ -1168,44 +1188,44 @@ export default function ServiceView() {
               size="sm"
               className="border-teal-700 text-teal-700 hover:bg-teal-50"
               onClick={() => setSjOpen(true)}
-              disabled={selectedIds.size === 0}
+              disabled={selectedIds.length === 0}
               title="Cetak surat jalan kolektif — part rusak dikirim bersama ke produsen"
             >
               <Truck className="mr-1 h-3.5 w-3.5" />
-              Surat Jalan{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+              Surat Jalan{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="border-slate-700 text-slate-700 hover:bg-slate-50"
               onClick={() => void unduhSttbKolektif(false)}
-              disabled={selectedIds.size === 0 || sttbBusy}
+              disabled={selectedIds.length === 0 || sttbBusy}
               title="Cetak STTB kolektif — daftar unit siap pick up dari 1 toko (wajib centang 1 toko yang sama)"
             >
               {sttbBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <ClipboardList className="mr-1 h-3.5 w-3.5" />}
-              STTB Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+              STTB Toko{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="border-violet-600 text-violet-700 hover:bg-violet-50"
               onClick={() => void unduhSttbKolektif(true)}
-              disabled={selectedIds.size === 0 || sttbBusy}
+              disabled={selectedIds.length === 0 || sttbBusy}
               title="Cetak STTB kolektif SEKALIGUS sahkan unit tercentang benar-benar DITARIK (tarik parsial — yang dicetak = yang dipindahkan ke workshop; part belum READY tidak ikut ditandai)"
             >
               {sttbBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <Hand className="mr-1 h-3.5 w-3.5" />}
-              STTB + Sahkan Ditarik{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+              STTB + Sahkan Ditarik{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="border-emerald-700 text-emerald-700 hover:bg-emerald-50"
               onClick={() => void unduhSuratKembali()}
-              disabled={selectedIds.size === 0 || kembaliBusy}
+              disabled={selectedIds.length === 0 || kembaliBusy}
               title="Cetak Surat Pengembalian Barang (SKTB) — 1 tiket tercentang = per toko, beberapa tiket 1 toko = kolektif. Tiket FINISH boleh dicetak walau unit masih di workshop (baris tgl kembali mencetak —)."
             >
               {kembaliBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <PackageOpen className="mr-1 h-3.5 w-3.5" />}
-              Kembali Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
+              Kembali Toko{selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
             </Button>
             <Button
               variant="outline"
@@ -1216,14 +1236,14 @@ export default function ServiceView() {
                 setRiwayatOpen(akanBuka)
                 if (akanBuka) void muatRiwayatTerpilih()
               }}
-              disabled={selectedIds.size === 0}
+              disabled={selectedIds.length === 0}
               title="Buka riwayat persuratan tiket tercentang — SJR, STTB, STTBK, SKTB. Cetak ulang pakai nomor asli, tidak buat nomor baru."
             >
               {riwayatLoading ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <History className="mr-1 h-3.5 w-3.5" />}
               Riwayat
             </Button>
           </div>
-          {riwayatOpen && selectedIds.size > 0 && (
+          {riwayatOpen && selectedIds.length > 0 && (
             <div className="mb-3 rounded-lg border border-sky-200 bg-sky-50/60 px-3 py-2.5">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-sky-900">
                 <History className="h-3.5 w-3.5 shrink-0" />
@@ -1345,7 +1365,7 @@ export default function ServiceView() {
                     <TableHead className="w-9 pr-0">
                       <Checkbox
                         aria-label="Pilih semua tiket tampil untuk surat jalan"
-                        checked={filtered.length > 0 && filtered.every((t) => selectedIds.has(t.id))}
+                        checked={filtered.length > 0 && filtered.every((t) => selectedIds.includes(t.id))}
                         onCheckedChange={() => toggleAll(filtered)}
                       />
                     </TableHead>
@@ -1374,11 +1394,11 @@ export default function ServiceView() {
                     const pasangTerakhir = tglPasangTerakhir(t)
                     const durasiWorkshop = durasiUnitWorkshop(t)
                     return (
-                      <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60', selectedIds.has(t.id) && 'bg-teal-50/60')}>
+                      <TableRow key={t.id} className={cn(t.slaFlag && 'bg-rose-50/60', selectedIds.includes(t.id) && 'bg-teal-50/60')}>
                         <TableCell className="pr-0">
                           <Checkbox
                             aria-label={`Pilih tiket ${t.noTiket} untuk surat jalan`}
-                            checked={selectedIds.has(t.id)}
+                            checked={selectedIds.includes(t.id)}
                             onCheckedChange={() => toggleSelect(t.id)}
                           />
                         </TableCell>
@@ -1554,7 +1574,7 @@ export default function ServiceView() {
                       className={cn(
                         'rounded-xl border bg-card p-3 shadow-sm',
                         t.slaFlag && 'border-rose-200 bg-rose-50/40',
-                        selectedIds.has(t.id) && 'ring-1 ring-teal-300'
+                        selectedIds.includes(t.id) && 'ring-1 ring-teal-300'
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -2167,7 +2187,7 @@ export default function ServiceView() {
           if (!v) {
             // Nomor SJ otomatis tercap ke tiket saat cetak — segarkan daftar
             invalidateAll()
-            setSelectedIds(new Set())
+            saveSelectionMutation.mutate([])
           }
         }}
         tickets={sjTickets}
