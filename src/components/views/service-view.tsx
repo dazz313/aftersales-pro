@@ -2187,10 +2187,10 @@ export default function ServiceView() {
           if (!v) {
             // Nomor SJ otomatis tercap ke tiket saat cetak — segarkan daftar
             invalidateAll()
-            saveSelectionMutation.mutate([])
           }
         }}
         tickets={sjTickets}
+        onDownloaded={() => saveSelectionMutation.mutate([])}
       />
     </div>
   )
