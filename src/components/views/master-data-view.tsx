@@ -120,7 +120,19 @@ export default function MasterDataView() {
   const [editToko, setEditToko] = useState<Toko | null>(null)
   const [editTokoForm, setEditTokoForm] = useState({ namaToko: '', alamat: '', kontak: '', frekuensiVisit: '14', jarakKm: '', aktif: true, modeSiklus: 'REGULER' as 'REGULER' | 'BY_REQUEST', latitude: '', longitude: '' })
   // Hapus massal toko (khusus Admin/Manager — centang baris lalu hapus sekaligus)
-  const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(new Set())
+  // Pilihan toko tersimpan di localStorage agar tidak hilang saat berpindah
+  // mode/view; dihapus hanya manual (Reset) atau kolektif.
+  const [tokoDipilih, setTokoDipilih] = useState<Set<number>>(() => {
+    try {
+      const raw = localStorage.getItem('aspro_toko_dipilih')
+      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
+    } catch {
+      return new Set<number>()
+    }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('aspro_toko_dipilih', JSON.stringify([...tokoDipilih])) } catch { /* abaikan */ }
+  }, [tokoDipilih])
   const [hapusTokoOpen, setHapusTokoOpen] = useState(false)
   const bisaHapusToko = role === 'ADMIN_WORKSHOP' || role === 'MANAGER'
   // Hapus massal unit (centang baris tanpa tiket lalu hapus sekaligus)

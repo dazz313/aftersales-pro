@@ -396,7 +396,19 @@ export default function ServiceView() {
   const [pasangOpen, setPasangOpen] = useState(false)
   const [pasangData, setPasangData] = useState<{ siap: PasangRow[]; riwayat: PasangRow[] } | null>(null)
   const [pasangLoading, setPasangLoading] = useState(false)
-  const [pasangSel, setPasangSel] = useState<Set<number>>(new Set())
+  // Centangan panel Pemasangan Part — tersimpan di localStorage agar tidak
+  // hilang saat user sempat berpindah mode; dihapus manual/kolektif saja.
+  const [pasangSel, setPasangSel] = useState<Set<number>>(() => {
+    try {
+      const raw = localStorage.getItem('aspro_pasang_sel')
+      return raw ? new Set<number>(JSON.parse(raw)) : new Set<number>()
+    } catch {
+      return new Set<number>()
+    }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('aspro_pasang_sel', JSON.stringify([...pasangSel])) } catch { /* abaikan */ }
+  }, [pasangSel])
   const [pasangBusy, setPasangBusy] = useState(false)
   const [pasangRiwayatOpen, setPasangRiwayatOpen] = useState(false)
   async function muatPasang() {
