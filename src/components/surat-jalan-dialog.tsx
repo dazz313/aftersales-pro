@@ -41,10 +41,12 @@ export default function SuratJalanDialog({
   open,
   onOpenChange,
   tickets,
+  onDownloaded,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   tickets: ServiceTicket[]
+  onDownloaded?: () => void
 }) {
   const { toast } = useToast()
   const queryClient = useQueryClient()
@@ -121,15 +123,17 @@ export default function SuratJalanDialog({
 
   // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
   const mentah = tiketAktif.flatMap((t) =>
-    t.parts.map((p) => ({
-      noTiket: t.noTiket,
-      kodePart: p.sparepart?.kodePart ?? '',
-      namaPart: p.sparepart?.namaPart ?? '',
-      qty: p.qty,
-      toko: t.unitAsset.toko?.namaToko ?? '-',
-      sn: t.unitAsset.serialNumber,
-      alur: alurSjState(t),
-    }))
+    t.parts
+      .filter((p) => !p.tglPasang) // part yang sudah terpasang tidak ikut SJR
+      .map((p) => ({
+        noTiket: t.noTiket,
+        kodePart: p.sparepart?.kodePart ?? '',
+        namaPart: p.sparepart?.namaPart ?? '',
+        qty: p.qty,
+        toko: t.unitAsset.toko?.namaToko ?? '-',
+        sn: t.unitAsset.serialNumber,
+        alur: alurSjState(t),
+      }))
   )
   const items = mentah.filter((i) => i.kodePart.trim() && i.namaPart.trim())
   const tanpaKode = mentah.length - items.length
@@ -191,6 +195,9 @@ export default function SuratJalanDialog({
       void queryClient.invalidateQueries({ queryKey: ['service-tickets'] })
       // Dokumen baru masuk bundel — segarkan panel riwayat.
       void queryClient.invalidateQueries({ queryKey: ['surat-riwayat', daftarNoTiket.join('|')] })
+      // Surat jalan berhasil diunduh → kosongkan pilihan centang di server
+      // (hanya setelah unduh, bukan saat back/X).
+      onDownloaded?.()
       toast({
         title: `Surat Jalan Request ${format.toUpperCase()} terunduh`,
         description: `${filename} · tanggal request tercatat & ditulis di dokumen/badge tiket.`,
