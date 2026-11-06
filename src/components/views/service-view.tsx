@@ -680,10 +680,13 @@ export default function ServiceView() {
   )
 
   async function muatRiwayatTerpilih() {
-    if (daftarNoTiketTerpilih.length === 0 || riwayatLoading) return
+    if (riwayatLoading) return
     setRiwayatLoading(true)
     try {
-      const res = await fetch(`/api/surat-riwayat?noTiket=${encodeURIComponent(daftarNoTiketTerpilih.join(','))}`, {
+      const url = daftarNoTiketTerpilih.length > 0
+        ? `/api/surat-riwayat?noTiket=${encodeURIComponent(daftarNoTiketTerpilih.join(','))}`
+        : '/api/surat-riwayat'
+      const res = await fetch(url, {
         headers: authHeaders(),
       })
       if (!res.ok) {
@@ -1236,18 +1239,20 @@ export default function ServiceView() {
                 setRiwayatOpen(akanBuka)
                 if (akanBuka) void muatRiwayatTerpilih()
               }}
-              disabled={selectedIds.length === 0}
-              title="Buka riwayat persuratan tiket tercentang — SJR, STTB, STTBK, SKTB. Cetak ulang pakai nomor asli, tidak buat nomor baru."
+              title="Buka riwayat persuratan — SJR, STTB, STTBK, SKTB. Cetak ulang pakai nomor asli, tidak buat nomor baru. Tanpa centang = 40 dokumen terakhir."
             >
               {riwayatLoading ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <History className="mr-1 h-3.5 w-3.5" />}
               Riwayat
             </Button>
           </div>
-          {riwayatOpen && selectedIds.length > 0 && (
+          {riwayatOpen && (
             <div className="mb-3 rounded-lg border border-sky-200 bg-sky-50/60 px-3 py-2.5">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-sky-900">
                 <History className="h-3.5 w-3.5 shrink-0" />
-                Riwayat Persuratan — {daftarNoTiketTerpilih.length} tiket tercentang
+                Riwayat Persuratan
+                {daftarNoTiketTerpilih.length > 0
+                  ? ` — ${daftarNoTiketTerpilih.length} tiket tercentang`
+                  : ' — 40 dokumen terakhir'}
               </p>
               {riwayatList === null ? (
                 <p className="mt-1 text-[11px] text-sky-700">Klik Riwayat untuk memuat daftar dokumen.</p>
