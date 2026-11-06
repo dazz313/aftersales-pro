@@ -92,13 +92,13 @@ export async function buatPdf(param: {
 
   const cols: { title: string; x: number; w: number }[] = [
     { title: 'No', x: M, w: 8 },
-    { title: 'No. Tiket', x: M + 8, w: 30 },
-    { title: 'Toko', x: M + 38, w: 34 },
-    { title: 'Serial Number', x: M + 72, w: 30 },
-    { title: 'Model Unit', x: M + 102, w: 36 },
-    { title: 'Kode Part', x: M + 138, w: 30 },
-    { title: 'Nama Part', x: M + 168, w: 70 },
-    { title: 'Qty', x: M + 238, w: 20 },
+    { title: 'No. Tiket', x: M + 8, w: 28 },
+    { title: 'Toko', x: M + 36, w: 30 },
+    { title: 'Serial Number', x: M + 66, w: 26 },
+    { title: 'Model Unit', x: M + 92, w: 32 },
+    { title: 'Kode Part', x: M + 124, w: 50 },
+    { title: 'Nama Part', x: M + 174, w: 87 },
+    { title: 'Qty', x: M + 261, w: 12 },
   ]
 
   const drawTableHeader = () => {
@@ -242,6 +242,18 @@ export function buatXlsx(param: {
     ['No', 'No. Tiket', 'Toko', 'Serial Number', 'Model Unit', 'Kode Part', 'Nama Part', 'Qty', 'Tgl Request'],
     ...body,
   ])
+  // Lebar kolom agar kode/serial tidak terpotong.
+  request['!cols'] = [
+    { wch: 5 },   // No
+    { wch: 18 },  // No. Tiket
+    { wch: 24 },  // Toko
+    { wch: 16 },  // Serial Number
+    { wch: 20 },  // Model Unit
+    { wch: 22 },  // Kode Part
+    { wch: 32 },  // Nama Part
+    { wch: 6 },   // Qty
+    { wch: 18 },  // Tgl Request
+  ]
   XLSX.utils.book_append_sheet(wb, request, 'Request')
 
   // Ringkasan per toko — langsung menjawab "part ini untuk toko mana".
