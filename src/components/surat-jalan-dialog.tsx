@@ -140,7 +140,7 @@ export default function SuratJalanDialog({
   // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
   const mentah = tiketAktif.flatMap((t) =>
     t.parts
-      .filter((p) => !p.tglPasang) // part yang sudah terpasang tidak ikut SJR
+      .filter((p) => p.statusPart === 'ORDER_PRODUSEN') // hanya part yang belum datang (masih di-order), bukan part yang sudah datang/ready
       .map((p) => ({
         noTiket: t.noTiket,
         kodePart: p.sparepart?.kodePart ?? '',
@@ -231,7 +231,7 @@ export default function SuratJalanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-[950px] overflow-y-auto bg-white p-6">
+      <DialogContent className="max-h-[90vh] max-w-[1120px] overflow-y-auto bg-white p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 pr-8 text-slate-900">
             <Truck className="h-5 w-5 shrink-0 text-teal-700" /> Surat Jalan Request Part
@@ -334,7 +334,7 @@ export default function SuratJalanDialog({
         )}
 
         {/* Pratinjau item — scroll dua arah agar tabel panjang tidak meluber keluar dialog */}
-        <ScrollArea className="h-72 min-w-0 rounded-lg border border-slate-200">
+        <ScrollArea className="h-[520px] min-w-0 rounded-lg border border-slate-200">
           {items.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <PackageOpen className="h-8 w-8 text-slate-300" />
@@ -344,7 +344,7 @@ export default function SuratJalanDialog({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="w-full min-w-[700px]">
+              <Table className="w-full min-w-[1050px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10">No</TableHead>
