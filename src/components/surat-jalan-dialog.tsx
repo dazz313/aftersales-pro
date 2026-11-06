@@ -231,7 +231,7 @@ export default function SuratJalanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-[1120px] overflow-y-auto bg-white p-6">
+      <DialogContent className="max-h-[90vh] !max-w-[1120px] overflow-y-auto bg-white p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 pr-8 text-slate-900">
             <Truck className="h-5 w-5 shrink-0 text-teal-700" /> Surat Jalan Request Part
@@ -349,7 +349,7 @@ export default function SuratJalanDialog({
                   <TableRow>
                     <TableHead className="w-10">No</TableHead>
                     <TableHead className="w-32">No. Tiket</TableHead>
-                    <TableHead>Sparepart</TableHead>
+                    <TableHead className="w-96">Sparepart</TableHead>
                     <TableHead className="w-14 text-right">Qty</TableHead>
                     <TableHead className="hidden w-32 sm:table-cell">Toko Asal</TableHead>
                     <TableHead className="w-44">Alur SJ</TableHead>
