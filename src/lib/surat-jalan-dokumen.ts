@@ -94,11 +94,11 @@ export async function buatPdf(param: {
     { title: 'No', x: M, w: 8 },
     { title: 'No. Tiket', x: M + 8, w: 30 },
     { title: 'Toko', x: M + 38, w: 34 },
-    { title: 'Serial Number', x: M + 72, w: 27 },
-    { title: 'Model Unit', x: M + 99, w: 38 },
-    { title: 'Kode Part', x: M + 137, w: 30 },
-    { title: 'Nama Part', x: M + 167, w: 74 },
-    { title: 'Qty', x: M + 241, w: 20 },
+    { title: 'Serial Number', x: M + 72, w: 30 },
+    { title: 'Model Unit', x: M + 102, w: 36 },
+    { title: 'Kode Part', x: M + 138, w: 30 },
+    { title: 'Nama Part', x: M + 168, w: 70 },
+    { title: 'Qty', x: M + 238, w: 20 },
   ]
 
   const drawTableHeader = () => {
@@ -116,7 +116,18 @@ export async function buatPdf(param: {
   }
   drawTableHeader()
 
-  items.forEach((i, idx) => {
+  // Nomor urut mengikuti nomor tiket (urut berdasarkan noTiket), bukan per item.
+  // Semua part dari tiket yang sama dapat nomor tiket yang sama.
+  const tiketUrut = new Map<string, number>()
+  let noUrut = 0
+  for (const i of items) {
+    if (!tiketUrut.has(i.noTiket)) {
+      noUrut++
+      tiketUrut.set(i.noTiket, noUrut)
+    }
+  }
+
+  items.forEach((i) => {
     if (y > pageH - 26) {
       doc.addPage()
       drawPageHeader(false)
@@ -124,7 +135,7 @@ export async function buatPdf(param: {
     }
     doc.setFontSize(8)
     doc.setTextColor(30, 41, 59)
-    doc.text(String(idx + 1), cols[0].x + 1.5, y)
+    doc.text(String(tiketUrut.get(i.noTiket)), cols[0].x + 1.5, y)
     doc.text(potong(i.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
     doc.text(potong(i.toko, cols[2].w - 2), cols[2].x + 1.5, y)
     doc.text(potong(i.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
@@ -189,8 +200,17 @@ export function buatXlsx(param: {
   const tglText = `${tglRequest.toLocaleDateString('id-ID')} ${tglRequest.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
 
   const wb = XLSX.utils.book_new()
-  const body = items.map((i, idx) => [
-    idx + 1,
+  // Nomor urut mengikuti nomor tiket (urut berdasarkan noTiket), bukan per item.
+  const xTiketUrut = new Map<string, number>()
+  let xNoUrut = 0
+  for (const i of items) {
+    if (!xTiketUrut.has(i.noTiket)) {
+      xNoUrut++
+      xTiketUrut.set(i.noTiket, xNoUrut)
+    }
+  }
+  const body = items.map((i) => [
+    xTiketUrut.get(i.noTiket),
     i.noTiket,
     i.toko,
     i.serialNumber,

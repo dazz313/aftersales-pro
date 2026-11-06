@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       where: { noTiket: { in: noTiketList } },
       include: {
         unitAsset: { include: { toko: true } },
-        parts: { include: { sparepart: true } },
+        parts: { where: { sumberPart: 'KATALOG' }, include: { sparepart: true } },
       },
       orderBy: { noTiket: 'asc' },
     })
