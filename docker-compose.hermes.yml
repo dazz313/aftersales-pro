@@ -28,6 +28,9 @@ services:
     environment:
       - HERMES_UID=${HERMES_UID:-1000}
       - HERMES_GID=${HERMES_GID:-1000}
+      # MCP server AfterSales Pro (stdio) membutuhkan DATABASE_URL untuk menemukan
+      # database SQLite. Folder db di-mount read-only di /app/db di container.
+      - DATABASE_URL=file:/app/db/custom.db
       # Dashboard dimatikan by default (butuh auth untuk bind non-loopback).
       # Aktifkan dengan HERMES_DASHBOARD=1 + set auth di config.yaml, atau
       # jalankan manual: docker exec hermes hermes dashboard --host 127.0.0.1 --no-open
