@@ -100,16 +100,13 @@ export async function POST(request: Request) {
       )
     }
 
-    // Nomor dokumen harian: SJR-YYYYMMDD-NNNN (tiap unduhan = 1 dokumen baru —
-    // riwayat lengkap, tgl request tiket tidak diubah ulang setelah terisi).
+    // Nomor dokumen: SJR-YYYYMMDD-NNNN. NNNN = counter berkelanjutan (tidak
+    // reset harian) agar nomor selalu naik: 0001, 0002, 0003, 0004, … tetap
+    // unik walaupun dibuat di hari yang berbeda.
     const now = new Date()
     const ymd = now.toISOString().slice(0, 10).replace(/-/g, '')
-    const startOfDay = new Date(now)
-    startOfDay.setHours(0, 0, 0, 0)
-    const usedToday = await db.suratJalanRequest.count({
-      where: { tglRequest: { gte: startOfDay } },
-    })
-    const noSurat = `SJR-${ymd}-${String(usedToday + 1).padStart(4, '0')}`
+    const totalSJR = await db.suratJalanRequest.count()
+    const noSurat = `SJR-${ymd}-${String(totalSJR + 1).padStart(4, '0')}`
     const totalQty = items.reduce((a, i) => a + (i.qty || 1), 0)
 
     const sjr = await db.suratJalanRequest.create({
