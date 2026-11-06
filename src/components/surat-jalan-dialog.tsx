@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen, CalendarClock, AlertTriangle, History, Printer } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -51,9 +51,25 @@ export default function SuratJalanDialog({
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState<'pdf' | 'xlsx' | null>(null)
-  // Produsen tujuan ("Kepada: PT ...") yang tercetak di surat — input bebas;
-  // saran otomatis dari merk unit bila semua tiket terpilih merknya sama.
+  // Produsen tujuan ("Kepada: PT ...") yang tercetak di surat — input bebas.
+  // Auto-fill dari pengaturan `partner_produsen` (Pengaturan → Profil) agar
+  // user tidak perlu mengetik ulang; saran merk unit jadi fallback bila kosong.
   const [kepada, setKepada] = useState('')
+  const { data: settingsData } = useQuery<{ map?: Record<string, string> }>({
+    queryKey: ['pengaturan'],
+    queryFn: () => fetcher<{ map?: Record<string, string> }>('/api/pengaturan'),
+    enabled: open,
+  })
+  // Isi otomatis "Kepada" dari partner_produsen bila belum diisi manual.
+  useEffect(() => {
+    if (!open) return
+    const t = setTimeout(() => {
+      if (kepada.trim()) return
+      const partner = settingsData?.map?.['partner_produsen']
+      if (partner && partner.trim()) setKepada(partner.trim())
+    }, 0)
+    return () => clearTimeout(t)
+  }, [open, settingsData, kepada])
   // RIWAYAT PERSURATAN — bundel dokumen yang pernah menyentuh tiket terpilih
   // (SJR/STTB/STTBK/SKTB). Cetak ulang = regenerate nomor SAMA, bukan dokumen
   // baru, sehingga persuratan tidak pernah bertumpuk nomor ganda.
