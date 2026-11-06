@@ -105,213 +105,17 @@ export async function POST(request: Request) {
     const qrPayload = `SKTB:${noDokumen}|TOKO:${toko.kodeToko}|UNIT:${totalUnit}|TGL:${ymd}`
     const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1 })
 
-    // ============ PDF (A4 portrait + grid penuh) ============
-    const jsPDFModule = await import('jspdf')
-    const jsPDF = jsPDFModule.jsPDF
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
-    const pageW = doc.internal.pageSize.getWidth() // 210
-    const pageH = doc.internal.pageSize.getHeight() // 297
-    const M = 15
-    const tableRight = pageW - M // 195
-    let y = 0
-
-    const drawPageHeader = () => {
-      // Kop TANPA arsir (hemat tinta): teks gelap + garis pemisah ke isi surat.
-      // Margin atas 2cm (20mm) dari tepi kertas agar tidak terpotong printer.
-      const T = 20
-      doc.setTextColor(30, 41, 59)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(14)
-      doc.text('SURAT PENGEMBALIAN BARANG', M, T + 12)
-      doc.setFontSize(9)
-      doc.setFont('helvetica', 'normal')
-      doc.text(`No. ${noDokumen}`, M, T + 20)
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(11)
-      doc.text(namaWorkshop, pageW - M, T + 11, { align: 'right' })
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(8)
-      doc.text(alamatWorkshop, pageW - M, T + 17, { align: 'right', maxWidth: 100 })
-      if (emailWorkshop) doc.text(emailWorkshop, pageW - M, T + 22, { align: 'right', maxWidth: 110 })
-      doc.setDrawColor(30, 41, 59)
-      doc.setLineWidth(0.8)
-      doc.line(M, T + 28, pageW - M, T + 28)
-      doc.setLineWidth(0.2)
-      y = T + 36
-    }
-    drawPageHeader()
-
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(12)
-    doc.addImage(qrDataUrl, 'PNG', pageW - M - 24, y - 7, 24, 24)
-    doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Tanggal cetak : ${tglCetak}`, M, y)
-    y += 5
-    doc.setFont('helvetica', 'bold')
-    doc.text(`Toko          : ${toko.kodeToko} — ${toko.namaToko}`, M, y)
-    y += 5
-    doc.setFont('helvetica', 'normal')
-    if (toko.alamat) {
-      doc.text(`Alamat        : ${toko.alamat}`, M, y, { maxWidth: pageW - 2 * M - 30 })
-      y += 5
-    }
-    doc.setFontSize(6)
-    doc.setTextColor(100, 116, 139)
-    doc.text('Scan QR verifikasi', pageW - M - 12, y + 1, { align: 'center' })
-    doc.setTextColor(30, 41, 59)
-    y += 7
-
-    const fit = (text: string, maxW: number): string => {
-      if (doc.getTextWidth(text) <= maxW) return text
-      let t = text
-      while (t.length > 1 && doc.getTextWidth(t + '…') > maxW) t = t.slice(0, -1)
-      return t + '…'
-    }
-    const wrap2 = (text: string, maxW: number): string[] => {
-      const lines = doc.splitTextToSize(text, maxW) as string[]
-      if (lines.length <= 2) return lines
-      const out = lines.slice(0, 2)
-      out[1] = fit(out[1], maxW)
-      return out
-    }
-
-    // Satu baris per UNIT — tanggal kembali tercetak per baris (dari
-    // tglKembaliKeToko tiket; unit yang belum terekam kembali dicetak "—"
-    // karena surat ini sekaligus surat jalan pengiriman dari workshop).
-    const cols: { title: string; x: number; w: number }[] = [
-      { title: 'No', x: M, w: 8 },
-      { title: 'No. Tiket', x: M + 8, w: 30 },
-      { title: 'Serial Number', x: M + 38, w: 28 },
-      { title: 'Model Unit', x: M + 66, w: 34 },
-      { title: 'Tgl Kembali', x: M + 100, w: 18 },
-      { title: 'Deskripsi Kerusakan', x: M + 118, w: 62 },
-    ]
-
-    const drawTableHeader = () => {
-      doc.setFillColor(226, 232, 240)
-      doc.rect(M, y - 4.5, tableRight - M, 7, 'F')
-      doc.setFont('helvetica', 'bold')
-      doc.setFontSize(8)
-      for (const c of cols) doc.text(c.title, c.x + 1.5, y)
-      doc.setDrawColor(100, 116, 139)
-      doc.rect(M, y - 4.5, tableRight - M, 7)
-      for (const c of cols) doc.line(c.x, y - 4.5, c.x, y + 2.5)
-      doc.line(tableRight, y - 4.5, tableRight, y + 2.5)
-      y += 7
-      doc.setFont('helvetica', 'normal')
-    }
-    drawTableHeader()
-
-    const garisKolom = (yAtas: number, h: number) => {
-      doc.setDrawColor(148, 163, 184)
-      for (const c of cols) doc.line(c.x, yAtas, c.x, yAtas + h)
-      doc.line(tableRight, yAtas, tableRight, yAtas + h)
-    }
-
-    doc.setFontSize(8)
-    let no = 1
-    for (const t of tickets) {
-      const cModel = wrap2(t.unitAsset.modelUnit, cols[3].w - 2)
-      const cRusak = wrap2(t.deskripsiKerusakan?.trim() || '-', cols[5].w - 2)
-      const tglKembali = t.tglKembaliKeToko
-        ? new Date(t.tglKembaliKeToko as Date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
-        : '—'
-      const rowH = Math.max(cModel.length, cRusak.length) > 1 ? 11 : 6
-      if (y + rowH > pageH - 60) {
-        doc.addPage()
-        drawPageHeader()
-        y += 2
-        drawTableHeader()
-        doc.setFontSize(8)
-      }
-      if (no % 2 === 0) {
-        doc.setFillColor(248, 250, 252)
-        doc.rect(M, y - 4, tableRight - M, rowH - 1, 'F')
-      }
-      garisKolom(y - 4, rowH - 1)
-      doc.setDrawColor(148, 163, 184)
-      doc.line(M, y + rowH - 5, tableRight, y + rowH - 5)
-      const yy = (i: number) => y + i * 4.5
-      doc.text(String(no++), cols[0].x + 1.5, y)
-      doc.text(fit(t.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
-      doc.text(fit(t.unitAsset.serialNumber, cols[2].w - 2), cols[2].x + 1.5, y)
-      cModel.forEach((ln, i) => doc.text(ln, cols[3].x + 1.5, yy(i)))
-      doc.text(fit(tglKembali, cols[4].w - 2), cols[4].x + 1.5, y)
-      cRusak.forEach((ln, i) => doc.text(ln, cols[5].x + 1.5, yy(i)))
-      y += rowH
-    }
-
-    // Baris total bersih (bingkai luar saja)
-    if (y > pageH - 60) {
-      doc.addPage()
-      drawPageHeader()
-      y += 2
-    }
-    doc.setFillColor(204, 251, 241)
-    doc.rect(M, y - 4, tableRight - M, 7, 'F')
-    doc.setDrawColor(100, 116, 139)
-    doc.rect(M, y - 4, tableRight - M, 7)
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(8.5)
-    doc.text(
-      belumKembali.length > 0
-        ? `TOTAL — ${totalUnit} unit dikembalikan ke toko · ${totalUnit - belumKembali.length} terekam kembali, ${belumKembali.length} belum`
-        : `TOTAL — ${totalUnit} unit dikembalikan ke toko`,
-      cols[1].x + 1.5,
-      y
-    )
-    if (belumKembali.length > 0) {
-      y += 6
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(7)
-      doc.setTextColor(100, 116, 139)
-      doc.text(
-        `Ket: baris "—" = tanggal kembali belum terekam saat surat ini dicetak (pengiriman dari workshop); tanggal diisi saat unit sampai di toko (Konfirmasi Kembali ke Toko).`,
-        M,
-        y,
-        { maxWidth: tableRight - M }
-      )
-      doc.setTextColor(30, 41, 59)
-    }
-    y += 14
-    doc.setFont('helvetica', 'normal')
-
-    // Tanda tangan: penyerah (workshop) & penerima (toko)
-    if (y > pageH - 70) {
-      doc.addPage()
-      drawPageHeader()
-      y += 2
-    }
-    const colW = (pageW - 2 * M) / 2
-    doc.setTextColor(30, 41, 59)
-    doc.setFontSize(10)
-    doc.text('Diserahkan (Workshop)', M + colW / 2, y, { align: 'center' })
-    doc.text('Diterima (Toko)', M + colW + colW / 2, y, { align: 'center' })
-    y += 20
-    doc.setDrawColor(100, 116, 139)
-    doc.line(M + colW / 2 - 30, y, M + colW / 2 + 30, y)
-    doc.line(M + colW + colW / 2 - 30, y, M + colW + colW / 2 + 30, y)
-    y += 5
-    doc.setFontSize(8)
-    doc.setTextColor(100, 116, 139)
-    doc.text('Nama & TTD', M + colW / 2, y, { align: 'center' })
-    doc.text(`${toko.kodeToko} — ${toko.namaToko}`, M + colW + colW / 2, y, { align: 'center' })
-
-    const nPages = doc.getNumberOfPages()
-    for (let i = 1; i <= nPages; i++) {
-      doc.setPage(i)
-      doc.setFontSize(7)
-      doc.setTextColor(130, 130, 130)
-      doc.text(
-        `${noDokumen} · Digenerate otomatis oleh Sistem After-Sales pada ${today.toLocaleString('id-ID')}`,
-        M,
-        pageH - 5
-      )
-      doc.text(`Halaman ${i} dari ${nPages}`, pageW - M, pageH - 5, { align: 'right' })
-    }
-
-    const pdfBytes = doc.output('arraybuffer')
+    const pdfBytes = await buatPdfKembali({
+      tickets,
+      toko,
+      noDokumen,
+      tglCetak,
+      today,
+      qrDataUrl,
+      namaWorkshop,
+      alamatWorkshop,
+      emailWorkshop,
+    })
 
     // Tuliskan nomor SKTB ke tiket yang belum membawanya — jejak dokumen
     // pengembalian tersambung dari saat surat pertama kali dicetak (sebelum
@@ -345,5 +149,384 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Surat pengembalian error:', error)
     return NextResponse.json({ error: 'Gagal membuat surat pengembalian barang' }, { status: 500 })
+  }
+}
+
+
+// ============ PDF A4 portrait — dibungkus fungsi agar POST & GET (cetak
+// ulang) memakai builder yang sama. Kode isi identik dengan cetakan pertama:
+// seorang pun mencetak ulang, dokumen menghormati momen aslinya. ============
+interface TiketPdf {
+  noTiket: string
+  deskripsiKerusakan?: string | null
+  tglKembaliKeToko?: Date | string | null
+  unitAsset: { serialNumber: string; modelUnit: string }
+}
+interface TokoPdf { kodeToko: string; namaToko: string; alamat?: string | null }
+
+async function buatPdfKembali(param: {
+  tickets: TiketPdf[]
+  toko: TokoPdf
+  noDokumen: string
+  tglCetak: string
+  today: Date
+  qrDataUrl: string
+  namaWorkshop: string
+  alamatWorkshop: string
+  emailWorkshop: string
+}): Promise<ArrayBuffer> {
+  const jsPDFModule = await import('jspdf')
+  const jsPDF = jsPDFModule.jsPDF
+  const {
+    tickets,
+    toko,
+    noDokumen,
+    tglCetak,
+    today,
+    qrDataUrl,
+    namaWorkshop: lamaNama,
+    alamatWorkshop: lamaAlamat,
+    emailWorkshop: lamaEmail,
+  } = param
+  const belumKembali = tickets.filter((t) => !t.tglKembaliKeToko)
+
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+  const pageW = doc.internal.pageSize.getWidth() // 210
+  const pageH = doc.internal.pageSize.getHeight() // 297
+  const M = 15
+  const tableRight = pageW - M // 195
+  let y = 0
+
+  const namaWorkshop = lamaNama || 'Workshop'
+  const alamatWorkshop = lamaAlamat || '-'
+  const emailWorkshop = lamaEmail || ''
+
+  const drawPageHeader = () => {
+    // Kop TANPA arsir (hemat tinta): teks gelap + garis pemisah ke isi surat.
+    // Margin atas 2cm (20mm) dari tepi kertas agar tidak terpotong printer.
+    const T = 20
+    doc.setTextColor(30, 41, 59)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(14)
+    doc.text('SURAT PENGEMBALIAN BARANG', M, T + 12)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`No. ${noDokumen}`, M, T + 20)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text(namaWorkshop, pageW - M, T + 11, { align: 'right' })
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(8)
+    doc.text(alamatWorkshop, pageW - M, T + 17, { align: 'right', maxWidth: 100 })
+    if (emailWorkshop) doc.text(emailWorkshop, pageW - M, T + 22, { align: 'right', maxWidth: 110 })
+    doc.setDrawColor(30, 41, 59)
+    doc.setLineWidth(0.8)
+    doc.line(M, T + 28, pageW - M, T + 28)
+    doc.setLineWidth(0.2)
+    y = T + 36
+  }
+  drawPageHeader()
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.addImage(qrDataUrl, 'PNG', pageW - M - 24, y - 7, 24, 24)
+  doc.setFontSize(9)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Tanggal cetak : ${tglCetak}`, M, y)
+  y += 5
+  doc.setFont('helvetica', 'bold')
+  doc.text(`Toko          : ${toko.kodeToko} — ${toko.namaToko}`, M, y)
+  y += 5
+  doc.setFont('helvetica', 'normal')
+  if (toko.alamat) {
+    doc.text(`Alamat        : ${toko.alamat}`, M, y, { maxWidth: pageW - 2 * M - 30 })
+    y += 5
+  }
+  doc.setFontSize(6)
+  doc.setTextColor(100, 116, 139)
+  doc.text('Scan QR verifikasi', pageW - M - 12, y + 1, { align: 'center' })
+  doc.setTextColor(30, 41, 59)
+  y += 7
+
+  const fit = (text: string, maxW: number): string => {
+    if (doc.getTextWidth(text) <= maxW) return text
+    let t = text
+    while (t.length > 1 && doc.getTextWidth(t + '…') > maxW) t = t.slice(0, -1)
+    return t + '…'
+  }
+  const wrap2 = (text: string, maxW: number): string[] => {
+    const lines = doc.splitTextToSize(text, maxW) as string[]
+    if (lines.length <= 2) return lines
+    const out = lines.slice(0, 2)
+    out[1] = fit(out[1], maxW)
+    return out
+  }
+
+  // Satu baris per UNIT — tanggal kembali tercetak per baris (dari
+  // tglKembaliKeToko tiket; unit yang belum terekam kembali dicetak "—"
+  // karena surat ini sekaligus surat jalan pengiriman dari workshop).
+  const cols: { title: string; x: number; w: number }[] = [
+    { title: 'No', x: M, w: 8 },
+    { title: 'No. Tiket', x: M + 8, w: 30 },
+    { title: 'Serial Number', x: M + 38, w: 28 },
+    { title: 'Model Unit', x: M + 66, w: 34 },
+    { title: 'Tgl Kembali', x: M + 100, w: 18 },
+    { title: 'Deskripsi Kerusakan', x: M + 118, w: 62 },
+  ]
+
+  const drawTableHeader = () => {
+    doc.setFillColor(226, 232, 240)
+    doc.rect(M, y - 4.5, tableRight - M, 7, 'F')
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8)
+    for (const c of cols) doc.text(c.title, c.x + 1.5, y)
+    doc.setDrawColor(100, 116, 139)
+    doc.rect(M, y - 4.5, tableRight - M, 7)
+    for (const c of cols) doc.line(c.x, y - 4.5, c.x, y + 2.5)
+    doc.line(tableRight, y - 4.5, tableRight, y + 2.5)
+    y += 7
+    doc.setFont('helvetica', 'normal')
+  }
+  drawTableHeader()
+
+  const garisKolom = (yAtas: number, h: number) => {
+    doc.setDrawColor(148, 163, 184)
+    for (const c of cols) doc.line(c.x, yAtas, c.x, yAtas + h)
+    doc.line(tableRight, yAtas, tableRight, yAtas + h)
+  }
+
+  doc.setFontSize(8)
+  let no = 1
+  const totalUnit = tickets.length
+  for (const t of tickets) {
+    const cModel = wrap2(t.unitAsset.modelUnit, cols[3].w - 2)
+    const cRusak = wrap2(t.deskripsiKerusakan?.trim() || '-', cols[5].w - 2)
+    const tglKembali = t.tglKembaliKeToko
+      ? new Date(t.tglKembaliKeToko as Date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : '—'
+    const rowH = Math.max(cModel.length, cRusak.length) > 1 ? 11 : 6
+    if (y + rowH > pageH - 60) {
+      doc.addPage()
+      drawPageHeader()
+      y += 2
+      drawTableHeader()
+      doc.setFontSize(8)
+    }
+    if (no % 2 === 0) {
+      doc.setFillColor(248, 250, 252)
+      doc.rect(M, y - 4, tableRight - M, rowH - 1, 'F')
+    }
+    garisKolom(y - 4, rowH - 1)
+    doc.setDrawColor(148, 163, 184)
+    doc.line(M, y + rowH - 5, tableRight, y + rowH - 5)
+    const yy = (i: number) => y + i * 4.5
+    doc.text(String(no++), cols[0].x + 1.5, y)
+    doc.text(fit(t.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
+    doc.text(fit(t.unitAsset.serialNumber, cols[2].w - 2), cols[2].x + 1.5, y)
+    cModel.forEach((ln, i) => doc.text(ln, cols[3].x + 1.5, yy(i)))
+    doc.text(fit(tglKembali, cols[4].w - 2), cols[4].x + 1.5, y)
+    cRusak.forEach((ln, i) => doc.text(ln, cols[5].x + 1.5, yy(i)))
+    y += rowH
+  }
+
+  // Baris total bersih (bingkai luar saja)
+  if (y > pageH - 60) {
+    doc.addPage()
+    drawPageHeader()
+    y += 2
+  }
+  doc.setFillColor(204, 251, 241)
+  doc.rect(M, y - 4, tableRight - M, 7, 'F')
+  doc.setDrawColor(100, 116, 139)
+  doc.rect(M, y - 4, tableRight - M, 7)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8.5)
+  doc.text(
+    belumKembali.length > 0
+      ? `TOTAL — ${totalUnit} unit dikembalikan ke toko · ${totalUnit - belumKembali.length} terekam kembali, ${belumKembali.length} belum`
+      : `TOTAL — ${totalUnit} unit dikembalikan ke toko`,
+    cols[1].x + 1.5,
+    y
+  )
+  if (belumKembali.length > 0) {
+    y += 6
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7)
+    doc.setTextColor(100, 116, 139)
+    doc.text(
+      `Ket: baris "—" = tanggal kembali belum terekam saat surat ini dicetak (pengiriman dari workshop); tanggal diisi saat unit sampai di toko (Konfirmasi Kembali ke Toko).`,
+      M,
+      y,
+      { maxWidth: tableRight - M }
+    )
+    doc.setTextColor(30, 41, 59)
+  }
+  y += 14
+  doc.setFont('helvetica', 'normal')
+
+  // Tanda tangan: penyerah (workshop) & penerima (toko)
+  if (y > pageH - 70) {
+    doc.addPage()
+    drawPageHeader()
+    y += 2
+  }
+  const colW = (pageW - 2 * M) / 2
+  doc.setTextColor(30, 41, 59)
+  doc.setFontSize(10)
+  doc.text('Diserahkan (Workshop)', M + colW / 2, y, { align: 'center' })
+  doc.text('Diterima (Toko)', M + colW + colW / 2, y, { align: 'center' })
+  y += 20
+  doc.setDrawColor(100, 116, 139)
+  doc.line(M + colW / 2 - 30, y, M + colW / 2 + 30, y)
+  doc.line(M + colW + colW / 2 - 30, y, M + colW + colW / 2 + 30, y)
+  y += 5
+  doc.setFontSize(8)
+  doc.setTextColor(100, 116, 139)
+  doc.text('Nama & TTD', M + colW / 2, y, { align: 'center' })
+  doc.text(`${toko.kodeToko} — ${toko.namaToko}`, M + colW + colW / 2, y, { align: 'center' })
+
+  const nPages = doc.getNumberOfPages()
+  for (let i = 1; i <= nPages; i++) {
+    doc.setPage(i)
+    doc.setFontSize(7)
+    doc.setTextColor(130, 130, 130)
+    doc.text(
+      `${noDokumen} · Digenerate otomatis oleh Sistem After-Sales pada ${today.toLocaleString('id-ID')}`,
+      M,
+      pageH - 5
+    )
+    doc.text(`Halaman ${i} dari ${nPages}`, pageW - M, pageH - 5, { align: 'right' })
+  }
+
+  return doc.output('arraybuffer')
+}
+
+// ============ GET — riwayat & cetak ulang SKU pengembalian ============
+/**
+ * GET /api/sttb/kembali?noDokumen=SKTB-YYYYMMDD-NNNN&format=pdf
+ *   → Cetak ulang dengan nomor yang SAMA (tidak membuat dokumen baru, tidak
+ *     mengubah data tiket). Isi dibangun ulang dari tiket yang membawa nomor
+ *     SKTB ini di kolom noSuratKembali — alur aman walau status tiket lama
+ *     berubah (FINISH dsb.) karena aturan kelayakan POST tidak dikenakan.
+ * GET /api/sttb/kembali?noTiket=A,B,C
+ *   → JSON riwayat: SKTB yang membawa tiket-tiket tersebut (bundel), siap
+ *     untuk panel "Riwayat Persuratan" agar cetak ulang cukup cari bundel.
+ */
+export async function GET(request: Request) {
+  try {
+    const session = await getActiveSession(request)
+    if (!session) {
+      return NextResponse.json({ error: 'Sesi berakhir atau akun nonaktif. Silakan login ulang.' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const noDokumen = (searchParams.get('noDokumen') || '').trim()
+    const noTiketRaw = (searchParams.get('noTiket') || '').trim()
+
+    if (!noDokumen && !noTiketRaw) {
+      return NextResponse.json({ error: 'Berikan noDokumen (cetak ulang) atau noTiket (riwayat)' }, { status: 400 })
+    }
+
+    const tickets = noDokumen
+      ? await db.serviceRequest.findMany({
+          where: { noSuratKembali: noDokumen },
+          include: { unitAsset: { include: { toko: true } } },
+          orderBy: { noTiket: 'asc' },
+        })
+      : []
+    const format = searchParams.get('format')
+
+    if (noDokumen) {
+      if (tickets.length === 0) {
+        return NextResponse.json({ error: 'Dokumen SKTB tidak ditemukan / belum pernah dicetak' }, { status: 404 })
+      }
+      // Cetak ulang menuntut format eksplisit agar kasus salah-lintas aman.
+      if (format !== 'pdf') {
+        return NextResponse.json({ error: 'Sertakan format=pdf untuk cetak ulang' }, { status: 400 })
+      }
+      const toko = tickets[0].unitAsset.toko
+      if (!toko) {
+        return NextResponse.json({ error: 'Dokumen ini tidak punya toko pengirim yang sah — cek data tiket.' }, { status: 409 })
+      }
+
+      const aktor = session?.nama ?? 'SYSTEM'
+      // Nama/alamat workshop dari pengaturan — sama seperti cetakan pertama.
+      const settings = await db.pengaturan.findMany()
+      const sv: Record<string, string> = {}
+      for (const row of settings) sv[row.kunci] = row.nilai
+      const ymdDok = noDokumen.slice(5, 13) // SKTB-YYYYMMDD-NNNN → ymd
+      const tglDok = new Date(`${ymdDok.slice(0, 4)}-${ymdDok.slice(4, 6)}-${ymdDok.slice(6, 8)}`)
+      const tglCetak = tglDok.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+      const totalUnit = tickets.length
+      const qrPayload = `SKTB:${noDokumen}|TOKO:${toko.kodeToko}|UNIT:${totalUnit}|TGL:${ymdDok}`
+      const qrDataUrl = await QRCode.toDataURL(qrPayload, { width: 200, margin: 1 })
+
+      const pdfBytes = await buatPdfKembali({
+        tickets,
+        toko,
+        noDokumen,
+        tglCetak,
+        today: tglDok,
+        qrDataUrl,
+        namaWorkshop: sv['nama_perusahaan'] ?? 'Workshop',
+        alamatWorkshop: sv['alamat_perusahaan'] ?? '-',
+        emailWorkshop: (sv['email_perusahaan'] ?? '').trim(),
+      })
+
+      await logAudit({
+        aksi: 'CETAK_KEMBALI_ULANG',
+        entitas: 'surat_kembali_toko',
+        entitasId: noDokumen,
+        deskripsi: `Cetak ulang surat pengembalian ${noDokumen}: ${tickets.length} unit — nomor sama dengan dokumen asli`,
+        aktor,
+      })
+
+      return new NextResponse(pdfBytes as ArrayBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="Surat-Pengembalian-Barang-${noDokumen}.pdf"`,
+          'Cache-Control': 'no-store',
+          'X-Sttb-Kembali-No': noDokumen,
+        },
+      })
+    }
+
+    // ===== Riwayat bundel untuk tiket terpilih =====
+    const daftar = noTiketRaw.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 100)
+    if (daftar.length === 0) {
+      return NextResponse.json({ error: 'noTiket kosong' }, { status: 400 })
+    }
+    const tiket = await db.serviceRequest.findMany({
+      where: { noTiket: { in: daftar } },
+      select: { noTiket: true, noSuratKembali: true, noSttbKolektif: true, noSttb: true },
+    })
+    // Kelompokkan SKTB yang menyentuh tiket-tiket ini + tanggal cetak dari audit.
+    const sktbSet = new Set<string>()
+    for (const t of tiket) if (t.noSuratKembali) sktbSet.add(t.noSuratKembali)
+    const auditCetak = await db.auditLog.findMany({
+      where: { aksi: 'CETAK_KEMBALI_TOKO', entitasId: { in: [...sktbSet] } },
+      select: { entitasId: true, createdAt: true, aktor: true },
+      orderBy: { createdAt: 'asc' },
+    })
+    const cetakPertama = new Map(auditCetak.map((a) => [a.entitasId!, a]))
+    const dokumen = tiket.map((t) => ({
+      noTiket: t.noTiket,
+      sktb: t.noSuratKembali
+        ? {
+            nomor: t.noSuratKembali,
+            tglCetak: cetakPertama.get(t.noSuratKembali)?.createdAt ?? null,
+            oleh: cetakPertama.get(t.noSuratKembali)?.aktor ?? null,
+            link: `/api/sttb/kembali?noDokumen=${t.noSuratKembali}&format=pdf`,
+          }
+        : null,
+      linkSttb: t.noSttb ? `/api/sttb/${t.noTiket}` : null,
+      noSttb: t.noSttb,
+      noSttbKolektif: t.noSttbKolektif,
+    }))
+    return NextResponse.json(dokumen)
+  } catch (error) {
+    console.error('Surat pengembalian GET error:', error)
+    return NextResponse.json({ error: 'Gagal memuat riwayat/cetak ulang surat pengembalian' }, { status: 500 })
   }
 }

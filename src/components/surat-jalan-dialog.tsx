@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen, CalendarClock, AlertTriangle } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
+import { Loader2, FileDown, FileSpreadsheet, Truck, PackageOpen, CalendarClock, AlertTriangle, History, Printer } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
-import { authHeaders, formatRupiah, type ServiceTicket } from '@/lib/api'
+import { authHeaders, fetcher, formatRupiah, type ServiceTicket } from '@/lib/api'
 import { ALUR_SJ_STYLES, alurSjState, tglPendek, type AlurSj } from '@/lib/alur-sj'
 
 /**
@@ -52,6 +52,66 @@ export default function SuratJalanDialog({
   // Produsen tujuan ("Kepada: PT ...") yang tercetak di surat — input bebas;
   // saran otomatis dari merk unit bila semua tiket terpilih merknya sama.
   const [kepada, setKepada] = useState('')
+  // RIWAYAT PERSURATAN — bundel dokumen yang pernah menyentuh tiket terpilih
+  // (SJR/STTB/STTBK/SKTB). Cetak ulang = regenerate nomor SAMA, bukan dokumen
+  // baru, sehingga persuratan tidak pernah bertumpuk nomor ganda.
+  // Dimuat via useQuery (tanpa setState dalam effect).
+  interface EntriRiwayat {
+    tipe: string
+    nomor: string
+    tgl: string | null
+    oleh: string | null
+    link: string
+    tiket: string[]
+    toko?: string | null
+    info?: string
+  }
+  const daftarNoTiket = tickets.map((t) => t.noTiket)
+  const kunciRiwayat = daftarNoTiket.join('|')
+  const { data: riwayatData } = useQuery<{ riwayat?: EntriRiwayat[] }>({
+    queryKey: ['surat-riwayat', kunciRiwayat],
+    queryFn: () => fetcher<{ riwayat?: EntriRiwayat[] }>(`/api/surat-riwayat?noTiket=${encodeURIComponent(kunciRiwayat)}`),
+    enabled: open && kunciRiwayat.length > 0,
+    retry: false,
+  })
+  const riwayat = riwayatData?.riwayat ?? null
+  const [riwayatBusy, setRiwayatBusy] = useState<string | null>(null)
+
+  async function unduhUlang(entri: EntriRiwayat) {
+    if (!entri.link || riwayatBusy) return
+    setRiwayatBusy(entri.nomor)
+    try {
+      const res = await fetch(entri.link, { headers: authHeaders() })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal cetak ulang (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `${entri.tipe}-${entri.nomor}.pdf`
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast({
+        title: `Cetak ulang ${entri.tipe} ${entri.nomor}`,
+        description: `${filename} — nomor sama dengan dokumen asli, tidak membuat dokumen baru.`,
+      })
+    } catch (e) {
+      toast({
+        title: 'Gagal mencetak ulang',
+        description: e instanceof Error ? e.message : 'Coba lagi',
+        variant: 'destructive',
+      })
+    } finally {
+      setRiwayatBusy(null)
+    }
+  }
 
   // Tiket FINISH tidak lagi mengikuti alur surat jalan — pengerjaan sudah
   // tamat (part terpasang, unit menunggu/mas sudah dikembalikan), jadi
@@ -129,6 +189,8 @@ export default function SuratJalanDialog({
       URL.revokeObjectURL(url)
       // Badge REQUEST di baris tiket menampilkan tgl request — segarkan daftar.
       void queryClient.invalidateQueries({ queryKey: ['service-tickets'] })
+      // Dokumen baru masuk bundel — segarkan panel riwayat.
+      void queryClient.invalidateQueries({ queryKey: ['surat-riwayat', daftarNoTiket.join('|')] })
       toast({
         title: `Surat Jalan Request ${format.toUpperCase()} terunduh`,
         description: `${filename} · tanggal request tercatat & ditulis di dokumen/badge tiket.`,
@@ -205,6 +267,45 @@ export default function SuratJalanDialog({
             </ul>
             <p className="mt-1.5 text-[10px] leading-relaxed text-amber-600">
               Masih bisa dilanjutkan bila memang sengaja (mis. part baru ditambahkan ke tiket sama) — tanggal request lama tidak akan ditimpa.
+            </p>
+          </div>
+        )}
+
+        {/* RIWAYAT PERSURATAN — bundel yang pernah mencakup tiket terpilih */}
+        {(riwayat?.length ?? 0) > 0 && (
+          <div className="rounded-lg border border-sky-200 bg-sky-50/60 px-3 py-2.5">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-sky-900">
+              <History className="h-3.5 w-3.5 shrink-0" />
+              Riwayat Persuratan ({riwayat!.length}) — cetak ulang cukup cari bundelnya
+            </p>
+            <div className="mt-1.5 max-h-44 space-y-1 overflow-y-auto pr-1">
+              {riwayat!.slice(0, 20).map((e) => (
+                <div key={`${e.tipe}-${e.nomor}`} className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] leading-snug">
+                  <Badge variant="outline" className="shrink-0 border-sky-300 bg-white text-[9px] text-sky-800">{e.tipe}</Badge>
+                  <span className="shrink-0 font-mono font-semibold text-slate-700">{e.nomor}</span>
+                  <span className="text-slate-500">
+                    {e.tgl ? tglPendek(e.tgl) : '—'}
+                    {e.oleh ? ` · ${e.oleh}` : ''}
+                  </span>
+                  {e.info && <span className="min-w-0 truncate text-slate-400" title={e.info}>{e.info}</span>}
+                  {e.link && (
+                    <button
+                      type="button"
+                      disabled={riwayatBusy !== null}
+                      onClick={() => void unduhUlang(e)}
+                      className="ml-auto inline-flex shrink-0 items-center gap-1 rounded border border-sky-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-sky-800 hover:bg-sky-100 disabled:opacity-50"
+                      title="Cetak ulang — nomor sama dengan aslinya"
+                    >
+                      {riwayatBusy === e.nomor ? <Loader2 className="h-3 w-3 animate-spin" /> : <Printer className="h-3 w-3" />}
+                      Cetak ulang
+                    </button>
+                  )}
+                </div>
+              ))}
+              {riwayat!.length > 20 && <p className="text-[10px] text-sky-700">… {riwayat!.length - 20} dokumen lainnya</p>}
+            </div>
+            <p className="mt-1 text-[10px] leading-relaxed text-sky-700">
+              Cetak ulang memakai NOMOR DOKUMEN ASLI (tidak terbit nomor baru) — aman dari kop persuratan ganda.
             </p>
           </div>
         )}

@@ -27,7 +27,7 @@ import { useBertahap } from '@/hooks/use-bertahap'
 import {
   Plus, CheckCircle2, PlayCircle, Send, Ban, AlertOctagon,
   PackageCheck, Eye, Wrench, Camera, DollarSign, RotateCcw, X, Truck, Pencil, Trash2, Minus, ClipboardList, Loader2, MailPlus, ChevronDown,
-  MessageCircle, PackageOpen, Hand, Clock, Store,
+  MessageCircle, PackageOpen, Hand, Clock, Store, History, Printer,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -619,6 +619,81 @@ export default function ServiceView() {
     return c
   }, [tickets])
 
+  // ===== RIWAYAT PERSURATAN (bundel) — cetak ulang tanpa cari satu per satu =====
+  // Minta daftar SJR/STTB/STTBK/SKTB yang menyentuh tiket tercentang lewat
+  // /api/surat-riwayat; tiap entri punya link cetak-ulang nomor SAMA.
+  interface EntriRiwayat {
+    tipe: string
+    nomor: string
+    tgl: string | null
+    oleh: string | null
+    link: string
+    tiket: string[]
+    toko?: string | null
+    info?: string
+  }
+  const [riwayatOpen, setRiwayatOpen] = useState(false)
+  const [riwayatList, setRiwayatList] = useState<EntriRiwayat[] | null>(null)
+  const [riwayatLoading, setRiwayatLoading] = useState(false)
+  const [riwayatBusy, setRiwayatBusy] = useState<string | null>(null)
+  const daftarNoTiketTerpilih = useMemo(
+    () => (tickets ?? []).filter((t) => selectedIds.has(t.id)).map((t) => t.noTiket),
+    [tickets, selectedIds]
+  )
+
+  async function muatRiwayatTerpilih() {
+    if (daftarNoTiketTerpilih.length === 0 || riwayatLoading) return
+    setRiwayatLoading(true)
+    try {
+      const res = await fetch(`/api/surat-riwayat?noTiket=${encodeURIComponent(daftarNoTiketTerpilih.join(','))}`, {
+        headers: authHeaders(),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || 'Gagal memuat riwayat')
+      }
+      const data = (await res.json()) as { riwayat?: EntriRiwayat[] }
+      setRiwayatList(data.riwayat ?? [])
+    } catch (e) {
+      toast({ title: 'Gagal memuat riwayat persuratan', description: e instanceof Error ? e.message : 'Coba lagi', variant: 'destructive' })
+      setRiwayatList(null)
+    } finally {
+      setRiwayatLoading(false)
+    }
+  }
+
+  async function unduhUlangDokumen(e: EntriRiwayat) {
+    if (!e.link || riwayatBusy) return
+    setRiwayatBusy(e.nomor)
+    try {
+      const res = await fetch(e.link, { headers: authHeaders() })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error((err as { error?: string }).error || `Gagal cetak ulang (${res.status})`)
+      }
+      const cd = res.headers.get('content-disposition') ?? ''
+      const m = cd.match(/filename="([^"]+)"/)
+      const filename = m?.[1] ?? `${e.tipe}-${e.nomor}.pdf`
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast({
+        title: `Cetak ulang ${e.tipe} ${e.nomor}`,
+        description: `${filename} — nomor sama dengan dokumen asli, tidak menambah nomor baru.`,
+      })
+    } catch (err) {
+      toast({ title: 'Gagal mencetak ulang', description: err instanceof Error ? err.message : 'Coba lagi', variant: 'destructive' })
+    } finally {
+      setRiwayatBusy(null)
+    }
+  }
+
   // Aksi alur di dalam dialog detail — dialog tetap terbuka & menampilkan status baru
   const flowMutation = useMutation({
     mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
@@ -1120,7 +1195,68 @@ export default function ServiceView() {
               {kembaliBusy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <PackageOpen className="mr-1 h-3.5 w-3.5" />}
               Kembali Toko{selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-sky-700 text-sky-700 hover:bg-sky-50"
+              onClick={() => {
+                const akanBuka = !riwayatOpen
+                setRiwayatOpen(akanBuka)
+                if (akanBuka) void muatRiwayatTerpilih()
+              }}
+              disabled={selectedIds.size === 0}
+              title="Buka riwayat persuratan tiket tercentang — SJR, STTB, STTBK, SKTB. Cetak ulang pakai nomor asli, tidak buat nomor baru."
+            >
+              {riwayatLoading ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <History className="mr-1 h-3.5 w-3.5" />}
+              Riwayat
+            </Button>
           </div>
+          {riwayatOpen && selectedIds.size > 0 && (
+            <div className="mb-3 rounded-lg border border-sky-200 bg-sky-50/60 px-3 py-2.5">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-sky-900">
+                <History className="h-3.5 w-3.5 shrink-0" />
+                Riwayat Persuratan — {daftarNoTiketTerpilih.length} tiket tercentang
+              </p>
+              {riwayatList === null ? (
+                <p className="mt-1 text-[11px] text-sky-700">Klik Riwayat untuk memuat daftar dokumen.</p>
+              ) : riwayatList.length === 0 ? (
+                <p className="mt-1 text-[11px] text-sky-700">Belum ada dokumen (SJR/STTB/STTBK/SKTB) yang mencakup tiket tercentang.</p>
+              ) : (
+                <div className="mt-1.5 max-h-52 space-y-1 overflow-y-auto pr-1">
+                  {riwayatList.map((e) => (
+                    <div key={`${e.tipe}-${e.nomor}`} className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] leading-snug">
+                      <Badge variant="outline" className="shrink-0 border-sky-300 bg-white text-[9px] text-sky-800">{e.tipe}</Badge>
+                      <span className="shrink-0 font-mono font-semibold text-slate-700">{e.nomor}</span>
+                      <Badge variant="outline" className="shrink-0 border-slate-200 bg-white text-[9px] text-slate-600">
+                        {e.tiket.length} tiket
+                      </Badge>
+                      <span className="text-slate-500">
+                        {e.tgl ? formatTanggal(e.tgl) : '—'}
+                        {e.oleh ? ` · ${e.oleh}` : ''}
+                        {e.toko ? ` · ${e.toko}` : ''}
+                      </span>
+                      {e.info && <span className="min-w-0 truncate text-slate-400" title={e.info}>{e.info}</span>}
+                      {e.link && (
+                        <button
+                          type="button"
+                          disabled={riwayatBusy !== null}
+                          onClick={() => void unduhUlangDokumen(e)}
+                          className="ml-auto inline-flex shrink-0 items-center gap-1 rounded border border-sky-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-sky-800 hover:bg-sky-100 disabled:opacity-50"
+                          title="Cetak ulang — nomor sama dengan dokumen asli"
+                        >
+                          {riwayatBusy === e.nomor ? <Loader2 className="h-3 w-3 animate-spin" /> : <Printer className="h-3 w-3" />}
+                          Cetak ulang
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="mt-1.5 text-[10px] leading-relaxed text-sky-700">
+                Cetak ulang memakai NOMOR DOKUMEN ASLI — tidak ada nomor ganda; tidak perlu cari satu per satu lagi.
+              </p>
+            </div>
+          )}
           {hasDrilldown && (
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="text-xs text-slate-500">Filter dari Dashboard:</span>
