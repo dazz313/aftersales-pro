@@ -322,6 +322,9 @@ export default function MasterDataView() {
     (r) => (r.kodePart.trim() && !r.namaPart.trim()) || (!r.kodePart.trim() && r.namaPart.trim())
   )
   const partsLengkap = partForm.rows.filter((r) => r.kodePart.trim() && r.namaPart.trim())
+  // Kode part sama di unit yang sama → BLOCK (alasan: alat sama + part yang sama).
+  // Beberapa part BERBEDA di unit yang sama → WARNING saja, tidak block.
+  const partBedaBeberapa = partsLengkap.length > 1
   const partFormValid =
     partForm.deskripsi.trim() !== '' && partsLengkap.length > 0 && !partRowSetengah && dupPartKode.size === 0
 
@@ -340,6 +343,9 @@ export default function MasterDataView() {
     setFormKurang({ catatan: '', rows: [{ key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }] })
   }
   const kurangLengkap = formKurang.rows.filter((r) => r.kodePart.trim() && r.namaPart.trim())
+  // Kode part sama di unit yang sama → BLOCK.
+  // Beberapa part BERBEDA di unit yang sama → WARNING saja, tidak block.
+  const kurangBedaBeberapa = kurangLengkap.length > 1
   const kurangDup = useMemo(() => {
     const ks = formKurang.rows.map((r) => r.kodePart.trim().toUpperCase())
     const c = new Map<string, number>()
@@ -351,7 +357,6 @@ export default function MasterDataView() {
   )
   const kurangValid =
     kurangLengkap.length > 0 && !kurangSetengah && kurangDup.size === 0 && !formKurang.rows.some((r) => Number(r.qty) < 1)
-
   const createTiketPart = useMutation({
     mutationFn: () => {
       const isToko = !!partUnit!.tokoId
@@ -1688,9 +1693,19 @@ export default function MasterDataView() {
             {partUnit && (partUnit.tokoId || partUnit.statusGaransi !== 'NON_GARANSI') && (
               <p className="rounded-md bg-emerald-50 p-2 text-[11px] text-emerald-800">Unit {partUnit.tokoId ? 'stok toko' : 'garansi'} — biaya jasa Rp 0 (otomatis).</p>
             )}
-            {(!partFormValid && !dupPartKode.size && !partRowSetengah) && (
+            {dupPartKode.size > 0 && (
               <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
-                Lengkapi dulu: {[!partForm.deskripsi.trim() && 'deskripsi', partsLengkap.length === 0 && 'kode + nama part'].filter(Boolean).join(', ')} — tombol Simpan aktif setelah lengkap.
+                Kode part yang sama tidak boleh dipilih dua kali untuk unit yang sama — hapus baris duplikat.
+              </p>
+            )}
+            {partBedaBeberapa && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Perhatian: lebih dari satu part berbeda dipilih untuk unit yang sama — pastikan ini sengaja.
+              </p>
+            )}
+            {!partFormValid && dupPartKode.size === 0 && !partRowSetengah && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Lengkapi deskripsi dan kode + nama part — tombol Simpan aktif setelah lengkap.
               </p>
             )}
           </div>
@@ -1802,7 +1817,17 @@ export default function MasterDataView() {
                 aria-label="Catatan kekurangan part"
               />
             </div>
-            {(!kurangValid && !kurangDup.size && !kurangSetengah) && (
+            {kurangDup.size > 0 && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Kode part yang sama tidak boleh dipilih dua kali untuk unit yang sama — hapus baris duplikat.
+              </p>
+            )}
+            {kurangBedaBeberapa && (
+              <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
+                Perhatian: lebih dari satu part berbeda dipilih untuk unit yang sama — pastikan ini sengaja.
+              </p>
+            )}
+            {!kurangValid && kurangDup.size === 0 && !kurangSetengah && (
               <p className="rounded-md bg-amber-50 p-2 text-[11px] text-amber-800">
                 Lengkapi kode + nama part dulu — tombol Simpan aktif setelah lengkap.
               </p>
