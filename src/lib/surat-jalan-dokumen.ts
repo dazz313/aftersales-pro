@@ -127,6 +127,9 @@ export async function buatPdf(param: {
     }
   }
 
+  // Tampilkan nomor urut hanya sekali pada baris pertama per tiket,
+  // baris berikutnya dari tiket yang sama kosong di kolom "No".
+  const cetakNo = new Set<string>()
   items.forEach((i) => {
     if (y > pageH - 26) {
       doc.addPage()
@@ -135,7 +138,10 @@ export async function buatPdf(param: {
     }
     doc.setFontSize(8)
     doc.setTextColor(30, 41, 59)
-    doc.text(String(tiketUrut.get(i.noTiket)), cols[0].x + 1.5, y)
+    if (!cetakNo.has(i.noTiket)) {
+      doc.text(String(tiketUrut.get(i.noTiket)), cols[0].x + 1.5, y)
+      cetakNo.add(i.noTiket)
+    }
     doc.text(potong(i.noTiket, cols[1].w - 2), cols[1].x + 1.5, y)
     doc.text(potong(i.toko, cols[2].w - 2), cols[2].x + 1.5, y)
     doc.text(potong(i.serialNumber, cols[3].w - 2), cols[3].x + 1.5, y)
@@ -201,25 +207,31 @@ export function buatXlsx(param: {
 
   const wb = XLSX.utils.book_new()
   // Nomor urut mengikuti nomor tiket (urut berdasarkan noTiket), bukan per item.
+  // Tampilkan nomor hanya sekali pada baris pertama per tiket.
   const xTiketUrut = new Map<string, number>()
   let xNoUrut = 0
+  const xCetakNo = new Set<string>()
   for (const i of items) {
     if (!xTiketUrut.has(i.noTiket)) {
       xNoUrut++
       xTiketUrut.set(i.noTiket, xNoUrut)
     }
   }
-  const body = items.map((i) => [
-    xTiketUrut.get(i.noTiket),
-    i.noTiket,
-    i.toko,
-    i.serialNumber,
-    i.modelUnit,
-    i.kodePart,
-    i.namaPart,
-    i.qty,
-    tglText,
-  ])
+  const body = items.map((i) => {
+    const no = xCetakNo.has(i.noTiket) ? '' : xTiketUrut.get(i.noTiket)
+    xCetakNo.add(i.noTiket)
+    return [
+      no,
+      i.noTiket,
+      i.toko,
+      i.serialNumber,
+      i.modelUnit,
+      i.kodePart,
+      i.namaPart,
+      i.qty,
+      tglText,
+    ]
+  })
   const barisKepada = produsenTujuan ? [[`Kepada : ${produsenTujuan}`, '', '', '', '']] : []
   const request = XLSX.utils.aoa_to_sheet([
     ['SURAT JALAN REQUEST PART', '', '', '', ''],
