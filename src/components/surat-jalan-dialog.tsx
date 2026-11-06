@@ -208,7 +208,7 @@ export default function SuratJalanDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-white">
+      <DialogContent className="max-h-[90vh] max-w-[950px] overflow-y-auto bg-white p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 pr-8 text-slate-900">
             <Truck className="h-5 w-5 shrink-0 text-teal-700" /> Surat Jalan Request Part
@@ -219,7 +219,7 @@ export default function SuratJalanDialog({
         </DialogHeader>
 
         {/* Ringkasan */}
-        <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 mb-4">
           {[
             { label: 'Tiket', value: tiketAktif.length },
             { label: 'Item Part', value: items.length },
@@ -278,7 +278,7 @@ export default function SuratJalanDialog({
               <History className="h-3.5 w-3.5 shrink-0" />
               Riwayat Persuratan ({riwayat!.length}) — cetak ulang cukup cari bundelnya
             </p>
-            <div className="mt-1.5 max-h-44 space-y-1 overflow-y-auto pr-1">
+            <div className="mt-1.5 max-h-52 space-y-1 overflow-y-auto pr-1">
               {riwayat!.slice(0, 20).map((e) => (
                 <div key={`${e.tipe}-${e.nomor}`} className="flex min-w-0 flex-wrap items-center gap-1.5 text-[11px] leading-snug">
                   <Badge variant="outline" className="shrink-0 border-sky-300 bg-white text-[9px] text-sky-800">{e.tipe}</Badge>
@@ -311,7 +311,7 @@ export default function SuratJalanDialog({
         )}
 
         {/* Pratinjau item — scroll dua arah agar tabel panjang tidak meluber keluar dialog */}
-        <ScrollArea className="h-56 min-w-0 rounded-lg border border-slate-200">
+        <ScrollArea className="h-72 min-w-0 rounded-lg border border-slate-200">
           {items.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <PackageOpen className="h-8 w-8 text-slate-300" />
@@ -321,7 +321,7 @@ export default function SuratJalanDialog({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table className="w-full min-w-[620px]">
+              <Table className="w-full min-w-[700px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10">No</TableHead>
@@ -337,7 +337,7 @@ export default function SuratJalanDialog({
                     <TableRow key={`${it.noTiket}-${it.kodePart}-${i}`}>
                       <TableCell className="text-xs text-slate-400">{i + 1}</TableCell>
                       <TableCell className="truncate font-mono text-xs" title={it.noTiket}>{it.noTiket}</TableCell>
-                      <TableCell className="max-w-56 text-xs">
+                      <TableCell className="w-80 text-xs">
                         <span className="font-semibold break-words text-slate-700">{it.kodePart}</span>
                         <span className="break-words"> · {it.namaPart}</span>
                         <p className="truncate font-mono text-[10px] text-slate-400" title={it.sn}>{it.sn}</p>
@@ -373,7 +373,7 @@ export default function SuratJalanDialog({
             value={kepada}
             onChange={(e) => setKepada(e.target.value)}
             placeholder="mis. PT SANY INDONESIA"
-            className="h-8 max-w-sm text-xs"
+            className="h-8 w-full text-xs"
           />
           <p className="text-[10px] leading-relaxed text-slate-500">
             Tercetak sebagai blok "Kepada: …" di surat.
