@@ -35,18 +35,18 @@ import { alurSjState, ALUR_SJ_STYLES, tglPendek, type AlurSj } from '@/lib/alur-
 import { durasiUnitWorkshop } from '@/lib/alur-tanggal'
 import { formatUmur } from '@/lib/umur'
 
-const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
-  REQUEST: { label: 'REQUEST', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
-  REQUEST_EMAIL: { label: 'REQUEST EMAIL', cls: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
-  PROSES: { label: 'PROSES', cls: 'bg-violet-100 text-violet-800 border-violet-300' },
-  FINISH: { label: 'FINISH', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-}
+  const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
+    REQUEST: { label: 'REQUEST', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
+    REQUEST_EMAIL: { label: 'REQUEST EMAIL', cls: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
+    PROSES: { label: 'PERBAIKAN', cls: 'bg-violet-100 text-violet-800 border-violet-300' },
+    FINISH: { label: 'FINISH', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  }
 
-const KLAIM_STYLES: Record<string, { label: string; cls: string }> = {
-  DRAFT: { label: 'DRAFT', cls: 'bg-slate-100 text-slate-600 border-slate-300' },
-  SUBMITTED: { label: 'SUBMITTED', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
-  PAID: { label: 'PAID', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
-}
+  const KLAIM_STYLES: Record<string, { label: string; cls: string }> = {
+    DRAFT: { label: 'DRAFT', cls: 'bg-slate-100 text-slate-600 border-slate-300' },
+    SUBMITTED: { label: 'SUBMITTED', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
+    PAID: { label: 'PAID', cls: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+  }
 
 /** Normalisasi kode part — sama dgn server utk mencocokkan baris part → item order-email. */
 const KODE_NORM = (s?: string | null) => (s ?? '').toUpperCase().replace(/[^A-Z0-9#]/g, '')
