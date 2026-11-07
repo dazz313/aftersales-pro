@@ -34,7 +34,8 @@ export async function buatPdf(param: {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' })
   const pageW = doc.internal.pageSize.getWidth() // 297
   const pageH = doc.internal.pageSize.getHeight() // 210
-  const M = 12
+  // Margin diperbesar (20mm) agar tidak terpotong printer; font diperkecil.
+  const M = 20
   const tableRight = pageW - M
   const tglCetak = tglRequest.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
   const qrPayload = `SJR:${noSurat}|ITEM:${items.length}|QTY:${totalQty}`
@@ -53,22 +54,22 @@ export async function buatPdf(param: {
     const T = 14
     doc.setTextColor(30, 41, 59)
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(14)
+    doc.setFontSize(12)
     doc.text('SURAT JALAN REQUEST PART', M, T + 8)
     // Baris DI BAWAH judul REQUEST: tanggal request dokumen ini.
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(10)
+    doc.setFontSize(9)
     doc.text(`Tanggal Request : ${tglCetak}`, M, T + 15)
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9)
+    doc.setFontSize(8)
     doc.text(`No. ${noSurat}`, M, T + 21)
     // Kop perusahaan kanan — nama, alamat, email. QR pindah ke kaki dokumen
     // agar tidak tumpang tindih dengan kop.
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(11)
+    doc.setFontSize(10)
     doc.text(infoToko.nama, pageW - M, T + 7, { align: 'right' })
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
+    doc.setFontSize(7)
     if (infoToko.alamat && infoToko.alamat !== '-') doc.text(potong(infoToko.alamat, 110), pageW - M, T + 13, { align: 'right' })
     if (infoToko.email) doc.text(`Email: ${infoToko.email}`, pageW - M, T + 19, { align: 'right' })
     doc.setDrawColor(30, 41, 59)
@@ -80,10 +81,10 @@ export async function buatPdf(param: {
     // Blok tujuan surat (halaman pertama): "Kepada: PT ..." — produsen penerima
     if (halPertama && produsenTujuan) {
       doc.setFont('helvetica', 'normal')
-      doc.setFontSize(9)
+      doc.setFontSize(8)
       doc.text('Kepada :', M, y + 5)
       doc.setFont('helvetica', 'bold')
-      doc.setFontSize(11)
+      doc.setFontSize(10)
       doc.text(potong(produsenTujuan, 150), M, y + 11.5)
       y += 19
     }
@@ -94,18 +95,18 @@ export async function buatPdf(param: {
     { title: 'No', x: M, w: 8 },
     { title: 'No. Tiket', x: M + 8, w: 28 },
     { title: 'Toko', x: M + 36, w: 30 },
-    { title: 'Serial Number', x: M + 66, w: 26 },
-    { title: 'Model Unit', x: M + 92, w: 32 },
-    { title: 'Kode Part', x: M + 124, w: 50 },
-    { title: 'Nama Part', x: M + 174, w: 87 },
-    { title: 'Qty', x: M + 261, w: 12 },
+    { title: 'Serial Number', x: M + 66, w: 24 },
+    { title: 'Model Unit', x: M + 90, w: 30 },
+    { title: 'Kode Part', x: M + 120, w: 48 },
+    { title: 'Nama Part', x: M + 168, w: 75 },
+    { title: 'Qty', x: M + 243, w: 12 },
   ]
 
   const drawTableHeader = () => {
     doc.setFillColor(226, 232, 240)
     doc.rect(M, y - 4.5, tableRight - M, 7, 'F')
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(8)
+    doc.setFontSize(7.5)
     for (const c of cols) doc.text(c.title, c.x + 1.5, y)
     doc.setDrawColor(100, 116, 139)
     doc.rect(M, y - 4.5, tableRight - M, 7)
@@ -136,7 +137,7 @@ export async function buatPdf(param: {
       drawPageHeader(false)
       drawTableHeader()
     }
-    doc.setFontSize(8)
+    doc.setFontSize(7.5)
     doc.setTextColor(30, 41, 59)
     if (!cetakNo.has(i.noTiket)) {
       doc.text(String(tiketUrut.get(i.noTiket)), cols[0].x + 1.5, y)
@@ -158,7 +159,7 @@ export async function buatPdf(param: {
 
   // Ringkasan
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(9)
+  doc.setFontSize(8)
   doc.setTextColor(30, 41, 59)
   doc.text(`Total : ${items.length} item · ${totalQty} pcs · ${new Set(items.map((i) => i.toko)).size} toko`, M, y + 6)
 
@@ -177,9 +178,9 @@ export async function buatPdf(param: {
 
   doc.setTextColor(30, 41, 59)
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(9)
-  doc.text('Hormat kami,', tableRight, sigY + 4, { align: 'right' })
   doc.setFontSize(8)
+  doc.text('Hormat kami,', tableRight, sigY + 4, { align: 'right' })
+  doc.setFontSize(7)
   doc.setTextColor(100, 116, 139)
   doc.text(potong(infoToko.nama, 70), tableRight, sigY + 9.5, { align: 'right' })
   doc.setDrawColor(30, 41, 59)
@@ -187,7 +188,7 @@ export async function buatPdf(param: {
   doc.line(tableRight - 70, sigY + 24, tableRight, sigY + 24)
   doc.setLineWidth(0.2)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(10)
+  doc.setFontSize(9)
   doc.setTextColor(30, 41, 59)
   doc.text(potong(dibuatOleh, 70), tableRight, sigY + 29, { align: 'right' })
 
