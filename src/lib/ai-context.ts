@@ -22,13 +22,13 @@ export const PENGETAHUAN_SISTEM = `PENGETAHUAN SISTEM AFTERSALES PRO (baca sebel
 Aplikasi web AfterSales Pro — otomasi after-sales & inventory sparepart antara Workshop dan Produsen. Single-route (semua view di "/"), navigasi internal. Database SQLite (Prisma). Multi-user dengan role: ADMIN_WORKSHOP, TEKNISI, MANAGER, PRODUSEN.
 
 MODUL/VIEW:
-- Dashboard KPI: monitoring, alert engine, akses cepat.
+- Dashboard: monitoring, alert engine, akses cepat.
 - Master Data: Toko (MasterToko), Customer (MasterCustomer), Unit Asset (UnitAsset), Karyawan (Pengguna).
 - Proses Service: tiket service (ServiceRequest) + part (ServiceRequestPart). Workflow REQUEST → PROSES → FINISH.
-- Field Ops: kunjungan toko, scan barcode toko/unit.
-- Stok Inventory: sparepart titipan produsen (MasterSparepart) dengan stok jual/garansi/total.
+- Manajemen Visit: kunjungan toko, scan barcode toko/unit.
+- Inventory: sparepart titipan produsen (MasterSparepart) dengan stok jual/garansi/total.
 - Klaim & Rekap: klaim produsen (DRAFT/SUBMITTED/PAID), export Excel.
-- Nota Servis BASS: nota service center.
+- Nota Servis: nota service center.
 - Lacak Sparepart: cari part dari riwayat kerusakan + AI.
 - Komunikasi: MiniChat & Notes antar akun.
 - Analisa AI: ringkasan operasional + chat AI.

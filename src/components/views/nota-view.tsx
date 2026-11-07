@@ -551,7 +551,7 @@ export default function NotaView() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div>
-          <h2 className="text-lg font-bold flex items-center gap-2"><Wrench className="h-5 w-5 text-slate-700" /> Nota Servis BASS</h2>
+          <h2 className="text-lg font-bold flex items-center gap-2"><Wrench className="h-5 w-5 text-slate-700" /> Nota Servis</h2>
           <p className="text-xs text-slate-500">Nota servis “SERVICE CENTER” — isi, simpan, duplikat & cetak.</p>
         </div>
         <Button className="ml-auto" onClick={buatBaru}>

@@ -29,9 +29,9 @@ const MODEL_SHORT = (m: string) => (m.length > 22 ? m.slice(0, 20) + '…' : m)
 
 /** Peta drill-down alert → view sumber (klik baris alert di dashboard). */
 const ALERT_DRILLDOWN: Record<string, { view: ViewKey; label: string; intent: Omit<NavIntent, 'ts'> }> = {
-  'ALT-01': { view: 'field-ops', label: 'Field Ops', intent: { fieldOpsFilter: 'terlambat' } },
+  'ALT-01': { view: 'field-ops', label: 'Manajemen Visit', intent: { fieldOpsFilter: 'terlambat' } },
   'ALT-02': { view: 'service', label: 'Proses Service', intent: { serviceStatus: 'REQUEST' } },
-  'ALT-03': { view: 'inventory', label: 'Stok Inventory', intent: { inventoryFilter: 'kritis' } },
+  'ALT-03': { view: 'inventory', label: 'Inventory', intent: { inventoryFilter: 'kritis' } },
   'ALT-04': { view: 'claim', label: 'Klaim & Rekap', intent: { klaimTab: 'DRAFT' } },
   'ALT-05': { view: 'service', label: 'Proses Service', intent: { serviceStatus: 'REQUEST' } },
 }

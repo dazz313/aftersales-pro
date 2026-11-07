@@ -66,13 +66,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 const NAV_ITEMS: { key: ViewKey; label: string; icon: React.ComponentType<{ className?: string }>; desc: string }[] = [
-  { key: 'dashboard', label: 'Dashboard KPI', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, desc: 'Monitoring & Alert Engine' },
   { key: 'master', label: 'Master Data', icon: Database, desc: 'Toko, Customer, Unit, Karyawan' },
   { key: 'service', label: 'Proses Service', icon: Wrench, desc: 'Workflow REQUEST → PROSES → FINISH' },
-  { key: 'field-ops', label: 'Field Ops', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
-  { key: 'inventory', label: 'Stok Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
+  { key: 'field-ops', label: 'Manajemen Visit', icon: MapPin, desc: 'Kunjungan toko & scan barcode' },
+  { key: 'inventory', label: 'Inventory', icon: Package, desc: 'Sparepart titipan produsen' },
   { key: 'claim', label: 'Klaim & Rekap', icon: FileSpreadsheet, desc: 'Klaim produsen & export Excel' },
-  { key: 'nota', label: 'Nota Servis BASS', icon: FileText, desc: 'Nota "SERVICE CENTER" — isi, duplikat, cetak' },
+  { key: 'nota', label: 'Nota Servis', icon: FileText, desc: 'Nota "SERVICE CENTER" — isi, duplikat, cetak' },
   { key: 'lacak', label: 'Lacak Sparepart', icon: SearchCheck, desc: 'Cari part dari riwayat kerusakan' },
   { key: 'komunikasi', label: 'Komunikasi', icon: MessageSquare, desc: 'MiniChat & Notes antar akun' },
   { key: 'ai', label: 'Analisa AI', icon: Sparkles, desc: 'Ringkasan, jadwal & part via AI' },
