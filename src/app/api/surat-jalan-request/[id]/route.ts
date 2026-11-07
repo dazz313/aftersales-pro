@@ -85,6 +85,12 @@ export async function GET(
       alamat: s['alamat_perusahaan'] ?? '-',
       email: (s['email_perusahaan'] ?? '').trim(),
     }
+    const admin = await db.pengguna.findFirst({
+      where: { role: 'ADMIN_WORKSHOP', aktif: true },
+      orderBy: { id: 'asc' },
+      select: { nama: true },
+    })
+    const adminWorkshop = admin?.nama ?? 'Admin Workshop'
 
     // Catat aktivitas cetak-ulang di audit — jejak siapa memakai salinan ini.
     await logAudit({
@@ -104,6 +110,7 @@ export async function GET(
         infoToko,
         produsenTujuan: sjr.produsenTujuan ?? '',
         dibuatOleh: sjr.dibuatOleh ?? aktor,
+        adminWorkshop,
       })
       return new NextResponse(pdf, {
         headers: {

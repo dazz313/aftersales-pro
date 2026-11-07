@@ -27,10 +27,11 @@ export async function buatPdf(param: {
   infoToko: { nama: string; alamat: string; email: string }
   produsenTujuan: string
   dibuatOleh: string
+  adminWorkshop?: string
 }): Promise<ArrayBuffer> {
   const jsPDFModule = await import('jspdf')
   const jsPDF = jsPDFModule.jsPDF
-  const { noSurat, tglRequest, items, totalQty, infoToko, produsenTujuan, dibuatOleh } = param
+  const { noSurat, tglRequest, items, totalQty, infoToko, produsenTujuan, dibuatOleh, adminWorkshop } = param
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' })
   const pageW = doc.internal.pageSize.getWidth() // 297
   const pageH = doc.internal.pageSize.getHeight() // 210
@@ -176,21 +177,31 @@ export async function buatPdf(param: {
   doc.setTextColor(100, 116, 139)
   doc.text('Scan QR verifikasi', M + 11, sigY + 27, { align: 'center' })
 
+  // Dua tanda tangan: Teknisi (pembuat) & Admin Workshop.
+  const colW = (tableRight - M) / 2
+  const sigLeft = M + colW / 2
+  const sigRight = M + colW + colW / 2
   doc.setTextColor(30, 41, 59)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
-  doc.text('Hormat kami,', tableRight, sigY + 4, { align: 'right' })
+  doc.text('Teknisi,', sigLeft, sigY + 4, { align: 'center' })
+  doc.text('Admin Workshop,', sigRight, sigY + 4, { align: 'center' })
   doc.setFontSize(7)
   doc.setTextColor(100, 116, 139)
-  doc.text(potong(infoToko.nama, 70), tableRight, sigY + 9.5, { align: 'right' })
+  doc.text(potong(infoToko.nama, 50), sigLeft, sigY + 9.5, { align: 'center' })
+  doc.text(potong(infoToko.nama, 50), sigRight, sigY + 9.5, { align: 'center' })
   doc.setDrawColor(30, 41, 59)
   doc.setLineWidth(0.4)
-  doc.line(tableRight - 70, sigY + 24, tableRight, sigY + 24)
+  doc.line(sigLeft - 30, sigY + 24, sigLeft + 30, sigY + 24)
+  doc.line(sigRight - 30, sigY + 24, sigRight + 30, sigY + 24)
   doc.setLineWidth(0.2)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(9)
   doc.setTextColor(30, 41, 59)
-  doc.text(potong(dibuatOleh, 70), tableRight, sigY + 29, { align: 'right' })
+  doc.text(potong(dibuatOleh, 50), sigLeft, sigY + 29, { align: 'center' })
+  if (adminWorkshop) {
+    doc.text(potong(adminWorkshop, 50), sigRight, sigY + 29, { align: 'center' })
+  }
 
   return doc.output('arraybuffer')
 }

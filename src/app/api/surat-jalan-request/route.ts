@@ -33,6 +33,13 @@ export async function POST(request: Request) {
     const { session, denied } = await requireActiveSession(request)
     if (denied) return denied
     const aktor = session?.nama ?? 'SYSTEM'
+    // Admin Workshop — tanda tangan kedua di dokumen SJR.
+    const admin = await db.pengguna.findFirst({
+      where: { role: 'ADMIN_WORKSHOP', aktif: true },
+      orderBy: { id: 'asc' },
+      select: { nama: true },
+    })
+    const adminWorkshop = admin?.nama ?? 'Admin Workshop'
 
     const body = (await request.json().catch(() => null)) as
       | { noTiket?: unknown[]; format?: unknown; produsen?: unknown }
@@ -171,7 +178,7 @@ export async function POST(request: Request) {
     }
 
     if (format === 'pdf') {
-      const pdf = await buatPdf({ noSurat, tglRequest: now, items, infoToko, totalQty, produsenTujuan, dibuatOleh: aktor })
+      const pdf = await buatPdf({ noSurat, tglRequest: now, items, infoToko, totalQty, produsenTujuan, dibuatOleh: aktor, adminWorkshop })
       return new NextResponse(pdf, {
         headers: {
           'Content-Type': 'application/pdf',
