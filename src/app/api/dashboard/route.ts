@@ -185,14 +185,36 @@ export async function GET() {
       })),
     }
 
-    // Waiting Part: unit terdaftar yang menunggu sparepart — tiket dengan
-    // minimal satu part berstatus ORDER_PRODUSEN (belum datang dari produsen),
-    // apa pun status tiketnya (REQUEST/PROSES/FINISH — part menunggu dipasang).
-    const tiketTungguPart = serviceRequests.filter((t) => t.parts.some((p) => p.statusPart === 'ORDER_PRODUSEN'))
+    // Waiting Part: unit terdaftar yang menunggu sparepart — konsisten dengan
+    // kolom "Status Sparepart" di daftar tiket agar angka tidak membengkak:
+    //  - tiket FINISH tidak dihitung (unit selesai → badge "Finished")
+    //  - tiket yang SJ-nya dibuat ≤7 hari dianggap "Ready Produsen" (window
+    //    pengiriman) — tidak dihitung menunggu
+    //  - bagian part: hanya baris qty > 0 dengan sparepart terdaftar
+    //  - dihitung per UNIT (bukan per tiket): unit dengan beberapa tiket
+    //    menunggu tetap dihitung satu kali
+    const dalamWindowSJ = (t: (typeof serviceRequests)[number]) => {
+      if (!t.tglRequestPart) return false
+      return (Date.now() - new Date(t.tglRequestPart).getTime()) / 86400000 <= 7
+    }
+    const tiketTungguPart = serviceRequests.filter(
+      (t) =>
+        t.status !== 'FINISH' &&
+        !dalamWindowSJ(t) &&
+        t.parts.some((p) => p.qty > 0 && p.statusPart === 'ORDER_PRODUSEN')
+    )
+    const unitTungguPart = new Set(tiketTungguPart.map((t) => t.unitAsset?.id ?? `t${t.id}`))
     const menungguPartQty = tiketTungguPart.reduce(
-      (acc, t) => acc + t.parts.filter((p) => p.statusPart === 'ORDER_PRODUSEN').reduce((a, p) => a + p.qty, 0),
+      (acc, t) =>
+        acc +
+        t.parts
+          .filter((p) => p.qty > 0 && p.statusPart === 'ORDER_PRODUSEN')
+          .reduce((a, p) => a + p.qty, 0),
       0
     )
+    const menungguPartToko = new Set(
+      tiketTungguPart.map((t) => t.unitAsset?.toko?.kodeToko ?? `no-toko-${t.unitAsset?.id ?? t.id}`)
+    ).size
 
     return NextResponse.json({
       tiket: {
@@ -201,8 +223,9 @@ export async function GET() {
         finish: countFinish,
         slaTerlambat: tiketSlaTerlambat,
         total: countRequest + countProses + countFinish,
-        menungguPart: tiketTungguPart.length,
+        menungguPart: unitTungguPart.size,
         menungguPartQty,
+        menungguPartToko,
       },
       belumProses,
       partEmail,

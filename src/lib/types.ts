@@ -559,7 +559,7 @@ export interface AlertsResponse {
 }
 
 export interface DashboardData {
-  tiket: { request: number; proses: number; finish: number; slaTerlambat: number; total: number; menungguPart: number; menungguPartQty: number }
+  tiket: { request: number; proses: number; finish: number; slaTerlambat: number; total: number; menungguPart: number; menungguPartQty: number; menungguPartToko: number }
   belumProses: {
     count: number
     items: { noTiket: string; serial: string; model: string; toko: string; umurJam: number | null; adaPart: boolean; isDataLama: boolean }[]

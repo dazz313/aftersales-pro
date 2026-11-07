@@ -250,16 +250,16 @@ export default function DashboardView() {
     { title: 'Toko Telat Visit', value: String(dash.operasional.tokoTerlambatVisit), sub: `dari ${dash.operasional.totalToko} toko terdaftar (ALT-01)`, icon: MapPinOff, tone: 'bg-rose-400', onClick: () => navigateTo('field-ops', { fieldOpsFilter: 'terlambat' }) },
     { title: 'Kunjungan 7 Hari', value: String(dash.operasional.kunjungan7hari), sub: 'Check-in onsite teknisi', icon: Store, tone: 'bg-emerald-400', onClick: () => navigateTo('field-ops', { fieldOpsFilter: 'kunjungan' }) },
     { title: 'Total Tiket', value: String(dash.tiket.total), sub: `${dash.klaim.submitted} klaim SUBMITTED menunggu pembayaran`, icon: ClipboardList, tone: 'bg-teal-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
-    { title: 'Waiting Part', value: String(dash.tiket.menungguPart), sub: `unit terdaftar menunggu sparepart · ${dash.tiket.menungguPartQty} part di-order ke produsen`, icon: Hourglass, tone: 'bg-orange-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
+    { title: 'Waiting Part', value: String(dash.tiket.menungguPart), sub: `unit menunggu sparepart · ${dash.tiket.menungguPartQty} part belum datang · ${dash.tiket.menungguPartToko} toko`, icon: Hourglass, tone: 'bg-orange-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
   ]
 
   // ===== Ringkasan progres & tren (semua dihitung dari data /api/dashboard) =====
   const totalTiket = dash.tiket.total
   const pctFinish = totalTiket > 0 ? Math.round((dash.tiket.finish / totalTiket) * 100) : 0
   const segmenProgres = [
-    { key: 'finish', label: 'Finish', jumlah: dash.tiket.finish, warna: 'bg-emerald-500', onClick: () => navigateTo('service', { serviceStatus: 'FINISH' }) },
-    { key: 'proses', label: 'Proses', jumlah: dash.tiket.proses, warna: 'bg-violet-500', onClick: () => navigateTo('service', { serviceStatus: 'PROSES' }) },
-    { key: 'request', label: 'Request', jumlah: dash.tiket.request, warna: 'bg-amber-500', onClick: () => navigateTo('service', { serviceStatus: 'REQUEST' }) },
+    { key: 'finish', label: 'Finish', jumlah: dash.tiket.finish, warna: 'bg-emerald-500', hex: '#10b981', onClick: () => navigateTo('service', { serviceStatus: 'FINISH' }) },
+    { key: 'proses', label: 'Proses', jumlah: dash.tiket.proses, warna: 'bg-violet-500', hex: '#8b5cf6', onClick: () => navigateTo('service', { serviceStatus: 'PROSES' }) },
+    { key: 'request', label: 'Request', jumlah: dash.tiket.request, warna: 'bg-amber-500', hex: '#f59e0b', onClick: () => navigateTo('service', { serviceStatus: 'REQUEST' }) },
   ].map((s) => ({ ...s, persen: totalTiket > 0 ? (s.jumlah / totalTiket) * 100 : 0 }))
 
   // Denyut tiket masuk: bandingkan 7 hari terakhir dengan 7 hari sebelumnya
@@ -349,41 +349,70 @@ export default function DashboardView() {
           )}
         </CardHeader>
         <CardContent className="grid gap-5 lg:grid-cols-2">
-          {/* Progres penyelesaian tiket */}
-          <div>
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="text-3xl font-extrabold tracking-tight text-slate-900">{pctFinish}%</span>
-              <span className="text-xs text-slate-500">tiket FINISH dari {totalTiket} tiket</span>
-            </div>
+          {/* Progres penyelesaian tiket — pie chart donut */}
+          <div className="flex items-center gap-5">
             <div
-              className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-slate-100"
-              role="group"
-              aria-label={`Progres tiket: ${dash.tiket.finish} finish, ${dash.tiket.proses} proses, ${dash.tiket.request} request`}
+              className="relative h-40 w-40 shrink-0 sm:h-44 sm:w-44"
+              role="img"
+              aria-label={`Proporsi tiket: ${dash.tiket.finish} finish, ${dash.tiket.proses} proses, ${dash.tiket.request} request`}
             >
-              {segmenProgres.filter((s) => s.jumlah > 0).map((s) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={s.onClick}
-                  style={{ width: `${s.persen}%` }}
-                  title={`${s.label}: ${s.jumlah} tiket (${Math.round(s.persen)}%)`}
-                  aria-label={`Buka tiket ${s.label}: ${s.jumlah}`}
-                  className={cn('h-full transition-all hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500', s.warna)}
-                />
-              ))}
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={segmenProgres.filter((s) => s.jumlah > 0)}
+                    dataKey="jumlah"
+                    nameKey="label"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="52%"
+                    outerRadius="80%"
+                    paddingAngle={2}
+                    startAngle={90}
+                    endAngle={-270}
+                    stroke="#fff"
+                    strokeWidth={2}
+                  >
+                    {segmenProgres.filter((s) => s.jumlah > 0).map((s) => (
+                      <Cell
+                        key={s.key}
+                        fill={s.hex}
+                        onClick={s.onClick}
+                        className="cursor-pointer transition-opacity hover:opacity-80 focus-visible:outline-none"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number | string, name: string) => [`${value} tiket`, name]}
+                    contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid #e2e8f0', padding: '4px 8px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Persentase FINISH di tengah donut */}
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-xl font-extrabold tracking-tight text-slate-900">{pctFinish}%</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Finish</span>
+              </div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs">
-              {segmenProgres.map((s) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={s.onClick}
-                  className="flex items-center gap-1.5 rounded text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                >
-                  <span className={cn('h-2.5 w-2.5 rounded-sm', s.warna)} />
-                  {s.label} <span className="font-bold text-slate-900">{s.jumlah}</span>
-                </button>
-              ))}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="text-xs text-slate-500">
+                  {pctFinish}% tiket FINISH dari <span className="font-bold text-slate-900">{totalTiket}</span> tiket
+                </span>
+              </div>
+              <div className="mt-3 flex flex-col gap-y-2 text-xs">
+                {segmenProgres.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={s.onClick}
+                    className="flex w-fit items-center gap-1.5 rounded text-slate-600 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  >
+                    <span className={cn('h-2.5 w-2.5 rounded-sm', s.warna)} />
+                    {s.label} <span className="font-bold text-slate-900">{s.jumlah}</span>
+                    <span className="text-[10px] text-slate-400">({Math.round(s.persen)}%)</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
