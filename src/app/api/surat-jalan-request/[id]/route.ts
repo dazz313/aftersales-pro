@@ -109,7 +109,7 @@ export async function GET(
         totalQty,
         infoToko,
         produsenTujuan: sjr.produsenTujuan ?? '',
-        dibuatOleh: sjr.dibuatOleh ?? aktor,
+        dibuatOleh: aktor,
         adminWorkshop,
       })
       return new NextResponse(pdf, {
