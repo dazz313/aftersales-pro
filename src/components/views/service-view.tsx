@@ -1460,7 +1460,7 @@ export default function ServiceView() {
                         </TableCell>
                         <TableCell>
                           {(() => {
-                            if (t.status === 'FINISH') return <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[9px] text-slate-700">Finished</Badge>
+                            if (t.status === 'FINISH') return <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[9px] text-slate-700">Terpasang</Badge>
                             const partsTampil = t.parts.filter((p) => p.qty > 0)
                             if (partsTampil.length === 0) return <span className="text-[11px] text-slate-400">—</span>
                             // SJ dibuat ≤7 hari → otomatis Ready Produsen (tunggu part lain).
