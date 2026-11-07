@@ -1675,11 +1675,12 @@ export default function MasterDataView() {
                     <ReferensiPart
                       kode={row.kodePart}
                       nama={row.namaPart}
-                      onPilih={(it) => updatePartRow(row.key, { kodePart: it.kode, namaPart: it.namaPart })}
+                      onPilih={(it) => updatePartRow(row.key, { kodePart: it.kode, namaPart: it.namaPart, kesiapan: it.adaKatalog && it.stokInventory > 0 ? 'READY_STOK' : 'TIDAK_READY' })}
                       onCocokPersis={(it) =>
                         updatePartRow(row.key, {
                           ...(row.kodePart.trim() ? {} : { kodePart: it.kode }),
                           ...(row.namaPart.trim() ? {} : { namaPart: it.namaPart }),
+                          kesiapan: it.adaKatalog && it.stokInventory > 0 ? 'READY_STOK' : 'TIDAK_READY',
                         })
                       }
                     />
