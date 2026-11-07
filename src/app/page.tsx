@@ -19,6 +19,8 @@ import {
   WrenchIcon,
   LogOut,
   ChevronDown,
+  ChevronsLeft,
+  ChevronsRight,
   Loader2,
   Sparkles,
   Store,
@@ -103,7 +105,15 @@ function getInitials(name: string): string {
     .join('')
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarContent({
+  onNavigate,
+  collapsed = false,
+  onToggle,
+}: {
+  onNavigate?: () => void
+  collapsed?: boolean
+  onToggle?: () => void
+}) {
   const { view, setView, navigateTo, navIntent, user } = useAppStore()
   const { data: inboxCount } = useQuery({
     queryKey: ['inbox-pending-count'],
@@ -131,24 +141,44 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   }
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
-        <CompanyLogo className="h-10 w-10" />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-white leading-tight">AfterSales Pro</p>
-          <p className="truncate text-xs text-slate-400">Workshop × Produsen</p>
-        </div>
+      <div className={cn('flex items-center gap-3 border-b border-slate-800', collapsed ? 'flex-col px-2 py-4' : 'px-5 py-5')}>
+        <CompanyLogo className={collapsed ? 'h-9 w-9' : 'h-10 w-10'} />
+        {!collapsed && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-white leading-tight">AfterSales Pro</p>
+            <p className="truncate text-xs text-slate-400">Workshop × Produsen</p>
+          </div>
+        )}
+        {onToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            className={cn('hidden shrink-0 rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white lg:block', collapsed && 'mt-1')}
+            aria-label={collapsed ? 'Lebarkan sidebar' : 'Ciutkan sidebar jadi ikon'}
+            title={collapsed ? 'Lebarkan sidebar' : 'Ciutkan sidebar jadi ikon'}
+          >
+            {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+          </button>
+        )}
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Navigasi utama">
+      <nav className={cn('flex-1 space-y-1 overflow-y-auto py-4', collapsed ? 'px-2' : 'px-3')} aria-label="Navigasi utama">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const active = view === item.key
           const isMaster = item.key === 'master'
           return (
-            <div key={item.key}>
+            <div key={item.key} className={collapsed ? 'relative' : undefined}>
               <button
                 onClick={() => {
                   if (!isMaster) {
                     setView(item.key)
+                    onNavigate?.()
+                    return
+                  }
+                  if (collapsed) {
+                    // Mode ikon: tidak ada dropdown — langsung buka Master Data
+                    // (tab rootnya tetap dipilih via icon di bawah menu Master).
+                    navigateTo('master')
                     onNavigate?.()
                     return
                   }
@@ -163,29 +193,68 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   }
                 }}
                 className={cn(
-                  'group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                  'group flex w-full items-center rounded-lg text-left transition-colors',
+                  collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2.5',
                   active ? 'bg-emerald-500/15 text-emerald-300' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 )}
+                title={collapsed ? `${item.label} — ${item.desc}` : undefined}
+                aria-label={collapsed ? item.label : undefined}
                 aria-current={active ? 'page' : undefined}
-                aria-expanded={isMaster ? masterBuka : undefined}
+                aria-expanded={isMaster && !collapsed ? masterBuka : undefined}
               >
                 <Icon className={cn('h-4.5 w-4.5 shrink-0', active ? 'text-emerald-400' : 'text-slate-400 group-hover:text-white')} />
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium leading-tight">{item.label}</span>
-                  <span className="block truncate text-xs text-slate-500 leading-tight">{item.desc}</span>
-                </span>
+                {!collapsed && (
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium leading-tight">{item.label}</span>
+                    <span className="block truncate text-xs text-slate-500 leading-tight">{item.desc}</span>
+                  </span>
+                )}
                 {item.key === 'inbox' && (inboxCount?.pending ?? 0) > 0 && (
-                  <span className="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                  <span
+                    className={cn(
+                      'rounded-full bg-rose-500 font-bold text-white',
+                      collapsed ? 'absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center px-1 text-[9px]' : 'ml-auto px-2 py-0.5 text-[10px]'
+                    )}
+                  >
                     {inboxCount!.pending}
                   </span>
                 )}
-                {isMaster && (
+                {isMaster && !collapsed && (
                   <ChevronDown
                     className={cn('ml-auto h-4 w-4 shrink-0 text-slate-500 transition-transform', active && 'text-emerald-400', masterBuka && 'rotate-180')}
                   />
                 )}
               </button>
-              {isMaster && masterBuka && (
+              {isMaster && collapsed && masterBuka && (
+                // Mode ikon: tab root Master Data jadi deret ikon mini
+                // di bawah menu Master (beralih tab tanpa melebarkan sidebar).
+                <div className="mt-0.5 mb-1 space-y-0.5" aria-label="Pemilihan dalam Master Data">
+                  {MASTER_TABS.map((t) => {
+                    const TIcon = t.icon
+                    const rootAktif = view === 'master' && masterRoot === t.key
+                    return (
+                      <button
+                        key={t.key}
+                        onClick={() => {
+                          setMasterRoot(t.key)
+                          navigateTo('master', { masterTab: t.key })
+                          onNavigate?.()
+                        }}
+                        className={cn(
+                          'flex w-full items-center justify-center rounded-md py-1 transition-colors',
+                          rootAktif ? 'bg-emerald-500/15 text-emerald-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                        )}
+                        title={t.label}
+                        aria-label={t.label}
+                        aria-current={rootAktif ? 'true' : undefined}
+                      >
+                        <TIcon className={cn('h-3.5 w-3.5 shrink-0', rootAktif ? 'text-emerald-400' : 'text-slate-500')} />
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {isMaster && !collapsed && masterBuka && (
                 <div className="ml-6 mt-0.5 mb-1 space-y-0.5 border-l border-slate-800 pl-3" aria-label="Pemilihan dalam Master Data">
                   {MASTER_TABS.map((t) => {
                     const TIcon = t.icon
@@ -216,14 +285,16 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           )
         })}
       </nav>
-      <div className="border-t border-slate-800 px-5 py-4">
-        {user && (
-          <p className="mb-1.5 truncate text-xs text-slate-400">
-            Login sebagai <span className="font-medium text-slate-200">{user.nama}</span>
-          </p>
-        )}
-        <p className="text-xs text-slate-500">Sesuai PRD: Otomasi after-sales, STTB QR, inventory, klaim Excel.</p>
-      </div>
+      {!collapsed && (
+        <div className="border-t border-slate-800 px-5 py-4">
+          {user && (
+            <p className="mb-1.5 truncate text-xs text-slate-400">
+              Login sebagai <span className="font-medium text-slate-200">{user.nama}</span>
+            </p>
+          )}
+          <p className="text-xs text-slate-500">Sesuai PRD: Otomasi after-sales, STTB QR, inventory, klaim Excel.</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -231,6 +302,20 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export default function Home() {
   const [open, setOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  // Sidebar desktop bisa di-ciutkan jadi ikon saja (lebar konten makin luas).
+  // Pilihan tersimpan di localStorage — dibuka lagi tetap ciutkan/lebar.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() =>
+    typeof window !== 'undefined' && window.localStorage.getItem('aspro-sidebar') === 'collapsed'
+  )
+  const toggleSidebar = () => {
+    const next = !sidebarCollapsed
+    setSidebarCollapsed(next)
+    try {
+      window.localStorage.setItem('aspro-sidebar', next ? 'collapsed' : 'expanded')
+    } catch {
+      // localStorage bisa gagal (mode privasi ketat) — abaikan saja
+    }
+  }
   const { view, role, user, authReady, setUser, setAuthReady } = useAppStore()
   const current = NAV_ITEMS.find((n) => n.key === view)
   // Gagal verifikasi karena jaringan/timeout (bukan 401) → tampilkan panel error + retry
@@ -338,9 +423,14 @@ export default function Home() {
     <div className="flex min-h-screen w-full bg-slate-100">
       {/* Backup otomatis ke Google Spreadsheet (berjalan di background) */}
       <AutoBackupWatcher />
-      {/* Sidebar desktop */}
-      <aside className="sticky top-0 hidden h-screen w-72 shrink-0 bg-slate-900 lg:block">
-        <SidebarContent />
+      {/* Sidebar desktop — ciutkan jadi ikon (w-[72px]) / lebar penuh (w-72) */}
+      <aside
+        className={cn(
+          'sticky top-0 hidden h-screen shrink-0 bg-slate-900 transition-all lg:block',
+          sidebarCollapsed ? 'w-[72px]' : 'w-72'
+        )}
+      >
+        <SidebarContent collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       </aside>
 
       {/* Sidebar mobile */}
