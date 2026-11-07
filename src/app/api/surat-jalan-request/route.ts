@@ -81,7 +81,12 @@ export async function POST(request: Request) {
     const items: ItemBaris[] = []
     let lewatTanpaKode = 0
     for (const t of tickets) {
+      // SJ dibuat ≤7 hari yang lalu → part dianggap Ready Produsen (belum
+      // 7 hari), tidak ikut tercetak di SJR baru.
+      const sjUmur = t.tglRequestPart ? (Date.now() - new Date(t.tglRequestPart).getTime()) / 86400000 : Infinity
+      const dalamWindowSJ = !!t.tglRequestPart && sjUmur <= 7
       for (const p of t.parts) {
+        if (dalamWindowSJ) continue
         const kode = (p.sparepart?.kodePart ?? '').trim()
         const nama = (p.sparepart?.namaPart ?? '').trim()
         if (!kode || !nama) {

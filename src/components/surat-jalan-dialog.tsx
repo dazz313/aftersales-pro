@@ -138,9 +138,12 @@ export default function SuratJalanDialog({
   const tiketFinishDibuang = tickets.length - tiketAktif.length
 
   // Hanya part yang kode+nama-nya sudah terinput yang masuk draft pengiriman.
-  const mentah = tiketAktif.flatMap((t) =>
-    t.parts
-      .filter((p) => p.statusPart === 'ORDER_PRODUSEN') // hanya part yang belum datang (masih di-order), bukan part yang sudah datang/ready
+  const mentah = tiketAktif.flatMap((t) => {
+    // SJ dibuat ≤7 hari yang lalu → part dianggap Ready Produsen, tidak ikut SJR.
+    const sjUmur = t.tglRequestPart ? (Date.now() - new Date(t.tglRequestPart).getTime()) / 86400000 : Infinity
+    if (t.tglRequestPart && sjUmur <= 7) return []
+    return t.parts
+      .filter((p) => p.statusPart === 'ORDER_PRODUSEN') // hanya part yang belum datang (masih di-order)
       .map((p) => ({
         noTiket: t.noTiket,
         kodePart: p.sparepart?.kodePart ?? '',
@@ -150,7 +153,7 @@ export default function SuratJalanDialog({
         sn: t.unitAsset.serialNumber,
         alur: alurSjState(t),
       }))
-  )
+  })
   const items = mentah.filter((i) => i.kodePart.trim() && i.namaPart.trim())
   const tanpaKode = mentah.length - items.length
   const totalQty = items.reduce((a, i) => a + i.qty, 0)
