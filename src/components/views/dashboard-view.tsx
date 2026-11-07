@@ -267,7 +267,9 @@ export default function DashboardView() {
   const pekanIni = tren.slice(-7).reduce((a, d) => a + d.tiket, 0)
   const pekanLalu = tren.slice(0, Math.max(0, tren.length - 7)).reduce((a, d) => a + d.tiket, 0)
   const deltaPct = pekanLalu > 0 ? Math.round(((pekanIni - pekanLalu) / pekanLalu) * 100) : null
-  const maxTiket = Math.max(1, ...tren.map((d) => d.tiket))
+  // Pie "tiket masuk 14 hari": per hari segmen; hijau tua = 7 hari terakhir
+  const trenPie = tren.map((d, i) => ({ ...d, hex: i >= tren.length - 7 ? '#10b981' : '#a7f3d0' }))
+  const trenPieAda = trenPie.filter((d) => d.tiket > 0)
   const alertKritis = alerts?.alerts.filter((a) => a.severity === 'critical').length ?? 0
 
   return (
@@ -416,24 +418,57 @@ export default function DashboardView() {
             </div>
           </div>
 
-          {/* Denyut tiket masuk 14 hari (batang mini) */}
+          {/* Denyut tiket masuk 14 hari — pie chart donut per hari */}
           <div>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Tiket masuk 14 hari</span>
               <span className="text-xs text-slate-500"><span className="font-bold text-slate-900">{pekanIni}</span> dalam 7 hari terakhir</span>
             </div>
-            <div className="mt-3 flex h-20 items-end gap-1">
-              {tren.map((d, i) => (
-                <div key={`${d.tanggal}-${i}`} className="group flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${d.tanggal}: ${d.tiket} tiket`}>
-                  <span className="text-[10px] font-semibold text-slate-400 opacity-0 transition-opacity group-hover:opacity-100">{d.tiket}</span>
-                  <div
-                    className={cn('w-full rounded-t', i >= tren.length - 7 ? 'bg-emerald-500' : 'bg-emerald-200')}
-                    style={{ height: `${Math.max(5, Math.round((d.tiket / maxTiket) * 100))}%` }}
-                  />
+            <div
+              className="relative mx-auto mt-3 h-40 w-full max-w-[220px] sm:h-44"
+              role="img"
+              aria-label={`Proporsi tiket masuk per hari, 14 hari terakhir. Total ${pekanIni} tiket dalam 7 hari terakhir.`}
+            >
+              {trenPieAda.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={trenPieAda}
+                        dataKey="tiket"
+                        nameKey="tanggal"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="48%"
+                        outerRadius="78%"
+                        paddingAngle={2}
+                        startAngle={90}
+                        endAngle={-270}
+                        stroke="#fff"
+                        strokeWidth={2}
+                      >
+                        {trenPieAda.map((d, i) => (
+                          <Cell key={`${d.tanggal}-${i}`} fill={d.hex} className="transition-opacity hover:opacity-80 focus-visible:outline-none" />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number | string, name: string) => [`${value} tiket`, name]}
+                        contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid #e2e8f0', padding: '4px 8px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-xl font-extrabold tracking-tight text-slate-900">{pekanIni}</span>
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">7 hari akhir</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-full border border-dashed border-slate-200 text-[11px] text-slate-400">
+                  Belum ada tiket masuk
                 </div>
-              ))}
+              )}
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">Batang hijau tua = 7 hari terakhir · sorot batang untuk melihat jumlah per hari</p>
+            <p className="mt-2 text-center text-[11px] text-slate-400">Hijau tua = 7 hari terakhir · arahkan segmen untuk melihat jumlah per hari</p>
           </div>
         </CardContent>
       </Card>
