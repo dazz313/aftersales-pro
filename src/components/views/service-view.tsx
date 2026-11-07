@@ -1537,7 +1537,6 @@ export default function ServiceView() {
                                   Unit di workshop · {formatUmur(durasiWorkshop.jam)}
                                 </p>
                               )}
-                              <p className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</p>
                             </>
                           )}
                         </TableCell>
@@ -1850,24 +1849,32 @@ export default function ServiceView() {
                                     </Button>
                                   )}
                                   {p.statusPart === 'ORDER_PRODUSEN' && detail.status !== 'FINISH' && !emailAktifUntuk(detail.orderEmailParts, p.sparepart?.kodePart) && (
-                                    <>
-                                      <Button
-                                        size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-violet-700"
-                                        title="Reorder part inden ini: daftarkan ke order email & kirim ke produsen (SMTP aktif → kirim; belum → draf mailto)"
-                                        disabled={orderEmailTiket.isPending}
-                                        onClick={() => orderEmailTiket.mutate(detail.id)}
-                                      >
-                                        <MailPlus className="mr-0.5 h-3 w-3" /> Email Order
-                                      </Button>
-                                      <Button
-                                        size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-emerald-700"
-                                        title="Reorder part inden ini via WhatsApp: daftarkan ke order & kirim (gateway aktif → kirim; belum → draf wa.me)"
-                                        disabled={orderWaTiket.isPending}
-                                        onClick={() => orderWaTiket.mutate(detail.id)}
-                                      >
-                                        <MessageCircle className="mr-0.5 h-3 w-3" /> WA Order
-                                      </Button>
-                                    </>
+                                    <DropdownMenu>
+                                       <DropdownMenuTrigger asChild>
+                                         <Button
+                                           size="sm" variant="outline" className="h-6 px-1.5 text-[10px] text-slate-700"
+                                           title="Reorder part inden ini: kirim ke produsen via Email atau WhatsApp"
+                                           disabled={orderEmailTiket.isPending || orderWaTiket.isPending}
+                                         >
+                                           {(orderEmailTiket.isPending || orderWaTiket.isPending) ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                                           Order
+                                         </Button>
+                                       </DropdownMenuTrigger>
+                                       <DropdownMenuContent align="end" className="w-40">
+                                         <DropdownMenuItem
+                                           onClick={() => orderEmailTiket.mutate(detail.id)}
+                                           disabled={orderEmailTiket.isPending}
+                                         >
+                                           <MailPlus className="mr-2 h-3.5 w-3.5 text-violet-700" /> Email Order
+                                         </DropdownMenuItem>
+                                         <DropdownMenuItem
+                                           onClick={() => orderWaTiket.mutate(detail.id)}
+                                           disabled={orderWaTiket.isPending}
+                                         >
+                                           <MessageCircle className="mr-2 h-3.5 w-3.5 text-emerald-700" /> WA Order
+                                         </DropdownMenuItem>
+                                       </DropdownMenuContent>
+                                     </DropdownMenu>
                                   )}
                                   <Button
                                     size="sm" variant="outline" className="h-6 w-6 p-0" title="Kurangi qty 1"

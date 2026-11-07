@@ -206,12 +206,12 @@ export default function MasterDataView() {
   const [partUnit, setPartUnit] = useState<UnitAsset | null>(null)
   // Multi-part: 1 unit bisa butuh >1 kode+nama part berbeda — tiap baris satu
   // kode (anti-pengulangan: kode sama ditolak, dicek client & server).
-  type PartUnitRow = { key: number; kodePart: string; namaPart: string; qty: string }
+  type PartUnitRow = { key: number; kodePart: string; namaPart: string; qty: string; kesiapan: 'READY_PRODUSEN' | 'READY_STOK' | 'TIDAK_READY' }
   const [partForm, setPartForm] = useState({
     deskripsi: '',
     jasa: '0',
     tgl: '',
-    rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1' }] as PartUnitRow[],
+    rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1', kesiapan: 'TIDAK_READY' }] as PartUnitRow[],
   })
   // Edit karyawan
   const [editUser, setEditUser] = useState<Pengguna | null>(null)
@@ -301,13 +301,13 @@ export default function MasterDataView() {
       deskripsi: '',
       jasa: '0',
       tgl: `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`,
-      rows: [{ key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }],
+      rows: [{ key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1', kesiapan: 'TIDAK_READY' }],
     })
   }
   const updatePartRow = (key: number, patch: Partial<PartUnitRow>) =>
     setPartForm((f) => ({ ...f, rows: f.rows.map((r) => (r.key === key ? { ...r, ...patch } : r)) }))
   const tambahPartRow = () =>
-    setPartForm((f) => ({ ...f, rows: [...f.rows, { key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }] }))
+    setPartForm((f) => ({ ...f, rows: [...f.rows, { key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1', kesiapan: 'TIDAK_READY' }] }))
   const hapusPartRow = (key: number) =>
     setPartForm((f) => ({ ...f, rows: f.rows.filter((r) => r.key !== key) }))
 
@@ -334,13 +334,13 @@ export default function MasterDataView() {
   const [partKurangUnit, setPartKurangUnit] = useState<UnitAsset | null>(null)
   const [formKurang, setFormKurang] = useState({
     catatan: '',
-    rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1' }] as PartUnitRow[],
+    rows: [{ key: 0, kodePart: '', namaPart: '', qty: '1', kesiapan: 'TIDAK_READY' }] as PartUnitRow[],
   })
   const updateKurangRow = (key: number, patch: Partial<PartUnitRow>) =>
     setFormKurang((f) => ({ ...f, rows: f.rows.map((r) => (r.key === key ? { ...r, ...patch } : r)) }))
   const openPartKurang = (u: UnitAsset) => {
     setPartKurangUnit(u)
-    setFormKurang({ catatan: '', rows: [{ key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }] })
+    setFormKurang({ catatan: '', rows: [{ key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1', kesiapan: 'TIDAK_READY' }] })
   }
   const kurangLengkap = formKurang.rows.filter((r) => r.kodePart.trim() && r.namaPart.trim())
   // Kode part sama di unit yang sama → BLOCK.
@@ -373,6 +373,7 @@ export default function MasterDataView() {
           kodePart: r.kodePart.trim().toUpperCase(),
           namaPart: r.namaPart.trim(),
           qty: Math.max(1, Number(r.qty) || 1),
+          kesiapan: r.kesiapan,
         })),
         aktor: role,
       })
@@ -1639,6 +1640,19 @@ export default function MasterDataView() {
                         className="h-9 w-14 shrink-0 text-center"
                         aria-label={`Qty baris ${i + 1}`}
                       />
+                      <Select
+                        value={row.kesiapan}
+                        onValueChange={(v) => updatePartRow(row.key, { kesiapan: v as 'READY_PRODUSEN' | 'READY_STOK' | 'TIDAK_READY' })}
+                      >
+                        <SelectTrigger className="h-9 w-32 shrink-0 text-[10px]" aria-label={`Kesiapan part baris ${i + 1}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="READY_PRODUSEN">Ready Produsen</SelectItem>
+                          <SelectItem value="READY_STOK">Ready Stok Part</SelectItem>
+                          <SelectItem value="TIDAK_READY">Tidak Ready</SelectItem>
+                        </SelectContent>
+                      </Select>
                       {partForm.rows.length > 1 && (
                         <Button
                           type="button"
@@ -1803,7 +1817,7 @@ export default function MasterDataView() {
                 variant="outline"
                 size="sm"
                 className="w-full border-dashed"
-                onClick={() => setFormKurang((f) => ({ ...f, rows: [...f.rows, { key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1' }] }))}
+                onClick={() => setFormKurang((f) => ({ ...f, rows: [...f.rows, { key: ++partRowKeyCounter, kodePart: '', namaPart: '', qty: '1', kesiapan: 'TIDAK_READY' }] }))}
               >
                 <Plus className="mr-1 h-3.5 w-3.5" /> Tambah Part
               </Button>

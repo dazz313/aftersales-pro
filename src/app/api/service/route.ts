@@ -91,7 +91,7 @@ export async function POST(request: Request) {
 
     // ===== Multi-part per tiket: 1 unit bisa punya >1 kode sparepart =====
     // Tiap item: { sparepartId } dari katalog ATAU { kodePart + namaPart } manual.
-    type PartIn = { sparepartId?: number; kodePart?: string; namaPart?: string; qty: number }
+    type PartIn = { sparepartId?: number; kodePart?: string; namaPart?: string; qty: number; kesiapan?: 'READY_PRODUSEN' | 'READY_STOK' | 'TIDAK_READY' }
     const partsRaw: PartIn[] = Array.isArray(body.parts) ? body.parts : []
 
     // Jalur lama (single kodePart+namaPart) tetap diterima demi kompatibilitas.
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
 
     // Normalisasi + ANTI-PENGULANGAN: kode part yang sama tidak boleh dua
     // kali dalam 1 tiket (dicek sebelum menyentuh stok).
-    type PartResolved = { spId: number | null; kode: string; nama: string; qty: number; manual: boolean }
+    type PartResolved = { spId: number | null; kode: string; nama: string; qty: number; manual: boolean; kesiapan?: 'READY_PRODUSEN' | 'READY_STOK' | 'TIDAK_READY' }
     const resolvedParts: PartResolved[] = []
     const seenKode = new Set<string>()
     for (const p of partsRaw) {
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
         )
       }
       seenKode.add(kode)
-      resolvedParts.push({ spId: sp ? sp.id : null, kode, nama, qty, manual })
+      resolvedParts.push({ spId: sp ? sp.id : null, kode, nama, qty, manual, kesiapan: p.kesiapan })
     }
 
     // Validasi & reserve stok per part (kode baru dari input manual otomatis terdaftar)
@@ -175,8 +175,24 @@ export async function POST(request: Request) {
       }
       let statusPart = 'ORDER_PRODUSEN'
       let statusKonfirmasi = 'MENUNGGU'
-      if (sp.stokInventory >= r.qty) {
-        // Reserve: ambil dari stok BISA JUAL dulu, kekurangan dari stok GARANSI
+      let sumberPart: string | undefined = r.manual ? 'PRODUSEN' : undefined
+      if (r.kesiapan) {
+        // Kesiapan diinput manual oleh user — tidak bergantung stok/producer code release.
+        if (r.kesiapan === 'READY_PRODUSEN') {
+          statusPart = 'READY'
+          statusKonfirmasi = 'READY'
+          sumberPart = 'PRODUSEN'
+        } else if (r.kesiapan === 'READY_STOK') {
+          statusPart = 'READY'
+          statusKonfirmasi = 'READY'
+          sumberPart = 'KATALOG'
+        } else {
+          statusPart = 'ORDER_PRODUSEN'
+          statusKonfirmasi = 'MENUNGGU'
+          sumberPart = 'KATALOG'
+        }
+      } else if (sp.stokInventory >= r.qty) {
+        // Fallback: kesiapan tidak diberikan → tentukan dari stok (perilaku lama).
         const ambilJual = Math.min(sp.stokJual, r.qty)
         await db.masterSparepart.update({
           where: { id: sp.id },
@@ -195,7 +211,7 @@ export async function POST(request: Request) {
         qty: r.qty,
         statusPart,
         statusKonfirmasi,
-        ...(r.manual ? { sumberPart: 'PRODUSEN' } : {}),
+        ...(sumberPart ? { sumberPart } : {}),
       })
       partResults.push({ part: sp.namaPart, status: statusPart })
     }
