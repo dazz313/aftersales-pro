@@ -1377,9 +1377,7 @@ export default function ServiceView() {
                     <TableHead>No. Tiket</TableHead>
                     <TableHead>Unit (Serial · Model)</TableHead>
                     <TableHead className="hidden md:table-cell">Toko</TableHead>
-                    <TableHead className="max-w-44">Kerusakan</TableHead>
-                    <TableHead>Nama Sparepart</TableHead>
-                    <TableHead>Kode Sparepart</TableHead>
+                    <TableHead className="max-w-44">Sparepart</TableHead>
                     <TableHead className="w-32">Status Sparepart</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
@@ -1423,57 +1421,39 @@ export default function ServiceView() {
                           <p className="text-xs text-slate-700">{t.unitAsset.toko?.namaToko ?? '-'}</p>
                         </TableCell>
                         <TableCell className="max-w-44">
-                          {/* Diagnosa kerusakan unit — utamakan diagnosa awal (sama dgn Master Barcode), fallback deskripsi tiket */}
-                          {t.unitAsset.kerusakanAwal?.trim() ? (
-                            <p className="line-clamp-2 text-[11px] text-slate-700" title={`Diagnosa awal unit (bahasa awam): ${t.unitAsset.kerusakanAwal}`}>{t.unitAsset.kerusakanAwal}</p>
-                          ) : t.deskripsiKerusakan?.trim() ? (
-                            <p className="line-clamp-2 text-[11px] text-slate-500" title={`Deskripsi kerusakan tiket: ${t.deskripsiKerusakan}`}>{t.deskripsiKerusakan}</p>
-                          ) : (
-                            <span className="text-[11px] text-slate-400">–</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-44">
                           {partsTampil.length === 0 ? (
                             <span className="text-xs text-slate-400">—</span>
                           ) : (
                             <div className="flex flex-col gap-1">
                               {partsTampil.map((p) => (
-                                <span
-                                  key={p.id}
-                                  title={
-                                    t.status === 'FINISH'
-                                      ? p.sparepart?.kodePart ?? ''
-                                      : `${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`
-                                  }
-                                  className={cn(
-                                    'truncate text-[11px]',
-                                    t.status === 'FINISH' ? 'text-slate-500' : p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
-                                  )}
-                                >
-                                  {p.sparepart?.namaPart ?? '?'}
-                                  {t.status !== 'FINISH' && p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {partsTampil.length === 0 ? (
-                            <span className="text-xs text-slate-400">—</span>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              {partsTampil.map((p) => (
-                                /* Tiket FINISH: alur ready/order sudah tamat — part
-                                   ditulis polos, tgl finish tampil di kolom Status. */
-                                <span key={p.id} className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
-                                  <KodeSparepart
-                                    kode={p.sparepart?.kodePart ?? ''}
-                                    nama={p.sparepart?.namaPart}
-                                    cek
-                                    className={t.status === 'FINISH' ? 'text-[10px] text-slate-600' : p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
-                                  />
-                                  <span className="font-mono text-[10px] font-normal text-slate-400">×{p.qty}</span>
-                                </span>
+                                /* Nama di baris atas, kode ×qty mono kecil di bawah —
+                                   satu kolom untuk kedua info; kerusakan & detail part
+                                   terbaca di dialog detail tiket / Unit Asset (Master Data). */
+                                <div key={p.id} className="flex min-w-0 flex-col leading-tight">
+                                  <span
+                                    title={
+                                      t.status === 'FINISH'
+                                        ? p.sparepart?.kodePart ?? ''
+                                        : `${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`
+                                    }
+                                    className={cn(
+                                      'truncate text-[11px]',
+                                      t.status === 'FINISH' ? 'text-slate-500' : p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
+                                    )}
+                                  >
+                                    {p.sparepart?.namaPart ?? '?'}
+                                    {t.status !== 'FINISH' && p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
+                                  </span>
+                                  <span className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
+                                    <KodeSparepart
+                                      kode={p.sparepart?.kodePart ?? ''}
+                                      nama={p.sparepart?.namaPart}
+                                      cek
+                                      className={t.status === 'FINISH' ? 'text-[10px] text-slate-600' : p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
+                                    />
+                                    <span className="font-mono text-[10px] font-normal text-slate-400">×{p.qty}</span>
+                                  </span>
+                                </div>
                               ))}
                             </div>
                           )}
