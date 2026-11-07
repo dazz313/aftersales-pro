@@ -250,6 +250,7 @@ export default function DashboardView() {
     { title: 'Toko Telat Visit', value: String(dash.operasional.tokoTerlambatVisit), sub: `dari ${dash.operasional.totalToko} toko terdaftar (ALT-01)`, icon: MapPinOff, tone: 'bg-rose-400', onClick: () => navigateTo('field-ops', { fieldOpsFilter: 'terlambat' }) },
     { title: 'Kunjungan 7 Hari', value: String(dash.operasional.kunjungan7hari), sub: 'Check-in onsite teknisi', icon: Store, tone: 'bg-emerald-400', onClick: () => navigateTo('field-ops', { fieldOpsFilter: 'kunjungan' }) },
     { title: 'Total Tiket', value: String(dash.tiket.total), sub: `${dash.klaim.submitted} klaim SUBMITTED menunggu pembayaran`, icon: ClipboardList, tone: 'bg-teal-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
+    { title: 'Waiting Part', value: String(dash.tiket.menungguPart), sub: `unit terdaftar menunggu sparepart · ${dash.tiket.menungguPartQty} part di-order ke produsen`, icon: Hourglass, tone: 'bg-orange-400', onClick: () => navigateTo('service', { serviceStatus: 'SEMUA' }) },
   ]
 
   // ===== Ringkasan progres & tren (semua dihitung dari data /api/dashboard) =====

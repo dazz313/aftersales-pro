@@ -185,6 +185,15 @@ export async function GET() {
       })),
     }
 
+    // Waiting Part: unit terdaftar yang menunggu sparepart — tiket dengan
+    // minimal satu part berstatus ORDER_PRODUSEN (belum datang dari produsen),
+    // apa pun status tiketnya (REQUEST/PROSES/FINISH — part menunggu dipasang).
+    const tiketTungguPart = serviceRequests.filter((t) => t.parts.some((p) => p.statusPart === 'ORDER_PRODUSEN'))
+    const menungguPartQty = tiketTungguPart.reduce(
+      (acc, t) => acc + t.parts.filter((p) => p.statusPart === 'ORDER_PRODUSEN').reduce((a, p) => a + p.qty, 0),
+      0
+    )
+
     return NextResponse.json({
       tiket: {
         request: countRequest,
@@ -192,6 +201,8 @@ export async function GET() {
         finish: countFinish,
         slaTerlambat: tiketSlaTerlambat,
         total: countRequest + countProses + countFinish,
+        menungguPart: tiketTungguPart.length,
+        menungguPartQty,
       },
       belumProses,
       partEmail,
