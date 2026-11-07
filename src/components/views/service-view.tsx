@@ -1382,6 +1382,7 @@ export default function ServiceView() {
                     <TableHead>Nama Sparepart</TableHead>
                     <TableHead className="hidden sm:table-cell">Tgl Finish</TableHead>
                     <TableHead className="max-w-44">Kerusakan</TableHead>
+                    <TableHead className="w-32">Status Sparepart</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -1550,6 +1551,19 @@ export default function ServiceView() {
                             <span className="text-[11px] text-slate-400">–</span>
                           )}
                         </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const partsTampil = t.parts.filter((p) => p.qty > 0)
+                            const hasOrder = partsTampil.some((p) => p.statusPart === 'ORDER_PRODUSEN')
+                            const hasReadyProd = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart === 'PRODUSEN')
+                            const hasReadyStok = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart !== 'PRODUSEN')
+                            if (partsTampil.length === 0) return <span className="text-[11px] text-slate-400">—</span>
+                            if (hasOrder) return <Badge variant="outline" className="border-rose-300 bg-rose-50 text-[9px] text-rose-700">Tidak Ready</Badge>
+                            if (hasReadyProd) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
+                            if (hasReadyStok) return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700">Ready Stok Part</Badge>
+                            return <span className="text-[11px] text-slate-400">—</span>
+                          })()}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1.5">{renderAksiTiket(t)}</div>
                         </TableCell>
@@ -1652,7 +1666,6 @@ export default function ServiceView() {
                               {t.lokasiUnit === 'WORKSHOP' && durasiWorkshop && (
                                 <span className="text-[11px] text-amber-600">Unit di workshop · {formatUmur(durasiWorkshop.jam)}</span>
                               )}
-                              <span className="text-[10px] text-slate-400">{formatWaktu(t.tglTiket)}</span>
                             </div>
                           )}
                         </dd>
