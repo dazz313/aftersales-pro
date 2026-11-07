@@ -1553,11 +1553,16 @@ export default function ServiceView() {
                         </TableCell>
                         <TableCell>
                           {(() => {
+                            if (t.status === 'FINISH') return <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[9px] text-slate-700">Finished</Badge>
                             const partsTampil = t.parts.filter((p) => p.qty > 0)
+                            if (partsTampil.length === 0) return <span className="text-[11px] text-slate-400">—</span>
+                            // SJ dibuat ≤7 hari → otomatis Ready Produsen (tunggu part lain).
+                            const sjUmur = t.tglRequestPart ? (Date.now() - new Date(t.tglRequestPart).getTime()) / 86400000 : Infinity
+                            const dalamWindowSJ = !!t.tglRequestPart && sjUmur <= 7
                             const hasOrder = partsTampil.some((p) => p.statusPart === 'ORDER_PRODUSEN')
                             const hasReadyProd = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart === 'PRODUSEN')
                             const hasReadyStok = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart !== 'PRODUSEN')
-                            if (partsTampil.length === 0) return <span className="text-[11px] text-slate-400">—</span>
+                            if (dalamWindowSJ) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
                             if (hasOrder) return <Badge variant="outline" className="border-rose-300 bg-rose-50 text-[9px] text-rose-700">Tidak Ready</Badge>
                             if (hasReadyProd) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
                             if (hasReadyStok) return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700">Ready Stok Part</Badge>
