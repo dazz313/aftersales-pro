@@ -1377,12 +1377,11 @@ export default function ServiceView() {
                     <TableHead>No. Tiket</TableHead>
                     <TableHead>Unit (Serial · Model)</TableHead>
                     <TableHead className="hidden md:table-cell">Toko</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Kode Sparepart</TableHead>
-                    <TableHead>Nama Sparepart</TableHead>
-                    <TableHead className="hidden sm:table-cell">Tgl Finish</TableHead>
                     <TableHead className="max-w-44">Kerusakan</TableHead>
+                    <TableHead>Nama Sparepart</TableHead>
+                    <TableHead>Kode Sparepart</TableHead>
                     <TableHead className="w-32">Status Sparepart</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -1396,7 +1395,7 @@ export default function ServiceView() {
                     // Identifikasi Ready vs Inden per part + status item order-email
                     const readyCnt = partsTampil.filter((p) => p.statusPart === 'READY').length
                     const indenCnt = partsTampil.length - readyCnt
-                    // Kolom Tgl Finish: tgl pemasangan part terakhir + lama unit di workshop
+                    // Tgl finish kini ditulis di bawah badge FINISH (kolom Tgl Finish digabung ke Status)
                     const pasangTerakhir = tglPasangTerakhir(t)
                     const durasiWorkshop = durasiUnitWorkshop(t)
                     return (
@@ -1422,6 +1421,80 @@ export default function ServiceView() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <p className="text-xs text-slate-700">{t.unitAsset.toko?.namaToko ?? '-'}</p>
+                        </TableCell>
+                        <TableCell className="max-w-44">
+                          {/* Diagnosa kerusakan unit — utamakan diagnosa awal (sama dgn Master Barcode), fallback deskripsi tiket */}
+                          {t.unitAsset.kerusakanAwal?.trim() ? (
+                            <p className="line-clamp-2 text-[11px] text-slate-700" title={`Diagnosa awal unit (bahasa awam): ${t.unitAsset.kerusakanAwal}`}>{t.unitAsset.kerusakanAwal}</p>
+                          ) : t.deskripsiKerusakan?.trim() ? (
+                            <p className="line-clamp-2 text-[11px] text-slate-500" title={`Deskripsi kerusakan tiket: ${t.deskripsiKerusakan}`}>{t.deskripsiKerusakan}</p>
+                          ) : (
+                            <span className="text-[11px] text-slate-400">–</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="max-w-44">
+                          {partsTampil.length === 0 ? (
+                            <span className="text-xs text-slate-400">—</span>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              {partsTampil.map((p) => (
+                                <span
+                                  key={p.id}
+                                  title={
+                                    t.status === 'FINISH'
+                                      ? p.sparepart?.kodePart ?? ''
+                                      : `${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`
+                                  }
+                                  className={cn(
+                                    'truncate text-[11px]',
+                                    t.status === 'FINISH' ? 'text-slate-500' : p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
+                                  )}
+                                >
+                                  {p.sparepart?.namaPart ?? '?'}
+                                  {t.status !== 'FINISH' && p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {partsTampil.length === 0 ? (
+                            <span className="text-xs text-slate-400">—</span>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              {partsTampil.map((p) => (
+                                /* Tiket FINISH: alur ready/order sudah tamat — part
+                                   ditulis polos, tgl finish tampil di kolom Status. */
+                                <span key={p.id} className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
+                                  <KodeSparepart
+                                    kode={p.sparepart?.kodePart ?? ''}
+                                    nama={p.sparepart?.namaPart}
+                                    cek
+                                    className={t.status === 'FINISH' ? 'text-[10px] text-slate-600' : p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
+                                  />
+                                  <span className="font-mono text-[10px] font-normal text-slate-400">×{p.qty}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            if (t.status === 'FINISH') return <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[9px] text-slate-700">Finished</Badge>
+                            const partsTampil = t.parts.filter((p) => p.qty > 0)
+                            if (partsTampil.length === 0) return <span className="text-[11px] text-slate-400">—</span>
+                            // SJ dibuat ≤7 hari → otomatis Ready Produsen (tunggu part lain).
+                            const sjUmur = t.tglRequestPart ? (Date.now() - new Date(t.tglRequestPart).getTime()) / 86400000 : Infinity
+                            const dalamWindowSJ = !!t.tglRequestPart && sjUmur <= 7
+                            const hasOrder = partsTampil.some((p) => p.statusPart === 'ORDER_PRODUSEN')
+                            const hasReadyProd = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart === 'PRODUSEN')
+                            const hasReadyStok = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart !== 'PRODUSEN')
+                            if (dalamWindowSJ) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
+                            if (hasOrder) return <Badge variant="outline" className="border-rose-300 bg-rose-50 text-[9px] text-rose-700">Tidak Ready</Badge>
+                            if (hasReadyProd) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
+                            if (hasReadyStok) return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700">Ready Stok Part</Badge>
+                            return <span className="text-[11px] text-slate-400">—</span>
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap items-center gap-1">
@@ -1462,112 +1535,28 @@ export default function ServiceView() {
                             )}
                             {t.status === 'FINISH' && t.statusKlaimProdusen !== 'DRAFT' && <Badge variant="outline" className={kl.cls}>{kl.label}</Badge>}
                             {t.editedAt && <BadgeEdited waktu={t.editedAt} oleh={t.editedBy} />}
+                            {/* Tgl Finish langsung ditulis di bawah badge FINISH — kolom Tgl Finish digabung ke Status */}
+                            {t.status === 'FINISH' && (
+                              <div className="flex w-full flex-col items-start text-left text-[10px] leading-tight">
+                                <p className="font-medium text-slate-700">{tglFinishPendek(t.tglFinish) ?? <span className="text-slate-400">—</span>}</p>
+                                {pasangTerakhir && (
+                                  <p className="text-teal-700" title={formatWaktu(pasangTerakhir)}>Part terpasang {tglPendek(pasangTerakhir)}</p>
+                                )}
+                                {t.tglKembaliKeToko ? (
+                                  <p className="text-emerald-600" title={formatWaktu(t.tglKembaliKeToko)}>Kembali {tglPendek(t.tglKembaliKeToko)}</p>
+                                ) : t.lokasiUnit === 'WORKSHOP' ? (
+                                  <p className="text-amber-600" title={durasiWorkshop ? `Dihitung sejak ${tglPendek(durasiWorkshop.mulai)} — sinyal kerja unit di workshop paling awal` : undefined}>
+                                    Masih di workshop{durasiWorkshop ? ` · ${formatUmur(durasiWorkshop.jam)}` : ''}
+                                  </p>
+                                ) : null}
+                              </div>
+                            )}
+                            {t.status !== 'FINISH' && t.lokasiUnit === 'WORKSHOP' && durasiWorkshop && (
+                              <p className="w-full text-left text-[10px] text-amber-600" title={durasiWorkshop ? `Dihitung sejak ${tglPendek(durasiWorkshop.mulai)} — sinyal kerja unit di workshop paling awal` : undefined}>
+                                Unit di workshop · {formatUmur(durasiWorkshop.jam)}
+                              </p>
+                            )}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          {partsTampil.length === 0 ? (
-                            <span className="text-xs text-slate-400">—</span>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              {partsTampil.map((p) => (
-                                /* Tiket FINISH: alur ready/order sudah tamat — part
-                                   ditulis polos, statusnya digantikan tgl di kolom Tgl Finish. */
-                                <span key={p.id} className="flex min-w-0 items-center gap-0.5 whitespace-nowrap">
-                                  <KodeSparepart
-                                    kode={p.sparepart?.kodePart ?? ''}
-                                    nama={p.sparepart?.namaPart}
-                                    cek
-                                    className={t.status === 'FINISH' ? 'text-[10px] text-slate-600' : p.statusPart === 'READY' ? 'text-[10px] text-emerald-700' : 'text-[10px] text-rose-600'}
-                                  />
-                                  <span className="font-mono text-[10px] font-normal text-slate-400">×{p.qty}</span>
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-44">
-                          {partsTampil.length === 0 ? (
-                            <span className="text-xs text-slate-400">—</span>
-                          ) : (
-                            <div className="flex flex-col gap-1">
-                              {partsTampil.map((p) => (
-                                <span
-                                  key={p.id}
-                                  title={
-                                    t.status === 'FINISH'
-                                      ? p.sparepart?.kodePart ?? ''
-                                      : `${p.sparepart?.kodePart ?? ''} · ${p.statusPart === 'READY' ? 'READY' : 'ORDER PRODUSEN'}`
-                                  }
-                                  className={cn(
-                                    'truncate text-[11px]',
-                                    t.status === 'FINISH' ? 'text-slate-500' : p.statusPart === 'READY' ? 'text-slate-700' : 'text-slate-400'
-                                  )}
-                                >
-                                  {p.sparepart?.namaPart ?? '?'}
-                                  {t.status !== 'FINISH' && p.statusPart !== 'READY' && <span className="ml-1 rounded bg-rose-50 px-1 text-[9px] font-semibold text-rose-600">ORDER</span>}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {/* Kolom Tgl Finish: kapan selesai dikerjakan + part terpasang +
-                              status unit (lama di workshop / sudah kembali). Untuk tiket
-                              FINISH, chip alur SJ (bekas terkirim/part datang) tidak lagi
-                              ditampilkan — kejadiannya sudah lewat, part pasangnya kini
-                              ditulis di sini. */}
-                          {t.status === 'FINISH' ? (
-                            <>
-                              <p className="text-xs font-medium text-slate-700">{tglFinishPendek(t.tglFinish) ?? <span className="text-slate-400">—</span>}</p>
-                              {pasangTerakhir && (
-                                <p className="text-[10px] text-teal-700" title={formatWaktu(pasangTerakhir)}>Part terpasang {tglPendek(pasangTerakhir)}</p>
-                              )}
-                              {t.tglKembaliKeToko ? (
-                                <p className="text-[10px] text-emerald-600" title={formatWaktu(t.tglKembaliKeToko)}>Kembali {tglPendek(t.tglKembaliKeToko)}</p>
-                              ) : t.lokasiUnit === 'WORKSHOP' ? (
-                                <p className="text-[10px] text-amber-600" title={durasiWorkshop ? `Dihitung sejak ${tglPendek(durasiWorkshop.mulai)} — sinyal kerja unit di workshop paling awal` : undefined}>
-                                  Masih di workshop{durasiWorkshop ? ` · ${formatUmur(durasiWorkshop.jam)}` : ''}
-                                </p>
-                              ) : null}
-                            </>
-                          ) : (
-                            <>
-                              <p className="text-xs text-slate-400">—</p>
-                              {t.lokasiUnit === 'WORKSHOP' && durasiWorkshop && (
-                                <p className="text-[10px] text-amber-600" title={durasiWorkshop ? `Dihitung sejak ${tglPendek(durasiWorkshop.mulai)} — sinyal kerja unit di workshop paling awal` : undefined}>
-                                  Unit di workshop · {formatUmur(durasiWorkshop.jam)}
-                                </p>
-                              )}
-                            </>
-                          )}
-                        </TableCell>
-                        <TableCell className="max-w-44">
-                          {/* Diagnosa kerusakan unit — utamakan diagnosa awal (sama dgn Master Barcode), fallback deskripsi tiket */}
-                          {t.unitAsset.kerusakanAwal?.trim() ? (
-                            <p className="line-clamp-2 text-[11px] text-slate-700" title={`Diagnosa awal unit (bahasa awam): ${t.unitAsset.kerusakanAwal}`}>{t.unitAsset.kerusakanAwal}</p>
-                          ) : t.deskripsiKerusakan?.trim() ? (
-                            <p className="line-clamp-2 text-[11px] text-slate-500" title={`Deskripsi kerusakan tiket: ${t.deskripsiKerusakan}`}>{t.deskripsiKerusakan}</p>
-                          ) : (
-                            <span className="text-[11px] text-slate-400">–</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {(() => {
-                            if (t.status === 'FINISH') return <Badge variant="outline" className="border-slate-300 bg-slate-100 text-[9px] text-slate-700">Finished</Badge>
-                            const partsTampil = t.parts.filter((p) => p.qty > 0)
-                            if (partsTampil.length === 0) return <span className="text-[11px] text-slate-400">—</span>
-                            // SJ dibuat ≤7 hari → otomatis Ready Produsen (tunggu part lain).
-                            const sjUmur = t.tglRequestPart ? (Date.now() - new Date(t.tglRequestPart).getTime()) / 86400000 : Infinity
-                            const dalamWindowSJ = !!t.tglRequestPart && sjUmur <= 7
-                            const hasOrder = partsTampil.some((p) => p.statusPart === 'ORDER_PRODUSEN')
-                            const hasReadyProd = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart === 'PRODUSEN')
-                            const hasReadyStok = partsTampil.some((p) => p.statusPart === 'READY' && p.sumberPart !== 'PRODUSEN')
-                            if (dalamWindowSJ) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
-                            if (hasOrder) return <Badge variant="outline" className="border-rose-300 bg-rose-50 text-[9px] text-rose-700">Tidak Ready</Badge>
-                            if (hasReadyProd) return <Badge variant="outline" className="border-teal-300 bg-teal-50 text-[9px] text-teal-700">Ready Produsen</Badge>
-                            if (hasReadyStok) return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-[9px] text-emerald-700">Ready Stok Part</Badge>
-                            return <span className="text-[11px] text-slate-400">—</span>
-                          })()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1.5">{renderAksiTiket(t)}</div>
